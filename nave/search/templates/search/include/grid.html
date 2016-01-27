@@ -10,7 +10,7 @@
                         <div class="media" style="width:100%;height:200px;">
                             {% if result.item.fields.system.thumbnail %}
 {#                                <img src="{{ result.item.fields.edm_object.0.raw }}" class="img" alt="{% if result.item.fields.system.caption %}{{ result.item.fields.caption.0.value }}{% endif %}" />#}
-                                <img src="{{ result.item.fields.system.thumbnail }}" class="img" alt="{% if result.item.fields.system.caption %}{{ result.item.fields.caption.0.value }}{% endif %}" />
+                                <img src="{{ result.item.fields.system.thumbnail }}?spec={{ result.item.legacy.delving_spec }}" class="img" alt="{% if result.item.fields.system.caption %}{{ result.item.fields.caption.0.value }}{% endif %}" />
                             {% else %}
                                 <div class="no-image-placeholder" style="height:160px;">
                                     <div class="overlay"></div>
