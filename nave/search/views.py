@@ -207,6 +207,13 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
             s_rows = settings.ES_ROWS
         else:
             s_rows = 12
+        # clean callback url
+        if len(request.query_params.getlist('callback', [])) > 1:
+            callbacks = request.query_params.getlist('callback')
+            for callback in callbacks:
+                if "?" in callback:
+                    callbacks.remove(callback)
+
         rows = int(request.query_params.get('rows', s_rows))
         query = NaveESQuery(
             index_name=index_name,
