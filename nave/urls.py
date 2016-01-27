@@ -6,14 +6,14 @@ from django.conf.urls.i18n import i18n_patterns
 from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.generic import TemplateView
-
+from solid_i18n.urls import solid_i18n_patterns
 
 admin.autodiscover()
 urlpatterns = patterns('',
                        url(r'^', include('void.urls')),
                        )
 
-urlpatterns += i18n_patterns('',
+urlpatterns += solid_i18n_patterns('',
                             url(r'^admin/', include(admin.site.urls)),  # NOQA
                             url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
                             # todo: create new sitemap not based on DJANGO CMS
