@@ -3,6 +3,7 @@ import os
 from os.path import abspath, dirname
 import zipfile
 
+from django.conf import settings
 from django.template import Context
 from django.template.loader import get_template
 from django.views.generic import DetailView
@@ -22,13 +23,9 @@ class DiwInstanceView(DetailView):
     context_object_name = 'diw'
     model = DiwInstance
 
-    # def get_admin_url(self):
-    #     return urlresolvers.reverse("admin:%s_%s_change" % (self._meta.app_label, self._meta.module_name), args=(self.id,))
-
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
         context = super(DiwInstanceView, self).get_context_data(**kwargs)
-        # context['diw_admin_link'] = self.get_admin_url()
         return context
 
 
@@ -36,6 +33,15 @@ class DiwConfigView(DetailView):
     template_name = 'diw-config.js'
     context_object_name = 'diw'
     model = DiwInstance
+
+    def get_context_data(self, **kwargs):
+        # Call the base implementation first to get a context
+        context = super(DiwConfigView, self).get_context_data(**kwargs)
+        endpoint = "http://{}".format(self.request.META['HTTP_HOST'])
+        context['endpoint'] = endpoint
+        context['org_id'] = settings.ORG_ID
+        # context['diw_admin_link'] = self.get_admin_url()
+        return context
 
 
 class DiwDownload(PathDownloadView):
@@ -45,7 +51,9 @@ class DiwDownload(PathDownloadView):
         slug = self.kwargs.get('slug')
         config = get_template('diw-config.js').render(
             Context({
-                'diw': DiwInstance.objects.get(slug=slug)
+                'diw': DiwInstance.objects.get(slug=slug),
+                'endpoint': "http://{}".format(self.request.META['HTTP_HOST']),
+                'org_id': settings.ORG_ID
             })
         )
         diw_name = self.kwargs.get('slug', 'diw')
@@ -62,6 +70,6 @@ class DiwDownload(PathDownloadView):
                     # todo fix this issues with expecting string but got bytes
                     zf.write(absname, arcname)
             # write configuration file
-            zf.writestr('delving-instant-config-'+diw_name+'.js ', config)
+            zf.writestr('js/delving-instant-config.js', config)
         return diw_path_zip
 

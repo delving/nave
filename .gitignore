@@ -8,6 +8,7 @@ output/*
 local_settings.py
 nave/.cache
 nave/static/*
+*.ipynb
 nave/media/*
 nave/admin_backups/*
 nave/theme/static/less/*

@@ -2,8 +2,8 @@
 
 jQuery(document).ready(function($) {
     jQuery(document).delvingInstant({
-        endPoint: "http://www.brabantcloud.nl",
-        orgId: "brabantcloud",
+        endPoint: "{{ endpoint }}",
+        orgId: "{{ org_id }}",
         collectionSpecs: ["{{ diw.collection_spec }}"],
         dataOwner: "{{ diw.collection_spec }}",
         hasDigitalObject: true,
