@@ -136,7 +136,7 @@ class ProxyResourceInline(admin.TabularInline):
     model = ProxyResource
 
 
-class DataSetAdmin(reversion.VersionAdmin):
+class DataSetAdmin(reversion.admin.VersionAdmin):
     inlines = [ProxyResourceFieldInline]
 
     actions = [reindex_dataset, reindex_dataset_acceptance, reset_dataset_content_hashes,
@@ -150,7 +150,7 @@ class DataSetAdmin(reversion.VersionAdmin):
 admin.site.register(DataSet, DataSetAdmin)
 
 
-class ProxyResourceFieldAdmin(reversion.VersionAdmin):
+class ProxyResourceFieldAdmin(reversion.admin.VersionAdmin):
     # inlines = [ProxyResourceInline]
 
     list_display = ['property_uri', 'search_label', 'spec']
@@ -164,7 +164,7 @@ class ProxyResourceFieldAdmin(reversion.VersionAdmin):
 admin.site.register(ProxyResourceField, ProxyResourceFieldAdmin)
 
 
-class ProxyResourceAdmin(reversion.VersionAdmin):
+class ProxyResourceAdmin(reversion.admin.VersionAdmin):
     # inlines = [ProxyResourceInline]
 
     list_display = ['proxy_uri', 'spec', 'search_label']
@@ -187,7 +187,7 @@ class ProxyResourceAdmin(reversion.VersionAdmin):
 admin.site.register(ProxyResource, ProxyResourceAdmin)
 
 
-class ProxyMappingAdmin(reversion.VersionAdmin):
+class ProxyMappingAdmin(reversion.admin.VersionAdmin):
     # inlines = [ProxyResourceInline]
 
     list_display = ['skos_concept_uri', 'proxy_resource_uri', 'spec']
@@ -206,7 +206,7 @@ class ProxyMappingAdmin(reversion.VersionAdmin):
 admin.site.register(ProxyMapping, ProxyMappingAdmin)
 
 
-class EDMRecordAdmin(reversion.VersionAdmin):
+class EDMRecordAdmin(reversion.admin.VersionAdmin):
     search_fields = ('hub_id', 'slug', 'document_uri', 'source_rdf', 'acceptance_rdf')
     list_filter = ['dataset__spec', 'dataset__data_owner', 'modified']
     show_full_result_count = False

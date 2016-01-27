@@ -3,7 +3,7 @@ import reversion
 from virtual_collection.models import VirtualCollection
 
 
-class VirtualCollectionAdmin(reversion.VersionAdmin):
+class VirtualCollectionAdmin(reversion.admin.VersionAdmin):
     list_filter = ['user', 'group']
     filter_horizontal = ('group',)
     list_display = ('title', 'user')

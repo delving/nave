@@ -50,7 +50,7 @@ class GroupOwnedAdmin(admin.ModelAdmin):
         return qs.filter(Q(groups__in=request.user.groups.values_list('id', flat=True)) | Q(user__id=request.user.id))
 
 
-class SPARQLQueryAdmin(reversion.VersionAdmin):
+class SPARQLQueryAdmin(reversion.admin.VersionAdmin):
     list_filter = ['prefixes', 'modified']
     filter_horizontal = ('prefixes',)
     fields = ['title', 'prefixes', 'query', 'description']
@@ -58,19 +58,19 @@ class SPARQLQueryAdmin(reversion.VersionAdmin):
 admin.site.register(SPARQLQuery, SPARQLQueryAdmin)
 
 
-class RDFPrefixAdmin(reversion.VersionAdmin):
+class RDFPrefixAdmin(reversion.admin.VersionAdmin):
     pass
 
 admin.site.register(RDFPrefix, RDFPrefixAdmin)
 
 
-class CacheResourceAdmin(reversion.VersionAdmin):
+class CacheResourceAdmin(reversion.admin.VersionAdmin):
     pass
 
 admin.site.register(CacheResource, CacheResourceAdmin)
 
 
-class SPARQLUpdateQueryAdmin(reversion.VersionAdmin):
+class SPARQLUpdateQueryAdmin(reversion.admin.VersionAdmin):
     list_filter = ['prefixes', 'modified']
     filter_horizontal = ('prefixes',)
     fields = ['title', 'prefixes', 'query', 'description']

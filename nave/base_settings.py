@@ -369,14 +369,14 @@ ACCOUNTS_PROFILE_VIEWS_ENABLED = True
 
 RAVEN_CONFIG = {
     # dev setup override in production
-    'dsn': 'https://bea553a71cc54834a4f03507a92f02a1:5b093ba2516b49bd85f103f2aa02239e@app.getsentry.com/51537',
+    # 'dsn': 'https://bea553a71cc54834a4f03507a92f02a1:5b093ba2516b49bd85f103f2aa02239e@app.getsentry.com/51537',
     # If you are using git, you can also automatically configure the
     # release based on the git info.
     # 'release': raven.fetch_git_sha(SITE_ROOT),
 }
 
 IGNORABLE_404_URLS = (
-    re.compile('/ht'),
+    re.compile('/hm'),
 )
 
 ########## LOGGING CONFIGURATION
@@ -438,6 +438,11 @@ LOGGING = {
         'py.warnings': {
             'propagate': False,
             'handlers': ['null']
+        },
+        'django.security.DisallowedHost': {
+            'handlers': ['null'],
+            'level': 'ERROR',
+            'propagate': False,
         },
         'django.db.backends': {
             'level': 'ERROR',

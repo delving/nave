@@ -3,7 +3,6 @@ from django.conf.urls import url, include
 from django.views.generic import TemplateView
 from rest_framework import routers
 
-from enrichment import viewsets
 from lod.viewsets import CacheResourceViewSet
 from search.viewsets import GroupViewSet
 from search.viewsets import UserViewSet, OauthTokenViewSet
@@ -17,7 +16,6 @@ router.register(r'search/v2', V2SearchListApiView, base_name='v2-list')
 router.register(r'users', UserViewSet)
 router.register(r'token-user', OauthTokenViewSet)
 router.register(r'groups', GroupViewSet)
-router.register(r'digitalobjects', viewsets.NaveImageViewSet)
 router.register('cacheresources', CacheResourceViewSet, base_name='cache_resource')
 
 
@@ -38,7 +36,6 @@ urlpatterns = [
     url(r'^detail/foldout/image/(?P<slug>(.*))$', FoldOutDetailImageView.as_view(), name='image_detail'),
     # url(r'^proxy/$', 'dataset.views.proxy', name='proxy'),
     url(r'^{}/(?P<spec>(.*))/(?P<local_id>(.*))$'.format(settings.ORG_ID), HubIDRedirectView.as_view(), name='hub_id_redirect'),
-    url(r'^statistics/kibana', TemplateView.as_view(template_name="kibana/index.html")),
     url(r'/?', include(search_router.urls), name='search_routers'),
     url(r'^docs/', include('rest_framework_swagger.urls')),
 ]

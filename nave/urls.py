@@ -27,9 +27,7 @@ urlpatterns += i18n_patterns('',
                             url(r'^', include('lod.urls')),
                             url(r'^navigator/?$', TemplateView.as_view(template_name="navigator.html")),#mocked
                             url(r'^', include('search_widget.urls')),
-                            url(r'^', include('enrichment.urls')),
                             url(r'^statistics/', TemplateView.as_view(template_name="statistics.html")), # template and data from void app
-                            url(r'^statistics/kibana', TemplateView.as_view(template_name="kibana/index.html")),
                             url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
                             )
 
@@ -46,7 +44,4 @@ if settings.DEBUG:
     urlpatterns = patterns('',
                            url(r'^media/(?P<path>.*)$', 'django.views.static.serve',  # NOQA
                                {'document_root': settings.MEDIA_ROOT, 'show_indexes': True}),
-                           url(r'^kibana/(?P<path>.*)$', 'django.views.static.serve',  # NOQA
-                               {'document_root': os.path.join(settings.PROJECT_ROOT, 'nave', 'kibana'),
-                                'show_indexes': True}),
     ) + staticfiles_urlpatterns() + urlpatterns  # NOQA

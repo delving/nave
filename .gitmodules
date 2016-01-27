@@ -1,0 +1,3 @@
+[submodule "nave/projects/dcn"]
+	path = nave/projects/dcn
+	url = git@github.com:delving/hub3_dcn.git
