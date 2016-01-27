@@ -1,0 +1,28 @@
+.list-blocks li {
+    background: #f1f1f1;
+    padding: 10px;
+    margin-bottom: 20px;
+    word-wrap: break-word;
+    display: block;
+    position: relative;
+}
+.list-blocks span.predicate-uri-label {
+    display: none;
+    position: absolute;
+    top: -8px;
+    right: 8px;
+}
+.list-blocks li label {
+    font-size: 100%;
+    font-weight: bold;
+    display: block;
+}
+.list-blocks .tooltip-inner {
+    max-width: 300px;
+}
+.sparql-list-group label {
+    font-weight: normal
+}
+.sparql-list-group label:hover {
+    cursor: pointer;
+}

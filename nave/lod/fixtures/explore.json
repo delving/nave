@@ -1,0 +1,280 @@
+[
+  {
+    "pk": 1,
+    "model": "lod.rdfprefix",
+    "fields": {
+      "description": "",
+      "title": "RDF namespace",
+      "created": "2014-07-15T04:07:25.235Z",
+      "modified": "2014-07-15T04:07:25.236Z",
+      "uri": "http://www.w3.org/1999/02/22-rdf-syntax-ns",
+      "prefix": "rdf",
+      "slug": "rdf-namespace"
+    }
+  },
+  {
+    "pk": 2,
+    "model": "lod.rdfprefix",
+    "fields": {
+      "description": "",
+      "title": "RDFS namespace",
+      "created": "2014-07-15T04:10:05.483Z",
+      "modified": "2014-07-15T04:10:05.484Z",
+      "uri": "http://www.w3.org/2000/01/rdf-schema",
+      "prefix": "rdfs",
+      "slug": "rdfs-namespace"
+    }
+  },
+  {
+    "pk": 3,
+    "model": "lod.rdfprefix",
+    "fields": {
+      "description": "",
+      "title": "XSD schema",
+      "created": "2014-07-15T04:10:42.588Z",
+      "modified": "2014-07-15T04:10:42.588Z",
+      "uri": "http://www.w3.org/2001/XMLSchema",
+      "prefix": "xsd",
+      "slug": "xsd-schema"
+    }
+  },
+  {
+    "pk": 4,
+    "model": "lod.rdfprefix",
+    "fields": {
+      "description": "",
+      "title": "XPATH functions",
+      "created": "2014-07-15T04:11:08.068Z",
+      "modified": "2014-07-15T04:11:08.069Z",
+      "uri": "http://www.w3.org/2005/xpath-functions",
+      "prefix": "fn",
+      "slug": "xpath-functions"
+    }
+  },
+  {
+    "pk": 5,
+    "model": "lod.rdfprefix",
+    "fields": {
+      "description": "",
+      "title": "Friend Of A Friend schema (FOAF)",
+      "created": "2014-07-15T04:12:56.943Z",
+      "modified": "2014-07-15T04:12:56.949Z",
+      "uri": "http://xmlns.com/foaf/0.1/",
+      "prefix": "foaf",
+      "slug": "friend-of-a-friend-schema-foaf"
+    }
+  },
+  {
+    "pk": 6,
+    "model": "lod.rdfprefix",
+    "fields": {
+      "description": "",
+      "title": "SKOS (Simple Knowledge Organisation System)",
+      "created": "2014-07-15T04:13:45.896Z",
+      "modified": "2014-07-15T04:13:45.901Z",
+      "uri": "http://www.w3.org/2004/02/skos/core",
+      "prefix": "skos",
+      "slug": "skos-simple-knowledge-organisation-system"
+    }
+  },
+  {
+    "pk": 7,
+    "model": "lod.rdfprefix",
+    "fields": {
+      "description": "",
+      "title": "DBpedia Ontology",
+      "created": "2014-07-15T04:19:23.867Z",
+      "modified": "2014-07-15T04:19:23.872Z",
+      "uri": "http://dbpedia.org/ontology/",
+      "prefix": "dbpedia-owl",
+      "slug": "dbpedia-ontology"
+    }
+  },
+  {
+    "pk": 8,
+    "model": "lod.rdfprefix",
+    "fields": {
+      "description": "",
+      "title": "DBpedia property",
+      "created": "2014-07-15T04:19:43.831Z",
+      "modified": "2014-07-15T04:19:43.835Z",
+      "uri": "http://dbpedia.org/property/",
+      "prefix": "dbpprop",
+      "slug": "dbpedia-property"
+    }
+  },
+  {
+    "pk": 9,
+    "model": "lod.rdfprefix",
+    "fields": {
+      "description": "",
+      "title": "DBpedia resource",
+      "created": "2014-07-15T04:20:38.060Z",
+      "modified": "2014-07-15T04:20:38.064Z",
+      "uri": "http://dbpedia.org/resource/",
+      "prefix": "dbres",
+      "slug": "dbpedia-resource"
+    }
+  },
+  {
+    "pk": 10,
+    "model": "lod.rdfprefix",
+    "fields": {
+      "description": "",
+      "title": "OWL",
+      "created": "2014-11-13T23:15:14.459Z",
+      "modified": "2014-11-13T23:15:14.461Z",
+      "uri": "http://www.w3.org/2002/07/owl",
+      "prefix": "owl",
+      "slug": "owl"
+    }
+  },
+  {
+    "pk": 1,
+    "model": "lod.sparqlquery",
+    "fields": {
+      "description": "Simple SPARQL query for all triples with a limit of 25",
+      "title": "Simple query for all triples",
+      "created": "2014-07-15T04:26:40.377Z",
+      "modified": "2014-07-15T04:26:40.382Z",
+      "prefixes": [
+        1,
+        2,
+        6
+      ],
+      "query": "select ?s ?p ?o \r\nwhere { ?s ?p ?o}\r\nlimit 25",
+      "slug": "simple-query-for-all-triples"
+    }
+  },
+  {
+    "pk": 3,
+    "model": "lod.sparqlquery",
+    "fields": {
+      "description": "",
+      "title": "Types",
+      "created": "2014-11-13T23:11:06.982Z",
+      "modified": "2014-11-13T23:11:06.985Z",
+      "prefixes": [
+        1,
+        2
+      ],
+      "query": "select distinct ?type ?label \r\nwhere { \r\n\t?s a ?type . \r\n\tOPTIONAL { ?type rdfs:label ?label } \r\n}",
+      "slug": "types"
+    }
+  },
+  {
+    "pk": 4,
+    "model": "lod.sparqlquery",
+    "fields": {
+      "description": "",
+      "title": "object properties",
+      "created": "2014-11-13T23:13:34.303Z",
+      "modified": "2014-11-13T23:15:34.780Z",
+      "prefixes": [
+        1,
+        2,
+        10
+      ],
+      "query": "select distinct ?objprop ?label \r\nwhere { \r\n\t?objprop a owl:ObjectProperty . \r\n\tOPTIONAL { ?objprop rdfs:label ?label } \r\n}",
+      "slug": "object-properties"
+    }
+  },
+  {
+    "pk": 5,
+    "model": "lod.sparqlquery",
+    "fields": {
+      "description": "",
+      "title": "Data properties",
+      "created": "2014-11-13T23:16:03.768Z",
+      "modified": "2014-11-13T23:16:03.770Z",
+      "prefixes": [
+        1,
+        2,
+        10
+      ],
+      "query": "select distinct ?dataprop ?label \r\nwhere { \r\n\t?dataprop a owl:DatatypeProperty . \r\n\tOPTIONAL { ?dataprop rdfs:label ?label } \r\n}",
+      "slug": "data-properties"
+    }
+  },
+  {
+    "pk": 6,
+    "model": "lod.sparqlquery",
+    "fields": {
+      "description": "",
+      "title": "Asserted properties",
+      "created": "2014-11-13T23:16:49.476Z",
+      "modified": "2014-11-13T23:16:49.478Z",
+      "prefixes": [
+        1,
+        2
+      ],
+      "query": "select distinct ?p ?label \r\nwhere { \r\n\t?s ?p ?o . \r\n\tOPTIONAL { ?p rdfs:label ?label } \r\n}",
+      "slug": "asserted-properties"
+    }
+  },
+  {
+    "pk": 7,
+    "model": "lod.sparqlquery",
+    "fields": {
+      "description": "",
+      "title": "Entities",
+      "created": "2014-11-13T23:17:13.702Z",
+      "modified": "2014-11-13T23:17:13.703Z",
+      "prefixes": [
+        1,
+        2
+      ],
+      "query": "select distinct ?entity ?elabel ?type ?tlabel \r\nwhere { \r\n\t?entity a ?type . \r\n\tOPTIONAL { ?entity rdfs:label ?elabel } . \r\n\tOPTIONAL { ?type rdfs:label ?tlabel } \r\n}",
+      "slug": "entities"
+    }
+  },
+  {
+    "pk": 8,
+    "model": "lod.sparqlquery",
+    "fields": {
+      "description": "",
+      "title": "Class Hierachy",
+      "created": "2014-11-13T23:17:46.458Z",
+      "modified": "2014-11-13T23:17:46.460Z",
+      "prefixes": [
+        1,
+        2,
+        10
+      ],
+      "query": "select distinct ?type ?label ?supertype \r\nwhere { \r\n\t{ ?type a owl:Class . } UNION { ?ind a ?type . } . \r\n\tOPTIONAL { ?type rdfs:subClassOf ?supertype } . \r\n\tOPTIONAL { ?type rdfs:label ?label } \r\n} ORDER BY ?type",
+      "slug": "class-hierachy"
+    }
+  },
+  {
+    "pk": 9,
+    "model": "lod.sparqlquery",
+    "fields": {
+      "description": "",
+      "title": "Named Graphs",
+      "created": "2014-11-13T23:18:06.081Z",
+      "modified": "2014-11-13T23:18:06.083Z",
+      "prefixes": [
+        1,
+        2
+      ],
+      "query": "select distinct ?g where { \r\n\tgraph ?g { \r\n\t\t?s ?p ?o \r\n\t} \r\n}",
+      "slug": "named-graphs"
+    }
+  },
+  {
+    "pk": 10,
+    "model": "lod.sparqlquery",
+    "fields": {
+      "description": "",
+      "title": "Example Erfgoed Thesaurus Query",
+      "created": "2014-11-13T23:27:54.148Z",
+      "modified": "2014-11-13T23:27:54.150Z",
+      "prefixes": [
+        1,
+        2
+      ],
+      "query": "SELECT DISTINCT ?property ?hasValue ?isValueOf\r\nWHERE {\r\n  { <http://www.rnaproject.org/data/6a52c326-d332-461d-8861-92db384c2f1d> ?property ?hasValue }\r\n  UNION\r\n  { ?isValueOf ?property <http://www.rnaproject.org/data/6a52c326-d332-461d-8861-92db384c2f1d> }\r\n }\r\nLIMIT 1000",
+      "slug": "example-erfgoed-thesaurus-query"
+    }
+  }
+]

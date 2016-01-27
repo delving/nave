@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Delving Instant Website - Demo page</title>
+    <meta name="author" content="Delving B.V. http://www.delving.eu">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<style>html { font-size: 100%; overflow-y: scroll; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+
+body{
+  color:#444;
+  font-family: Helvetica, Georgia, Palatino, 'Palatino Linotype', Times,
+              'Times New Roman', serif;              
+  font-size:12px;
+  line-height:1.5em;
+  background:#fefefe;
+  width: 75%;
+  margin: 10px auto;
+  padding: 1em;
+  outline: 1300px solid #049cdb;
+}
+
+a{ color: #049cdb;}
+a:visited{ color: #0064cd; }
+a:hover{ color: #06e; }
+a:active{ color:#faa700; }
+a:focus{ outline: thin dotted; }
+a:hover, a:active{ outline: 0; }
+
+span.backtick {
+  border:1px solid #EAEAEA;
+  border-radius:3px;
+  background:#F8F8F8;
+  padding:0 3px 0 3px;
+}
+
+span.highlight {
+  background-color: gold;
+}
+
+::-moz-selection{background:rgba(255,255,0,0.3);color:#000}
+::selection{background:rgba(255,255,0,0.3);color:#000}
+
+a::-moz-selection{background:rgba(255,255,0,0.3);color:#0645ad}
+a::selection{background:rgba(255,255,0,0.3);color:#0645ad}
+
+p{
+margin:1em 0;
+}
+
+img{
+max-width:100%;
+}
+
+h1,h2,h3,h4,h5,h6{
+font-weight:normal;
+color:#111;
+line-height:1em;
+}
+h4,h5,h6{ font-weight: bold; }
+h1{ font-size:2.5em; }
+h2{ font-size:2em; border-bottom:1px solid silver; padding-bottom: 5px; }
+h3{ font-size:1.5em; }
+h4{ font-size:1.2em; margin-bottom: 0px;}
+h5{ font-size:1em; margin-bottom: 0px;}
+h6{ font-size:0.9em; margin-bottom: 0px;}
+
+blockquote{
+color:#666666;
+margin:0;
+padding-left: 3em;
+border-left: 0.5em #EEE solid;
+}
+hr { display: block; height: 2px; border: 0; border-top: 1px solid #aaa;border-bottom: 1px solid #eee; margin: 1em 0; padding: 0; }
+
+
+pre , code, kbd, samp { 
+  color: #000; 
+  font-family: monospace; 
+  font-size: 0.88em; 
+  border-radius:3px;
+  background-color: #F8F8F8;
+  border: 1px solid #CCC; 
+}
+pre { white-space: pre; white-space: pre-wrap; word-wrap: break-word; padding: 5px;}
+pre code { border: 0px !important; }
+code { padding: 0 3px 0 3px; }
+
+b, strong { font-weight: bold; }
+
+dfn { font-style: italic; }
+
+ins { background: #ff9; color: #000; text-decoration: none; }
+
+mark { background: #ff0; color: #000; font-style: italic; font-weight: bold; }
+
+sub, sup { font-size: 75%; line-height: 0; position: relative; vertical-align: baseline; }
+sup { top: -0.5em; }
+sub { bottom: -0.25em; }
+
+ul, ol { margin: .5em 0; padding: 0 0 0 2em; }
+li p:last-child { margin:0 }
+dd { margin: 0 0 0 2em; }
+
+img { border: 0; -ms-interpolation-mode: bicubic; vertical-align: middle; }
+
+table { border-collapse: collapse; border-spacing: 0; }
+td { vertical-align: top; }
+
+@media only screen and (min-width: 480px) {
+body{font-size:14px;}
+}
+
+@media only screen and (min-width: 768px) {
+body{font-size:16px;}
+}
+
+@media print {
+  * { background: transparent !important; color: black !important; filter:none !important; -ms-filter: none !important; }
+  body{font-size:12pt; max-width:100%;}
+  a, a:visited { text-decoration: underline; }
+  hr { height: 1px; border:0; border-bottom:1px solid black; }
+  a[href]:after { content: " (" attr(href) ")"; }
+  abbr[title]:after { content: " (" attr(title) ")"; }
+  .ir a:after, a[href^="javascript:"]:after, a[href^="#"]:after { content: ""; }
+  pre, blockquote { border: 1px solid #999; padding-right: 1em; page-break-inside: avoid; }
+  tr, img { page-break-inside: avoid; }
+  img { max-width: 100% !important; }
+  @page :left { margin: 15mm 20mm 15mm 10mm; }
+  @page :right { margin: 15mm 10mm 15mm 20mm; }
+  p, h2, h3 { orphans: 3; widows: 3; }
+  h2, h3 { page-break-after: avoid; }
+}</style>
+</head>
+<body>
+
+<p><img src="http://delving.eu/sites/all/themes/delving_pool/logo.png"/></p>
+<h1>DELVING INSTANT (WEB-SEARCH) v1.0.5</h1>
+<p>The <strong>Delving Instant Web-search</strong> (DIW) is a javascript powered, stand-alone interface used for remotely querying a <strong>Delving CultureHub</strong> API.  The DIW has a configurable endpoint to which the queries are made and has many more configuration options to customize the outputted results to your own web environment.</p>
+<hr>
+<p><strong><em>IMPORTANT</em></strong>: <span class="highlight">This version of the DIW is not backwards compatible with older versions</span>. Major changes are:</p>
+<ul>
+<li>Api requests are returned in JSONP to adress major change in Safari on both OSX and iOs</li>
+<li>More fine-grained control over the layout is now possible. The initial results, facets and detail views of an item no longer share the same space (html element) on the page. Each
+section now has its own target html section. See the Setup example html and the <code><a href="#layout">layout</a></code> configuration for more details.</li>
+<li>Display of searchform(s) is now optional/configurable</li>
+<li>Option to sort facets alphabetically and numerically (by number of hits)</li>
+<li>Addition of a named state class in the body tag - allows for more fine-grained css control. See the &quot;Styling with css&quot; below.</li>
+</ul>
+<hr>
+<h5>jQuery</h5>
+<p>The DIW depends on jQuery to function. Currently the DIW is written to use jQuery version v1.7.2 which is included with the distribution.</p>
+<p><strong>IMPORTANT</strong> If your web environment also uses other libraries like prototype.js, be sure to include <code>&lt;script&gt;jQuery.noConflict();&lt;/script&gt;</code> after loading the DIW javascript files.</p>
+<h5>Styling with css</h5>
+<p>The DIW only needs one stylesheet to function properly: the delving-instant.core.css. Using the included bootstrap.css is optional. For the rest, the styling is completely up to you.</p>
+<p>Depending on what the DIW is doing, it will write its current state as a class name into the body tag. States are:</p>
+<ul>
+<li><strong>diw-init</strong> - The DIW is initialized, but no query has been performed;</li>
+<li><strong>diw-search-results</strong> - The DIW has performed an initial search request and is displaying the results;</li>
+<li><strong>diw-detail</strong> - The DIW is showing the detail view on a single search result;</li>
+</ul>
+<p>You can use these body classes to gain more fine-grained control over the layout.</p>
+<h5>Deep-Zoom</h5>
+<p>The DIW is capable of showing DeepZoom (.dzi) image tiles. It uses the OpenZoomViewer.swf (a flash file) as the default viewer. If the user&#39;s browser is not capable of using flash, then there is a fallback to the Seadragon javascript library which is included in the delving-instant-dependencies.js. More about deep-zoom <a href="#deep-zoom">here</a>.</p>
+<h2>Setup</h2>
+<ol>
+<li><p>Include the delving-instant.core.css in the head of your html document. You can also add the bootstrap.css for Twitter Bootstrap styling, and of course, your own custom stylsheet with which you can override any of the delving-instant.core.css or bootstrap.css styles. Always include your own custom stylesheet last in order for overrides to work.</p>
+</li>
+<li><p>Include the delving-instant-dependencies.js, delving-instant-core.js and delving-instant.config.js (in that order) at the end of your document before the <code>&lt;/body&gt;</code> tag.</p>
+</li>
+<li><p>Set the parameters in the delving-instant.config.js to reflect your pages structure, naming conventions and endpoint CultureHub settings. </p>
+</li>
+</ol>
+<p><strong><em>IMPORTANT</em></strong>: If you are not sure what to do with these parameters, please contact your CultureHub administrator.</p>
+<p>A basic html (html5) page running the Delving Instant should might look something like this:</p>
+<pre>
+&lt;!DOCTYPE HTML>
+&lt;html>
+&lt;head>
+    &lt;title>Delving Instant Website&lt;/title>
+    &lt;meta name="author" content="Delving B.V. http://www.delving.eu" />
+    &lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    &lt;link rel="stylesheet" type="text/css" media="all" href="css/delving-instant-core.css"/>
+    &lt;link rel="stylesheet" type="text/css" media="all" href="css/bootstrap.css"/>
+    &lt;link rel="stylesheet" type="text/css" media="all" href="css/delving-instant-custom.css" />
+&lt;/head>
+&lt;body>
+    &lt;div id="diw-search">&lt;!-- autogen search-form here -->&lt;/div>
+    &lt;div id="diw-advanced-search">&lt;!-- autogen search-form here -->&lt;/div>
+    &lt;div id="diw-query-info">&lt;!-- autogen query info here -->&lt;/div>
+    &lt;div class="diw-pagination">&lt;!-- autogen pagination here -->&lt;/div>
+        &lt;div id="diw-results-container">
+            &lt;div id="diw-facets">&lt;!-- autogen facets here -->&lt;/div>
+            &lt;div id="diw-results">&lt;!-- autogen results list or grid -->&lt;/div>
+        &lt;/div>
+        &lt;div id="diw-item-container">
+            &lt;div id="diw-item-media">&lt;!-- autogen image/deepzoom here -->&lt;/div>
+            &lt;div id="diw-item-data">&lt;!-- autogen item metadata here -->&lt;/div>
+            &lt;div id="diw-item-related">&lt;!-- autogen related items here -->&lt;/div>
+        &lt;/div>
+    &lt;div class="diw-pagination bottom">&lt;!-- autogen pagination here -->&lt;/div>
+    &lt;script src="js/jquery.min.js">&lt;/script>
+    &lt;script src="js/delving-instant-dependencies.min.js">&lt;/script>
+    &lt;script src="js/delving-instant-core.min.js">&lt;/script>
+    &lt;script src="js/delving-instant-config.js">&lt;/script>
+    &lt;!-- Use this if using other libraries like prototype.js -->
+    &lt;script>jQuery.noConflict();&lt;/script>
+&lt;/body>
+&lt;/html>
+</pre>  
+
+<p>All the html block level <code>div</code> elements you see above are placeholders for content generated by the DIW. The id&#39;s and classes used above are the default ones used by the DIW to know where to write different bits of information to. You can override these in the configuration for the DIW and associate your own block-level elements with DIW output. This is done in the <code><a href="#layout">layout</a></code> configuration option.</p>
+<h2>Configuration options</h2>
+<h3>An important note about configuration:</h3>
+<p>Some configuration options are in the form of <em>string arrays</em> and <em>object arrays</em></p>
+<h5>String array</h5>
+<pre>dataProvider: [
+    "dataprovider1", 
+    <span class="highlight">"dataprovider2"</span>
+]</pre>
+
+<h5>Object array</h5>
+<pre>itemFields: [
+    {name:"field_name_1",label:"Label 1 text"},
+    {name:"field_name_2",label:"Label 2 text"},
+    <span class="highlight">{name:"field_name_3",label:"Label 3 text"}</span>
+]</pre>
+
+<p>What is important to note here is that the <span class="highlight">last item</span> in the array is <span class="highlight">NOT followed by a comma</span>. Most browsers (if the last item does have a comma after it) will still interpret the data properly and the DIW will function as it should. But Internet Explorer will choke over this last comma. So please make sure that your configuration arrays are properly formatted.</p>
+<h4>configHelp (boolean)</h4>
+<p>With this set to true you will see an area on the top-right side of the page containing the following information:</p>
+<ul>
+<li>Link with URL to the actual search response</li>
+<li>List of available facets</li>
+<li>Link with URL to the item data</li>
+<li>List of available field names</li>
+<li>Possible field errors</li>
+</ul>
+<p>Note: Having configuration help turned on will slow down the response times of the application.</p>
+<p><strong><em>ATTENTION: If you have this set to <code>true</code> in your configuration make sure to disable it for production environments! </em></strong></p>
+<pre>configHelp: true|false</pre>
+
+<h4>usePushState (boolean - default: true)</h4>
+<p>The DIW takes advantage of the history pushState which visibly changes the URL in the location bar to perform search actions, but the actual page is not reloaded. This may cause issues in older browsers or certain CMS environments. You can force the page to physically reload by setting this configuration to <code>false</code></p>
+<pre>usePushState: true|false</pre>
+
+<h4>endPoint  (string) (mandatory)</h4>
+<p>Full base URL (incl. &#39;http://&#39;) for the API and NO trailing slash</p>
+<pre>endPoint: "http://playground.delving.org"</pre>
+
+<h4>orgId (string) (mandatory)</h4>
+<p>The system name of the organization under which the dataprovider is registered in the endpoint CultureHub</p>
+<pre>orgId: "delving"</pre>
+
+<h4>dataProviders (string array) (optional)</h4>
+<p>The name of the specific dataprovider to be queried. If excluded, all dataproviders are queried.</p>
+<pre>dataProvider: [
+    "dataprovider1", 
+    "dataprovider2"
+]</pre>
+
+<h4>collectionSpecs (string array)</h4>
+<p>The &#39;spec&#39; (system name) of the the specific collection you want to limit the queries to. If excluded, all collections are queried.</p>
+<pre>collectionSpecs: [
+    "spec-1", 
+    "spec-2"
+]</pre>
+
+<h4>rows (integer - default: 12)</h4>
+<p>Number of result items returned per page.</p>
+<pre>rows: 12</pre>
+
+<h4>useSimpleSearch (boolean - default: true)</h4>
+<p>Toggle the view of the of the simple search box. In some cases you may wish to create your own.</p>
+<!--
+####useSearchIn (boolean - default: false)
+todo...
+
+####searchInFields (object array)
+todo...
+-->
+
+<h4>useAdvancedSearch (boolean - default: false)</h4>
+<p>Setting this to <code>true</code> will activate the advanced search form. It is hidden by default, but a link will appear next to the basic
+search form where the visibility can be toggled.</p>
+<pre>useAdvancedSearch: true|false</pre>
+
+<h4>advancedSearchFields (object array)</h4>
+<p>Here you can set the list of fields to be used for the advanced search. These fields will be used to generate a dropdown from which users can
+select. If you are not sure which fields are applicable then contact your
+CultureHub administrator.</p>
+<pre>advancedSearchFields : [
+    {name: "dc_date", label: "Date"},
+    {name: "dc_title", label: "Title"},
+    {name: "dc_type", label: "Material"},
+    {name: "dc_subject", label: "Subject"}
+]</pre>
+
+<p><a id="layout"></a></p>
+<h4>layout (object)</h4>
+<p>Sets the html block level elements where you would like the DIW to write its output to.</p>
+<pre>layout: {
+    simpleSearchBlock: "#diw-search",
+    advancedSearchBlock: "#diw-advanced-search",
+    queryInfoBlock: "#diw-query-info",
+    paginationBlock: ".diw-pagination",
+    resultsBlock: "#diw-results",
+    facetsBlock: "#diw-facets",
+    itemMediaBlock: "#diw-item-media",
+    itemDataBlock: "#diw-item-data",
+    itemRelatedBlock: "#diw-item-related"
+},</pre>
+
+<p>The <code>simpleSearchBlock</code> is where the basic search form is written to.</p>
+<p>You can also create your own form to launch a DIW query (you may wish to be able to launch queries from other pages). All that is necessary is that the form&#39;s action parameter points to page containing the DIW files and that the text input&#39;s name attribute is set to &quot;query&quot; and the method to &quot;GET&quot;.</p>
+<pre>&lt;form method="get" action="your_diw_page">
+&lt;input type="text" name="query" required="true" />
+&lt;input type="submit" value="search"/>
+&lt;/form></pre>
+
+<p>Set the <code>useSimpleSearch</code> configuration to <em>false</em> if you want to create your own search form on the page.</p>
+<p>The <code>advancedSearchBlock</code> is where the advanced search form is written to.</p>
+<p>The <code>queryInfoBlock</code> is where the number of results and query crumbs are written to.</p>
+<p>The <code>paginationBlock</code> is where the pagination will be written. A class is used instead of an id because you may want to have two pagination areas (at the top and bottom of the page).</p>
+<p>The <code>resultsBlock</code> is where the search results are displayed.</p>
+<p>The <code>facetsBlock</code> is where the facets are displayed.</p>
+<p>The <code>itemMediaBlock</code> is where the item image (or zoom image) are shown.</p>
+<p>The <code>itemDataBlock</code> is where the items metadata fields are displayed.</p>
+<p>The <code>itemRelatedBlock</code> is where the related items are displayed.</p>
+<h4>resultsLayout (string - default: &quot;list&quot;)</h4>
+<p>You can choose one of two ways to render the initial results: &quot;grid&quot; or a &quot;list&quot;. The grid allows for a more visual experience but displays less metadata. The list option is visually less dynamic but will show more initial data (if available). </p>
+<pre>resultsLayout: "list"</pre>
+
+<h4>language (string - default: &quot;en&quot;)</h4>
+<p>Certain elements can be returned as internationalized fields (like the field names when viewing a single result item).<br/>
+<strong><em>NOTE</em></strong>: This will only function if you do <strong><em>not</em></strong> configure the <a href="#itemFields"><code>itemFields</code></a> block where you can supply your own label names. </p>
+<pre>language: "nl"</pre>
+
+<h4>itemId (string - default: &quot;diw-id&quot;)</h4>
+<p>URL parameter for linking to a single item. Made configurable to resolve eventual conflicts with web environments where the &quot;id&quot; parameter is already in use.</p>
+<pre>itemId: "diw-id"</pre>
+
+<h4>pageId (string - default: empty)</h4>
+<p>Name of the id parameter used to identify a page within an environment like Wordpress or Drupal. Set this inorder to maintain the page location on a hard refresh.</p>
+<pre>pageId: "page_id" </pre>
+
+<h4>textExpander (boolean - default: false)</h4>
+<p>Turn text-expansion on or off (defaults to false). If on, then maxCharacterResults and maxCharctersItems should be set</p>
+<pre>textExpander: true|false</pre>
+
+<h4>maxCharactersResults (integer - default: 500)</h4>
+<p>The maximum number of characters for fields within the initial results. If a field is longer, it will be collapsed after this many characters and a link to expand the text will be created.</p>
+<pre>maxCharactersResults: 250</pre>
+
+<h4>maxCharactersItems (integer - default: 1200)</h4>
+<p>The maximum number of characters of a returned field for a single item. If a field is longer, it will be collapsed after this many characters and a link to expand the text will be created.</p>
+<pre>maxCharactersItems: 750</pre>
+
+<h4>maxCharactersTitle (integer - default: 100)</h4>
+<p>For titles, the length is set separately because they are often in the form of html links. This fact makes them unusable with the text-expansion functionality.
+To still give you control over the maximum display length of this field, this parameter is supplied. The title&#39;s length will be limited to this many characters and then appended with ellipses.</p>
+<pre>maxCharactersTitle: 100</pre>
+
+<h4>thumbnailField (string - default &quot;delving_thumbnail&quot;)</h4>
+<p>The fieldname containing the thumbnail.</p>
+<pre>thumbnailField: "delving_thumbnail"</pre>
+
+<h4>thumbnailWidth (integer - default: 144)</h4>
+<p>Width (in pixels) for the images returned in the initial search results grid or list. This value adds the <code>width</code> parameter to the image. It can be overwritten by custom css if so desired.</p>
+<pre>thumbnailWidth: 200</pre>
+
+<p><a id="deep-zoom"></a></p>
+<h4>useDeepZoom (boolean - default: false)</h4>
+<p>If the data contains deep-zoom urls (.dzi) you can set this to <code>true</code> to activate the deep-zoom functionality.<br/>
+Default: false<br/>
+<strong><em>IMPORTANT</em></strong>: Merely setting this to <code>true</code> will not make the images zoomable. The metadata must contain functioning links to the deep-zoom tiles. The actual metadata field containing the deep-zoom uri can be configured <a href="#itemImageFields">here</a>.</p>
+<pre>useDeepZoom: false</pre>
+
+<h4>useFlashZoom (boolean - default: true)</h4>
+<p>By setting this to <code>true</code> deep-zoom images will be loaded into the OpenZoomViewer.swf included in the DIW. If the user&#39;s browser is not capable of using Flash the DIW will revert to using the Seadragon javascript deep-zoom library also included in the DIW dependencies file. For best
+results in Internet Explorer set this to <code>true</code></p>
+<pre>useFlashZoom: true|false</pre>
+
+<h4>deepZoomFlashFile (string)</h4>
+<p>The path to the OpenZoomViewer.swf file.</p>
+<pre>deepZoomFlashFile: "flash/OpenZoomViewer.swf"</pre>
+
+<h4>deepZoomControlImages (string)</h4>
+<p>The path to the Seadragon control panel images. 
+Defaults to: &quot;images/seadragon/&quot;</p>
+<pre>deepZoomControlImages: "path/to/deepzoomControlImages/"</pre>
+
+<h4>defaultImg (string)</h4>
+<p>Location of default image (used when search result&#39;s thumbnail cannot be found). Defaults to &quot;images/blank.png&quot;.</p>
+<pre>defaultImg: "path/to/img.png"</pre>
+
+<h4>collapseFacets (boolean)</h4>
+<p>When set to &#39;true&#39; the facets will only show the headers. When click will expand to show all facets under that header. Defaults to &#39;false&#39;</p>
+<pre>collapseFacets: true</pre>
+
+<h4>sortFacets (boolean)</h4>
+<p>Let the user sort facets alphabetically or numerically (by number of hits). Defaults to &#39;false&#39;</p>
+<pre>sortFacets: true</pre>
+
+<h4>customFacets (string array)</h4>
+<p>Array of custom facets defined in the Culture Hub index for a particular organization. Check with your CultureHub administrator which custom facet strings are available. </p>
+<pre>customFacets: [
+    "custom_facet_one",
+    "custom_facet_two",
+    "custom_facet_three"
+]</pre>
+
+<h4>displayFacets (object array)</h4>
+<p>List of facets to be displayed, and the label to display above the facet group. Facets are displayed in the order they are listed here.</p>
+<pre>displayFacets: [
+    {"name":"system_facet_one","label":"Facet one"},
+    {"name":"sytem_facet_two","label":"Facet two"},
+    {"name":"custom_facet_one","label":"Facet three"},
+    {"name":"system_facet_x","label":"Facet four"},
+    {"name":"custom_facet_three","label":"Facet five"}
+]</pre>
+
+<h4>resultFields (object array)</h4>
+<p>These are the fields that will be displayed on the initial search results (if &quot;list&quot; is set for <code>resultsLayout</code> - &quot;grid&quot; only shows a title and no other fields). You can leave the <code>label</code> empty if you only want to display the field value (usually for titles). Labels and values will appear in the order that you list them here. </p>
+<pre>resultFields: [
+    {name:"dc_title", label:""},
+    {name:"dc_creator", label:"Creator"},
+    {name:"dc_date", label:"Date"},
+    {name:"dc_subject", label:"Subject"},
+    {name:"dc_description", label:"Description"}
+],</pre>
+
+<p><a id="itemFields"></a></p>
+<h4>itemFields (object array)</h4>
+<p>List of field names to be displayed for the item view. If a field is not present in the returned meta-data it will not be displayed. Fields are displayed in the order they are listed. </p>
+<h5>Basic usage</h5>
+<pre>itemFields: [
+    {name:"field_name_1",label:"Label 1 text"},
+    {name:"field_name_2",label:"Label 2 text"},
+    {name:"field_name_3",label:"Label 3 text"},
+    {name:"field_name_4",label:"Label 4 text"},
+    {name:"field_name_5",label:"Label 5 text"},
+    {name:"field_name_6",label:"Label 6 text"}
+]</pre>
+
+<h5>Advanced usage</h5>
+<pre>itemFields: [
+    {name:"field_name_1",label:"Label 1 text"},
+    {name:"field_name_2",label:"Label 2 text", newQuery:true},
+    {name:"field_name_3",label:"Label 3 text"},
+    {name:"field_name_4",label:"Label 4 text", newQuery:true},
+    {name:"field_name_5",label:"Label 5 text"},
+    {name:"field_name_6",label:"Label 6 text"}
+]</pre>
+
+<p>The <code>newQuery</code> parameter will turn this field into a hyperlink which, when clicked, will launch a new query for that value.</p>
+<h4>alternativeFieldLabelsPerSpec</h4>
+<p>If querying multiple collections, you may wish to use different labels for the same fields. For example: both collections A and B display the dc_creator field. However, collection A is bibliographic data and the label should be &quot;Author&quot;, while collection B is photographic data and the label should be &quot;Photographer. To accomplish this you will need to know the &quot;spec&quot; of the dataset. Once you know the dataset spec you can define the alternative labels. These alternative labels will be shown in both the initial search results defined in <code>resultFields</code> (if &quot;list&quot; is set for <code>resultsLayout</code>) and for the fields show in the item detail view defined in the <code>itemFields</code>. </p>
+<pre>alternativeFieldLabelsPerSpec: [
+    {spec:"spec-a", fields:[
+        {name:"dc_creator", label:"Author"},
+        {name:"field_xyz, label:"abc"}
+
+    ]},
+    {spec:"spec-b", fields:[
+        {name:"dc_creator", label:"Photographer"}
+    ]}
+]</pre>
+
+<h4>alternativeFieldLabelsPerSpecTrigger</h4>
+<p>The field which distinguishes one collection from another. In most cases you will not have to set this and the default field is used. In some cases (merged collections) the default field will be the same for the collections involved. In this case you can supply an alternative field which will be used to distinguish between the collection. Note: this field must be present and unique in all collections. Contact your CultureHub administrator if you do not know what field to use.</p>
+<pre>alternativeFieldLabelsPerSpecTrigger: "field_name"</pre>
+
+<p><a id="itemImageFields"></a></p>
+<h4>itemImageFields (object)</h4>
+<p>The fields related to the item image. This is mainly for the thumbnail, regular image, deepzoomImage, and navigation thumbs when an object contains multiple images. This is also where the link to the item in its original context is rendered. Notice the &#39;imageAlt&#39;. Here you can supply an alternative field for the large image to display as a fall-back option if the &#39;image&#39; field is not available. This is usefull if you have configured the DIW to query mulitple collections that are not identically mapped.</p>
+<pre>itemImageFields: {
+    thumb:"europeana_object",
+    image:"europeana_isShownBy",
+    imageAlt:"europeana_object",
+    deepZoomUrl:"delving_deepZoomUrl",
+    externalLandingPage:"europeana_isShownAt"
+}</pre>
+
+<h4>showRelatedItems (boolean)</h4>
+<p>Setting this to true displays a list of items related to item currently being viewed.</p>
+<pre>showRelatedItems: false</pre>
+
+<h4>relatedItemsCount (integer)</h4>
+<p>The number of related items returned.</p>
+<pre>relatedItemsCount: 5</pre>
+
+<h4>dataOwner (string)</h4>
+<p>If related items are being returned from the api that are not part of the dataset you are querying, then you can set this extra filter. It takes the collection spec of the dataset you are querying. If you do not know the collections spec for the dataset you are querying then ask your Culturehub administrator.</p>
+<pre>dataOwner: "some-spec-here"</pre>
+
+<h3>Twitter Bootstrap</h3>
+<p>The DIW is &#39;bootstrapped&#39;; meaning that many of the functional html sections contain Twitter Bootstrap classes. By including a boostrap.css file you will get all the Twitter Bootstrap goodness. <strong><em>Note:</em></strong> include the bootsrap.css file AFTER the diw-core.css file to overwrite some of the bootsrap styles (particulary the image carousel) which is also defined in the delving-instant-core.css file. You can create your own custom bootstrap.css file here: 
+<a href="http://getbootstrap.com/2.3.2/" target="_blank">Twitter Bootstrap</a></p>
+<p>When customizing the bootstrap.css the following components should be checked:</p>
+<h5>Scaffolding</h5>
+<ul>
+<li>None</li>
+</ul>
+<h5>Base CSS:</h5>
+<ul>
+<li>Forms</li>
+<li>Buttons</li>
+</ul>
+<h5>Components</h5>
+<ul>
+<li>Button groups and dropdowns</li>
+<li>Navs, tabs and pills</li>
+<li>Breadcrumbs</li>
+<li>Pagination </li>
+<li>Thumbnails</li>
+<li>Media component</li>
+</ul>
+<h5>JS Components</h5>
+<ul>
+<li>Carousel</li>
+</ul>
+<h5>Miscellaneous</h5>
+<ul>
+<li>Utilities</li>
+</ul>
+<h5>Responsive</h5>
+<ul>
+<li>None</li>
+</ul>
+<p>None of the plugins need to be checked (The carousel plugin is already included in the delving-instant-dependencies.js)</p>
+ 
+
+</body>
+</html>

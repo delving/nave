@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+  {% load staticfiles  %}
+
+{% block breadcrumbs %}
+    <ul class="breadcrumb">
+        <li>
+            <a href="/">home</a>
+            <span class="separator">»</span>
+        </li>
+        <li>
+            <span class="active">Relfinder</span>
+        </li>
+    </ul>
+{% endblock %}
+
+{% block content %}
+
+    <h3>Relfinder</h3>
+
+    <div id="relfinder"></div>
+
+{% endblock %}
+
+{% block extra_js %}
+    <script type="text/javascript" src="{% static 'js/swfobject.js' %}"></script>
+    <script>
+        $(function() {
+            var relViewer = $('#relfinder');
+            $(function(){
+                if (swfobject.hasFlashPlayerVersion("7")) {
+                    var flashvars = {};
+                    var params = {
+                        'allowfullscreen': 'true',
+                        'allowscriptaccess': 'always',
+                        'wmode': 'transparent'
+                    };
+                    var attributes = {
+                        'id': 'relfinder',
+                        'name': 'relfinder'
+                    };
+                    swfobject.embedSWF('/static/relfinder/RelFinder.swf', 'relfinder', '100%', '100%', '7', 'false', flashvars, params, attributes);
+                } else {
+                    relViewer.hide();
+                }
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block extra_css %}
+    <style type="text/css">
+        #relfinder {
+            height: 600px;
+        }
+    </style>
+{% endblock %}

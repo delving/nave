@@ -1,0 +1,7 @@
+{% load i18n   staticfiles  leaflet_tags urls_tags %}
+
+{% if data.items %}
+    {% leaflet_map "ds-map" %}
+{% else %}
+    <h3>{% trans 'No search results' %}</h3>
+{% endif %}

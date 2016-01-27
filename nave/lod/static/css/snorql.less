@@ -1,0 +1,80 @@
+@white: #ffffff;
+@black: #000000;
+@red: #d00b01;
+
+@gray-darker:            lighten(#000, 13.5%); // #222
+@gray-dark:              lighten(#000, 20%);   // #333
+@gray:                   lighten(#000, 33.5%); // #555
+@gray-light:             lighten(#000, 60%);   // #999
+@gray-lighter:           lighten(#000, 87.5%); // #eee
+
+.navbar-snorql {
+  color: @white;
+}
+
+.CodeMirror {
+  font-size: 1em;
+  border: 1px solid @gray-lighter;
+  text-align: left;
+  background: white;
+  height: 195px
+}
+
+.CodeMirror-scroll {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: auto;
+  width: 100%;
+}
+
+div.scroll {
+  background: #fff;
+  height: 500px;
+  width: 100%;
+  overflow: auto;
+  border: 1px solid @gray-lighter;
+  padding: 8px;
+  margin: 20px 0px 0px 0px;
+  text-align: left;
+}
+
+.queryresults {
+  border-collapse: collapse;
+}
+
+.queryresults td, .queryresults th {
+  padding: 4px 6px;
+  vertical-align: top;
+}
+
+.unbound {
+  color: #888;
+}
+
+.queryresults a small {
+  font-size: 100%;
+  color: #55a;
+}
+
+.queryresults small {
+  font-size: 100%;
+//  color: #666;
+}
+
+.queryresults .property {
+  white-space: nowrap;
+}
+
+.queryresults th {
+  background: @gray-darker;
+  color: @gray-lighter;
+}
+
+.queryresults .odd td {
+  background: @white;
+}
+
+.queryresults .even td {
+  background: @gray-lighter;
+}
+

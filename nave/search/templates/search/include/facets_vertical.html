@@ -1,0 +1,32 @@
+{% if data.user_query.num_found > 0 %}
+    {#############################################################}
+    {# FACETS                                                    #}
+    {#############################################################}
+    <div class="facets" id="js-results-facets">
+        {% for facet in data.facet_list %}
+            {% if facet.facet_link.links %}
+                <div class="facet-container" id="{{ facet.facet_link.name }}">
+                    <div class="facet-header">
+                        {{ facet.label }}
+                                <span class="facet-tools">
+                                    <a href="" class="sort sort-alpha" data-sort-type="value" data-id="{{ facet.facet_link.name }}"  data-text-ascending="A-Z" data-text-descending="Z-A"><i class="fa fa-sort"></i> <span>A-Z</span></a>
+                                    <a href="" class="sort sort-numeric" data-sort-type="count" data-id="{{ facet.facet_link.name }}" data-text-ascending="0-9" data-text-descending="9-0"><i class="fa fa-sort"></i> <span>0-9</span></a>
+                                </span>
+                    </div>
+                    <div class="facet-body">
+                        <ul class="list-unstyled list-facets">
+                            {% for term in facet.facet_link.links %}
+                                <li data-value="{{ term.value  }}" data-count="{{ term.count }}">
+                                    <a href="{{ term.link }}" class="facet-link" >
+                                        <i class="fa fa-fw {% if not term.is_selected %}fa-square-o{% else %}fa-check-square{% endif %}"></i>
+                                        {{ term.value }} ({{ term.count }})
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+{% endif %}

@@ -1,0 +1,418 @@
+{% extends "base.html" %}
+
+{% load staticfiles i18n dataset_tags leaflet_tags %}
+
+{% block extra_css %}
+    {% leaflet_css %}
+    <link rel="stylesheet" href="{% static "css/fullscreen.css" %}"/>
+    <link rel="stylesheet" href="{% static "css/lod-detail.css" %}"/>
+    <link rel="stylesheet" href="{% static "css/search.css" %}"/>
+{% endblock %}
+
+{% block prefixes %}
+    {% for prefix, uri in namespaces %}
+        xmlns:{{ prefix }}="{{ uri }}"
+    {% endfor %}
+{% endblock %}
+
+{% block breadcrumbs %}
+    <ul class="breadcrumb">
+        <li>
+            <a href="/">{% trans 'Home' %}</a>
+        </li>
+        <li>
+            {% if '/search/' in request.META.HTTP_REFERER %}
+                <a href="{{ request.META.HTTP_REFERER }}">
+                    {% trans 'Search' %}
+                </a>
+            {% else %}
+                <a href="/search/">{% trans 'Search' %}</a>
+            {% endif %}
+        </li>
+        <li>
+            <span>{% detail_field 'dc_title' show_predicate=False word_limit=25 value_only=True %}</span>
+        </li>
+    </ul>
+{% endblock %}
+
+
+{% block content_above_wrapper %}{% endblock %}
+
+{% block content %}
+
+    {#############################################################}
+    {# RETURN TO RESULTS BUTTON                                  #}
+    {#############################################################}
+    {% if '/search/' in request.META.HTTP_REFERER %}
+        <a class="btn btn-default" href="{{ request.META.HTTP_REFERER }}" id="btn-back">
+            <i class="fa fa-hand-o-left"></i>&#160;{% trans 'Return to results' %}
+        </a>
+        <hr/>
+    {% elif  '/page/' in request.META.HTTP_REFERER %}
+        {# use history.back() instead of the HTTP_REFERER to get rid of '/page/' in referrer #}
+        <a class="btn btn-default" id="btn-back" onclick="history.back();">
+            <i class="fa fa-hand-o-left"></i>&#160;{% trans 'Return to previous object' %}
+        </a>
+        <hr/>
+    {% endif %}
+
+
+    {#############################################################}
+    {# TITLE                                                     #}
+    {#############################################################}
+    {% detail_field 'dc_title' show_predicate=False word_limit=25 surround="h1" %}
+
+    {#############################################################}
+    {# DESCRIPTION                                               #}
+    {#############################################################}
+    {% detail_field 'dc_description' label=_('dc_description') word_limit=200 show_predicate=False surround="blockquote" allow_html=True %}
+
+    <div role="tabpanel" class="navigator-tabs">
+    {#############################################################}
+    {# TAB/PILL BUTTONS                                          #}
+    {#############################################################}
+    <ul class="nav nav-pills" role="tablist">
+        {% if content_template %}
+            <li>
+                <a href="#tab-content" role="tab" data-toggle="tab">{% trans 'Content' %}</a>
+            </li>
+        {% endif %}
+        <li>
+            <a href="#tab-properties" role="tab" data-toggle="tab">{% trans 'Properties' %}</a>
+        </li>
+        {% if graph_stats.items %}
+            <li>
+                <a href="#tab-statistics" role="tab" data-toggle="tab">{% trans 'Statistics' %}</a>
+            </li>
+        {% endif %}
+        {% if web_resources %}
+            <li><a href="#tab-media" role="tab" data-toggle="tab">{% trans 'Media' %}</a></li>
+        {% endif %}
+        {% if points %}
+            <li><a href="#tab-geo" role="tab" data-toggle="tab" id="click-map">{% trans 'Map' %}</a></li>
+        {% endif %}
+        {% if skos_links %}
+            <li><a href="#tab-related" role="tab" data-toggle="tab" id="click-related">{% trans 'Related' %}</a></li>
+        {% endif %}
+    </ul>
+    <div class="tab-content">
+
+
+        {#############################################################}
+        {# CONTENT - CORE METADATA                                   #}
+        {#############################################################}
+        {% if content_template %}
+            {% include content_template %}
+        {% endif %}
+
+        {#############################################################}
+        {# PROPERTIES WITH INLINES                                   #}
+        {#############################################################}
+        <div role="tabpanel" class="tab-pane" id="tab-properties">
+            <h4 class="detail-header">
+                {% trans 'Properties' %}
+                <div class="tools">
+                    <label><input type="checkbox"
+                                  id="display-predicate-uri-label">&#160;&#160;{% trans 'Display predicate uris' %}
+                    </label>
+                    {#                        <label><input type="checkbox" id="display-link-context">&#160;&#160;{% trans 'Display link context' %}</label>#}
+                    <a class="btn btn-xs btn-primary" href="{{ about }}.n3" target="_blank"><i
+                            class="fa fa-download fa-fw"></i> ntriples</a>
+                    <a class="btn btn-xs btn-primary" href="{{ about }}.ttl" target="_blank"><i
+                            class="fa fa-download fa-fw"></i> turtle</a>
+                    <a class="btn btn-xs btn-primary" href="{{ about }}.rdf" target="_blank"><i
+                            class="fa fa-download fa-fw"></i> rdf/xml</a>
+                    <a class="btn btn-xs btn-primary" href="{{ about }}.json-ld" target="_blank"><i
+                            class="fa fa-download fa-fw"></i> json-ld</a>
+                </div>
+            </h4>
+            <div class="row" id="properties">
+                <div class="col-sm-12">
+                    {% render_properties items=items resources=resources %}
+                </div>
+
+            </div>
+
+        </div>
+
+        {#############################################################}
+        {# STATISTICS                                                #}
+        {#############################################################}
+        {% if graph_stats.items %}
+            <div role="tabpanel" class="tab-pane" id="tab-statistics">
+                <div class="facets row">
+                    {% for label, stats in graph_stats.items %}
+                        <div class="col-md-3">
+                            <div class="facet-header">{{ label }}</div>
+                            <div class="facet-body">
+                                <ul class="key-value-list">
+                                    {% for key, val in stats %}
+                                        <li>{{ key }}: {{ val }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        {#############################################################}
+        {# MAP GEO                                                   #}
+        {#############################################################}
+        {% if points %}
+            <div role="tabpanel" class="tab-pane" id="tab-geo">
+                {% leaflet_map "navigator-map" callback="window.map_init" %}
+            </div>
+        {% endif %}
+
+        {#############################################################}
+        {# MEDIA OBJECTS                                             #}
+        {#############################################################}
+        {% if web_resources %}
+            <div role="tabpanel" class="tab-pane" id="tab-media">
+                <div class="media-data-carousel">
+                    <div id="carousel-example-generic" class="carousel slide" data-ride="carousel">
+                        <div class="carousel-inner" role="listbox">
+                            {% static "" as baseUrl %}
+                            {% for item in web_resources %}
+                                <div class="item {% if forloop.first %}active{% endif %}"
+                                     data-index="{{ forloop.counter }}">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            {% if item.mime_type == 'image/jpeg' %}
+                                                {% if item.deepzoom %}
+                                                    <div class="deepzoom-viewer"
+                                                         id="deep-zoom-viewer-{{ forloop.counter }}"
+                                                         data-deepzoom-uri="{{ item.deepzoom }}">test
+                                                    </div>
+                                                {% else %}
+                                                    <img src="{{ item.thumbnail }}" alt="{{ item.metadata.dc_title }}">
+                                                {% endif %}
+                                            {% elif item.mime_type == 'audio/wav' %}
+                                                <div class="audio-container">
+                                                    <audio controls="controls">
+                                                        <source src="{% static item.source_uri %}"/>
+                                                    </audio>
+                                                </div>
+                                            {% elif item.mime_type == 'video/mp4' %}
+                                                <div class="video-container">
+                                                    <video width="320" height="240" controls>
+                                                        <source src="{% static item.source_uri %}" type="video/mp4">
+                                                        Your browser does not support the video tag.
+                                                    </video>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="carousel-caption">
+                                                <dl class="detail-list">
+                                                    {% if item.metadata.dc_title %}
+                                                        <dt>{% trans 'dc_title' %}</dt>
+                                                        <dd>{{ item.metadata.dc_title }}</dd>
+                                                    {% endif %}
+                                                    {% if item.metadata.dc_creator %}
+                                                        <dt>{% trans 'dc_creator' %}</dt>
+                                                        <dd>{{ item.metadata.dc_creator }}</dd>
+                                                    {% endif %}
+                                                    {% if item.metadata.dc_rights %}
+                                                        <dt>{% trans 'dc_rights' %}</dt>
+                                                        <dd>{{ item.metadata.dc_rights }}</dd>
+                                                    {% endif %}
+                                                </dl>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Controls -->
+                        <a class="left carousel-control" href="#carousel-example-generic" role="button"
+                           data-slide="prev">
+                            <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+                            <span class="sr-only">Previous</span>
+                        </a>
+                        <a class="right carousel-control" href="#carousel-example-generic" role="button"
+                           data-slide="next">
+                            <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+                            <span class="sr-only">Next</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        {#############################################################}
+        {# RELATED                                                   #}
+        {#############################################################}
+
+        <div role="tabpanel" class="tab-pane" id="tab-related">
+            <div id="related-results"></div>
+        </div>
+
+    </div><!-- end role tabpanel -->
+
+    {#############################################################}
+    {# MODAL/LIGHTBOX FOR LINK FORM                              #}
+    {#############################################################}
+
+    <div class="modal fade" id="lod-form">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="PUT" action="" name="lod-link-form">
+                    <input type="hidden" name="spec" value="{{ spec.goes.here }}"/>
+                    <input type="hidden" name="literal_value" value=""/>
+                    <input type="hidden" name="literal_property" value=""/>
+
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">LOD Link Form</h4>
+                    </div>
+                    <div class="modal-body">
+                        <span class="current-fieldname">lod fieldname</span>:
+                        <span class="current-literal">lod literal</span>
+                        <hr/>
+                        <label for="lod-form-link">lod link</label>
+                        <input type="text" class="form-control" placeholder="URL link here" name="source_uri"/>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary">Save changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {#############################################################}
+    {# MODAL/LIGHTBOX FOR LINK VALUE DISPLAY                     #}
+    {#############################################################}
+
+    <div class="modal fade" id="lod-data">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">
+                        <span class="current-fieldname">lod fieldname</span>:
+                        <span class="current-literal">lod literal</span>
+                    </h4>
+                </div>
+                <div class="modal-body" id="modal-data">
+                    {% detail_field 'edm_dataProvider' multiple=True label=_('edm_dataProvider') %}
+                    <div id="linked-data-container">
+                        {#############################################################}
+                        {# filled via ajax call l.401                                #}
+                        {#############################################################}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+
+{% block content_below_wrapper %}{% endblock %}
+
+{% block extra_js %}
+    <script type="text/javascript" src="{% static 'js/jquery.fullsizable.2.0.2.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/swfobject.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/imageLiquid.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/LodView.js' %}"></script>
+
+    <script>
+        {# set ajax cache to true so that files like swfobject.js that is being called in #}
+        {# LodView.loadDeepZoom is only loaded once                                       #}
+        $.ajaxSetup({
+            cache: true
+        });
+        $(document).ready(function () {
+            {#############################################################}
+            {# do on document ready                                      #}
+            {#############################################################}
+            LodView.initNavTabs();
+            LodView.initFullscreen();
+            LodView.initProperties();
+            {#############################################################}
+            {# do after clicking on caret for query tools                #}
+            {#############################################################}
+            $('.field-query-tools').find('.toggle').on('click', function (e) {
+                $(this).next().toggleClass('on');
+            });
+            {#############################################################}
+            {# do after clicking on linked term                          #}
+            {#############################################################}
+            $('.js-lod-data-link').on('click', function (e) {
+                LodView.initLinkedPropertiesModal(e, $(this));
+            });
+            {#############################################################}
+            {# do after clicking on map tab                              #}
+            {#############################################################}
+            $('#click-map').on('click', function () {
+                LodView.initGeo({{ points }});
+            });
+            {#############################################################}
+            {# do after clicking on related tab                          #}
+            {#############################################################}
+            $('#click-related').on('click', function () {
+                LodView.initRelated("{{ source_uri|urlencode }}");
+            });
+            {#############################################################}
+            {# launch modal with form to add link                        #}
+            {# todo: is this still being used??                          #}
+            {#############################################################}
+            {#                $('.js-lod-form-link').on('click', function () {#}
+            {#                    $('.current-fieldname').html($(this).attr('data-current-fieldname'));#}
+            {#                    $('.current-literal').html($(this).attr('data-current-literal'));#}
+            {##}
+            {#                    $('input[name=literal_property]').val($(this).attr('data-current-fieldname'));#}
+            {#                    $('input[name=literal_value]').val($(this).attr('data-current-literal'));#}
+            {#                });#}
+            {#############################################################}
+            {# is there deepzoom, if so then do this                     #}
+            {#############################################################}
+            {#                if($('#deep-zoom-viewer-1').length){#}
+            {#                    var viewerName = 'deep-zoom-viewer-1';#}
+            {#                    var viewerObj = $('#deep-zoom-viewer-1');#}
+            {#                    var zoomUri = viewerObj.attr('data-deepzoom-uri');#}
+            {#                    LodView.loadDeepZoom(viewerName, zoomUri);#}
+            {#                    $('.carousel').carousel({#}
+            {#                        interval: false,#}
+            {#                        wrap:false#}
+            {#                    }).on('slide.bs.carousel', function (e) {#}
+            {#                        viewerName = 'deep-zoom-viewer-'+$(e.relatedTarget).attr('data-index');#}
+            {#                        viewerObj = $('#deep-zoom-viewer-'+$(e.relatedTarget).attr('data-index'));#}
+            {#                        if (typeof viewerObj == "undefined") {#}
+            {#                            // no view object...#}
+            {#                        }#}
+            {#                        zoomUri = viewerObj.attr('data-deepzoom-uri');#}
+            {#                        LodView.loadDeepZoom(viewerName, zoomUri);#}
+            {#                    });#}
+            {#                };#}
+        });
+    </script>
+
+    {% if points %}
+        <!-- leaflet -->
+        {% leaflet_js %}
+        <script type="text/javascript" src="{% static 'js/leaflet/leaflet.label-src.js' %}"></script>
+
+        <script>
+            var tiles = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {maxZoom: 16});
+            var map = L.map('navigator-map', {layers: [tiles]});
+            // add markers
+            var marker = [
+                {% for coor in points %}
+                    //todo: add data to marker popup
+                    L.marker([{{ coor.0 }}, {{ coor.1 }}]).addTo(map).bindPopup(""),
+                {% endfor %}
+            ];
+        </script>
+
+    {% endif %}
+{% endblock %}

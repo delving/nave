@@ -1,0 +1,312 @@
+/**
+ * MARGIN SHORTCUTS
+ * these are shortcuts to the margin-{side} CSS property
+ */
+/**
+ * MARGIN - H / V
+ * these are shortcuts to set only horizontals or vertical margins without alter existing rules
+ * you can use these mixins with one value applied to the left/right, top/bottom margins or
+ * you can use them with separated values
+ */
+/**
+ * PADDING SHORTCUTS
+ * these are shortcuts to the padding-{side} CSS property
+ */
+/**
+ * PADDING - H / V
+ * these are shortcuts to set only horizontals or vertical paddings without alter existing rules
+ * you can use these mixins with one value applied to the left/right, top/bottom paddings or
+ * you can use them with separated values
+ */
+/**
+  * TRANSPARENT BACKGROUND COLOR
+  * this mixin will set the opacity level of the background color of a block level element
+  * pass the color as hex, and the mixin will create the rgba values.
+  */
+/* GRID GENERATOR */
+/* Base page styles */
+.query-info .count {
+  color: #999;
+}
+.query-tags {
+  margin-bottom: 20px;
+}
+.result-tools {
+  clear: both;
+  margin-bottom: 20px;
+}
+.result-tools .pagination,
+.result-tools .form-pager,
+.result-tools .view-switcher {
+  display: inline-block;
+  margin: 0 0 -6px 0;
+  padding: 0 0 0 0;
+}
+.result-tools .form-pager {
+  width: 180px;
+}
+.result-tools .form-pager .input-group-addon {
+  background: #555555;
+  color: #ffffff;
+}
+.result-tools .form-pager input {
+  border: none;
+  color: #999;
+  height: auto;
+  padding-left: 10px;
+  padding-rigth: 5px;
+}
+.result-tools .form-pager .btn {
+  border: none;
+}
+.result-tools .select-rows {
+  font-family: Rijkserif;
+  font-style: italic;
+  margin-top: 15px;
+  color: #707070;
+}
+.result-tools .select-rows .selected {
+  font-weight: bold;
+  color: #000000;
+}
+.result-tools .select-rows a {
+  color: #707070;
+}
+.facets-horizontal {
+  clear: both;
+  display: block;
+  margin-bottom: 20px;
+}
+.facets-horizontal .scrollable-menu {
+  height: auto;
+  max-height: 250px;
+  overflow-x: hidden;
+}
+.facets-horizontal .btn-facets {
+  *zoom: 1;
+  display: block;
+}
+.facets-horizontal .btn-facets:before,
+.facets-horizontal .btn-facets:after {
+  content: "";
+  display: table;
+}
+.facets-horizontal .btn-facets:after {
+  clear: both;
+}
+.facets-horizontal .btn-facets span {
+  float: left;
+}
+.facets-horizontal .btn-facets i {
+  float: right;
+}
+.results-grid-item {
+  margin-bottom: 20px;
+}
+.results-grid-item .media {
+  border: 1px solid #eee;
+  min-height: 100px;
+  text-align: center;
+}
+.results-grid {
+  margin-left: -10px;
+  margin-right: -10px;
+}
+.results-grid .results-grid-item-container {
+  position: relative;
+  min-height: 1px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+@media (min-width: 992px) {
+  .results-grid .results-grid-item-container {
+    float: left;
+    width: 25%;
+  }
+}
+/* THIS CREATES THE POINTER ABOVE THE FOLDOUT */
+.results-grid .current a.result-item-link::after {
+  border: solid transparent;
+  content: " ";
+  height: 0;
+  width: 0;
+  position: absolute;
+  bottom: 0px;
+  pointer-events: none;
+  border-bottom-color: #EAEAEA;
+  border-width: 15px;
+  left: 50%;
+  margin: -19px 0 0 -15px;
+  z-index: 1000;
+}
+a.result-item-link {
+  color: #666;
+  display: block;
+}
+a.result-item-link:hover {
+  background: #eee;
+  text-decoration: none;
+}
+#map-tab {
+  width: 100%;
+  height: 100%;
+}
+.meta {
+  padding: 4px 8px;
+}
+.meta .title {
+  color: #444444;
+  font-weight: bold;
+}
+.meta .creator {
+  color: #848484;
+  font-style: italic;
+  font-size: .8em;
+}
+.meta .date {
+  color: #848484;
+  font-size: .8em;
+}
+.meta .provider {
+  color: #c3c3c3;
+  font-size: .8em;
+}
+.result-item-foldout {
+  min-height: 350px;
+  margin-bottom: 20px;
+}
+.result-item-foldout .close {
+  color: #000000;
+  font-family: Verdana;
+  font-weight: 100;
+  opacity: 1;
+}
+.result-item-foldout .result-item-detail {
+  background: #ddd;
+  min-height: 350px;
+  padding: 20px;
+  height: 100%;
+}
+.result-item-foldout .btn-goto-detail {
+  background: #ccc;
+  border: 1px solid #bbb;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.facet-container {
+  margin-bottom: 10px;
+  vertical-align: top;
+}
+.facet-header {
+  font-size: 1.15em;
+  font-weight: bold;
+  border-bottom: 1px solid #ddd;
+}
+.facet-tools {
+  padding: 2px 0;
+  float: right;
+  font-weight: normal;
+  font-size: .8em;
+}
+.facet-tools .sort {
+  background: #ddd;
+  font-size: smaller;
+  padding: 2px 4px;
+}
+.facet-body {
+  font-size: .90em;
+  max-height: 150px;
+  overflow-y: auto;
+}
+.facet-body li a {
+  display: table-row;
+  word-break: break-all;
+}
+.facet-body li a i {
+  display: table-cell;
+  padding-right: 4px;
+}
+.ds-header,
+.ds-sub-header {
+  border-bottom: 1px solid #ddd;
+  font-weight: bold;
+  margin: 0 0 10px 0;
+  padding: 0 0 4px 0;
+}
+.ds-sub-header {
+  border-bottom: 1px solid #ddd;
+  color: #666;
+}
+.ds-field {
+  display: block;
+  margin-bottom: 0px;
+  -ms-word-break: break-all;
+  /* Be VERY careful with this, breaks normal words wh_erever */
+  word-break: break-all;
+  /* Non standard for webkit */
+  word-break: break-word;
+  -webkit-hyphens: auto;
+  -moz-hyphens: auto;
+  hyphens: auto;
+}
+.ds-field label {
+  display: block;
+  color: #888;
+  margin: 0 0 0 0;
+}
+.ds-field label.inline {
+  display: inline-block;
+}
+.ds-field-value {
+  display: block;
+  margin-left: 10px;
+}
+.field-tools {
+  display: inline-block;
+  vertical-align: middle;
+}
+.field-tools .label {
+  display: inline-block;
+  -webkit-border-radius: 0px;
+  -moz-border-radius: 0px;
+  border-radius: 0px;
+  font-weight: normal;
+}
+.field-tools i {
+  margin-top: 2px;
+}
+.ds-list dt {
+  color: #888;
+}
+.ds-list dd {
+  margin-bottom: 4px;
+}
+.ds-list-inline {
+  margin: 20px 0 0 0;
+  padding: 0;
+  list-style: none;
+}
+.ds-list-inline li {
+  float: left;
+  margin-bottom: 20px;
+}
+#ds-media-objects .tab-content {
+  min-height: 150px;
+}
+#ds-deep-zoom-viewer {
+  background: #000;
+  min-height: 300px;
+}
+#ds-map {
+  min-height: 450px;
+}
+.cluster-icon,
+.leaflet-div-icon,
+.marker-cluster {
+  background-color: rgba(181, 226, 140, 0.6);
+  font-size: 10px;
+  opacity: .75;
+  padding: 3px;
+  text-align: center;
+}

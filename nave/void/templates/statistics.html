@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% load i18n cstaticfiles %}
+
+{% block breadcrumbs %}
+    <ul class="breadcrumb">
+        <li>
+            <a href="/">{% trans 'home' %}</a>
+            <span class="separator">»</span>
+        </li>
+        <li>
+            <span class="active">{% trans 'statistics' %}</span>
+        </li>
+    </ul>
+{% endblock breadcrumbs%}
+
+{% block content %}
+
+    <h1>Statistics</h1>
+
+    <div role="tabpanel">
+        <ul class="nav nav-pills" role="tablist">
+            <li role="presentation" class="active">
+                <a href="#stats1" role="tab" data-toggle="tab">Stats 1</a>
+            </li>
+            <li role="presentation">
+                <a href="#stats2" role="tab" data-toggle="tab">Stats 2</a>
+            </li>
+            <li role="presentation">
+                <a href="#stats3" role="tab" data-toggle="tab">Stats 3</a>
+            </li>
+            <li role="presentation">
+                <a href="#stats4" role="tab" data-toggle="tab">Stats 4</a>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            <div role="tab-panel" class="tab-pane active" id="stats1">
+                <h3>Stats 1</h3>
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th>Field One</th>
+                        <th>Field Two</th>
+                        <th>Field Three</th>
+                        <th>Field Four</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for i in "123456789" %}
+                        <tr>
+                            <td>Row {{ i }} Value 1</td>
+                            <td>Row {{ i }} Value 2</td>
+                            <td>Row {{ i }} Value 3</td>
+                            <td>Row {{ i }} Value 5</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div role="tab-panel" class="tab-pane" id="stats2">
+                <h3>Stats 2</h3>
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th>Field One</th>
+                        <th>Field Two</th>
+                        <th>Field Three</th>
+                        <th>Field Four</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for i in "123456789" %}
+                        <tr>
+                            <td>Row {{ i }} Value 1</td>
+                            <td>Row {{ i }} Value 2</td>
+                            <td>Row {{ i }} Value 3</td>
+                            <td>Row {{ i }} Value 5</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div role="tab-panel" class="tab-pane" id="stats3">
+                <h3>Stats 3</h3>
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th>Field One</th>
+                        <th>Field Two</th>
+                        <th>Field Three</th>
+                        <th>Field Four</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for i in "123456789" %}
+                        <tr>
+                            <td>Row {{ i }} Value 1</td>
+                            <td>Row {{ i }} Value 2</td>
+                            <td>Row {{ i }} Value 3</td>
+                            <td>Row {{ i }} Value 5</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div role="tab-panel" class="tab-pane" id="stats4">
+                <h3>Stats 4</h3>
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th>Field One</th>
+                        <th>Field Two</th>
+                        <th>Field Three</th>
+                        <th>Field Four</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for i in "123456789" %}
+                        <tr>
+                            <td>Row {{ i }} Value 1</td>
+                            <td>Row {{ i }} Value 2</td>
+                            <td>Row {{ i }} Value 3</td>
+                            <td>Row {{ i }} Value 5</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+
+
+{% endblock content %}

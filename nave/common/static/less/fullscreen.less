@@ -1,0 +1,65 @@
+/* fullscreen image */
+@fullscreen-background: #222;
+.viewer-fullscreen {
+  background: @fullscreen-background;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  height: 100;
+  text-align: center;
+  img {
+    max-height: 100% !important;
+  }
+}
+
+
+#jquery-fullsizable {
+  display: none;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #000;
+  z-index: 999;
+}
+
+#jquery-fullsizable.fullsized_spinner {
+  background-image: url(data:image/gif;base64,R0lGODlhEAAQAPIAAAAAAP///zw8PLy8vP///5ycnHx8fGxsbCH+GkNyZWF0ZWQgd2l0aCBhamF4bG9hZC5pbmZvACH5BAAKAAAAIf8LTkVUU0NBUEUyLjADAQAAACwAAAAAEAAQAAADMwi63P4wyklrE2MIOggZnAdOmGYJRbExwroUmcG2LmDEwnHQLVsYOd2mBzkYDAdKa+dIAAAh+QQACgABACwAAAAAEAAQAAADNAi63P5OjCEgG4QMu7DmikRxQlFUYDEZIGBMRVsaqHwctXXf7WEYB4Ag1xjihkMZsiUkKhIAIfkEAAoAAgAsAAAAABAAEAAAAzYIujIjK8pByJDMlFYvBoVjHA70GU7xSUJhmKtwHPAKzLO9HMaoKwJZ7Rf8AYPDDzKpZBqfvwQAIfkEAAoAAwAsAAAAABAAEAAAAzMIumIlK8oyhpHsnFZfhYumCYUhDAQxRIdhHBGqRoKw0R8DYlJd8z0fMDgsGo/IpHI5TAAAIfkEAAoABAAsAAAAABAAEAAAAzIIunInK0rnZBTwGPNMgQwmdsNgXGJUlIWEuR5oWUIpz8pAEAMe6TwfwyYsGo/IpFKSAAAh+QQACgAFACwAAAAAEAAQAAADMwi6IMKQORfjdOe82p4wGccc4CEuQradylesojEMBgsUc2G7sDX3lQGBMLAJibufbSlKAAAh+QQACgAGACwAAAAAEAAQAAADMgi63P7wCRHZnFVdmgHu2nFwlWCI3WGc3TSWhUFGxTAUkGCbtgENBMJAEJsxgMLWzpEAACH5BAAKAAcALAAAAAAQABAAAAMyCLrc/jDKSatlQtScKdceCAjDII7HcQ4EMTCpyrCuUBjCYRgHVtqlAiB1YhiCnlsRkAAAOwAAAAAAAAAAAA==);
+  background-position: 50% 50%;
+  background-repeat: no-repeat;
+}
+
+#jquery-fullsizable #fullsized_image_holder img {
+  display: block;
+  margin: 0 auto;
+}
+
+#fullsized_go_prev, #fullsized_go_next, #fullsized_close, #fullsized_fullscreen {
+  position: absolute;
+  top: 50%;
+  display: block;
+  width: 30px;
+  height: 30px;
+  background-color: @fullscreen-background;
+}
+#fullsized_go_prev {
+  left: 25px;
+}
+#fullsized_go_next {
+  right: 25px;
+}
+#fullsized_close {
+  top: 0;
+  right: 0;
+  background: url('../img/jquery-fullsizable.png') -64px 0;
+}
+#fullsized_fullscreen {
+  top: 0;
+  right: 40px;
+  background: url('../img/jquery-fullsizable.png') -96px 0;
+}
+:fullscreen #fullsized_fullscreen { background-color: @fullscreen-background; }
+:-webkit-full-screen #fullsized_fullscreen { background-color: @fullscreen-background; }
+:-moz-full-screen #fullsized_fullscreen { background-color: @fullscreen-background; }

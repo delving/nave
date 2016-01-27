@@ -1,0 +1,12 @@
+.pagination {
+    background: transparent;
+}
+
+.pagination .disabled a {
+    background: transparent;
+    color: #ccc;
+}
+
+.breadcrumb {
+    padding: 4px 8px;
+}

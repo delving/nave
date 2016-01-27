@@ -1,0 +1,235 @@
+/**
+ * MARGIN SHORTCUTS
+ * these are shortcuts to the margin-{side} CSS property
+ */
+/**
+ * MARGIN - H / V
+ * these are shortcuts to set only horizontals or vertical margins without alter existing rules
+ * you can use these mixins with one value applied to the left/right, top/bottom margins or
+ * you can use them with separated values
+ */
+/**
+ * PADDING SHORTCUTS
+ * these are shortcuts to the padding-{side} CSS property
+ */
+/**
+ * PADDING - H / V
+ * these are shortcuts to set only horizontals or vertical paddings without alter existing rules
+ * you can use these mixins with one value applied to the left/right, top/bottom paddings or
+ * you can use them with separated values
+ */
+/**
+  * TRANSPARENT BACKGROUND COLOR
+  * this mixin will set the opacity level of the background color of a block level element
+  * pass the color as hex, and the mixin will create the rgba values.
+  */
+/* GRID GENERATOR */
+body {
+  width: 100%;
+  *zoom: 1;
+}
+body:before,
+body:after {
+  content: "";
+  display: table;
+}
+body:after {
+  clear: both;
+}
+body:before,
+body:after {
+  content: "";
+  display: table;
+}
+body:after {
+  clear: both;
+}
+/* .less variables *****************************/
+/*
+article {
+   .column(9);
+
+   ul {
+      .row(9);
+
+      li {
+         .column(3,9);
+      }
+   }
+}
+aside {
+   .column(3);
+}
+*/
+/* base elements ********************************/
+body,
+html {
+  height: 100%;
+}
+body {
+  background: #ffffff;
+  font-family: "PT Sans", sans-serif;
+}
+html.cms-ready {
+  margin-top: 0px !important;
+}
+img {
+  max-width: 100%;
+}
+.side-nav {
+  background: #eeeeee;
+}
+.side-nav li > a {
+  color: #999999;
+  padding: 0.5em 2.5em;
+}
+.side-nav li.selected > a {
+  background: #d9d9d9;
+  color: #000000;
+}
+.side-nav li > a:hover {
+  background: #b3b3b3;
+  color: #333333;
+}
+.alert {
+  margin-bottom: 0px;
+}
+/* top-navigation********************************/
+#header-top-nav .navbar {
+  -webkit-border-radius: 0px;
+  -moz-border-radius: 0px;
+  border-radius: 0px;
+  margin-bottom: 0px;
+  border: none;
+  padding: 10px 0px;
+}
+#header-top-nav .navbar .navbar-form {
+  margin-right: -30px;
+}
+/* page header **********************************/
+#page-header {
+  background: #3b7fc4;
+  padding: 0px;
+}
+#page-header .page-header {
+  border: none;
+  margin: 0px;
+  padding: 10px 0px;
+  position: relative;
+}
+#page-header .page-header:after {
+  top: 100%;
+  left: 10px;
+  border: solid transparent;
+  content: " ";
+  height: 0;
+  width: 0;
+  position: absolute;
+  pointer-events: none;
+  border-color: transparent;
+  border-top-color: #3b7fc4;
+  border-width: 10px;
+  margin-left: -10px;
+}
+#page-header .location {
+  color: #ffffff;
+  margin: 0;
+  text-transform: uppercase;
+  font-size: 1.5em;
+  font-weight: normal;
+}
+#page-header.homepage {
+  background: #205081;
+  height: 35%;
+}
+.breadcrumb {
+  display: inline-block;
+  background: transparent;
+  border: none;
+  -webkit-border-radius: 0px;
+  -moz-border-radius: 0px;
+  border-radius: 0px;
+  margin: 0px;
+  padding: 0px;
+  float: right;
+}
+.breadcrumb li {
+  padding: 0px 2px;
+  color: #ffffff;
+}
+.breadcrumb li a {
+  color: #ffffff;
+  padding: 0px;
+}
+.breadcrumb > li + li:before {
+  color: #ffffff;
+}
+.breadcrumb .active {
+  color: #222222;
+}
+/* page location ********************************/
+#page-content {
+  padding: 22px 0;
+}
+/* form table ********************************/
+.form-table th,
+.form-table td {
+  padding: 0 10px 10px 0;
+  vertical-align: top;
+}
+.form-table th {
+  font-weight: bold;
+  text-align: right;
+}
+.form-table th label {
+  font-weight: inherit;
+  margin-top: 10px;
+}
+.form-table ul.errorlist {
+  list-style: none;
+  margin: 10px 0 0 0;
+  padding: 0 0 0 0;
+}
+.form-table ul.errorlist li {
+  color: #d04437;
+}
+/* Foundation 5 styles - thank you Zurb! ********/
+.flex-video {
+  position: relative;
+  padding-top: 1.5625rem;
+  padding-bottom: 67.5%;
+  height: 0;
+  margin-bottom: 1rem;
+  overflow: hidden;
+}
+.flex-video.widescreen {
+  padding-bottom: 56.34%;
+}
+.flex-video.vimeo {
+  padding-top: 0;
+}
+.flex-video iframe,
+.flex-video object,
+.flex-video embed,
+.flex-video video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+/* search results *******************************/
+.bootstrap-tagsinput .label-query {
+  background: #3b7fc4;
+  color: #ffffff;
+}
+.bootstrap-tagsinput .label-facet {
+  background: #999999;
+}
+/* static home **********************************/
+body.static_home .container {
+  text-align: center;
+}
+body.static_home .page-header {
+  border: none;
+}

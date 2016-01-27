@@ -1,0 +1,179 @@
+/**
+ * MARGIN SHORTCUTS
+ * these are shortcuts to the margin-{side} CSS property
+ */
+.mt ( @value:0 ) { margin-top: 		@value }
+.mr ( @value:0 ) { margin-right: 	@value }
+.mb ( @value:0 ) { margin-bottom: 	@value }
+.ml ( @value:0 ) { margin-left: 	@value }
+
+/**
+ * MARGIN - H / V
+ * these are shortcuts to set only horizontals or vertical margins without alter existing rules
+ * you can use these mixins with one value applied to the left/right, top/bottom margins or
+ * you can use them with separated values
+ */
+.mv( @value:0 ) { 			.mt(@value); 	.mb(@value); }
+.mv( @v1, @v2 ) { 			.mt(@v1); 		.mb(@v2); }
+
+.mh( @value:0 ) { 			.ml(@value); 	.mr(@value); }
+.mh( @v1, @v2 ) { 			.ml(@v1); 		.mr(@v2); }
+
+
+/**
+ * PADDING SHORTCUTS
+ * these are shortcuts to the padding-{side} CSS property
+ */
+.pt ( @value:0 ) { padding-top: 	@value }
+.pr ( @value:0 ) { padding-right: 	@value }
+.pb ( @value:0 ) { padding-bottom: 	@value }
+.pl ( @value:0 ) { padding-left: 	@value }
+
+/**
+ * PADDING - H / V
+ * these are shortcuts to set only horizontals or vertical paddings without alter existing rules
+ * you can use these mixins with one value applied to the left/right, top/bottom paddings or
+ * you can use them with separated values
+ */
+.pv( @value:0 ) { 			.pt(@value); 	.pb(@value); }
+.pv( @v1, @v2 ) { 			.pt(@v1); 		.pb(@v2); }
+
+.ph( @value:0 ) { 			.pl(@value); 	.pr(@value); }
+.ph( @v1, @v2 ) { 			.pl(@v1); 		.pr(@v2); }
+
+
+.border-radius(@radius) {
+  -webkit-border-radius: @radius;
+  -moz-border-radius: @radius;
+  border-radius: @radius;
+}
+
+.box-sizing(@sizing: border-box) {
+  -ms-box-sizing: @sizing;
+  -moz-box-sizing: @sizing;
+  -webkit-box-sizing: @sizing;
+  box-sizing: @sizing;
+}
+
+.box-shadow(@h-shadow: 4px, @v-shadow: 4px, @blur: 0px, @spread: 0px, @color: #cccccc) {
+  -webkit-box-shadow: @h-shadow @v-shadow @blur @spread @color;
+  -moz-box-shadow: @h-shadow @v-shadow @blur @spread @color;
+  box-shadow: @h-shadow @v-shadow @blur @spread @color;
+}
+
+.clip(@height: 100px, @width: 100%) {
+  display: block;
+  overflow: hidden;
+  height: @height;
+  width: @width;
+}
+
+.columns(@cols: 2, @gap: 20px){
+  -webkit-column-count:@cols;
+  -moz-column-count:@cols;
+  column-count:@cols;
+  -webkit-column-gap:@gap;
+  -moz-column-gap:@gap;
+  column-gap:@gap;
+}
+
+.hyphenate(@width: inherit) {
+  display: block;
+  text-overflow: ellipsis;
+  -o-text-overflow: ellipsis;
+  -webkit-text-overflow: ellipsis;
+  white-space: pre-wrap;
+  overflow: hidden;
+  width: @width;
+}
+
+.inner-shadow(@horizontal:0, @vertical:1px, @blur:2px, @alpha: 0.4) {
+  -webkit-box-shadow: inset @horizontal @vertical @blur rgba(0, 0, 0, @alpha);
+  -moz-box-shadow: inset @horizontal @vertical @blur rgba(0, 0, 0, @alpha);
+  box-shadow: inset @horizontal @vertical @blur rgba(0, 0, 0, @alpha);
+}
+
+.opacity(@opacity: 0.5) {
+  -moz-opacity: @opacity;
+  -khtml-opacity: @opacity;
+  -webkit-opacity: @opacity;
+  opacity: @opacity;
+  @opperc: @opacity * 100;
+  -ms-filter: ~"progid:DXImageTransform.Microsoft.Alpha(opacity=@{opperc})";
+  filter: ~"alpha(opacity=@{opperc})";
+}
+
+.square(@size){
+  height: @size;
+  width: @size;
+}
+
+.text-shadow(@hor: 1px, @vert: 1px, @blur: 0px, @color:#ccc) {
+  text-shadow: @hor @vert @blur @color;
+}
+
+
+/**
+  * TRANSPARENT BACKGROUND COLOR
+  * this mixin will set the opacity level of the background color of a block level element
+  * pass the color as hex, and the mixin will create the rgba values.
+  */
+.bg-transparent(@color,@alpha) {
+  @rgba: rgba(red(@color), green(@color), blue(@color),@alpha);
+  @argb: argb(@rgba);
+  background-color: @color;
+  background-color: @rgba;
+  filter: ~"progid:DXImageTransform.Microsoft.gradient(startColorstr=@{argb}, endColorstr=@{argb})";
+  -ms-filter: ~"progid:DXImageTransform.Microsoft.gradient(startColorstr=@{argb}, endColorstr=@{argb})";
+}
+
+.clearfix() {
+  *zoom:1;
+
+  &:before,
+  &:after {
+    content:"";
+    display:table;
+  }
+  &:after {
+    clear:both;
+  }
+}
+
+/* GRID GENERATOR */
+
+.set-grid(@total:12, @col:3, @pad:15px, @break-point:768px){
+    @total-cols: @total;
+    @col-span: @col;
+    @col-padding: @pad;
+    @grid-float-breakpoint: @break-point;
+}
+
+.row(@col-padding){
+  margin-left: -@col-padding;
+  margin-right: -@col-padding;
+  .clearfix();
+}
+
+.column(@total-cols, @col-span, @col-padding) {
+  @media (min-width: @grid-float-breakpoint) {
+    display: inline-block;
+    float: left;
+    // Calculate width based on number of columns available
+    width: percentage(@col-span / @total-cols);
+  }
+  // Prevent columns from collapsing when empty
+  min-height: 1px;
+  // Set inner padding as gutters instead of margin
+  padding-left: @col-padding;
+  padding-right: @col-padding;
+  // Proper box-model (padding doesn't add to width)
+  .box-sizing(border-box);
+}
+
+.push(@offset:1) {
+  margin-left: @total-width*(((@gutter-width+@column-width)*@offset) / @gridsystem-width) + @total-width*((@gutter-width*.5)/@gridsystem-width);
+}
+.pull(@offset:1) {
+  margin-right: @total-width*(((@gutter-width+@column-width)*@offset) / @gridsystem-width) + @total-width*((@gutter-width*.5)/@gridsystem-width);
+}

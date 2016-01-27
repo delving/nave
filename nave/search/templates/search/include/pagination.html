@@ -1,0 +1,28 @@
+{% load urls_tags i18n %}
+{#<div class="pagination_wrapper">#}
+    <ul class="pagination {{ extra_class }}">
+        {% if data.pagination.has_previous %}
+            <li class="prev">
+                <a href="{% add_params request.get_full_path page=data.pagination.previous_page_number %}">&laquo; {% trans 'Previous' %}</a>
+            </li>
+        {% else %}
+            <li class="prev disabled">
+                <a href="#">&laquo; {% trans 'Previous' %}</a>
+            </li>
+        {% endif %}
+        {% for link in data.pagination.links %}
+            <li class="{% if link.page_number == data.pagination.page.number %}active{% endif %}">
+                <a href="{% add_params request.get_full_path page=link.page_number %}">{{ link.page_number }}</a>
+            </li>
+        {% endfor %}
+        {% if data.pagination.has_next %}
+            <li class="next">
+                <a href="{% add_params request.get_full_path page=data.pagination.next_page_number %}">{% trans 'Next' %} &raquo;</a>
+            </li>
+        {% else %}
+            <li class="next disabled">
+                <a href="#">{% trans 'Next' %} &raquo;</a>
+            </li>
+        {% endif %}
+    </ul>
+{#</div>#}

@@ -1,0 +1,22 @@
+{% load i18n %}
+{% if social_media.twitter_feed or social_media.facebook_page %}
+    <ul class="social-media">
+        <li>{% trans 'Volg ons ook op' %}:</li>
+
+        {% if social_media.twitter_feed %}
+            <li>
+                <a href="{{ social_media.twitter_feed }}" target="_blank">
+                    <i class="fa fa-twitter"></i>
+                </a>
+            </li>
+        {% endif %}
+
+        {% if social_media.facebook_page %}
+            <li>
+                <a href="{{ social_media.facebook_page }}" target="_blank">
+                    <i class="fa fa-facebook"></i>
+                </a>
+            </li>
+        {% endif %}
+    </ul>
+{% endif %}

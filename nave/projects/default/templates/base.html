@@ -1,0 +1,98 @@
+{% load staticfiles future i18n urls_tags %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.1//EN"
+        "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-2.dtd">
+<html {% block prefixes %} {% endblock %}>
+<head>
+    <title>{% block meta_title %}Delving Nave{% endblock meta_title %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static "css/bootstrap.css" %}" />
+    <link rel="stylesheet" href="{% static "css/font-awesome.css" %}" />
+    {%  block extra_css %}{% endblock %}
+    <link rel="stylesheet" href="{% static "css/theme.css" %}" />
+</head>
+
+<body id="{% block body_id %}body{% endblock %}">
+
+{% block all_content %}
+    <header id="header-top-nav" role="banner">
+        <nav class="navbar navbar-inverse" role="navigation">
+            <div class="container">
+
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="/">Delving Nave</a>
+                </div>
+                <div class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav">
+{#                        {% show_menu 0 100 100 100 "menu/topnav.html" %}#}
+                    </ul>
+                    <form action="/search" class="navbar-form navbar-right" role="search">
+                        {% form_hidden_field request 'view' %}
+                        <div class="form-group">
+                            <input class="form-control search" placeholder="{% trans "Search" %}" type="text" name="q" value="{{ request.REQUEST.q }}">
+                        </div>
+                        <button type="submit" class="btn btn-search"><i class="fa fa-search"></i></button>
+                    </form>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    {% block messages %}
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                <div class="alert alert-dismissable alert-{{ message.tags }}" data-alert="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endblock messages %}
+
+    {% block page_header %}
+        <header id="page-header">
+            <div class="container">
+                <div class="page-header">
+                    {% block breadcrumbs %}
+                        <ul class="breadcrumb">
+{#                            {% show_breadcrumb %}#}
+                        </ul>
+                    {% endblock breadcrumbs %}
+                    <h1 class="location">{% block title %}{% endblock %}</h1>
+                </div>
+            </div>
+        </header>
+    {% endblock page_header %}
+
+    <section id="page-content">
+        <div class="container">
+            {% block content %}
+
+            {% endblock content %}
+        </div>
+    </section>
+
+    {% block page_footer %}
+        <section id="page-footer">
+            <div class="container">
+
+            </div>
+        </section>
+    {% endblock page_footer %}
+
+{% endblock all_content %}
+
+<script src="{% static 'js/jquery.js' %}"></script>
+<script src="{% static 'js/bootstrap.js' %}"></script>
+{% block extra_js %}{% endblock %}
+
+</body>
+</html>
+

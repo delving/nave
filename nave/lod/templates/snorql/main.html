@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% load staticfiles  %}
+
+{% block breadcrumbs %}
+    <ul class="breadcrumb">
+        <li>
+            <a href="/">home</a>
+            <span class="separator">»</span>
+        </li>
+        <li>
+            <span class="active">SPARQL</span>
+        </li>
+    </ul>
+{% endblock %}
+
+
+
+{% block content %}
+    <h1 class="page-header">SPARQL interface for the Nave LoD Server</h1>
+
+    <form id="queryform" action="#" method="get">
+        <input type="hidden" name="query" value="" id="query"/>
+        <input type="hidden" name="format" value="" id="outputformat"/>
+        <input type="hidden" name="graph" value="" id="graph-uri"/>
+        {% csrf_token %}
+    </form>
+
+    <div class="row">
+        <div class="col-md-3">
+            <form id="frontEndForm" class="form" action="" role="form">
+                <div class="form-group">
+                    <label for="selectoutput">Output format</label>
+                    <select id="selectoutput" onchange="snorql.updateOutputMode()" class="form-control">
+                        <option selected="selected" value="browse">Browse</option>
+                        <option value="text/html">HTML</option>
+                        <option value="application/sparql-results+xml">XML</option>
+                        <option value="application/sparql-results+json">JSON</option>
+                        <option value="application/vnd.ms-excel">Spreadsheet</option>
+                        <option value="application/javascript">Javascript</option>
+                        <option value="text/plain">NTriples</option>
+                        <option value="application/rdf+xml">RDF/XML</option>
+                        <option value="text/csv">CSV</option>
+                        <option value="text/tab-separated-values">TSV</option>
+                    </select>
+                </div>
+                <div class="form-group">
+{#                    <label for="database">Database:</label>#}
+                    <input type="hidden" id="database" name="database" value="ontologies" onclick="ontologiesSampleQuery()" checked>
+{#                    <a href="#" id="t-help" ><i class="fa fa-info-circle"></i></a>#}
+{#                    <div class="help-block" style="display: none">#}
+{#                        Ontologies and mappings reside in separate databases. This option is to setup the target of the query. For SPARQL queries that need joins from both databases see SPARQL federation section in our documentation.#}
+{#                    </div>#}
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" name="graph-uri" id="ff-graph-uri" placeholder="graph-uri" onblur="snorql.switchToGraph(this.value)"/>
+                </div>
+                                <div class="form-group">
+                                    <select name="sparql-example-query" id="sparql-example-query" class="form-control">
+                                        <option selected="selected">Example Queries</option>
+                                        {% for query in sparql_queries %}
+                                            <option value="{{ query.formatted }}">{{ query.title }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                <div class="form-group">
+                    <input id="query-submit" type="button" value="run query" onclick="submitSnorql()" class="btn btn-success pull-right"/>
+                    <input id="reset" type="button" value="reset" onclick="snorql.resetQuery()" class="btn btn-default"/>
+                </div>
+            </form>
+        </div>
+        <div class="col-md-9">
+            <textarea id="querytext" name="query" rows="6">SELECT ?s ?p ?o WHERE {?s ?p ?o} LIMIT 50</textarea>
+        </div>
+    </div>
+
+    <div id="result" class="scroll">
+        <span>run a query to see results here</span>
+    </div>
+
+{% endblock content %}
+
+
+{# Add needed css files #}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'codemirror/codemirror.css' %}">
+    <link rel="stylesheet" href="{% static 'codemirror/theme/default.css' %}">
+    <link rel="stylesheet" href="{% static 'css/snorql.css' %}">
+{% endblock %}
+
+{# Add needed js files #}
+{% block extra_js %}
+    <script src="{% static 'codemirror/codemirror.js' %}"></script>
+    <script src="{% static 'codemirror/mode/sparql/sparql.js' %}"></script>
+    <script src="{% static 'javascript/sparql.js' %}"></script>
+    <script src="{% static 'javascript/namespaces.js' %}"></script>
+    <script src="{% static 'javascript/snorql.js' %}"></script>
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+            snorql.start();
+            $('#sparql-example-query').on('change', function (e) {
+                console.log(e);
+                var newQuery = $(this).val();
+                getEditor().setValue(newQuery);
+            });
+            $('a#t-help').on('click', function(){
+                $('.help-block').toggle();
+            });
+
+
+
+        });
+
+        var submitSnorql = function() {
+            var graph = $('#ff-graph-uri').val();
+            if (!graph) {
+                $('#graph-uri').attr('disabled', 'disabled');
+            }
+            snorql.submitQuery();
+        }
+    </script>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "oaipmh/base.xml" %}
+
+{% block content %}
+  <ListSets>
+    {% for ds in datasets %}
+        <set>
+            <setSpec>{{ ds.spec }}</setSpec>
+            <setName>{{ ds.name }}</setName>
+            <setDescription>
+                <description>{{ ds.description }}</description>
+                <totalRecords>{{ ds.valid }}</totalRecords>
+                <dataProvider>{{ ds.data_owner }}</dataProvider>
+        </setDescription>
+        </set>
+    {% endfor %}
+  </ListSets>
+{% endblock %}

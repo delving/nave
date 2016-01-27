@@ -1,0 +1,257 @@
+@import "../../../common/static/less/variables";
+@import "../../../common/static/less/mixins";
+
+
+
+/* SECTION ROWS **************************/
+
+#core-metadata,
+#properties,
+#related {
+  margin-bottom: 40px;
+}
+
+/* CORE METADATA *************************/
+
+.ds-field-title {
+  color: @gray;
+  font-size: 2em;
+  font-weight: bold;
+}
+.ds-field-label {
+  display: block;
+  clear: both;
+  color: @gray-light;
+  margin: 0;
+  font-size: 1em;
+  font-weight: bold;
+}
+
+.ds-field-value {
+  font-size: 1em;
+  display: inline-block;
+//  margin-bottom: 10px;
+}
+
+.js-lod-data-link {
+  text-decoration: underline;
+}
+
+.field-html {
+  h1, h2, h3, h4 {
+    font-size: 1em;
+    font-weight: bold;
+    margin: 10px 0;
+  }
+}
+
+
+/* RESULT (RELATED LOD) ******************/
+
+#related .result {
+  background: #fafafa;
+  border: 1px solid @gray-lighter;
+  margin-bottom: 30px;
+  .media {
+    text-align: center;
+  }
+  .meta {
+    padding: 8px;
+  }
+}
+
+#related .current a.result-item-link::after {
+  border: solid transparent;
+  content: " ";
+  height: 0;
+  width: 0;
+  position: absolute;
+  bottom: 0px;
+  pointer-events: none;
+  border-bottom-color: @silver;
+  border-width: 15px;
+  left: 50%;
+  margin: -19px 0 0 -15px;
+  z-index: 1000;
+}
+
+.result-item-foldout {
+  min-height: 350px;
+  margin-bottom: 20px;
+  .result-item-detail {
+    background: @white;
+    border: 1px solid @silver;
+    //.border-radius(4px);
+    min-height: 350px;
+    padding: 20px;
+  }
+  .media {
+    text-align: center;
+  }
+}
+
+/* DETAIL *****************************/
+
+button#btn-more-properties {
+  margin-bottom: 20px;
+}
+
+
+span.predicate-uri-label {
+  display: none;
+  position: relative;
+  top: -4px;
+  margin-left: 20px;
+}
+
+.detail-header, .detail-sub-header {
+  border-bottom: 1px solid @ash-gray;
+  color: @gray-darker;
+  font-weight: bold;
+  margin: 0 0 10px 0;
+  padding: 0 0 4px 0;
+  .clearfix();
+}
+
+.detail-sub-header {
+  border-bottom: 1px solid @silver;
+  color: @gray-light;
+}
+
+.detail-header .tools {
+  float: right;
+  display: inline-block;
+  label {
+    font-size: 14px;
+    margin-right: 20px;
+  }
+}
+
+.detail-list {
+  dt {
+    color: @gray;
+    position: relative;
+  }
+  dd {
+    margin-bottom: 4px;
+  }
+  .indent {
+    margin: 10px 0 10px 30px;
+  }
+  .link-context {
+    display: none; //initial state
+  }
+}
+
+#properties .detail-list dd {
+  border-bottom: 1px solid @ash-gray;
+  padding: 10px 0 10px 0px;
+  margin-bottom: 10px;
+}
+
+.media-viewer {
+  background: @gray-light;
+  min-height: 150px;
+  text-align: center;
+  width: 100%;
+  img {
+    max-width: 100%;
+    max-height: 100%;
+  }
+}
+
+#deep-zoom-viewer,
+.deepzoom-viewer{
+  background: @black;
+  width: 100%;
+  height: 400px;
+}
+
+/* placeholder no image */
+.no-image-placeholder {
+  background: @ash-gray;
+  // background-image: url(../img/kaarten_home_header_bg.jpg);
+  background-position: 50% 50%;
+  height: 165px;
+  position: relative;
+  width: 100%;
+  &.large {
+    height: 300px;
+    span {
+      top: 45%;
+    }
+  }
+  span {
+    position: absolute;
+    top: 40%;
+    color: @gray-dark;
+    display: block;
+    text-align: center;
+    width: 100%;
+  }
+  .overlay {
+    .bg-transparent(@white, 0.75);
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+  }
+}
+
+/* data tabs *****************/
+
+.tab-pane {
+  padding: 20px 0px;
+  //h1, h2, h3, h4, h5, h6 {
+    //margin-top: 0px;
+  //}
+}
+
+/* inlines *******************/
+
+a.show-inlines{
+  margin-left: 20px;
+  font-weight: bold;
+}
+a.show-inlines:before {
+  content: '\276F';
+  display: inline-block;
+  width: 16px;
+  width: 2rem;
+  margin-left: -16px;
+  margin-left: -1em;
+  text-align: center;
+  text-decoration: none;
+  transform: rotate(90deg);
+  font-size: 1em;
+}
+a.show-inlines.collapsed:before {
+  transform: none;
+}
+
+/* field tools ul **************/
+
+ul.field-tools {
+  display: inline-block;
+  margin: 0 0 4px 0;
+  padding: 0;
+  li {
+    //width:32px;
+    //height: 32px;
+  }
+  a {
+    display: block;
+    //float: left;
+    font-size: .75em;
+    width: 32px;
+    //height: 32px;
+    text-align: center;
+    background: #888;
+    color: #fff;
+    padding: 4px;
+  }
+  i {
+
+  }
+}

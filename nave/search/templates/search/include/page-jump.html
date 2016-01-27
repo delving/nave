@@ -1,0 +1,15 @@
+{% load urls_tags %}
+<form action="{{ request.path }}" method="GET" class="form-pager">
+    {% form_hidden_fields request exclude="page" %}
+    <div class="input-group">
+        <span class="input-group-addon">
+            {{ data.pagination.page.number }}: {{ data.pagination.last_page }}
+        </span>
+        <input type="text" name="page" class="form-control" value="{{ data.pagination.page.number }}"/>
+        <span class="input-group-btn">
+            <button type="submit" class="btn btn-default">
+                <i class="fa fa-file"></i>
+            </button>
+        </span>
+    </div>
+</form>

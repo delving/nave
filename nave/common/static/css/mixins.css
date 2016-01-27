@@ -1,0 +1,26 @@
+/**
+ * MARGIN SHORTCUTS
+ * these are shortcuts to the margin-{side} CSS property
+ */
+/**
+ * MARGIN - H / V
+ * these are shortcuts to set only horizontals or vertical margins without alter existing rules
+ * you can use these mixins with one value applied to the left/right, top/bottom margins or
+ * you can use them with separated values
+ */
+/**
+ * PADDING SHORTCUTS
+ * these are shortcuts to the padding-{side} CSS property
+ */
+/**
+ * PADDING - H / V
+ * these are shortcuts to set only horizontals or vertical paddings without alter existing rules
+ * you can use these mixins with one value applied to the left/right, top/bottom paddings or
+ * you can use them with separated values
+ */
+/**
+  * TRANSPARENT BACKGROUND COLOR
+  * this mixin will set the opacity level of the background color of a block level element
+  * pass the color as hex, and the mixin will create the rgba values.
+  */
+/* GRID GENERATOR */

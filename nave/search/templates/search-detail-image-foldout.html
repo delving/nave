@@ -1,0 +1,66 @@
+{% load  staticfiles i18n thumbnail %}
+
+<div class="row">
+    <div class="col-sm-6">
+        {% if detail.deepzoom_uri %}
+            <div id="ds-deep-zoom-viewer"></div>
+        {% elif detail.image %}
+            {% thumbnail detail.image 500x500 %}
+        {% else %}
+            <div class="no-image-placeholder" style="height:460px;">
+                <div class="overlay"></div>
+                <span>{% trans 'no image available' noop %}</span>
+            </div>
+        {% endif %}
+    </div>
+    <div class="col-sm-6">
+        <dl>
+            {% if detail.mip_code %}
+                <dt>{% trans "MIP Code" %}</dt>
+                <dd>{{ detail.mip_code }}</dd>
+            {% endif %}
+            {% if detail.bestandsnaam %}
+                <dt>{% trans "Filename" %}</dt>
+                <dd>{{ detail.bestandsnaam }}</dd>
+            {% endif %}
+            {% if detail.cd_naam %}
+                <dt>{% trans "cd_naam" %}</dt>
+                <dd>{{ detail.cd_naam }}</dd>
+            {% endif %}
+        </dl>
+    </div>
+</div>
+
+{% if detail.deepzoom_uri %}
+        <script type="text/javascript" src="{% static 'js/swfobject.js' %}"></script>
+        <script>
+            // FLASH VIEWER
+            if (swfobject.hasFlashPlayerVersion("7")) {
+                var flashvars = {
+                    'source': '{{ detail.deepzoom_uri }}'
+                };
+                var params = {
+                    'allowfullscreen': 'true',
+                    'allowscriptaccess': 'always',
+                    'wmode': 'transparent'
+                };
+                var attributes = {
+                    'id': 'ds-deep-zoom-viewer',
+                    'name': 'ds-deep-zoom-viewer'
+                };
+                swfobject.embedSWF('/static/flash/OpenZoomViewer.swf', 'ds-deep-zoom-viewer', '100%', '100%', '7', 'false', flashvars, params, attributes);
+            } else {
+            // JS VIEWER
+                // TODO: proxy seems to return wrong mimetype?
+                $.get( "{% static 'js/seadragon/openseadragon.js' %}", function() {
+                    var viewer = OpenSeadragon({
+                        id: "ds-deep-zoom-viewer",
+                        prefixUrl: "/static/img/seadragon/images/",
+                        tileSources: "/proxy/?url={{ detail.deepzoom_uri }}"
+                    });
+                });
+            }
+        </script>
+{% endif %}
+
+

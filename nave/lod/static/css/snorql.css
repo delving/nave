@@ -1,0 +1,57 @@
+.navbar-snorql {
+  color: #ffffff;
+}
+.CodeMirror {
+  font-size: 1em;
+  border: 1px solid #dfdfdf;
+  text-align: left;
+  background: white;
+  height: 195px;
+}
+.CodeMirror-scroll {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: auto;
+  width: 100%;
+}
+div.scroll {
+  background: #fff;
+  height: 500px;
+  width: 100%;
+  overflow: auto;
+  border: 1px solid #dfdfdf;
+  padding: 8px;
+  margin: 20px 0px 0px 0px;
+  text-align: left;
+}
+.queryresults {
+  border-collapse: collapse;
+}
+.queryresults td,
+.queryresults th {
+  padding: 4px 6px;
+  vertical-align: top;
+}
+.unbound {
+  color: #888;
+}
+.queryresults a small {
+  font-size: 100%;
+  color: #55a;
+}
+.queryresults small {
+  font-size: 100%;
+}
+.queryresults .property {
+  white-space: nowrap;
+}
+.queryresults th {
+  background: #222222;
+  color: #dfdfdf;
+}
+.queryresults .odd td {
+  background: #ffffff;
+}
+.queryresults .even td {
+  background: #dfdfdf;
+}

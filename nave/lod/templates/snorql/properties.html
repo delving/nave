@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% load  staticfiles i18n %}
+
+{% block prefixes %}
+    {% for prefix, uri in namespaces%}
+        xmlns:{{prefix}}="{{ uri }}"
+    {% endfor %}
+{% endblock %}
+
+{% block breadcrumbs %}
+    <ul class="breadcrumb">
+        <li>
+            <a href="/">home</a>
+            <span class="separator">»</span>
+        </li>
+        <li>
+            <a href="/snorql">SPARQL</a>
+            <span class="separator">»</span>
+        </li>
+        <li>
+            <span class="active">{{ about_label}}</span>
+        </li>
+    </ul>
+{% endblock %}
+
+{% block content %}
+
+    <h3 class="detail-header">About: <strong>{{ about_label }}</strong></h3>
+
+    <section about="{{ about }}">
+        <!-- CORE METADATA ------------------------------------------------------------------------------------------------>
+
+        <!-- PROPERTIES---------------------------------------------------------------------------------------------------->
+        <h4 class="detail-header">
+            Properties
+            <div class="tools">
+                <label><input type="checkbox" id="display-predicate-uri-label">&#160;&#160;Display predicate uris</label>
+                <a class="btn btn-xs btn-primary" href="{{ about }}.n3" target="_blank"><i class="fa fa-download fa-fw"></i> ntriples</a>
+                <a class="btn btn-xs btn-primary" href="{{ about }}.ttl" target="_blank"><i class="fa fa-download fa-fw"></i> turtle</a>
+                <a class="btn btn-xs btn-primary" href="{{ about }}.rdf" target="_blank"><i class="fa fa-download fa-fw"></i> rdf/xml</a>
+                <a class="btn btn-xs btn-primary" href="{{ about }}.json-ld" target="_blank"><i class="fa fa-download fa-fw"></i> json-ld</a>
+            </div>
+        </h4>
+        <div class="row" id="properties">
+            <div class="col-sm-12">
+                <dl class="detail-list">
+                    {% for predicate, objects in column1 %}
+                        <dt>
+                            {{ predicate.label }}
+                            <span class="predicate-uri-label label label-default">{{ predicate.uri }}</span>
+                        </dt>
+                        <dd>
+                            {% for obj in objects %}
+                                {% if obj.is_uriref %}
+                                    <span property="{{ predicate.prefix }}:{{ predicate.label }}">
+                                <a href="{{ obj.value }}" property="{{ predicate.uri }}">{{ obj.value }}</a>
+                            </span>
+                                {% else %}
+                                    <span property="{{ predicate.prefix }}:{{ predicate.label }}" {% if obj.language %} xml:lang="{{ obj.language }}" {% endif %} {% if obj.datatype %} datatype="{{ obj.datatype }}" {% endif %} >
+                            {{ obj.value }} {% if obj.language %} @{{ obj.language }} {% endif %}
+                            </span>
+                                {% endif %}
+                                <br/>
+                            {% endfor %}
+                        </dd>
+                    {% endfor %}
+                </dl>
+
+                <button class="btn btn-default btn-xs" onclick="document.getElementById('more-list').style.display='block'" id="btn-more-properties">{% trans 'More properties' %}</button>
+
+                <dl class="detail-list" style="display:none" id="list-more-properties">
+                    {% for predicate, objects in column2 %}
+                        <dt>
+                            {{ predicate.label }}
+                            <span class="predicate-uri-label label label-default">{{ predicate.uri }}</span>
+                        </dt>
+                        <dd>
+                            {% for obj in objects %}
+                                {% if obj.is_uriref %}
+                                    <span property="{{ predicate.prefix }}:{{ predicate.label }}">
+                                <a href="{{ obj.value }}" property="{{ predicate.uri }}">{{ obj.value }}</a>
+                            </span>
+                                {% else %}
+                                    <span property="{{ predicate.prefix }}:{{ predicate.label }}" {% if obj.language %} xml:lang="{{ obj.language }}" {% endif %} {% if obj.datatype %} datatype="{{ obj.datatype }}" {% endif %} >
+                            {{ obj.value }} {% if obj.language %} @{{ obj.language }} {% endif %}
+                            </span>
+                                {% endif %}
+                                <br/>
+                            {% endfor %}
+                        </dd>
+                    {% endfor %}
+                </dl>
+            </div>
+
+        </div>
+
+        {% comment %}
+    <!-- RELATED ITEMS BELOW THE FOLD -->
+    <h4 class="detail-header">Related</h4>
+    <div class="row" id="related">
+        <!-- ITEMS -->
+        <div class="col-sm-8 col-md-9">
+            <div class="row">
+                {% for item in "000000000000" %}
+                <div class="col-sm-6 col-md-4">
+                    <div class="result" id="#result_{{ forloop.counter0 }}">
+                        <a href="" data-slug="{{ result.slug }}" class="result-item-link"  data-index="{{ forloop.counter0 }}">
+                            <div class="media"  data-match-height="result-image">
+                                <div class="no-image-placeholder">
+                                    <div class="overlay"></div>
+                                    <span>Geen afbeelding beschikbaar</span>
+                                </div>
+                            </div>
+                            <div class="meta" data-match-height="result-meta">
+                                <span class="title">Title goes here</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="col-sm-4 col-md-3">
+            {% for facet in "000" %}
+                <div class="facet-container" id="{{ facet.facet_link.name }}">
+                    <div class="facet-header">Facet {{ forloop.counter }}</div>
+                    <div class="facet-body">
+                        <ul class="list-unstyled list-facets">
+                            <li><a href="">facet link (123)</a></li>
+                            <li><a href="">facet link (123)</a></li>
+                            <li><a href="">facet link (123)</a></li>
+                            <li><a href="">facet link (123)</a></li>
+                            <li><a href="">facet link (123)</a></li>
+                            <li><a href="">facet link (123)</a></li>
+                            <li><a href="">facet link (123)</a></li>
+                            <li><a href="">facet link (123)</a></li>
+                            <li><a href="">facet link (123)</a></li>
+                            <li><a href="">facet link (123)</a></li>
+                        </ul>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endcomment %}
+
+    </section>
+
+{% endblock %}
+
+{% block extra_css %}
+    {#    <link rel="stylesheet" href="{% static "css/lod_detail.css" %}" />#}
+    <link rel="stylesheet" href="{% static "css/lod-detail.css" %}" />
+{% endblock %}
+
+
+{% block extra_js %}
+    <script>
+        $(function(){
+            $('#display-predicate-uri-label').on('click', function(){
+                $('.predicate-uri-label').toggle();
+            });
+            var btnMore = $('#btn-more-properties');
+            var listMore = $('#list-more-properties');
+            btnMore.on('click', function() {
+                $('#list-more-properties').toggle();
+                if(listMore.is(':visible') ){
+                    btnMore.addClass('active');
+                } else {
+                    btnMore.removeClass('active');
+                }
+            });
+        });
+    </script>
+{% endblock %}

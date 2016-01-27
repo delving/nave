@@ -1,0 +1,1205 @@
+"""
+All ES query related functionality goes into this module
+"""
+import collections
+import logging
+import re
+import urllib.error
+import urllib.parse
+from collections import defaultdict, namedtuple
+from contextlib import contextmanager
+
+import geojson
+from django.conf import settings
+from django.core.paginator import Paginator, Page
+from django.http import QueryDict
+from elasticsearch_dsl import Search
+from elasticsearch_dsl.result import Result
+from elasticutils import S, F
+from geojson import Point, Feature, FeatureCollection
+# noinspection PyMethodMayBeStatic
+from rest_framework.request import Request
+import six
+from .utils import gis
+from void import get_es
+
+logger = logging.getLogger(__name__)
+
+
+class GeoS(S):
+    BOUNDING_BOX_PARAM_KEYS = ['min_x', 'min_y', 'max_x', 'max_y']
+
+    def process_filter_bbox(self, key, val, action):
+
+        def valid_bbox_filter():
+            valid_keys = self.BOUNDING_BOX_PARAM_KEYS.sort()
+            values_are_valid = all(isinstance(coor, float) for coor in list(val.values()))
+            return isinstance(val, dict) and val.keys.sort() is valid_keys and values_are_valid
+
+        if not valid_bbox_filter:
+            return
+        key = key if key is not None else "point"
+
+        geo_filter = {
+            "geo_bounding_box": {
+                key: {
+                    "bottom_left": {
+                        "lat": val.get('min_x'),
+                        "lon": val.get('min_y')
+                    },
+                    "top_right": {
+                        "lat": val.get('max_x'),
+                        "lon": val.get('max_y')
+                    }
+                }
+            }
+        }
+        return geo_filter
+
+    def process_filter_polygon(self, key, val, action):
+        # TODO finish implementation
+        """
+        Filter results by polygon
+        http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl-geo-polygon-filter.html
+        """
+
+        def valid_polygon_filter():
+            valid_keys = self.BOUNDING_BOX_PARAM_KEYS.sort()
+            values_are_valid = all(isinstance(coor, float) for coor in list(val.values()))
+            return isinstance(val, dict) and val.keys.sort() is valid_keys and values_are_valid
+
+        if not valid_polygon_filter:
+            return
+        key = key if key is not None else "point"
+
+        polygon_filter = {
+            "geo_polygon": {
+                key: [
+                    {"lat": 40, "lon": -70},
+                    {"lat": 30, "lon": -80},
+                    {"lat": 20, "lon": -90}
+                ]
+            }
+        }
+        return polygon_filter
+
+    def facet_geocluster(self, filtered=True, factor=0.6):
+        """
+        Add facets for clustered geo search.
+
+        Note: It should always be the last in the chain
+        """
+        cluster_config = {
+            "geohash": {
+                "field": "point",
+                "factor": factor,
+                'show_doc_id': True
+            }
+        }
+        query = self.query()
+        if filtered:
+            filt = query.build_search().get('filter')
+            filtered = {'facet_filter': filt}
+            filtered.update(cluster_config)
+            cluster_config = filtered
+        return query.facet_raw(places=cluster_config)
+
+    @staticmethod
+    def get_feature_collection(facets):
+        features = []
+        if 'places' in facets:
+            for place in facets.get('places').clusters:
+                total = place.get('total', 0)
+                center = place.get('center')
+                center_point = Point((center['lon'], center['lat']))
+                properties = {'count': total}
+                feature_id = place.get('doc_id')
+                extra_properties = {key: place.get(key) for key in list(place.keys()) if key in ['doc_type']}
+                if extra_properties:
+                    properties.update(extra_properties)
+                features.append(Feature(geometry=center_point, id=feature_id, properties=properties))
+        return FeatureCollection(features)
+
+    @staticmethod
+    def get_geojson(feature_collection):
+        return geojson.dumps(feature_collection)
+
+    def places_as_geojson(self, facets):
+        features = self.get_feature_collection(facets)
+        return self.get_geojson(features)
+
+    @staticmethod
+    def get_lat_long_bounding_box(boundingbox_params):
+        bounding_box = {}
+        if all('.' in coor for coor in list(boundingbox_params.values())):
+            bounding_box = {key: float(value) for key, value in list(boundingbox_params.items())}
+        elif all('.' not in coor for coor in list(boundingbox_params.values())):
+            # converting rd to lat long
+            min_y, min_x = gis.rd_to_wgs84(boundingbox_params.get('min_x'), boundingbox_params.get('min_y'))
+            max_y, max_x = gis.rd_to_wgs84(boundingbox_params.get('max_x'), boundingbox_params.get('max_y'))
+            bounding_box['min_x'] = min_x
+            bounding_box['min_y'] = min_y
+            bounding_box['max_x'] = max_x
+            bounding_box['max_y'] = max_y
+        return bounding_box
+
+
+class NaveESQuery(object):
+    """
+    This class builds ElasticSearch queries from default settings and HTTP request as provided by Django
+
+    """
+
+    def __init__(self, index_name=None, doc_types=None, default_facets=None, size=16,
+                 default_filters=None, hidden_filters=None, cluster_geo=False, robust_params=True, facet_size=50,
+                 converter=None, acceptance=False):
+        self.acceptance = acceptance
+        self.index_name = index_name
+        self.doc_types = doc_types
+        self.default_facets = default_facets
+        self.size = size
+        self.default_filters = default_filters
+        self.hidden_filters = hidden_filters
+        self.applied_filters = None
+        self.robust_params = robust_params
+        self.facet_size = facet_size
+        self.cluster_geo = cluster_geo
+        self.cluster_factor = 0.6
+        self.error_messages = []
+        self.query = self._create_query()
+        self.base_params = None
+        self.facet_params = None
+        self._is_item_query = False
+        self.page = 1
+        self.converter = converter
+        self.non_legacy_keys = ['delving_deepZoomUrl', 'delving_geohash', 'delving_year', 'delving_thumbnail',
+                                'delving_fullTextObjectUrl', 'delving_fullText', 'delving_geohash']
+
+    @staticmethod
+    def _as_list(param):
+        """ always return params as list
+
+        >>> _as_list('sjoerd')
+        ['sjoerd']
+
+        >>> _as_list(['sjoerd'])
+        ['sjoerd']
+        """
+        if isinstance(param, list):
+            params = param
+        elif isinstance(param, str):
+            params = [param]
+        else:
+            raise ValueError('this type {} is not supported'.format(type(param)))
+        return list(set(params))
+
+    def _filters_as_dict(self, filters, filter_dict=None, exclude=None):
+        """
+        >>> _filters_as_dict(['gemeente:best'])
+        defaultdict(<type 'set'>, {'gemeente': set(['best'])})
+
+        >>> _filters_as_dict(['gemeente:best', 'gemeente:son en breugel'])
+        defaultdict(<type 'set'>, {'gemeente': set(['son en breugel', 'best'])})
+
+
+        >>> _filters_as_dict(['gemeente:best', 'plaats:best'])
+        defaultdict(<type 'set'>, {'gemeente': set(['best']), 'plaats': set(['best'])})
+        """
+
+        def is_excluded(key):
+            clean_key = key.replace('.raw', '')
+            return clean_key in exclude
+
+        if filter_dict is None:
+            filter_dict = defaultdict(set)
+        if not isinstance(filter_dict, defaultdict):
+            raise TypeError('filter_dict should be be a defaultdict(set)')
+
+        for filt in filters:
+            if exclude and is_excluded(filt):
+                continue
+            elif ":" in filt:
+                key, *value = filt.split(":")
+                key = key.replace('_facet', '')
+                if key.startswith('delving_') and key not in self.non_legacy_keys:
+                    key = "legacy.{}".format(key)
+                filter_dict[key].add(":".join(value))
+        return filter_dict
+
+    @staticmethod
+    def _clean_params(param_dict):
+        """
+        >>> from django.http import QueryDict
+        >>> _clean_params(QueryDict('qf=gemeente:best&qf[]=plaats:best').copy()).getlist('qf')
+        [u'gemeente:best', u'plaats:best']
+
+        >>> from django.http import QueryDict
+        >>> list(_clean_params(QueryDict('qf[]=plaats:best').copy())['qf'])
+        [u'plaats:best']
+
+        """
+        for key in ["qf[]", 'hqf[]']:
+            replace_key = key.rstrip('[]')
+            if key in param_dict:
+                query_filters = param_dict.getlist(key)
+                if replace_key in param_dict:
+                    param_dict.appendlist(replace_key, *query_filters)
+                else:
+                    param_dict[replace_key] = query_filters
+                del param_dict[key]
+        return param_dict
+
+    @staticmethod
+    def apply_converter_rules(query_string, converter, as_query_dict=True, reverse=False):
+        replace_dict = converter.query_key_replace_dict(reverse=reverse)
+        for key, val in replace_dict.items():
+            query_string = query_string.replace(key, val)
+        # defaults
+        if reverse:
+            query_string = re.sub("([&?])q=", "\\1query=", query_string)
+        else:
+            query_string = re.sub("([&?])query=", "\\1q=", query_string)
+        if as_query_dict:
+            return QueryDict(query_string)
+        return query_string
+
+    @property
+    def get_index_name(self):
+        if not self.index_name:
+            logger.warn("There should always we a index name defined.")
+            return None
+        if self.acceptance and self.index_name == settings.SITE_NAME:
+            return "{}_acceptance".format(settings.SITE_NAME)
+        return self.index_name
+
+    def _create_query(self):
+        query = GeoS()
+        if self.get_index_name:
+            query = query.indexes(*self._as_list(self.get_index_name))
+        if self.doc_types:
+            query = query.doctypes(*self._as_list(self.doc_types))
+        return query
+
+    @staticmethod
+    def _is_fielded_query(query_string):
+        matcher = re.compile(r"[_a-zA-Z0-9\.]+:[\S]|\sNOT\s|\sAND\s|\sOR\s")
+        return True if matcher.search(query_string) else False
+
+    def _created_fielded_query(self, query_string):
+        def multiple_replace(mapping, text):
+            # Create a regular expression  from the dictionary keys
+            regex = re.compile("(%s)" % "|".join(map(re.escape, mapping.keys())))
+
+            # For each match, look-up corresponding value in dictionary
+            return regex.sub(lambda mo: mapping[mo.string[mo.start():mo.end()]], text)
+
+        mapping_dict = {
+            "_text:": ".value:",
+            "_facet:": ".raw:",
+            "_string:": ".raw:",
+            "(.*?_geohash):": "point:",
+        }
+        query_string = multiple_replace(mapping_dict, query_string)
+        # default fielded query is to .value
+        query_string = re.sub("([\w]+)_([\w]+):", r"\1_\2.value:", query_string)
+        if "delving_" in query_string:
+            exclude = "(delving_{}[a-zA-Z]+).value:".format(
+                "".join(["(?!{})".format(key) for key in self.non_legacy_keys]))
+            query_string = re.sub(exclude, "legacy.\\1.value:", query_string)
+        return query_string
+
+    @staticmethod
+    def param_is_valid(key, params):
+        param_key_list = params.get(key, [])
+        is_valid = False
+        if isinstance(param_key_list, list):
+            is_valid = all(not param.isspace() for param in param_key_list)
+        elif isinstance(param_key_list, str):
+            is_valid = not param_key_list.isspace()
+        return param_key_list and is_valid
+
+    def __repr__(self):
+        return str(self.query.steps)
+
+    def build_query(self):
+        if self.default_facets:
+            self.query = self.query.facet(*self._as_list(self.default_facets), size=self.facet_size)
+        if self.default_filters:
+            self.query = self.query.filter(*self._as_list(self.default_filters))
+        return self.query
+
+    nave_id_pattern = re.compile("^([^_]*?)_([^_]+?)__([^_]+)$")
+    hub_id_pattern = re.compile("^([^_]*?)_(.*?)_([^_]+)$")
+
+    def build_item_query(self, query, params, hub_id=None):
+        if hub_id or 'id' in params:
+            #  todo add support for idType later
+            clean_id = hub_id if hub_id else params.get('id')
+            if self.nave_id_pattern.findall(clean_id):
+                doc_type, clean_id = clean_id.split('__')
+                query = query.query.query(_id=clean_id, _type=doc_type)
+                self._is_item_query = True
+            elif self.hub_id_pattern.findall(clean_id):
+                query = query.query.query(_id=clean_id)
+                self._is_item_query = True
+            else:
+                raise ValueError("unknown clean_id type: {}".format(clean_id))
+        return query
+
+    @staticmethod
+    def expand_params(param):
+        key = param[0]
+        value_list = param[1]
+        return [(key, value) for value in value_list]
+
+    def build_query_from_request(self, request):
+
+        @contextmanager
+        def robust(key):
+            try:
+                yield
+            except ValueError as ve:
+                self.error_messages.append("param {}: {}".format(key, str(ve)))
+                logger.warn(
+                        "problem with param {} causing {} for request {}".format(key, ve, request.build_absolute_uri()))
+                # if not self.robust_params:
+                #     raise
+                raise
+
+        query = self.query
+        if self.converter is not None:
+            query_dict = self.apply_converter_rules(request._request.META['QUERY_STRING'], self.converter)
+        else:
+            query_dict = request.query_params if isinstance(request, Request) else request.GET
+
+        params = self._clean_params(query_dict.copy())
+        facet_params = self._clean_params(query_dict.copy())
+        # build id based query
+        query = self.build_item_query(query, params)
+        if self._is_item_query:
+            return query
+        # remove non filter keys
+        for key, value in list(facet_params.items()):
+            if key in ['start', 'page', 'rows', 'format', 'diw-version', 'lang', 'callback']:
+                del facet_params[key]
+            if not value and key in facet_params:
+                del facet_params[key]
+        # implement size
+        if 'rows' in params:
+            with robust('rows'):
+                self.size = int(params.get('rows'))
+        # implement paging
+        if 'page' in params:
+            with robust('page'):
+                page = int(params.get('page'))
+                self.page = page
+                start = (page - 1) * self.size if page > 0 else 0
+                end = start + self.size
+                query = query[start:end]
+        elif 'start' in params and 'page' not in params:
+            with robust('start'):
+                start = int(params.get('start'))
+                page = int(start / self.size) + 1
+                if page > 0:
+                    self.page = page
+                end = start + self.size
+                query = query[start:end]
+        else:
+            query = query[:self.size]
+        # update key
+        if 'query' in params and 'q' not in params:
+            params['q'] = params.get('query')
+        if self.param_is_valid('q', params) and not params.get('q') in ['*:*']:
+            query_string = params.get('q')
+
+            if "&quot;" in query_string:
+                query_string = query_string.replace('&quot;', '"')
+            if self._is_fielded_query(query_string):
+                query = query.query_raw({
+                    "query_string": {
+                        "default_field": "_all",
+                        "query": self._created_fielded_query(query_string)
+                    }
+                })
+            else:
+                query = query.query(_all__match=query_string)
+        # add lod_filtering support
+        elif "lod_id" in params:
+            lod_uri = params.get("lod_id")
+            query = query.query(
+                    **{'rdf.object.id': lod_uri, "must": True}).filter(~F(**{'system.about_uri': lod_uri}))
+
+        else:
+            query = query.query()
+
+        # add filters
+        filter_dict = self._filters_as_dict(self.default_filters) if self.default_filters else defaultdict(set)
+        if 'qf' in params:
+            with robust('qf'):
+                self._filters_as_dict(params.getlist('qf'), filter_dict)
+        # add hidden filters:
+        exclude_filter_list = params.getlist("pop.filterkey")
+        hidden_filter_dict = self._filters_as_dict(
+                self.hidden_filters,
+                exclude=exclude_filter_list
+        ) if self.hidden_filters else defaultdict(set)
+        if 'hqf' in params:
+            with robust('hqf'):
+                hqf_list = params.getlist('hqf')
+                self._filters_as_dict(
+                        filters=hqf_list,
+                        filter_dict=hidden_filter_dict,
+                        exclude=exclude_filter_list
+                )
+                facet_params.pop('hqf')
+
+        # combine all filters
+        filter_dict.update(hidden_filter_dict)
+        self.applied_filters = filter_dict
+        applied_facet_fields = []
+        if filter_dict:
+            for key, values in list(filter_dict.items()):
+                applied_facet_fields.append(key.lstrip('-+').replace('.raw', ''))
+                f = F()
+                for value in values:
+                    if key.startswith('-'):
+                        f |= ~F(**{self.query_to_facet_key(key): value})
+                    else:
+                        f |= F(**{self.query_to_facet_key(key): value})
+
+                query = query.filter(f)
+
+        # add facets
+        facet_list = self._as_list(self.default_facets) if self.default_facets else []
+        if 'facet' in params:
+            with robust('facet'):
+                facets = params.getlist('facet')
+                for facet in facets:
+                    if ',' in facet:
+                        facet_list.extend(facet.split(','))
+                    else:
+                        facet_list.append(facet)
+        if facet_list:
+            with robust('facet'):
+                if 'facet.size' in params:
+                    self.facet_size = int(params.get('facet.size'))
+                # add .raw if not already there
+                # facet_list = ["{}.raw".format(facet.rstrip('.raw')) for facet in facet_list]
+                for facet in facet_list:
+                    filtered = facet.replace('.raw', '') not in applied_facet_fields
+                    query = query.facet(facet, filtered=filtered, size=self.facet_size)
+
+        # add bounding box
+        bounding_box_param_keys = GeoS.BOUNDING_BOX_PARAM_KEYS
+        if set(bounding_box_param_keys).issubset(list(params.keys())):
+            with robust(str(bounding_box_param_keys)):
+                boundingbox_params = {key: val for key, val in list(params.items()) if key in bounding_box_param_keys}
+                bounding_box = GeoS.get_lat_long_bounding_box(boundingbox_params)
+                if bounding_box:
+                    query = query.filter(point__bbox=bounding_box)
+        # add clusters
+        if self.cluster_geo:
+            with robust('geo_cluster'):
+                filtered = bool(params.get('cluster.filtered')) if 'cluster.filtered' in params else True
+                if 'cluster.factor' in params:
+                    factor = float(params.get('cluster.factor'))
+                    query = query.facet_geocluster(factor=factor, filtered=filtered)
+                else:
+                    query = query.facet_geocluster(filtered=filtered)
+        self.query = query
+        self.facet_params = facet_params
+        self.base_params = params
+        return query
+
+    def build_geo_query(self, request):
+        """ build a query for geo clustering only """
+        params = request.GET.copy()
+        # remove unnecessary keys
+        for key in ['start', 'page', 'facet']:
+            if key in params:
+                params.pop(key)
+        self.default_facets = []
+        self.cluster_geo = True
+        params['rows'] = 0
+        request.GET = params
+        query = self.build_query_from_request(request)
+        return query
+
+    def query_to_facet_key(self, facet_key):
+        if facet_key.startswith('delving_') and facet_key not in self.non_legacy_keys:
+            facet_key = 'legacy.{}'.format(facet_key)
+        if "." not in facet_key:
+            facet_key = "{}.raw".format(facet_key)
+        return facet_key.lstrip('-')
+
+    @staticmethod
+    def clean_facets(facet_dict):
+        """
+        Remove all .raw extensions from the facet name
+        :param facet_dict:
+        :return:
+
+        """
+        for key in list(facet_dict.keys()):
+            if key.endswith('.raw'):
+                facet_dict[key.replace('.raw', '')] = facet_dict.pop(key)
+        return facet_dict
+
+
+class FacetCountLink(object):
+    def __init__(self, facet_name, value, count, query):
+        self._value = value
+        self._count = count
+        self._name = facet_name
+        self._query = query
+        self._filter_query = "{}:{}".format(self._name, self._value)
+        self._facet_params = self._query.facet_params.copy()
+        self._is_selected = self._filter_query in self._facet_params.getlist('qf')
+        self._link = None
+
+    @property
+    def value(self):
+        return self._value
+
+    @property
+    def count(self):
+        return self._count
+
+    @property
+    def link(self):
+        if not self._link:
+            selected_facets = self._facet_params.getlist('qf')
+            facet_params = "{}&".format(self._facet_params.urlencode()) if self._facet_params else "?"
+            link = "{}qf={}".format(facet_params, self._filter_query.replace(":", "%3A"))
+            if self._query.converter:
+                link = self._query.apply_converter_rules(
+                        query_string=link,
+                        converter=self._query.converter,
+                        as_query_dict=False,
+                        reverse=True
+                )
+            if self.is_selected:
+                selected_facets.remove(self._filter_query)
+                self._facet_params.setlist('qf', selected_facets)
+                link = "{}".format(self._facet_params.urlencode())
+            self._link = link if link.startswith("?") else "?{}".format(link)
+        return self._link
+
+    @property
+    def url(self):
+        """
+        Convenience function to be backwards compatible with CultureHub API
+        """
+        return self.link
+
+    @property
+    def display_string(self):
+        return "{} ({})".format(self.value, self.count)
+
+    @property
+    def is_selected(self):
+        return self._is_selected
+
+    def __repr__(self):
+        return self._filter_query
+
+    def __str__(self):
+        return "{} ({})".format(self._filter_query, self._count)
+
+
+class FacetLink(object):
+    def __init__(self, name, facet_terms, query, total=0, other=0, missing=0):
+        self._name = name
+        self._total = total
+        self._other = other
+        self._missing = missing
+        self._query = query
+        self._facet_terms = facet_terms
+        self._is_selected = False
+        self._facet_count_links = self._create_facet_count_links()
+
+    def _create_facet_count_links(self):
+        facet_count_links = []
+        for term in self._facet_terms:
+            count = term.get('count')
+            value = term.get('term')
+            facet_count_links.append(
+                    FacetCountLink(self._name, value, count, self._query)
+            )
+        return facet_count_links
+
+    def __str__(self):
+        return "{} ({})".format(self._name, self._total)
+
+    def __repr__(self):
+        return "{}".format(self._name)
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def total(self):
+        return self._total
+
+    @property
+    def links(self):
+        return self._facet_count_links
+
+    @property
+    def link(self):
+        return self._facet_count_links
+
+    @property
+    def is_facet_selected(self):
+        if not self._is_selected:
+            self._is_selected = self._name in list(self._query.applied_filters.keys())
+        return self._is_selected
+
+    @property
+    def is_selected(self):
+        return self.is_facet_selected
+
+    @property
+    def missing_count(self):
+        return self._missing
+
+    @property
+    def other_count(self):
+        return self._other
+
+
+class NaveFacets(object):
+    def __init__(self, nave_query, facets):
+        self._facets = facets
+        self._nave_query = nave_query
+        self._facet_querylinks = self._create_facet_query_links()
+
+    def _create_facet_query_links(self):
+        facet_query_links = {}
+        for key, facet in list(self._facets.items()):
+            if key in ['places.raw']:
+                continue
+            clean_name = key.replace('.raw', '')
+            if self._nave_query.converter:
+                clean_name = self._nave_query.apply_converter_rules(
+                        query_string=clean_name,
+                        converter=self._nave_query.converter,
+                        as_query_dict=False,
+                        reverse=True
+                )
+                clean_name = "{}_facet".format(clean_name)
+            facet_query_link = FacetLink(
+                    name=clean_name,
+                    total=facet.total,
+                    missing=facet.missing,
+                    other=facet.other,
+                    query=self._nave_query,
+                    facet_terms=facet
+            )
+            facet_query_links[key] = facet_query_link
+        return facet_query_links
+
+    @property
+    def facet_query_list(self):
+        return list(self._facet_querylinks.values())
+
+    @property
+    def facet_query_dict(self):
+        return self._facet_querylinks
+
+    @property
+    def raw_facets(self):
+        return self._facets
+
+
+BreadCrumb = namedtuple('BreadCrumb', ['href', 'display', 'field', 'localised_field', 'value', 'is_last'])
+
+
+class UserQuery(object):
+    def __init__(self, query, num_found):
+        self._query = query
+        self._query_string = None
+        self._num_found = num_found
+        self._items = self._create_breadcrumbs()
+
+    def expand_params(self, param):
+        key = param[0]
+        value_list = param[1]
+        expanded_params = []
+        for value in value_list:
+            clean_value = value
+            if self._query.converter:
+                clean_value = self._query.apply_converter_rules(
+                        query_string=clean_value,
+                        converter=self._query.converter,
+                        as_query_dict=False,
+                        reverse=True
+                )
+            expanded_params.append((key, clean_value))
+        return expanded_params
+
+    def _create_breadcrumbs(self):
+        breadcrumbs = []
+        filters = ['qf', 'qf[]']
+        base_params = [param for params in self._query.facet_params.lists() for param in self.expand_params(params) if
+                       param[0] not in filters]
+        filter_params = [param for params in self._query.facet_params.lists() for param in self.expand_params(params) if
+                         param[0] in filters]
+        query = BreadCrumb(
+                href=urllib.parse.urlencode(base_params),
+                display=self.terms,
+                field="",
+                localised_field="",
+                value=self.terms,
+                is_last=False
+        )
+        breadcrumbs.append(query)
+        for filt in filter_params:
+            base_params.append(filt)
+            breadcrumbs.append(
+                    BreadCrumb(
+                            href=urllib.parse.urlencode(base_params),
+                            display=filt[1],
+                            field=filt[1].split(":")[0],
+                            localised_field=filt[1].split(":")[0],
+                            value=":".join(filt[1].split(":")[1:]),
+                            is_last=False
+                    )
+            )
+        # mark last as last
+        last = breadcrumbs[-1]._replace(is_last=True)
+        if len(base_params) == 1:
+            breadcrumbs = [last]
+        else:
+            breadcrumbs = breadcrumbs[:-1] + [last]
+        return breadcrumbs
+
+    @property
+    def terms(self):
+        if not self._query_string:
+            self._query_string = self._query.base_params.get('q', "")
+        if self._query.converter:
+            self._query_string = self._query.apply_converter_rules(
+                    query_string=self._query_string,
+                    converter=self._query.converter,
+                    as_query_dict=False,
+                    reverse=True
+            )
+        return self._query_string
+
+    @property
+    def num_found(self):
+        return self._num_found
+
+    @property
+    def items(self):
+        return self._items
+
+    @property
+    def breadcrumbs(self):
+        return self._items
+
+
+class ESPaginator(Paginator):
+    """
+    Override Django's built-in Paginator class to take in a count/total number of items;
+    Elasticsearch provides the total as a part of the query results, so we can minimize hits.
+
+    Also change `page()` method to use custom ESPage class (see below).
+    """
+
+    def __init__(self, *args, **kwargs):
+        count = kwargs.pop('count', None)
+        super(ESPaginator, self).__init__(*args, **kwargs)
+        self._count = count
+
+    def page(self, number, just_source=True):
+        """ Returns a Page object for the given 1-based page number. """
+        number = self.validate_number(number)
+        if just_source:
+            # the ESPage class below extracts just the `_source` data from the hit data.
+            return ESPage(self.object_list, number, self)
+        return Page(self.object_list, number, self)
+
+
+class ESPage(Page):
+    def __getitem__(self, index):
+        if not isinstance(index, (slice,) + six.integer_types):
+            raise TypeError
+        obj = self.object_list[index]
+        return obj.get('_source', obj)
+
+
+class QueryPagination(object):
+    def __init__(self, paginator, current_page=1):
+        self._paginator = paginator
+        self._page = self._paginator.page(current_page)
+        self._links = None
+
+    @property
+    def page(self):
+        return self._page
+
+    @property
+    def start(self):
+        return self._page.start_index()
+
+    @property
+    def rows(self):
+        return self._paginator.per_page
+
+    @property
+    def num_found(self):
+        return self._paginator.count
+
+    @property
+    def has_next(self):
+        return self._page.has_next()
+
+    @property
+    def next_page_start(self):
+        if self.has_next:
+            next_page = self._paginator.page(self._page.next_page_number())
+            return next_page.start_index()
+        return 0
+
+    @property
+    def next_page_number(self):
+        if self.has_next:
+            return self._page.next_page_number()
+        return 0
+
+    @property
+    def has_previous(self):
+        return self._page.has_previous()
+
+    @property
+    def previous_page_start(self):
+        if self.has_previous:
+            previous_page = self._paginator.page(self._page.previous_page_number())
+            return previous_page.start_index()
+        return 0
+
+    @property
+    def previous_page_number(self):
+        if self.has_previous:
+            return self._page.previous_page_number()
+        return 0
+
+    @property
+    def first_page(self):
+        return 1
+
+    @property
+    def last_page(self):
+        return self._paginator.num_pages
+
+    @property
+    def current_page(self):
+        return self._page.number
+
+    @property
+    def links(self):
+        if not self._links:
+            self._links = self._create_links()
+        return self._links
+
+    def _create_links(self):
+        from_page = self._page.number - 5
+        from_page = from_page
+        if from_page < 1 or not self._paginator.validate_number(from_page):
+            from_page = 1
+        to_page = from_page + 10
+        if to_page > self._paginator.num_pages or not self._paginator.validate_number(to_page):
+            to_page = self._paginator.num_pages + 1
+            if (to_page - 10) < 10:
+                from_page = to_page - 10
+                if from_page < 1:
+                    from_page = 1
+        page_links = []
+        for page in range(from_page, to_page):
+            page_number = self._paginator.page(page)
+            page_links.append(PageLink(
+                    page_number.start_index(),
+                    page is not self._page.number,
+                    page_number.number
+            )
+            )
+        return page_links
+
+
+PageLink = namedtuple('PageLink', ['start', 'is_linked', 'page_number'])
+
+
+class NaveESItem(object):
+    def __init__(self, es_item, converter=None):
+        self._converter = converter
+        self._es_item = es_item
+        self._create_meta()
+        self._fields = self._create_item()
+        # self._canonical_url = self._create_canonical_url()
+
+    def __getitem__(self, item):
+        return self._fields[item]
+
+    @property
+    def doc_id(self):
+        return self._doc_id
+
+    @property
+    def doc_type(self):
+        return self._doc_type
+
+    @property
+    def fields(self):
+        return self._fields
+
+    def _create_canonical_url(self):
+        # todo implement later with reverse
+        pass
+
+    def _create_meta(self):
+        if isinstance(self._es_item, Result):
+            self._doc_id = self._es_item.meta.id
+            self._doc_type = self._es_item.meta.doc_type
+            self._index = self._es_item.meta.index
+            self._score = self._es_item.meta.score
+        else:
+            # todo: deprecate this elasticutils code later
+            self._doc_id = self._es_item.get('_id')
+            self._doc_type = self._es_item.get('_type')
+            self._index = self._es_item.get('_index')
+            self._score = self._es_item.get('_score')
+
+    def _create_item(self):
+        # todo filter out None later
+        if isinstance(self._es_item, Result):
+            fields = self._es_item.to_dict()
+        else:
+            fields = self._es_item['_source']
+        if self._converter and self._doc_type == "void_edmrecord":
+            fields = self._converter(es_result_fields=fields).convert()
+        items = sorted(fields.items())
+        return collections.OrderedDict(items)
+
+
+class NaveESItemWrapper(object):
+    def __init__(self, es_item, converter=None):
+        self.converter = converter
+        self._es_item = NaveESItem(
+                es_item=es_item,
+                converter=converter
+        )
+
+    @property
+    def item(self):
+        return self._es_item
+
+    def __getitem__(self, item):
+        return self._es_item[item]
+
+
+class NaveESItemList(object):
+    def __init__(self, results, converter=None):
+        self._converter = converter
+        self._results = results
+        self._items = self._create_items()
+
+    @property
+    def items(self):
+        return self._items
+
+    def _create_items(self):
+        return [NaveESItemWrapper(es_item=item, converter=self._converter) for item in self._results]
+
+
+class NaveQueryResponseWrapper(object):
+    """
+    This is a utility class to wrap the API response
+
+    With normal library use you would only need NaveQueryResponse
+    """
+
+    def __init__(self, nave_query_response):
+        self._query_response = nave_query_response
+
+    @property
+    def response(self):
+        return self._query_response
+
+    @property
+    def data(self):
+        return self._query_response
+
+    @property
+    def query(self):
+        return self._query_response.query
+
+
+class NaveItemResponse(object):
+    def __init__(self, query, nave_query, index, mlt=False, mlt_items=None, mlt_count=5, ):
+        self._index = index
+        self._query = query
+        self._nave_query = nave_query
+        self._results = self._query.execute()
+        self._mlt = mlt
+        self._doc_type = None
+        self._id = None
+        self._item = None
+        self._mlt_count = mlt_count
+        self._mlt_items = mlt_items
+        self._mlt_results = self._create_mlt()
+
+    def get_mlt(self):
+        return self._mlt_results
+
+    def _create_mlt(self):
+        # todo build query first and get first one for item and rest as related items
+        if self._mlt and self.item:
+            # todo: implement the elasticsearch-dsl version of MLT
+            doc_type = self.item.doc_type
+            doc_id = self.item.doc_id
+            s = Search(using=get_es(), index=self._index)
+            mlt_query = s.query(
+                    'more_like_this',
+                    fields=self._nave_query.mlt_fields,
+                    min_term_freq=1,
+                    max_query_terms=12,
+                    include=False,
+                    docs=[{
+                        "_index": self._index,
+                        "_type": doc_type,
+                        "_id": doc_id
+                    }]
+            )[:self._mlt_count]
+            hits = mlt_query.execute()
+            items = []
+            for item in hits:
+                nave_item = NaveESItem(item, self._nave_query.get_converter())
+                items.append(nave_item)
+            return items
+        return ""
+
+    @property
+    def item(self):
+        if not self._item:
+            if len(self._results.results) > 0:
+                es_item = self._results.results[0]
+                self._item = NaveESItem(es_item)
+        return self._item
+
+    @property
+    def related_items(self):
+        return self._mlt_results
+
+
+class NaveQueryResponse(object):
+    """
+    This class encapsulates the responses of the NaveQuery.
+
+    The elements can be used to render the results
+    """
+
+    def __init__(self, query, converter=None, api_view=None):
+
+        self._converter = converter
+        self._query = query
+        self._api_view = api_view
+        self._results = query.query.execute()
+        self._num_found = None
+        self._user_query = UserQuery(self._query, self.num_found)
+        self._items = None
+        self._facets = None
+        self._pagination = None
+        self._geojson_clusters = None
+        self._paginator = None
+        self._rows = self._query.size
+
+    @property
+    def query(self):
+        return self._query
+
+    @property
+    def es_results(self):
+        return self._results
+
+    @property
+    def user_query(self):
+        if not self._user_query:
+            self._user_query = UserQuery(self._query, self.num_found)
+        return self._user_query
+
+    @property
+    def num_found(self):
+        if not self._num_found:
+            self._num_found = self.es_results.count
+        return self._num_found
+
+    @property
+    def paginator(self):
+        if not self._paginator:
+            self._paginator = ESPaginator(self.es_results.objects, self._rows, count=self.num_found)
+        return self._paginator
+
+    @property
+    def pagination(self):
+        if not self._pagination:
+            self._pagination = QueryPagination(
+                    self.paginator,
+                    self._query.page
+            )
+        return self._pagination
+
+    @property
+    def items(self):
+        """
+        :return: a list of result items
+        """
+        if not self._items:
+            self._items = NaveESItemList(
+                    results=self._results.results,
+                    converter=self._converter).items
+        return self._items
+
+    @property
+    def facets(self):
+        """
+        NaveFacets as a list
+        """
+        if not self._facets:
+            self._facets = NaveFacets(self._query, self._results.facets)
+        return self._facets
+
+    @property
+    def facet_dict(self):
+        """Facets as a dictionary by raw facet query, e.g. gemeente.raw"""
+        return self.facets.facet_query_dict
+
+    @property
+    def facet_list(self):
+        """Facets as a list of FacetConfigs to be used directly in the views"""
+        facets = self._api_view.facets
+        facet_query_links = self.facet_dict
+        for conf in facets:
+            key = conf.es_field
+            links = facet_query_links.get(key)
+            conf.facet_link = links
+        return facets
+
+    @property
+    def geojson_clusters(self):
+        if not self._geojson_clusters and 'places' in self._results.facets:
+            self._geojson_clusters = self._query.query.places_as_geojson(self.facets)
+        return self._geojson_clusters
+
+    @property
+    def facet_query_links(self):
+        return self.facets.facet_query_list
+
+    @property
+    def layout(self):
+        if not self._converter:
+            return {}
+        layout_fields = self._converter().get_layout_fields()
+        return {"layout": layout_fields}

@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% load future i18n static urls_tags %}
+
+{% block meta_title %}{% trans 'Create a search widget' %}{% endblock meta_title %}
+{% block page_title %}{% endblock  %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static "css/search-widget.css" %}"/>
+{% endblock %}
+
+{% block breadcrumbs %}
+    <ul class="breadcrumb">
+        <li>
+            <a href="/">{% trans 'Home' %}</a>
+        </li>
+        <li class="active">
+            <span>{% trans 'Search widget' %}</span>
+        </li>
+    </ul>
+{% endblock %}
+
+{% block content %}
+
+    {% block search_widget_intro %}
+        <h3>{% trans 'Search-widget configuration' %}</h3>
+        <p>{% trans 'Configure a search widget for use on your own website. Copy the generated code and paste in your own blog or website.' %}</p>
+        <hr/>
+    {% endblock %}
+
+    <div class="row">
+        <div class="col-md-7">
+            <form name="widget-form" id="widget-form" class="form">
+                <div class="form-group">
+                    <label for="short-text">{% trans 'Short text' %}</label>
+                    <input type="text" name="short-text" id="search-widget-text" class="form-control"
+                           placeholder="{% trans 'A short text that will appear above the search input field' %}"
+                           maxlength="255"/>
+                </div>
+                <div class="form-group">
+                    <label for="short-text">{% trans 'Placeholder text' %}</label>
+                    <input type="text" name="placeholder-text" id="search-widget-placeholder-text" class="form-control"
+                           placeholder="{% trans 'Default text to appear inside the search input box' %}"
+                           maxlength="155"/>
+                </div>
+                <div class="form-group">
+                    <label for="short-text">{% trans 'Button text' %}</label>
+                    <input type="text" name="button-text" id="search-button-text" class="form-control"
+                           placeholder="{% trans 'Text that will appear on the search button' %}"/>
+                </div>
+                <div class="form-group">
+                    <button class="btn btn-info" id="btn-update-preview"
+                            type="button">{% trans 'Update preview' %}</button>
+                    <button class="btn btn-warning" id="btn-make-code" type="button" data-toggle="modal"
+                            data-target="#widgetCodeModal">{% trans 'Create widget code' %}</button>
+                </div>
+            </form>
+        </div>
+        <div class="col-md-5">
+            <h2>{% trans 'Preview' %}</h2>
+
+            <div id="widget-code-source">
+
+                {% spaceless %}
+                    {% get_current_language as language %}
+                    <form method="get" target="_blank" action="{% block search_widget_action %}http://{{ request.get_host }}{% endblock %}/{{ language }}/search/" class="search-widget-form">
+                        <div class="search-widget-branding">
+                            {% block search_widget_branding %}Delving Nave{% endblock %}
+                        </div>
+                        <p class="search-widget-text">Widget text goes here. Some explanation of what will happen once
+                            you click on the submit button.</p>
+                        <input type="text" name="q" class="search-widget-input"
+                               placeholder="{% trans 'Enter a search term here' %}"/>
+                        <button type="submit" class="search-widget-button">{% trans 'Search' %}</button>
+                    </form>
+
+                    {% block search_widget_style %}
+                        <style type="text/css">
+                            .search-widget-form {
+                                background: #67AB49;
+                                padding: 10px;
+                            }
+
+                            .search-widget-branding {
+                                font-size: 24px;
+                            }
+
+                            .search-widget-branding i {
+                                background: #477532;
+                                display: inline-block;
+                                font-family: Georgia, "Times New Roman", Times, serif;
+                                font-style: normal;
+                                font-weight: bold;
+                                margin-right: 2px;
+                                padding: 2px 4px;
+                            }
+
+                            .search-widget-input,
+                            .search-widget-button {
+                                border: 1px solid #ddd;
+                                border-radius: 0px;
+                                box-sizing: border-box;
+                                font-size: 14px;
+                                height: 32px;
+                                margin: 0;
+                                padding: 4px 8px;
+                                vertical-align: top;
+                            }
+
+                            .search-widget-input {
+                                width: 78%;
+                                color: #888;
+                            }
+
+                            .search-widget-button {
+                                width: 18%;
+                            }
+                        </style>
+                    {% endblock %}
+
+                {% endspaceless %}
+
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="widgetCodeModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">{% trans 'Widget code' %}</h4>
+                </div>
+                <div class="modal-body">
+                    <textarea id="widget-code"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <div class="alert alert-warning pull-left hidden" id="msg-copied">{% trans 'Widget code copied to clipboard' %}</div>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">{% trans 'Close' %}</button>
+                    <button type="button" class="btn btn-primary copy-button" data-clipboard-target="widget-code"><i class="fa fa-copy"></i> {% trans 'Copy to clipboard' %}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+    <script src="{% static 'js/ZeroClipboard.js' %}"></script>
+    <script src="{% static 'js/SearchWidget.js' %}"></script>
+    <script>
+        $(document).ready(function () {
+            SearchWidget.init("{% static '' %}");
+        });
+    </script>
+{% endblock %}

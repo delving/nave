@@ -1,0 +1,75 @@
+{% load dataset_tags i18n  %}
+<dl class="detail-list">
+{% for predicate, objects in items %}
+    <dt>
+         {{ predicate.qname }}
+{#        <strong>{{ level }}</strong>#}
+        <span class="predicate-uri-label label label-default">{{ predicate.uri }}</span>
+    </dt>
+    <dd>
+        {% for obj in objects %}
+            {% if obj.is_uri %}
+                <div property="{{ predicate.qname }}">
+                    {##################################################################################################}
+                    {# LINK DISPLAY                                                                                   #}
+                    {##################################################################################################}
+                    <a
+                        href="{% if obj.cache_url %}{{ obj.cache_url }}{% else %}{{ obj.id }}{% endif %}"
+                        property="{{ predicate.uri }}"
+                        {% if not request.META.HTTP_HOST in obj.value %}
+                        target="_blank"
+                        title="{% trans 'Opens in new window' %}"
+                        {% endif %}
+                     >
+                        {{ obj.value }}
+                    </a>
+
+                    {##################################################################################################}
+                    {# LANGAUGE DISPLAY                                                                               #}
+                    {##################################################################################################}
+
+                    {% if obj.language %} @{{ obj.language }} {% endif %}
+
+                    {##################################################################################################}
+                    {# TOGGLE INLINE DATA BUTTON                                                                      #}
+                    {##################################################################################################}
+
+                    {% if obj.has_resource and level < nr_levels %}
+                        <a href="#" class="show-inlines collapsed js-with-inlines" data-more-text="{% trans 'Show more' %}" data-less-text="{% trans 'Show less' %}" data-target="inline_{{ level }}_{{ forloop.parentloop.counter }}_{{ forloop.counter }}">
+                           {% trans 'Show more' %}
+                        </a>
+
+                        {##############################################################################################}
+                        {# INLINES                                                                                    #}
+                        {##############################################################################################}
+                        <div class="indent hidden" id="inline_{{ level }}_{{ forloop.parentloop.counter }}_{{ forloop.counter }}">
+                            {% render_properties obj=obj resources=resources predicate=predicate level=level%}
+                        </div>
+                    {% endif %}
+
+                </div>
+            {% elif obj.is_bnode %}
+                {% if obj.has_resource and level < nr_levels %}
+                    <a href="#" class="show-inlines collapsed js-with-inlines" data-more-text="{% trans 'Show more' %}" data-less-text="{% trans 'Show less' %}" data-target="inline_{{ level }}_{{ forloop.parentloop.counter }}_{{ forloop.counter }}">
+                        {% trans 'Show more' %}
+                    </a>
+
+                    {##############################################################################################}
+                    {# INLINES                                                                                    #}
+                    {##############################################################################################}
+                    <div class="indent hidden" id="inline_{{ level }}_{{ forloop.parentloop.counter }}_{{ forloop.counter }}">
+                        {% render_properties obj=obj resources=resources predicate=predicate level=level %}
+                    </div>
+                {% endif %}
+            {% else %}
+                <div property="{{ predicate.search_label }}" {% if obj.language %} xml:lang="{{ obj.language }}" {% endif %} {% if obj.datatype %} datatype="{{ obj.datatype }}" {% endif %} >
+                    {##################################################################################################}
+                    {# PLAIN VALUE DISPLAY - NO LINK                                                                  #}
+                    {##################################################################################################}
+                    {{ obj.value }} {% if obj.language %} @{{ obj.language }} {% endif %}
+                </div>
+            {% endif %}
+        {% endfor %}
+    </dd>
+{% endfor %}
+</dl>

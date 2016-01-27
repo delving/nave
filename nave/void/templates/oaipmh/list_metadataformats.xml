@@ -1,0 +1,14 @@
+{% extends "oaipmh/base.xml" %}
+
+{# todo add <schema> later #}
+
+{% block content %}
+  <ListMetadataformats>
+    {% for prefix, namespace in items %}
+        <metadataFormat>
+            <metadataPrefix>{{ prefix }}</metadataPrefix>
+            <metadataNamespace>{{ namespace }}</metadataNamespace>
+        </metadataFormat>
+    {% endfor %}
+  </ListMetadataformats>
+{% endblock %}

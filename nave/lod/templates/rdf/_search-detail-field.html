@@ -1,0 +1,107 @@
+{% load i18n dataset_tags %}
+{% if predicate and fields %}
+    {% if not value_only %}
+        <div class="ds-field {{ fieldname }}">
+            {% if show_predicate %}
+                <label class="ds-field-label" data-title="{{ predicate.uri }}">
+                {# TODO: add i18 translation wrappers for labels and predicate.labels #}
+                    {% if not label %}
+                        {{ predicate.label }}
+                    {% else %}
+                        {{ label }}
+                    {% endif %} 
+                </label>
+            {% endif %}
+            {% for field in fields %}
+                {# surround with an html element if passed #}
+                {% if surround %}
+                    <{{ surround }}>
+                {% endif %}
+                <span class="ds-field-value" property="{{ predicate.prefix }}:{{ predicate.label }}" {% if field.language %}xml:lang="{{ field.language }}"{% endif %} {% if field.datatype %}datatype="{{ field.datatype }}"{% endif %}>
+                    {# display the value #}
+                    {% if not allow_html %}
+                        {% if not word_limit %}
+                            {{ field.value }}
+                        {% else %}
+                            {{ field.value|truncatewords:word_limit }}
+                        {% endif %}
+                    {% else %}
+                        <span class="field-html">
+                        {% if not word_limit %}
+                            {{ field.value|safe }}
+                        {% else %}
+                            {{ field.value|truncatewords:word_limit|safe }}
+                        {% endif %}
+                        </span>
+                    {% endif %}
+                    {# display the language #}
+    {#                {% if field.language %}@{{ field.language }}{% endif %}#}
+                    {# display is_uri icon and add mouseover functionality to display more info #}
+                    <div class="field-tools">
+                        {# info icon: onmouseover display skos definition of this term #}
+{#                        {% if field.is_uri and not is_link and field.resource_has_skos_definition %}#}
+                        {% if field.is_uri and not is_link  %}
+                            <a href='{% url 'results-list' %}?q=rdf.object.id:"{{ field.id }}"'
+                               property="{{ predicate.uri }}"
+                               data-endpoint="resources_{{ fieldname }}"
+                               class="js-lod-data-link label label-info"
+                               data-toggle="popover"
+                               data-popover="true"
+                               data-html="true"
+                               data-title="{% trans fieldname %}: {{ field.value }}"
+                               data-content='{% detail_field "skos_definition" rdf_object=field predicate_uri="http://www.w3.org/2004/02/skos/core#definition" label=_('Definition') %}'
+                               data-target="#lod-data"><i class="fa fa-info"></i>
+                            </a>
+                        {% endif %}
+                        {% if is_link %}
+                            <a href="{{ field.value }}" target="_blank" title="{% trans 'Opens in new window' %}" class="label label-default" data-toggle="tooltip">
+                                <i class="fa fa-link"></i>
+                            </a>
+                        {% endif %}
+                        {% if new_facet_query %}
+                            <a href="{% url 'results-list' %}?qf={{ fieldname|urlencode }}:{{ field.value }}" class="label label-info" data-toggle="tooltip" title="{% trans fieldname %}">
+                                <i class="fa fa-search"></i>
+                            </a>
+                        {% endif %}
+                        {% if new_query %}
+                            <a href="{% url 'results-list' %}?q={{ field.value|urlencode }}" class="label label-success" data-toggle="tooltip" title="{% trans 'Free text' %}">
+                                <i class="fa fa-search"></i>
+                            </a>
+                        {% endif %}
+                    </div>
+                </span>
+                {# display the seperator if passed along and not at the end #}
+                {% if separator and not forloop.last %}{{ separator }}{% endif %}
+                {# close the surround tag if passed #}
+                {% if surround %}
+                    </{{ surround }}>
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% else %}
+        {% for field in fields %}
+            {% if surround %}
+                <{{ surround }}>
+            {% endif %}
+            {% if not allow_html %}
+                {% if not word_limit %}
+                    {{ field.value }}
+                {% else %}
+                    {{ field.value|truncatewords:word_limit }}
+                {% endif %}
+            {% else %}
+                <span class="field-html">
+                {% if not word_limit %}
+                    {{ field.value|safe }}
+                {% else %}
+                    {{ field.value|truncatewords:word_limit|safe }}
+                {% endif %}
+                </span>
+            {% endif %}
+            {% if surround %}
+                </{{ surround }}>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+{% endif %}

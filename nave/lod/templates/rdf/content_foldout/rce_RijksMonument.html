@@ -1,0 +1,71 @@
+{% load staticfiles i18n thumbnail dataset_tags  leaflet_tags %}
+
+<div class="row row-eq-height">
+    <div class="col-sm-6">
+
+        {#############################################################}
+        {# MAP GEO                                                   #}
+        {#############################################################}
+        {% if points %}
+            {% leaflet_map "foldout-map" callback="window.map_init" %}
+
+            {# TODO: move this to results template and combine with other geo functionality AND trigger on foldout #}
+            {% leaflet_js %}
+            <script type="text/javascript" src="{% static 'js/leaflet/leaflet.label-src.js' %}"></script>
+            <script>
+                var tiles = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png',{maxZoom:22});
+                var foldoutMap = L.map('foldout-map',  {layers: [tiles] });
+                foldoutMap.invalidateSize(false);
+                foldoutMap.setView([{{ points.0.0 }}, {{ points.0.1 }}], 13);
+                // add markers
+                var marker = L.marker([{{ points.0.0 }}, {{ points.0.1 }}]).addTo(foldoutMap)
+            </script>
+        {% endif %}
+    </div>
+    <div class="col-sm-6">
+        <a href="{{ detail.document_uri }}" class="btn btn-default btn-xs pull-right">{% trans 'View details' %}</a>
+        {% detail_field 'rce_compleet_straat_adres' label=_('compleet straat adres') %}
+        {% detail_field 'rce_plaats' label=_('plaats') %}
+        {% detail_field 'rce_cbscategor' label=_('cbscategor') %}
+    </div>
+</div>
+{#############################################################}
+{# MODAL/LIGHTBOX FOR LINK VALUE DISPLAY                     #}
+{#############################################################}
+
+<div class="modal fade" id="lod-data">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">
+                    <span class="current-fieldname">lod fieldname</span>:
+                    <span class="current-literal">lod literal</span>
+                </h4>
+            </div>
+            <div class="modal-body">
+
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+    <script>
+        $(document).ready(function () {
+            $('.js-lod-data-link').on('click', function (e) {
+                // don't go anywhere, modal is being activated by this class
+                e.preventDefault();
+                // grab some display values for the modal
+                $('.current-fieldname').html($(this).attr('property'));
+                $('.current-literal').html($(this).html());
+            });
+        });
+    </script>
+{% endblock %}
+
+

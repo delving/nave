@@ -1,0 +1,34 @@
+{% extends "oaipmh/base.xml" %}
+
+{% block content %}
+    <GetRecord>
+        {% for i in items %}
+            <record>
+                <header>
+                    <identifier>{{ i.identifier }}</identifier>
+                    <datestamp>{{ i.last_modified|date:'c' }}</datestamp>
+                    {% for set in i.sets %}
+                        <setSpec>{{ set }}</setSpec>
+                    {% endfor %}
+                </header>
+                <metadata>
+                    {% if i.fields %}
+                        <record  {{ i.ns|safe }}>
+                            {% for field, values in i.fields.items %}
+                                {% for entry in values %}
+                                    <{{ field }}>{{ entry }}</{{ field }}>
+                                {% endfor %}
+                            {% endfor %}
+                        </record>
+                    {% elif i.record %}
+                        {{ i.record|safe }}
+                    {% endif %}
+                </metadata>
+            </record>
+        {% endfor %}
+    {% if resumption_token %}
+        <resumptionToken completeListSize="{{ list_size }}"
+                         cursor="{{ cursor }}">{{ resumption_token }}</resumptionToken>
+    {% endif %}
+    </GetRecord>
+{% endblock %}

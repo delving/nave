@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% load  i18n static %}
+
+{% block content %}
+    <ul class="key-value-list lined">
+    {% for row in items|default:"111111111" %}
+        <li>
+            <label rel="fieldname">fieldname-{{ forloop.counter }}</label>
+            <span rel="literal" class="value">literal-{{ forloop.counter }}</span>
+            {# all logged in users get to see the 'edit' link to trigger modal to add link #}
+            {% if user.is_authenticated %}
+                <a href="#" class="lod-form-link" data-toggle="modal" data-target="#lod-form" title="" data-current-fieldname="fieldname-{{ forloop.counter }}" data-current-literal="literal-value-{{ forloop.counter }}">
+                    <i class="fa fa-edit fa-border"></i>
+                </a>
+            {% endif %}
+            {# if a link has been added then show this to launch modal with linked statistics #}
+            {% if forloop.counter == 2 or forloop.counter == 4 or forloop.counter == 7  %}
+                <a href="#" class="lod-data-link" data-toggle="modal" data-target="#lod-data" title="" data-current-fieldname="fieldname-{{ forloop.counter }}" data-current-literal="literal-value-{{ forloop.counter }}">
+                    <i class="fa fa-link fa-border"></i>
+                </a>
+            {% endif %}
+        </li>
+    {% endfor %}
+    </ul>
+
+    <div class="modal fade" id="lod-form">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">LOD Link Form</h4>
+                </div>
+                <div class="modal-body">
+                    <span class="current-fieldname">lod fieldname</span>:
+                    <span class="current-literal">lod literal</span>
+                    <hr/>
+                    <label for="lod-form-link">lod link</label>
+                    <input type="text" class="form-control" placeholder="URL link here"/>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="lod-data">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">
+                        <span class="current-fieldname">lod fieldname</span>:
+                        <span class="current-literal">lod literal</span>
+                    </h4>
+                </div>
+                <div class="modal-body">
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}
+
+
+{% block extra_js  %}
+    <script>
+        function Lod(){};
+        var currentField, currentLiteral;
+
+        /* MODAL LINK FORM ACTIVATION *********************************************************************************/
+
+        $(function () {
+            var curField, curLiteral;
+            $('.lod-form-link').on('click', function () {
+                $('.current-fieldname').html($(this).attr('data-current-fieldname'));
+                $('.current-literal').html($(this).attr('data-current-literal'));
+            });
+            $('.lod-data-link').on('click', function () {
+                $('.current-fieldname').html($(this).attr('data-current-fieldname'));
+                $('.current-literal').html($(this).attr('data-current-literal'));
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block extra_css  %}<link href="{% static 'css/navigator.css' %}" rel="stylesheet" type="text/css">{% endblock %}

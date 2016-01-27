@@ -1,0 +1,46 @@
+{% load staticfiles i18n thumbnail dataset_tags  %}
+
+<div class="row row-eq-height">
+    {% detail_field 'gn_name' label=_('Name') %}
+</div>
+
+{#############################################################}
+{# MODAL/LIGHTBOX FOR LINK VALUE DISPLAY                     #}
+{#############################################################}
+
+<div class="modal fade" id="lod-data">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">
+                    <span class="current-fieldname">lod fieldname</span>:
+                    <span class="current-literal">lod literal</span>
+                </h4>
+            </div>
+            <div class="modal-body">
+
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+    <script>
+        $(document).ready(function () {
+            $('.js-lod-data-link').on('click', function (e) {
+                // don't go anywhere, modal is being activated by this class
+                e.preventDefault();
+                // grab some display values for the modal
+                $('.current-fieldname').html($(this).attr('property'));
+                $('.current-literal').html($(this).html());
+            });
+        });
+    </script>
+{% endblock %}
+
+

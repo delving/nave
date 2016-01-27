@@ -1,0 +1,317 @@
+@import "mixins";
+@import "grid";
+@import "variables";
+
+@column-width: 60;
+@gutter-width: 10;
+@columns: 12;
+@total-width: 100%;
+
+/*
+ * Row with equal height columns
+ * --------------------------------------------------
+ */
+
+.row-eq-height {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display:         flex;
+}
+
+
+/* a little help for the multicolumn cms plugins */
+
+.multicolumn2,
+.multicolumn3,
+.multicolumn4,
+.multicolumn5,
+.multicolumn6 {
+  margin: 0px -15px;
+  .column {
+    padding: 0px 15px;
+  }
+
+}
+/* list styles */
+
+.list-blocks{
+  li {
+    background: #eaeaea;
+    padding: 10px;
+    margin-bottom: 10px;
+    word-wrap: break-word;
+    overflow: hidden;
+    display: block;
+    label {
+      font-size: 100%;
+      font-weight: bold;
+      display: block;
+      column-span: all;
+    }
+  }
+}
+
+.list-lined {
+  margin: 0;
+  padding: 0;
+  li {
+    border-bottom: 1px solid #ddd;
+    list-style: none;
+    padding: 2px 0;
+  }
+}
+
+/* a bootstrap grid addition to allow for 5 equal columns */
+
+.col-sm-1of5{
+  width:20%;
+  /* Extra Small Devices, Phones */
+  @media only screen and (max-width : 768px) {
+    width: 100%;
+  }
+}
+
+//@media(min-width:34em){
+//  .col-sm-1of5{
+//    width:100%;
+//  }
+//}
+//@media(min-width:48em){
+//  .col-sm-1of5{
+//    width:100%;
+//  }
+//}
+//@media(min-width:62em){
+//  .col-sm-1of5{
+//    width:20%;
+//  }
+//}
+//
+//@media(min-width:75em){
+//  .col-sm-1of5{
+//    width:20%;
+//  }
+//}
+/*************************************************
+ Key-value lists
+**************************************************/
+
+//.label {
+//  background: @gray-lighter;
+//  display: inline-block;
+//  padding: .2em .6em .3em;
+//  font-size: 85%;
+//  font-weight: bold;
+//  line-height: 1;
+//  color: @gray-light;
+//  border: 1px solid #ddd;
+//  text-align: center;
+//  white-space: nowrap;
+//  vertical-align: baseline;
+//  border-radius: .25em;
+//  margin: 0 1px 1px 0;
+//}
+
+ul.key-value-list {
+  margin: 0;
+  padding: 0;
+  li {
+    .clearfix();
+    list-style-type: none;
+//    vertical-align: top;
+
+  }
+  label {
+    color: @gray-light;
+    display: inline-block;
+    font-weight: 100;
+    margin: 0 4px 0 0;
+    text-align: right;
+    padding-right: 6px;
+    min-width: 8em;
+  }
+  + span {
+    display: inline-block;
+  }
+  span {
+    //    word-break: break-all;
+    word-wrap: break-word;
+    &.value {
+      //.label();
+      font-size: inherit;
+    }
+  }
+  &.lined li {
+    border-bottom: 1px solid @gray-lighter;
+    padding: 4px 0px;
+  }
+  &.small {
+    font-size: small;
+    label {
+      min-width: 6em;
+    }
+  }
+  &.stacked {
+    li {
+      display: block;
+      margin-bottom: 10px;
+      label {
+        text-align: left;
+        font-size: 110%;
+      }
+    }
+  }
+  &.wide {
+    label {
+      min-width: 10em;
+    }
+  }
+}
+
+/* Twitter Bootstrap overrides */
+
+.popover {
+  max-width: 300px;
+  word-wrap: break-word;
+}
+
+
+/* cms annoyances **************************************/
+
+/* CMS active overrides */
+
+html.cms-ready {
+  margin-top: 0px !important;
+}
+
+#cms_toolbar {
+  top: 0px !important;
+  .cms_toolbar-trigger {
+    top: 0px !important;
+  }
+  .cms_debug-bar {
+    display: none;
+  }
+  &.cms_toolbar-debug div.cms_toolbar,
+  &.cms_toolbar-debug div.cms_toolbar-trigger {
+    top: 0px !important;
+  }
+  &.cms_toolbar-debug div.cms_toolbar-trigger {
+    left: 0px !important;
+    border-right: 1px solid #000;
+    width: 32px;
+  }
+}
+
+
+/* slide out side panels ****************************/
+
+.side-panel {
+  background-color: #222;
+  color: #bbb;
+  height: 100%;
+  width: 280px;
+  /*********************/
+  position: fixed;
+  top: 0;
+  z-index: 10;
+  /*********************/
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+  &.left { left: -280px; }
+  &.right { right: -280px; }
+  &.show-left { left: 0; }
+  &.show-right { right: 0; }
+}
+
+.side-panel-inner {
+  padding: 10px;
+}
+
+#show-side-panel-right {
+  background: #222;
+  color: #888;
+  font-size: 1.2em;
+  height: 32px;
+  margin-right: 100%;
+  padding: 6px 10px 7px 10px;
+  width: 32px;
+  /*********************/
+  position: absolute;
+  top: 300px;
+  right: 0;
+  /*********************/
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+}
+
+/* lifted corners box shadow ***********/
+
+//.lifted {
+//  background: @white;
+//  display: block;
+//  position:relative;
+//  -webkit-box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
+//  -moz-box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
+//  box-shadow:1px 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
+//}
+//
+//.lifted:before,
+//.lifted:after {
+//  content:"";
+//  position:absolute;
+//  z-index:-2;
+//}
+
+/* cms-plugin STATISTIC BLOCK ***********/
+
+.statistics-block {
+  padding: 30px 10px;
+  text-align: center;
+  .text {
+    color: @gray-light;
+    font-family: @font-family-sans-serif;
+    font-weight: normal;
+  }
+  .count {
+    color: @charcoal;
+    font-family: @font-family-serif;
+    font-size: 1.25em;
+  }
+}
+
+/* image placeholder **************/
+
+/* placeholder no image */
+.no-image-placeholder {
+  background: @white;
+  background-position: 50% 50%;
+  height: 165px;
+  position: relative;
+  width: 100%;
+  &.large {
+    height: 300px;
+    span {
+      top: 45%;
+    }
+  }
+  span {
+    position: absolute;
+    top: 40%;
+    color: @gray-dark;
+    display: block;
+    text-align: center;
+    width: 100%;
+  }
+  .overlay {
+    .bg-transparent(@white, 0.75);
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+  }
+}

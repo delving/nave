@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% load i18n staticfiles leaflet_tags %}
+
+{% block body_id %}search{% endblock %}
+
+{% block breadcrumbs %}
+    <ul class="breadcrumb">
+        <li>
+            <a href="/">{% trans 'Home' %}</a>
+        </li>
+        <li>
+            <span><a href="{% url 'results-list' %}">{% trans 'Search' %}</a></span>
+        </li>
+        {% if data.user_query.breadcrumbs %}
+
+        {% for breadcrumb in data.user_query.breadcrumbs %}
+            <li>
+                {% if not breadcrumb.is_last %}
+                    <a href="?{{ breadcrumb.href }}"><span>{{ breadcrumb.value }}</span></a>
+                {% else %}
+                    <span class="active">{{ breadcrumb.value }}</span>
+                {% endif %}
+            </li>
+        {% endfor %}
+        {% endif %}
+    </ul>
+{% endblock %}
+
+{% block title %}
+    <div class="query-info">
+        <span class="count">{{ data.user_query.num_found}}</span> {% trans 'results' %}
+    </div>
+{% endblock title %}
+
+{% block content_above_wrapper %}{% endblock %}
+
+{% block content %}
+    {# with options: facets_layout="horizontal|vertical" - defaults to vertical if not used #}
+    {% include "search/_search-results-content.html"%}
+{% endblock %}
+
+{% block content_below_wrapper %}{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static "css/fullscreen.css" %}" />
+    <link rel="stylesheet" href="{% static "css/search.css" %}" />
+    <link rel="stylesheet" href="{% static "css/lod-detail.css" %}" />
+    <link rel="stylesheet" href="{% static "css/bootstrap-tagsinput.css" %}" />
+    {% leaflet_css %}
+    <link rel="stylesheet" href="{% static "css/leaflet/leaflet.label.css" %}" />
+    <link rel="stylesheet" href="{% static "css/MarkerCluster.css" %}" />
+    <link rel="stylesheet" href="{% static "css/MarkerCluster.Default.css" %}" />
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        var queryStr = '{{ request.GET.urlencode }}';
+    </script>
+    <script src="{% static 'js/bootstrap-tagsinput.js' %}"></script>
+    <script src="{% static 'js/SearchView.js' %}"></script>
+    <script src="{% static 'js/jquery.matchHeights.js' %}"></script>
+    <script src="{% static 'js/search-facets-sort.js' %}"></script>
+    <script src="{% static 'js/jquery.fullsizable.2.0.2.min.js' %}"></script>
+    <script src="{% static 'js/search-foldout.js' %}"></script>
+    <script src="{% static 'js/imageLiquid.min.js' %}"></script>
+    {% leaflet_js %}
+    <script src="{% static 'js/leaflet/leaflet.label-src.js' %}"></script>
+    <script src="{% static 'js/leaflet.markercluster.js' %}"></script>
+    <script>
+        var grid_cols = 4;
+        {% if num_cols %}
+            grid_cols = {{ num_cols  }};
+        {% endif %}
+        $(function(){
+            SearchView.initSearchTags();
+            {% if view == 'geo' %}
+                SearchView.initGeo();
+            {% endif %}
+            SearchView.initFacets();
+            {# TODO: make the nr_cols param that initFoldout takes dependent on the facets_layout: hor > 6, vert > 4 #}
+            SearchView.initFoldout(grid_cols, "{{ LANGUAGE_CODE }}");
+            {% if view == 'grid' %}
+                SearchView.processImages();
+            {% endif %}
+            {# TODO - IS THIS STILL USED??? #}
+            {% if lod_facets %}
+                SearchView.initLodFacetsPanel();
+            {% endif %}
+        });
+    </script>
+{% endblock %}

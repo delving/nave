@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% load staticfiles urls_tags i18n %}
+
+{% block body_class %}static_home{% endblock %}
+
+{% block all_content %}
+    <div class="container">
+        <div class="page-header">
+            <img src="{% static 'img/logo.png' %}"/>
+        </div>
+        <div class="row">
+            <div class="col-md-2 col-md-offset-4">
+                <a href="/search">
+                    Search
+                </a>
+            </div>
+            <div class="col-md-2">
+                <a href="/admin" class="">
+                    Administer
+                </a>
+            </div>
+        </div>
+    </div>
+{% endblock %}
