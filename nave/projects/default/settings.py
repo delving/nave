@@ -9,7 +9,7 @@ from django.utils.translation import ugettext_lazy as _
 from kombu import Queue, Exchange
 
 
-SITE_NAME = 'default'  # dirname(abspath(__file__)).split(sep)[-1]
+SITE_NAME = dirname(abspath(__file__)).split(sep)[-1]
 print(("Starting with settings from {}".format(SITE_NAME)))
 
 
