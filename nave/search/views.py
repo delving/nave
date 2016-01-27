@@ -186,6 +186,16 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
         return [facet.es_field for facet in self.facets]
 
     @staticmethod
+    def _clean_callback(request):
+        # clean callback url
+        if len(request.query_params.getlist('callback', [])) > 1:
+            callbacks = request.query_params.getlist('callback')
+            for callback in callbacks:
+                if "?" in callback:
+                    callbacks.remove(callback)
+        return request
+
+    @staticmethod
     def get_record_from_doctype(doc_type, doc_id):
         module, cls_name = doc_type.split('_')
         module = '{}.models'.format(module)
@@ -208,11 +218,7 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
         else:
             s_rows = 12
         # clean callback url
-        if len(request.query_params.getlist('callback', [])) > 1:
-            callbacks = request.query_params.getlist('callback')
-            for callback in callbacks:
-                if "?" in callback:
-                    callbacks.remove(callback)
+        self._clean_callback(request)
 
         rows = int(request.query_params.get('rows', s_rows))
         query = NaveESQuery(
@@ -324,6 +330,8 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
         def get_mode(default=None):
             params = request.GET
             return params.get('schema', default)
+
+        self._clean_callback(request)
 
         query = NaveESQuery(
             index_name=self.get_index_name,
