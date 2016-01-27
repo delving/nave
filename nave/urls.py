@@ -25,7 +25,6 @@ urlpatterns += solid_i18n_patterns('',
                             (r'^humans.xml$', TemplateView.as_view(template_name='humans.txt')),
                             url(r'^hm/', include('health_monitor.urls')),
                             url(r'^', include('lod.urls')),
-                            url(r'^navigator/?$', TemplateView.as_view(template_name="navigator.html")),#mocked
                             url(r'^', include('search_widget.urls')),
                             url(r'^statistics/', TemplateView.as_view(template_name="statistics.html")), # template and data from void app
                             url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),

@@ -28,8 +28,8 @@ search_router.register(r'search-lod-related/?', LodRelatedSearchHTMLView, base_n
 urlpatterns = [
     # redirect
     url(r'^api/search/$', LegacyAPIRedirectView.as_view(), name='api_redirect'),
+    url(r'^organizations/.*?/api/search$', LegacyAPIRedirectView.as_view(), name='api_redirect'),
     url(r'^api/download/task/(?P<id>(.*))/$', BigDownloadView.as_view(), name='big_download'),
-    url(r"^organizations/{}/api/search/$".format(settings.ORG_ID), LegacyAPIRedirectView.as_view(), name='api_redirect'),
     url(r'^detail/foldout/(?P<doc_type>([^/]*))/(?P<slug>(.*?))/?$', DetailResultView.as_view(), name='results_detail_foldout'),
     url(r'^detail/(?P<slug>(.*))$', DetailResultView.as_view(template_name="search-detail.html"), name='result_detail'),
     url(r'^detail/fold-out/(?P<slug>(.*))$', DetailResultView.as_view(), name='results_detail_foldout'),
