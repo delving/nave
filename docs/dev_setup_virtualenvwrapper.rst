@@ -31,9 +31,9 @@ Lets use culturebroker as a sample, if working on another project replace cultur
 
 ::
 
-  mkvirtualenv --python=/usr/local/bin/python3.5 nave_culturebroker
+  mkvirtualenv --python=/usr/local/bin/python3.5 nave_norvegiana
   git clone git@github.com:delving/nave_private.git
-  echo 'export DJANGO_SETTINGS_MODULE="projects.culturebroker.settings"' >> $VIRTUAL_ENV/bin/postactivate
+  echo 'export DJANGO_SETTINGS_MODULE="projects.norvegiana.settings"' >> $VIRTUAL_ENV/bin/postactivate
   echo "cd nave_private/nave" >> $VIRTUAL_ENV/bin/postactivate
   pip install -r nave_private/requirements/base.txt
 
