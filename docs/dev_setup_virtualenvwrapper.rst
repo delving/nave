@@ -46,7 +46,7 @@ Checking out the specific project files
 ::
 
   cd nave/nave/projects
-  git clone git@github.com:delving/hub3_culturebrokers.git norvegiana
+  git clone git@github.com:delving/hub3_culturebrokers.git culturebrokers
   deactivate # then go back in with a workong nave_norvegiana in order to get the environ properly setup
 
 
