@@ -34,8 +34,8 @@ Lets use culturebroker as a sample, if working on another project replace cultur
   mkvirtualenv --python=/usr/local/bin/python3.5 nave_norvegiana
   git clone git@github.com:delving/nave.git
   echo 'export DJANGO_SETTINGS_MODULE="projects.norvegiana.settings"' >> $VIRTUAL_ENV/bin/postactivate
-  echo "cd nave_private/nave" >> $VIRTUAL_ENV/bin/postactivate
-  pip install -r nave_private/requirements/base.txt
+  echo "cd nave/nave" >> $VIRTUAL_ENV/bin/postactivate
+  pip install -r nave/requirements/base.txt
 
 The wheel builds are failing ATM (2015-12-03) this is a minor issue, if you rerun the pip install with no errors your fine.
 
