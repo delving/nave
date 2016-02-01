@@ -10,29 +10,18 @@ Prepare the host with Ansible
 
 ::
 
-    Checkout git@github.com:delving/ansible.git
+    Checkout git@github.com:TotalActiveMedia/hub3-deploy.git
 
 
-Create a file something like this, you can look at (nave_jhm.yml):
+Run:
+ansible-playbook nave_fab_prepare.yml -i hosts_file --extra-vars "hosts=host.name.dom nave_project=proj_name nave_user_pw='****'"
 
-::
+This will prepare a fresh deployed server and add the user for running hub3.
+The suplied password must mach what you have in settings.py:FABRIC[SSH_PASS]
 
-    ---
-    #
-    # this file can be run on a freshly deployed vm, will 1st do security updates etc
-    # Next it will create the nave user and set up needed environments
-    #
-    - include: nave_fab_prepare.yml
-      vars:
-        hosts: "acc.jhm.delving.org,prod.jhm.delving.eu"
-        nave_username: jhm
-        nave_user_pw: "XXXX" #must match nave settings.py:FABRIC[SSH_PASS]
+Add the used hostname to a ansible hosts file, pointed to by -i
 
-Add the used hostnames to a ansible hosts file, pointed to by -i
-
-Run it something like this:
-ansible-playbook -i other_files/production this_file.yml
-
+Now your server is ready to be used, follow the steps below to deploy hub3
 
 
 Deploy Acceptance
