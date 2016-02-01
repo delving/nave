@@ -13,13 +13,13 @@ Prepare the host with Ansible
     Checkout git@github.com:TotalActiveMedia/hub3-deploy.git
 
 
-Run:
-ansible-playbook nave_fab_prepare.yml -i hosts_file --extra-vars "hosts=host.name.dom nave_project=proj_name nave_user_pw='****'"
-
 This will prepare a fresh deployed server and add the user for running hub3.
 The suplied password must mach what you have in settings.py:FABRIC[SSH_PASS]
 
 Add the used hostname to a ansible hosts file, pointed to by -i
+
+Run:
+ansible-playbook nave_fab_prepare.yml -i hosts_file --extra-vars "hosts=host.name.dom nave_project=proj_name nave_user_pw='****'"
 
 Now your server is ready to be used, follow the steps below to deploy hub3
 
