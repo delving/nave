@@ -326,11 +326,6 @@ LOCAL_APPS = (
 
 DJANGO_WYSIWYG_FLAVOR = "ckeditor"
 
-# DJANGO_WYSIWYG_MEDIA_URL =
-
-# TODO enable custom image again. Add it to the void app.
-# FILER_IMAGE_MODEL = 'enrichment.models.NaveImage'
-
 
 ######################################################################
 # COMPESSOR SETTINGS                                                 #
@@ -651,13 +646,6 @@ RDF_CONTENT_FOLDOUTS = {
     "rce_rijksmonument": "rdf/content_foldout/rce_RijksMonument.html",
 }
 
-
-NARTHEX_URL = "http://localhost:9000/narthex"
-NARTHEX_API_KEY = "secret"
-
-SCHEMA_REPOSITORY = "http://schemas.delving.eu/"
-DEFAULT_INDEX_SCHEMA = "abm"
-ENABLED_SCHEMAS = ['abm', 'icn', 'tib']
 
 DEFAULT_V1_CONVERTER = "icn"
 DEFAULT_V2_CONVERTER = "v2"

@@ -1,6 +1,6 @@
 # Projects README
 
-The private project settings and code should be stored in a separated GIT repository. The name of this repository should be the site-id that should be consistently used everywhere. You can copy the default directory and replace default with your 'site-id'. Then include your private repository as a folder with the following command (make sure you don't commit the folder in the main repository):
+The private project settings and code should be stored in a separated GIT repository. The name of this repository should be the site-id that should be consistently used everywhere. You can copy the 'vagrant' directory and replace 'vagrant' with your 'site-id'. Then include your private repository as a folder with the following command (make sure you don't commit the folder in the main repository):
 
 	$ git clone git@mygithost:<git-repo> <site-id>
 

@@ -81,7 +81,7 @@ CACHE_MIDDLEWARE_KEY_PREFIX = PROJECT_DIRNAME
 
 # Apps specific for this project go here.
 PROJECT_APPS = (
-    "projects.default",
+    "projects.vagrant",
 )
 
 
@@ -98,7 +98,7 @@ RDF_STORE_PORT = 3030  # Port for triple store HTTP server
 
 RDF_STORE_HOST = "http://localhost"
 
-RDF_BASE_URL = "http://brabantcloud.nl"
+RDF_BASE_URL = "http://vagrant.localhost"
 
 RDF_STORE_DB = SITE_NAME
 
@@ -120,13 +120,9 @@ ES_ROWS = 20
 # DataSet configuration #
 #########################
 
-NARTHEX_URL = "http://localhost:9000/narthex"
-NARTHEX_API_KEY = "secret"
 ORG_ID = 'delving'
-
-SCHEMA_REPOSITORY = "http://schemas.delving.eu/"
-DEFAULT_INDEX_SCHEMA = "icn"
-ENABLED_SCHEMAS = ['abm', 'icn', 'tib']
+FILE_WATCH_BASE_FOLDER = '/tmp'
+ZIPPED_SEARCH_RESULTS_DOWNLOAD_FOLDER = "/tmp"
 
 #############################
 ## Celery Broker settings.  #
@@ -158,8 +154,8 @@ CELERY_QUEUES = (
 ########## SECRET CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
 # Note: This key should only be used for development and testing.
-SECRET_KEY = r"(-%5-4d^f!5rz=kx!e6jfde_qzd9zi0g4tq%kb#@7+z#*-$ol-"
-NEVERCACHE_KEY = "310ab0e2-9a61-4e31-9de3-6af493b5c6cd8d32524f-618d-4aca-9665-1ab5ac91875d7e1adc60-cd9c-4f5b-b430-900"
+SECRET_KEY = "l#5lyn$-z@ygw$uj-*+4%%rmz5j25btvud5v_^p3(5x$-p1_(k"
+NEVERCACHE_KEY = "uj$_u7wg34ufb3zdv_*bcd@2s+e43eu^+!890vf$m*)gw8rg13"
 ########## END SECRET CONFIGURATION
 
 
@@ -168,25 +164,34 @@ NEVERCACHE_KEY = "310ab0e2-9a61-4e31-9de3-6af493b5c6cd8d32524f-618d-4aca-9665-1a
 
 FABRIC = {
     "EMAIL_HOST": "mx2.hostice.net",
-    "SSH_USER": "fab_user",  # SSH username
-    # "SSH_PASS": "9@?[ZMh26VcF3jKw§ucy3!!@",  # SSH password (consider key-based authentication)
-    "SSH_KEY_PATH": "~/.ssh/id_rsa",  # Local path to SSH key file, for key-based auth
-    "ACC_HOSTS": ["82.94.206.176"],  # List of hosts to deploy to
-    "PROD_HOSTS": ["82.94.206.176"],  # List of hosts to deploy to
-    "VIRTUALENV_HOME": "/home/fab_user",  # Absolute remote path for virtualenvs
+    "SSH_USER": "vagrant",  # SSH username
+    "SSH_PASS": "vagrant",  # SSH password (consider key-based authentication)
+    # "SSH_KEY_PATH": "~/.ssh/id_rsa",  # Local path to SSH key file, for key-based auth
+    "ACC_HOSTS": ["192.168.33.10"],  # List of hosts to deploy to
+    "PROD_HOSTS": ["192.168.33.10"],  # List of hosts to deploy to
+    "VIRTUALENV_HOME": "/home/{}".format(SITE_NAME),  # Absolute remote path for virtualenvs
     "PROJECT_NAME": "{}".format(SITE_NAME),  # Unique identifier for project
-    "REQUIREMENTS_PATH": "requirements/base.txt",  # Path to pip requirements, relative to project
+    "REQUIREMENTS_PATH": "requirements/base.txt",  # Path to pip requir[[ements, relative to project
     "SETTINGS_PATH": "projects/{}/settings".format(SITE_NAME),  # Path to pip requirements, relative to project
-    "GUNICORN_PORT": 8009,  # Port gunicorn will listen on
-    "NARTHEX_PORT": 9010,  # The port narthex will listen to
-    "ORG_ID": "delving",  # The Culture Commons
-    "HUB_NODE": "playground",  # The node this organisation
-    "LOCALE": "en_GB.UTF-8",  # Should end with ".UTF-8"
+    "GUNICORN_PORT": 8001,  # Port gunicorn will listen on
+    "NARTHEX_PORT": 9001,  # The port narthex will listen to
+    "ZIPPED_SEARCH_RESULTS_DOWNLOAD_FOLDER": ZIPPED_SEARCH_RESULTS_DOWNLOAD_FOLDER,
+    "RDF_BASE_URL": RDF_BASE_URL,
+    "RDF_STORE_HOST": RDF_STORE_HOST,
+    "ORG_ID": "vagrant",  # The Culture Commons
+    "HUB_NODE": "vagrant",  # The node this organisation
+    "LOCALE": "en_US.UTF-8",  # Should end with ".UTF-8"
     "ACC_HOSTNAME": "acc.{}.delving.org".format(SITE_NAME),  # Host for public site.
     "PROD_HOSTNAME": "prod.{}.delving.org".format(SITE_NAME),  # Host for public site.
-    "REPO_URL": "git@github.com:delving/nave_private.git",  # Git or Mercurial remote repo URL for the project
-    "DB_PASS": "9@?[ZMh26VcF3jKwucy4",  # Live database password
-    "ADMIN_PASS": "9@?[ZMh26VcF3jKwucy5",  # Live admin user password
+    "REPO_URL": "https://github.com/delving/nave.git",  # Git or Mercurial remote repo URL for the project
+    "GIT_BRANCH": "master",
+    "SENTRY_DSN": "",
+    "ACC_NAVE_AUTH_TOKEN": "4fc894433b3b914356f8a6887b39fcb26f249026",
+    "PROD_NAVE_AUTH_TOKEN": "4fc894433b3b914356f8a6887b39fcb26f249026",
+    "ACC_ES_CLUSTERNAME": "vagrant",
+    "PROD_ES_CLUSTERNAME": "vagrant",
+    "DB_PASS": "vagrant",  # Live database password
+    "ADMIN_PASS": "vagrant",  # Live admin user password
     "SECRET_KEY": SECRET_KEY,
     "NEVERCACHE_KEY": NEVERCACHE_KEY,
 }

@@ -455,8 +455,8 @@ def install():
             sudo("dpkg-reconfigure locales")
             run("exit")
     apt('software-properties-common')
-    # sudo("add-apt-repository ppa:webupd8team/java -y")
-    # sudo("add-apt-repository ppa:fkrull/deadsnakes -y")
+    sudo("add-apt-repository ppa:webupd8team/java -y")
+    sudo("add-apt-repository ppa:fkrull/deadsnakes -y")
     sudo("apt-get update -y -q")
     apt(" ".join(OS_DEPENDENCIES))
     sudo("pip2 install virtualenv virtualenvwrapper mercurial")  # supervisor when not installed via apt-get
@@ -598,8 +598,7 @@ def setup_project():
     with project():
         if env.reqs_path:
             pip("-r %s/%s" % (env.proj_path, env.reqs_path))
-        #pip("gunicorn setproctitle psycopg2 "
-        #    "django-compressor python3-memcached")
+        pip("gunicorn setproctitle psycopg2 django-compressor python3-memcached")
         manage("syncdb --noinput")
         python("import django;"
                "django.setup();"
@@ -620,6 +619,14 @@ def setup_project():
             python(user_py, show=False)
             shadowed = "*" * len(pw)
             print_command(user_py.replace("'%s'" % pw, "'%s'" % shadowed))
+        python("import django;"
+               "django.setup();"
+               "from django.conf import settings;"
+               "from rest_framework.authtoken.models import Token"
+               "from django.contrib.auth.models import User;"
+               "u, _ = User.objects.get_or_create(username='admin');"
+               "Token.objects.get_or_create(user=u, key='{}');".format(env.nave_auth_token)
+               )
     return True
 
 
