@@ -455,8 +455,8 @@ def install():
             sudo("dpkg-reconfigure locales")
             run("exit")
     apt('software-properties-common')
-    sudo("add-apt-repository ppa:webupd8team/java -y")
-    sudo("add-apt-repository ppa:fkrull/deadsnakes -y")
+    # sudo("add-apt-repository ppa:webupd8team/java -y")
+    # sudo("add-apt-repository ppa:fkrull/deadsnakes -y")
     sudo("apt-get update -y -q")
     apt(" ".join(OS_DEPENDENCIES))
     sudo("pip2 install virtualenv virtualenvwrapper mercurial")  # supervisor when not installed via apt-get
@@ -512,7 +512,7 @@ def install_fuseki():
 @log_call
 def install_elasticsearch():
     """Install elastic search."""
-    __version__ = "1.7.0"
+    __version__ = "1.7.4"
     sudo("wget -q https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-{}.deb".format(__version__))
     sudo("dpkg -i elasticsearch-{}.deb".format(__version__))
     sudo("update-rc.d elasticsearch defaults 95 10")
