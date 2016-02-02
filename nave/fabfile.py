@@ -12,6 +12,7 @@ from fabric.api import env, cd, prefix, sudo as _sudo, run as _run, hide, task
 from fabric.colors import yellow, green, blue, red
 from fabric.contrib.files import exists, upload_template
 from fabric.operations import put
+from fabric.context_managers import settings as fab_settings
 
 ################
 # Config setup #
@@ -82,6 +83,10 @@ env.secret_key = conf.get("SECRET_KEY", "")
 
 OS_DEPENDENCIES = [
     'gcc',
+    'build-essential',
+    'autoconf',
+    'libtool',
+    'pkg-config',
     'git-core',
     'libjpeg-dev',
     'libpq-dev',
@@ -93,7 +98,7 @@ OS_DEPENDENCIES = [
     'iipimage-server',
     'postgresql-9.3-postgis-2.1',
     'python3',
-    'python3dev',
+    'python3-dev',
     'python3-pip',
     'python3-numpy',
     'python-dev',
@@ -368,7 +373,7 @@ def pip(packages):
     Installs one or more Python packages within the virtual environment.
     """
     with virtualenv():
-        return sudo("pip install %s" % packages)
+        return sudo("pip3 install %s" % packages)
 
 
 def postgres(command):
@@ -457,8 +462,11 @@ def install():
             run("exit")
     apt('software-properties-common')
     sudo("add-apt-repository ppa:webupd8team/java -y")
-    sudo("add-apt-repository ppa:fkrull/deadsnakes -y")
+    # sudo("add-apt-repository ppa:fkrull/deadsnakes -y")
     sudo("apt-get update -y -q")
+    sudo("apt-get install -y python-software-properties debconf-utils")
+    sudo('echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 select true" | sudo debconf-set-selections')
+    sudo('echo "oracle-java7-installer shared/accepted-oracle-license-v1-1 select true" | sudo debconf-set-selections')
     apt(" ".join(OS_DEPENDENCIES))
     sudo("pip2 install virtualenv virtualenvwrapper mercurial")  # supervisor when not installed via apt-get
     sudo("pip3 install virtualenv virtualenvwrapper")
@@ -598,7 +606,8 @@ def setup_project():
     upload_template_and_reload("fuseki-production")
     with project():
         if env.reqs_path:
-            pip("-r %s/%s" % (env.proj_path, env.reqs_path))
+            with fab_settings(warn_only=True):
+                pip("-r %s/%s" % (env.proj_path, env.reqs_path))
         pip("gunicorn setproctitle psycopg2 django-compressor python3-memcached")
         manage("syncdb --noinput")
         python("import django;"
@@ -651,7 +660,7 @@ def create():
                 print("\nAborting!")
                 return False
             remove()
-        run("/usr/local/bin/virtualenv -p python3.4 %s --distribute" % env.proj_name)
+        run("/usr/local/bin/virtualenv --system-site-packages -p python3 %s --distribute" % env.proj_name)
         vcs = "git" if env.git else "hg"
         run("%s clone %s %s" % (vcs, env.repo_url, env.proj_path))
         with project():

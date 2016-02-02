@@ -4,7 +4,7 @@ import sys
 
 if __name__ == "__main__":
     if not os.environ.get('DJANGO_SETTINGS_MODULE'):
-        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "projects.default.settings")
+        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "projects.vagrant.settings")
         print("Using default settings module: {}".format(os.environ.get("DJANGO_SETTINGS_MODULE")))
     else:
         print("Using settings module: {}".format(os.environ.get('DJANGO_SETTINGS_MODULE')))
