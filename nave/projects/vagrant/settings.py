@@ -51,7 +51,7 @@ LANGUAGE_CODE = 'en'
 ########## SITE CONFIGURATION
 # Hosts/domain names that are valid for this site
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = ["localhost", "acc.{}.delving.org".format(SITE_NAME), "82.94.206.176"]
+ALLOWED_HOSTS = ["localhost", "acc.{}.delving.org".format(SITE_NAME), "vagrant.localhost"]
 ########## END SITE CONFIGURATION
 
 ########## FIXTURE CONFIGURATION
@@ -181,11 +181,11 @@ FABRIC = {
     "ORG_ID": "vagrant",  # The Culture Commons
     "HUB_NODE": "vagrant",  # The node this organisation
     "LOCALE": "en_US.UTF-8",  # Should end with ".UTF-8"
-    "ACC_HOSTNAME": "acc.{}.delving.org".format(SITE_NAME),  # Host for public site.
+    "ACC_HOSTNAME": "vagrant.localhost acc.{}.delving.org".format(SITE_NAME),  # Host for public site.
     "PROD_HOSTNAME": "prod.{}.delving.org".format(SITE_NAME),  # Host for public site.
     "REPO_URL": "https://github.com/delving/nave.git",  # Git or Mercurial remote repo URL for the project
-    "GIT_BRANCH": "master",
-    "SENTRY_DSN": "",
+    "GIT_BRANCH": "feature/vagrant_support",
+    "SENTRY_DSN": "https://bea553a71cc54834a4f03507a92f02a1:5b093ba2516b49bd85f103f2aa02239e@app.getsentry.com/51537",
     "ACC_NAVE_AUTH_TOKEN": "4fc894433b3b914356f8a6887b39fcb26f249026",
     "PROD_NAVE_AUTH_TOKEN": "4fc894433b3b914356f8a6887b39fcb26f249026",
     "ACC_ES_CLUSTERNAME": "vagrant",

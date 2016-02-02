@@ -142,6 +142,7 @@ os_dependencies_templates = {
         "remote_path": "/opt/fuseki/run/configuration/test.ttl",
         "reload_command": "update-rc.d fuseki default; service fuseki restart",
     },
+
 }
 
 
@@ -552,7 +553,7 @@ def deploy_narthex():
         run("mkdir -p {}".format(narthex_factory))
     with cd(env.narthex_versions_dir):
         run("rm -rf *")
-        run("wget 'http://artifactory.delving.org/artifactory/simple/delving/narthex/narthex-{}.zip'".format(
+        run("wget 'http://artifactory.delving.org:8081/artifactory/simple/delving/narthex/narthex-{}.zip'".format(
             env.narthex_version
         ))
         run("unzip narthex-{version}.zip".format(version=env.narthex_version))
@@ -598,15 +599,17 @@ def refresh_templates():
     for name in get_templates():
         upload_template_and_reload(name)
 
+
 @task
 @log_call
 def setup_project():
+    upload_template_and_reload("elastic_search")
     upload_template_and_reload("settings")
     upload_template_and_reload("fuseki-acceptance")
     upload_template_and_reload("fuseki-production")
     with project():
         if env.reqs_path:
-            with fab_settings(warn_only=True):
+            with fab_settings(warn_only=False):
                 pip("-r %s/%s" % (env.proj_path, env.reqs_path))
         pip("gunicorn setproctitle psycopg2 django-compressor python3-memcached")
         manage("syncdb --noinput")
@@ -632,7 +635,7 @@ def setup_project():
         python("import django;"
                "django.setup();"
                "from django.conf import settings;"
-               "from rest_framework.authtoken.models import Token"
+               "from rest_framework.authtoken.models import Token;"
                "from django.contrib.auth.models import User;"
                "u, _ = User.objects.get_or_create(username='admin');"
                "Token.objects.get_or_create(user=u, key='{}');".format(env.nave_auth_token)
@@ -720,8 +723,10 @@ def restart():
         sudo("kill -HUP `cat %s`" % pid_path)
     else:
         start_args = (env.proj_name, env.proj_name)
-        start_command = "supervisorctl start %s:gunicorn_%s" % start_args
-        sudo(start_command)
+        sudo("supervisorctl reload")
+        sudo("service nginx restart")
+        # start_command = "supervisorctl start %s:gunicorn_%s" % start_args
+        # sudo(start_command)
         print("if you see 'out: %s:gunicorn_%s: ERROR (no such process)' you must run `fab reload_supervisor` and then run `fab restart` again." % start_command)
 
 
@@ -762,7 +767,7 @@ def deploy():
         last_commit = "git rev-parse HEAD" if git else "hg id -i"
         run("%s > last.commit" % last_commit)
         with update_changed_requirements():
-            run("git checkout %s".format(env.git_branch))
+            run("git checkout {}".format(env.git_branch))
             run("git pull origin {} -f".format(env.git_branch) if git else "hg pull && hg up -C")
         manage("collectstatic -v 0 --noinput")
         manage("compilemessages")

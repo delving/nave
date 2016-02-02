@@ -201,7 +201,7 @@ path.repo: ["/home/%(proj_name)s/elastic_backups/",]
 
 # Set the bind address specifically (IPv4 or IPv6):
 #
-#network.bind_host: 192.168.0.1
+network.bind_host: localhost
 
 # Set the address other nodes will use to communicate with this node. If not
 # set, it is automatically derived. It must point to an actual IP address.
