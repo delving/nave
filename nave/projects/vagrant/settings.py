@@ -51,7 +51,8 @@ LANGUAGE_CODE = 'en'
 ########## SITE CONFIGURATION
 # Hosts/domain names that are valid for this site
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = ["localhost", "acc.{}.delving.org".format(SITE_NAME), "vagrant.localhost"]
+ALLOWED_HOSTS = ["localhost", "acc.{}.delving.org".format(SITE_NAME), "vagrant.localhost",
+                 "192.168.33.10"]
 ########## END SITE CONFIGURATION
 
 ########## FIXTURE CONFIGURATION
