@@ -54,7 +54,7 @@ isodate==0.5.4
 jsonfield==1.0.3
 jsonpickle==0.9.2
 kombu==3.0.33
-lxml==3.5.0
+lxml==3.3.3
 networkx==1.10
 path.py==8.1.2
 numpy==1.8.2
