@@ -92,9 +92,10 @@ OS_DEPENDENCIES = [
     'nginx',
     'iipimage-server',
     'postgresql-9.3-postgis-2.1',
-    'python3.4',
-    'python3.4-dev',
+    'python3',
+    'python3dev',
     'python3-pip',
+    'python3-numpy',
     'python-dev',
     'python-pip',
     'python-setuptools',
@@ -653,6 +654,9 @@ def create():
         run("/usr/local/bin/virtualenv -p python3.4 %s --distribute" % env.proj_name)
         vcs = "git" if env.git else "hg"
         run("%s clone %s %s" % (vcs, env.repo_url, env.proj_path))
+        with project():
+            run("%s fetch" % vcs)
+            run("%s checkout %s" % (vcs, env.git_branch))
 
     #
     create_nginx_certificates()
@@ -749,6 +753,7 @@ def deploy():
         last_commit = "git rev-parse HEAD" if git else "hg id -i"
         run("%s > last.commit" % last_commit)
         with update_changed_requirements():
+            run("git checkout %s".format(env.git_branch))
             run("git pull origin {} -f".format(env.git_branch) if git else "hg pull && hg up -C")
         manage("collectstatic -v 0 --noinput")
         manage("compilemessages")
