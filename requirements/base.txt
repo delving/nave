@@ -57,7 +57,7 @@ kombu==3.0.33
 lxml==3.5.0
 networkx==1.10
 path.py==8.1.2
-numpy==1.10.4
+numpy==1.8.2
 pillow==3.1.0
 polib==1.0.7
 psycopg2==2.6.1
