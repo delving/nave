@@ -10,11 +10,8 @@ Install the hostupdate plugin
 
     $ vagrant plugin install vagrant-hostsupdater
 
-install the 'fabric' plugin
 
-    $ vagrant plugin install vagrant-fabric-provisioner
-
-Set the DJANGO_SETTINGS_MODULE variable (replace 'vagrant' with your project name in the projects folder)
+Set the DJANGO_SETTINGS_MODULE variable (replace 'vagrant' with your project name in the projects folder if you run on a specific project)
 
     $ export DJANGO_SETTINGS_MODULE="projects.vagrant.settings"
 
