@@ -1,24 +1,25 @@
 {% load urls_tags %}
 <ul class="nav nav-pills view-switcher">
     {% if not map_view == False %}
-    <li class="{% if view == 'geo' %}active{% endif %}" id="tab-geo">
-        <a href="{% add_params request.get_full_path view='geo' %}" data-view="geo" data-toggle="view">
-            <i class="fa fa-fw fa-map-marker"></i>
-        </a>
-    </li>
+        <li class="{% if view == 'geo' %}active{% endif %}" id="tab-geo">
+            <a href="{% add_params request.get_full_path view='geo' %}" data-view="geo" data-toggle="view">
+                <i class="fa fa-fw fa-map-marker"></i>
+            </a>
+        </li>
     {% endif %}
     {% if not list_view == False %}
-    <li class="{% if view == 'list' %}active{% endif %}" id="tab-list">
-        <a href="{% add_params request.get_full_path view='list' %}" data-view="list" data-toggle="view">
-            <i class="fa fa-fw fa-list-ul"></i>
-        </a>
-    </li>
+        <li class="{% if view == 'list' %}active{% endif %}" id="tab-list">
+            <a href="{% add_params request.get_full_path view='list' %}" data-view="list" data-toggle="view">
+                <i class="fa fa-fw fa-list-ul"></i>
+            </a>
+        </li>
     {% endif %}
     {% if not grid_view == False %}
-    <li class="{% if view == 'grid' %}active{% endif %}" id="tab-grid">
-        <a href="{% add_params request.get_full_path view="grid" %}" data-view="grid" data-toggle="view">
-            <i class="fa fa-fw fa-th"></i>
-        </a>
-    </li>
+        {# SearchView.checkGeoCount (SearchView.js) will hide this tab if no points are found #}
+        <li class="{% if view == 'grid' %}active{% endif %}" id="tab-grid">
+            <a href="{% add_params request.get_full_path view="grid" %}" data-view="grid" data-toggle="view">
+                <i class="fa fa-fw fa-th"></i>
+            </a>
+        </li>
     {% endif %}
 </ul>
