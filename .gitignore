@@ -21,6 +21,6 @@ nave/debug.log
 nave/wsgi.py
 .tox/
 *.mo
-!nave/projects/vagrant/*
+# !nave/projects/vagrant/*
 # nave/projects/*/*
 .vagrant
