@@ -668,7 +668,7 @@ def create():
         vcs = "git" if env.git else "hg"
         run("%s clone %s %s" % (vcs, env.repo_url, env.proj_path))
         # close private project
-        run("%s clone %s %s/nave/projects/%s" % (vcs, env.repo_url, env.proj_path, env.proj_name))
+        run("%s clone %s %s/nave/projects/%s" % (vcs, env.project_repo_url, env.proj_path, env.proj_name))
         with project():
             run("%s fetch" % vcs)
             run("%s checkout %s" % (vcs, env.git_branch))
