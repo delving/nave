@@ -12,8 +12,8 @@ Install the hostupdate plugin
     $ vagrant plugin install vagrant-hostsupdater
 
 
-Set the DJANGO_SETTINGS_MODULE variable, replace {{ PROJECT }} with your project name in the projects
-folder if you run on a specific project the default project is called **vagrant**.
+Set the DJANGO_SETTINGS_MODULE variable, replace {{ PROJECT }} with your project name.
+The default project is **vagrant**, if you run on a specific project copy nave/projects/vagrant and use that instead.
 
     $ export DJANGO_SETTINGS_MODULE="projects.{{ PROJECT }}.settings"
 
@@ -116,13 +116,13 @@ Now go to "http://{{ PROJECT }}.localhost:8000/api/search" and you can see your 
 vagrant good-to-knows
 ^^^^^^^^^^^^^^^^^^^^^
 
-Starting the vagrant
-
-    $ vagrant up
-
 Access
 
     $ vagrant ssh
+
+Starting the vagrant
+
+    $ vagrant up
 
 Stopping it
 
