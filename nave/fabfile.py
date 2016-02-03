@@ -58,6 +58,7 @@ env.manage = "%s/bin/python %s/project/%s/manage.py" % (env.venv_path,
 env.live_host = conf.get("ACC_HOSTNAME", env.hosts[0] if env.hosts else None)
 env.preferred_live_host = env.live_host.split(' ')[0]
 env.repo_url = conf.get("REPO_URL", "")
+env.project_repo_url = conf.get("PROJECT_REPO_URL", "")
 env.git_branch = conf.get("GIT_BRANCH", "master")
 env.git = env.repo_url.startswith("git") or env.repo_url.endswith(".git")
 env.reqs_path = conf.get("REQUIREMENTS_PATH", None)
@@ -474,7 +475,7 @@ def install():
     sudo("mkdir -p /etc/supervisor/conf.d")
     sudo('mkdir -p /opt/fuseki/run/configuration')
     sudo('mkdir -p /var/log/celery')
-    sudo('mkdir -p {}'.format(os.path.join(env.venv_home, "NarthexFiles")))
+    run('mkdir -p {}'.format(os.path.join(env.venv_home, "NarthexFiles")))
     for name, items in get_templates(templates_dict=os_dependencies_templates).items():
         put(local_path=items['local_path'], remote_path=items['remote_path'], use_sudo=True,  mode=0o755)
     install_fuseki()
@@ -666,6 +667,8 @@ def create():
         run("/usr/local/bin/virtualenv --system-site-packages -p python3 %s --distribute" % env.proj_name)
         vcs = "git" if env.git else "hg"
         run("%s clone %s %s" % (vcs, env.repo_url, env.proj_path))
+        # close private project
+        run("%s clone %s %s/nave/projects/%s" % (vcs, env.repo_url, env.proj_path, env.proj_name))
         with project():
             run("%s fetch" % vcs)
             run("%s checkout %s" % (vcs, env.git_branch))
