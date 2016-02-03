@@ -21,3 +21,6 @@ Now you can start the project from the nave directory (where your manage.py file
 	$ python manage.py runserver
 
 If you run into an `wsgi` related error make sure you have 'wsgi.py' file in the nave directory. You can copy it directly from the 'wsgi.py.template' file.
+
+
+Aprox time 19mins
