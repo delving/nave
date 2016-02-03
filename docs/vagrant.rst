@@ -80,7 +80,7 @@ Deploy the environment
 > fab restart
 
 Deploy narthex
--->
+
     $ fab deploy_narthex
 
 
@@ -108,6 +108,9 @@ Setting up dev environment
     $ mkvirtualenv -p /usr/bin/python3 {{ PROJECT }}
 
     $ workon {{ PROJECT }}
+
+    $ pip install -r requirements/base.txt
+> FAILS on django-geojson in py3
 
     $ cd nave
 
