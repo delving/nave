@@ -66,18 +66,21 @@ Make sure you are located in the nave reop top dir and that DJANGO_SETTINGS_MODU
 
 Install the application
 
-    $ fab install
+    $ fab install           [timing: 20m]
 
 Create the deployment environment
 
-    $ fab create
+    $ fab create            [timing: 4m]
 
 Deploy the environment
 
-    $ fab deploy
+    $ fab deploy            [timing: ]
+> FAILS, to correct the issue:
+> fab reload_supervisor
+> fab restart
 
 Deploy narthex
-
+-->
     $ fab deploy_narthex
 
 
