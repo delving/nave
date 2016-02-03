@@ -24,3 +24,5 @@ nave/wsgi.py
 # !nave/projects/vagrant/*
 # nave/projects/*/*
 .vagrant
+deploy/id_rsa
+deploy/id_dsa
