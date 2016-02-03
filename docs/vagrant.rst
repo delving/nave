@@ -87,7 +87,7 @@ You should now see the application on
     * http://{{ PROJECT }}.localhost/api/search
     * http://{{ PROJECT }}.localhost/admin
 
-You can find the login information for this development environment in the FABRIC section of 'projects/vagrant/setttings.py'
+You can find the login information for this development environment in the FABRIC section of 'projects/{{ PROJECT }}/setttings.py'
 
 
 Setting up dev environment
