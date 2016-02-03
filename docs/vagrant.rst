@@ -4,6 +4,17 @@ Vagrant local development setup
 Basic setup
 ^^^^^^^^^^^
 
+* extract project
+
+cd project
+
+vagrant up
+
+
+
+============
+
+
 Install vagrant and virtual box on your development machine, see https://www.vagrantup.com for instructions
 and the installer.
 
