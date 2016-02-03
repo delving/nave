@@ -4,7 +4,8 @@ Vagrant local development setup
 Basic setup
 ^^^^^^^^^^^
 
-Install vagrant and virtual box on your development machine
+Install vagrant and virtual box on your development machine, see https://www.vagrantup.com for instructions
+and the installer.
 
 Install the hostupdate plugin
 
@@ -12,7 +13,7 @@ Install the hostupdate plugin
 
 
 Set the DJANGO_SETTINGS_MODULE variable, replace {{ PROJECT }} with your project name in the projects
-folder if you run on a specific project the default project is called vagrant
+folder if you run on a specific project the default project is called **vagrant**.
 
     $ export DJANGO_SETTINGS_MODULE="projects.{{ PROJECT }}.settings"
 
@@ -32,11 +33,23 @@ And login to the machine in a separate terminal to verify vagant environ
 
     $ vagrant ssh
 
+If you run a specific project you also have to create the user with the password that is
+specified in the FABRIC section of your 'settings.py'. While ssh-ed into the guest machine
+
+    $ sudo useradd {{ PROJECT }}
+    $ sudo usermod -G sudo {{ PROJECT }}
+
 
 Basic deploy
 ^^^^^^^^^^^^
 
-install virtual env
+
+
+Make sure you have sourced the virtualenvwrapper script
+
+    $ source /usr/local/bin/virtualenvwrapper.sh
+
+install virtual env for deployment.
 
     $ mkvirtualenv -p python2 vagrant_deploy
 
@@ -46,10 +59,10 @@ Activate virtualenv
 
 Make sure you are located in the nave reop top dir and that DJANGO_SETTINGS_MODULE is correct
 
-    $pip install -r requirements/base.txt
-    $pip install fabric
+    $ pip install -r requirements/base.txt
+    $ pip install fabric
 
-    $cd nave
+    $ cd nave
 
 Install the application
 
@@ -70,9 +83,9 @@ Deploy narthex
 
 You should now see the application on
 
-    * http://vagrant.localhost/narthex
-    * http://vagrant.localhost/api/search
-    * http://vagrant.localhost/admin
+    * http://{{ PROJECT }}.localhost/narthex
+    * http://{{ PROJECT }}.localhost/api/search
+    * http://{{ PROJECT }}.localhost/admin
 
 You can find the login information for this development environment in the FABRIC section of 'projects/vagrant/setttings.py'
 
@@ -82,15 +95,22 @@ Setting up dev environment
 
 
     $ vagrant ssh
+
     $ cd src
-    $ export DJANGO_SETTINGS_MODULE="projects.vagrant.settings"
+
+    $ export DJANGO_SETTINGS_MODULE="projects.{{ PROJECT }}.settings"
+
     $ source /usr/local/bin/virtualenvwrapper.sh
-    $ mkvirtualenv -p /usr/bin/python3 vagrant
-    $ workon vagrant
+
+    $ mkvirtualenv -p /usr/bin/python3 {{ PROJECT }}
+
+    $ workon {{ PROJECT }}
+
     $ cd nave
+
     $ python manage.py 0.0.0.0:8000
 
-Now go to "http://vagrant.localhost:8000/api/search" and you can see your dev environment up and running
+Now go to "http://{{ PROJECT }}.localhost:8000/api/search" and you can see your dev environment up and running
 
 
 vagrant good-to-knows
