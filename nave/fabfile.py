@@ -474,7 +474,7 @@ def install():
     sudo("mkdir -p /etc/supervisor/conf.d")
     sudo('mkdir -p /opt/fuseki/run/configuration')
     sudo('mkdir -p /var/log/celery')
-    run('mkdir -p {}'.format(os.path.join(env.venv_home, "NarthexFiles")))
+    sudo('mkdir -p {}'.format(os.path.join(env.venv_home, "NarthexFiles")))
     for name, items in get_templates(templates_dict=os_dependencies_templates).items():
         put(local_path=items['local_path'], remote_path=items['remote_path'], use_sudo=True,  mode=0o755)
     install_fuseki()
@@ -725,9 +725,9 @@ def restart():
         start_args = (env.proj_name, env.proj_name)
         sudo("supervisorctl reload")
         sudo("service nginx restart")
-        # start_command = "supervisorctl start %s:gunicorn_%s" % start_args
+        start_command = "supervisorctl start %s:gunicorn_%s" % start_args
         # sudo(start_command)
-        print("if you see 'out: %s:gunicorn_%s: ERROR (no such process)' you must run `fab reload_supervisor` and then run `fab restart` again." % start_command)
+        print("if you see 'out: %s:gunicorn_%s: ERROR (no such process)' you must run `fab reload_supervisor` and then run `fab restart` again." % (env.proj_name, env.proj_name, start_command))
 
 
 @task
