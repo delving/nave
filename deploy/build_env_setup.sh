@@ -4,6 +4,7 @@
 
 cd deploy
 
-rm id_rsa
-ln -s ~/.ssh/id_rsa
+cp ~/.ssh/id_rsa .
+chmod 0600 id_rsa
+
 
