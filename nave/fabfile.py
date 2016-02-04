@@ -541,6 +541,12 @@ def remove_os_dependencies():
 
 @task
 @log_call
+def install_os_dependencies():
+    apt(" ".join(OS_DEPENDENCIES), remove=False)
+
+
+@task
+@log_call
 def deploy_narthex():
     """
     First installation of Narthex
@@ -646,14 +652,7 @@ def setup_project():
 
 @task
 @log_call
-def create():
-    """
-    Create a new virtual environment for a project.
-    Pulls the project's repo from version control, adds system-level
-    configs for the project, and initialises the database with the
-    live host.
-    """
-
+def create_venv():
     # Create virtualenv
     with cd(env.venv_home):
         print(env.venv_home)
@@ -673,9 +672,10 @@ def create():
             run("%s fetch" % vcs)
             run("%s checkout %s" % (vcs, env.git_branch))
 
-    #
-    create_nginx_certificates()
-    # Create DB and DB user.
+
+@task
+@log_call
+def create_db():
     pw = db_pass()
     user_sql_args = (env.proj_name, pw.replace("'", "\'"))
     user_sql = "CREATE USER %s WITH ENCRYPTED PASSWORD '%s';" % user_sql_args
@@ -687,6 +687,51 @@ def create():
          (env.proj_name, env.proj_name, env.locale, env.locale))
     # make the database gis enabled
     postgres('psql -d %s -c "CREATE EXTENSION postgis; CREATE EXTENSION postgis_topology;"' % env.proj_name)
+
+
+@task
+@log_call
+def drop_db():
+    try:
+        psql("DROP DATABASE %s;" % env.proj_name)
+        psql("DROP USER %s;" % env.proj_name)
+    except Exception as e:
+        print(e)
+
+
+@task
+@log_call
+def create():
+    """
+    Create a new virtual environment for a project.
+    Pulls the project's repo from version control, adds system-level
+    configs for the project, and initialises the database with the
+    live host.
+    """
+    create_venv()
+    #
+    create_nginx_certificates()
+    # Create DB and DB user.
+    create_db()
+    # Set up project.
+    setup_project()
+    return True
+
+@task
+@log_call
+def create_dev():
+    """
+    Create a new virtual environment for a project.
+    Pulls the project's repo from version control, adds system-level
+    configs for the project, and initialises the database with the
+    live host.
+    """
+    # link venv
+    run('ln /home/vagrant/.virtualenvs/%s/* /home/vagrant/%s/' % env.proj_name)
+    #
+    create_nginx_certificates()
+    # Create DB and DB user.
+    create_db()
     # Set up project.
     setup_project()
     return True
@@ -741,6 +786,35 @@ def restart_celery():
     """
     sudo("supervisorctl restart %s_celery" % env.proj_name)
 
+
+@task
+@log_call
+def dev_deploy():
+    """
+    Deploy latest version of the project.
+    Check out the latest version of the project from version
+    control, install new requirements, sync and migrate the database,
+    collect any new static assets, and restart gunicorn's work
+    processes for the project.
+    """
+    templates = get_templates()
+    templates["supervisor"] = {
+                                  "local_path": "../deploy/supervisor_dev.conf",
+                                  "remote_path": "/etc/supervisor/conf.d/%(proj_name)s.conf",
+                                  # "reload_command": "supervisorctl reload",
+                              },
+    for name in templates:
+        upload_template_and_reload(name)
+    with project():
+        # backup("last.db")
+        static_dir = static()
+        manage("collectstatic -v 0 --noinput")
+        manage("compilemessages")
+        manage("syncdb --noinput")
+        manage("migrate --noinput")
+    sudo("supervisorctl reload")
+    sudo("service nginx restart")
+    return True
 
 @task
 @log_call
