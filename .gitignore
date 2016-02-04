@@ -21,4 +21,4 @@ nave/debug.log
 nave/wsgi.py
 .tox/
 *.mo
-nave/projects/*/*
+nave/projects/*
