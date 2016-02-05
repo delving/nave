@@ -737,7 +737,7 @@ def create_dev():
     live host.
     """
     # link venv
-    run('ln -s /home/vagrant/.virtualenvs/%s/* /home/vagrant/%s/' % env.proj_name)
+    run('ln -s /home/vagrant/.virtualenvs/%s/* /home/vagrant/%s/' % (env.proj_name, env.proj_name))
     #
     create_nginx_certificates()
     # Create DB and DB user.
