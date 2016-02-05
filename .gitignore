@@ -9,6 +9,9 @@ local_settings.py
 nave/.cache
 nave/static/*
 *.ipynb
+celerybeat.pid
+gunicorn.pid
+gunicorn.conf.py
 nave/media/*
 nave/admin_backups/*
 nave/theme/static/less/*

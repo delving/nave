@@ -591,7 +591,7 @@ def create_nginx_certificates():
     # Set up SSL certificate.
     conf_path = "/etc/nginx/conf"
     if not exists(conf_path):
-        sudo("mkdir %s" % conf_path)
+        sudo("mkdir -p %s" % conf_path)
     with cd(conf_path):
         crt_file = env.proj_name + ".crt"
         key_file = env.proj_name + ".key"
@@ -737,6 +737,9 @@ def create_dev():
     live host.
     """
     # link venv
+    venv_dirs = ['bin', 'djcelery', 'include', 'lib', 'pip-selfcheck.json', 'share']
+    for fname in venv_dirs:
+        run("rm -rf /home/vagrant/{}/{}".format(env.proj_name, fname))
     run('ln -s /home/vagrant/.virtualenvs/%s/* /home/vagrant/%s/' % (env.proj_name, env.proj_name))
     #
     create_nginx_certificates()
@@ -799,7 +802,7 @@ def restart_celery():
 
 @task
 @log_call
-def dev_deploy():
+def deploy_dev():
     """
     Deploy latest version of the project.
     Check out the latest version of the project from version
@@ -807,14 +810,14 @@ def dev_deploy():
     collect any new static assets, and restart gunicorn's work
     processes for the project.
     """
-    templates = get_templates()
-    templates["supervisor"] = {
+    dev_templates = templates.copy()
+    dev_templates["supervisor"] = {
                                   "local_path": "../deploy/supervisor_dev.conf",
                                   "remote_path": "/etc/supervisor/conf.d/%(proj_name)s.conf",
                                   # "reload_command": "supervisorctl reload",
-                              },
-    for name in templates:
-        upload_template_and_reload(name)
+                              }
+    for name in get_templates(templates_dict=dev_templates):
+        upload_template_and_reload(name, dev_templates)
     with project():
         # backup("last.db")
         static_dir = static()
