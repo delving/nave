@@ -535,6 +535,16 @@ def install_elasticsearch():
 
 @task
 @log_call
+def install_blazegraph():
+    """Install elastic search."""
+    __version__ = "2.0.0"
+    sudo("http://sourceforge.net/projects/bigdata/files/bigdata/{}/blazegraph.deb/download blazegraph.deb".format(__version__))
+    sudo("dpkg -i blazegraph.deb")
+    sudo("rm blazegraph.deb".format(__version__))
+
+
+@task
+@log_call
 def remove_os_dependencies():
     apt(" ".join(OS_DEPENDENCIES), remove=True)
 
@@ -727,7 +737,7 @@ def create_dev():
     live host.
     """
     # link venv
-    run('ln /home/vagrant/.virtualenvs/%s/* /home/vagrant/%s/' % env.proj_name)
+    run('ln -s /home/vagrant/.virtualenvs/%s/* /home/vagrant/%s/' % env.proj_name)
     #
     create_nginx_certificates()
     # Create DB and DB user.
