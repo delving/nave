@@ -576,8 +576,8 @@ def deploy_narthex():
         run("unzip narthex-{version}.zip".format(version=env.narthex_version))
     with cd(narthex_factory):
         run('rm -rf *.xml *.xsd')
-        run("wget https://raw.githubusercontent.com/delving/schemas.delving.eu/edm-2.5.6/edm/edm_5.2.6_record-definition.xml")
-        run("wget https://raw.githubusercontent.com/delving/schemas.delving.eu/edm-2.5.6/edm/edm_5.2.6_validation.xsd")
+        run("wget https://raw.githubusercontent.com/delving/schemas.delving.eu/master/edm/edm_5.2.6_record-definition.xml")
+        run("wget https://raw.githubusercontent.com/delving/schemas.delving.eu/master/edm/edm_5.2.6_validation.xsd")
     sudo("supervisorctl restart %s:narthex" % env.proj_name)
     return True
 
