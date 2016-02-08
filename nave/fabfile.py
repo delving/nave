@@ -502,7 +502,7 @@ def install_fuseki():
     """
     Install Apache fuseki with its base configuration.
     """
-    fuseki_version = "2.3.1"
+    fuseki_version = "2.3.0"
     with cd("/tmp"):
         if not exists('/opt/fuseki/fuseki-server.jar'):
             sudo('wget -q http://www.interior-dsgn.com/apache/jena/binaries/apache-jena-fuseki-{}.tar.gz'.format(fuseki_version))
