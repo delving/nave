@@ -7,6 +7,7 @@ from getpass import getpass, getuser
 from glob import glob
 from posixpath import join
 
+import time
 from django.utils import importlib
 from fabric.api import env, cd, prefix, sudo as _sudo, run as _run, hide, task
 from fabric.colors import yellow, green, blue, red
@@ -619,9 +620,10 @@ def refresh_templates():
 
 @task
 @log_call
-def setup_project():
+def setup_project(local=False):
     upload_template_and_reload("elastic_search")
-    upload_template_and_reload("settings")
+    if not local:
+        upload_template_and_reload("settings")
     upload_template_and_reload("fuseki-acceptance")
     upload_template_and_reload("fuseki-production")
     with project():
@@ -746,7 +748,8 @@ def create_dev():
     # Create DB and DB user.
     create_db()
     # Set up project.
-    setup_project()
+    time.sleep(5)
+    setup_project(local=True)
     return True
 
 
@@ -816,6 +819,7 @@ def deploy_dev():
                                   "remote_path": "/etc/supervisor/conf.d/%(proj_name)s.conf",
                                   # "reload_command": "supervisorctl reload",
                               }
+    del dev_templates['settings']
     for name in get_templates(templates_dict=dev_templates):
         upload_template_and_reload(name, dev_templates)
     with project():
