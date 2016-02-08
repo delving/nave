@@ -66,6 +66,13 @@ To get the 'live reload' version of Django run the following steps on the guest 
 Now you can navigate to "http://{{ project }}.localhost:8000" for the development version. All changes  you
 make in your preferred IDE are now picked up and reloaded on the guest machine.
 
+When you have made changes to the configuration files of the services or to files related to the celery tasks
+that interact with the Queue manager you have to rerun the following command:
+
+    $ workon {{ project }}_2
+    $ fab deploy_dev
+    $ workon {{ project }}
+
 
 vagrant good-to-knows
 ^^^^^^^^^^^^^^^^^^^^^
