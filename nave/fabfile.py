@@ -166,22 +166,22 @@ templates = {
     "fuseki-acceptance": {
         "local_path": "../deploy/fuseki_acceptance.ttl",
         "remote_path": "/opt/fuseki/run/configuration/%(proj_name)s_acceptance.ttl",
-        #"reload_command": "service fuseki restart",
+        "reload_command": "service fuseki restart",
     },
     "fuseki-production": {
         "local_path": "../deploy/fuseki_production.ttl",
         "remote_path": "/opt/fuseki/run/configuration/%(proj_name)s_production.ttl",
-        #"reload_command": "service fuseki restart",
+        "reload_command": "service fuseki restart",
     },
     "narthex_conf": {
        "local_path": "../deploy/narthex.conf",
        "remote_path": "%(narthex_files)s/narthex.conf",
        #"reload_command": "supervisorctl reload",
     },
-    # "narthex_logger": {
-    #     "local_path": "../deploy/narthex_logger.xml",
-    #     "remote_path": "%(narthex_files)s/logger.xml",
-    # },
+    "narthex_logger": {
+        "local_path": "../deploy/narthex_logger.xml",
+        "remote_path": "%(narthex_files)s/logger.xml",
+    },
     "wsgi": {
         "local_path": "../deploy/wsgi.py",
         "remote_path": "%(django_path)s/wsgi.py",
@@ -822,6 +822,7 @@ def deploy_dev():
     del dev_templates['settings']
     for name in get_templates(templates_dict=dev_templates):
         upload_template_and_reload(name, dev_templates)
+    time.sleep(5)
     with project():
         # backup("last.db")
         static_dir = static()
