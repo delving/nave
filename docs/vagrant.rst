@@ -10,10 +10,7 @@ cd project
 
 vagrant up
 
-
-
 ============
-
 
 Install vagrant and virtual box on your development machine, see https://www.vagrantup.com for instructions
 and the installer.
@@ -21,10 +18,12 @@ and the installer.
 Install the hostupdate plugin
 
     $ vagrant plugin install vagrant-hostsupdater
+    $ vagrant plugin install vagrant-triggers
 
 
 Set the DJANGO_SETTINGS_MODULE variable, replace {{ PROJECT }} with your project name.
 The default project is **vagrant**, if you run on a specific project copy nave/projects/vagrant and use that instead.
+Note that the install scripts sets this setting by default in the ~/.profile setting
 
     $ export DJANGO_SETTINGS_MODULE="projects.{{ PROJECT }}.settings"
 
@@ -32,102 +31,40 @@ If you haven't setup your local dev environment you have to make a copy of 'nave
 'nave/projects/{{ PROJECT }}/local_settings.py.template'
 Do NOT add those files to the repo!!
 
-Then create the virtual machine
+Then create the virtual machine. This will run all the provisioning steps as well. So get some coffee because
+the first setup takes ca 15 minutes.
 
     $ vagrant up
-
-Provision the machine
-
-    $ vagrant provision
 
 And login to the machine in a separate terminal to verify vagant environ
 
     $ vagrant ssh
 
-If you run a specific project you also have to create the user with the password that is
-specified in the FABRIC section of your 'settings.py'. While ssh-ed into the guest machine
+You can check the following urls for a quick system check:
 
-    $ sudo useradd {{ PROJECT }}
-    $ sudo usermod -G sudo {{ PROJECT }}
-
-
-Basic deploy
-^^^^^^^^^^^^
-
-
-
-Make sure you have sourced the virtualenvwrapper script
-
-    $ source /usr/local/bin/virtualenvwrapper.sh
-
-install virtual env for deployment.
-
-    $ mkvirtualenv -p python2 vagrant_deploy
-
-Activate virtualenv
-
-    $ workon vagrant_deploy
-
-Make sure you are located in the nave reop top dir and that DJANGO_SETTINGS_MODULE is correct
-
-    $ pip install -r requirements/base.txt
-    $ pip install fabric
-
-    $ cd nave
-
-Install the application
-
-    $ fab install           [timing: 20m]
-
-Create the deployment environment
-
-    $ fab create            [timing: 4m]
-
-Deploy the environment
-
-    $ fab deploy            [timing: ]
-> FAILS, to correct the issue:
-> fab reload_supervisor
-> fab restart
-
-Deploy narthex
-
-    $ fab deploy_narthex
+        * home page: http://{{ project }}.localhost/
+        * search page: http://{{ project }}.localhost/search/
+        * api search: http://{{ project }}.localhost/api/search/v1
+        * sparql: http://{{ project }}.localhost/snorql
+        * nathex: http://{{ project }}.localhost/narthex/
+        * elasticsearch: http://{{ project }}.localhost:9200
+        * flower celery monitor: http://{{ project }}.localhost:5555
+        * fuseki triple-store: http://{{ project }}.localhost:3030
 
 
-You should now see the application on
+Dev Setup
+^^^^^^^^^
 
-    * http://{{ PROJECT }}.localhost/narthex
-    * http://{{ PROJECT }}.localhost/api/search
-    * http://{{ PROJECT }}.localhost/admin
-
-You can find the login information for this development environment in the FABRIC section of 'projects/{{ PROJECT }}/setttings.py'
+To get the 'live reload' version of Django run the following steps on the guest machine, i.e. after you have run
+`vagrant ssh`.
 
 
-Setting up dev environment
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+    $ cd {{ project }}/project/nave
+    $ workon {{ project }}
+    $ python manage.py runserver 0.0.0.0:8000
 
-
-    $ vagrant ssh
-
-    $ cd src
-
-    $ export DJANGO_SETTINGS_MODULE="projects.{{ PROJECT }}.settings"
-
-    $ source /usr/local/bin/virtualenvwrapper.sh
-
-    $ mkvirtualenv -p /usr/bin/python3 {{ PROJECT }}
-
-    $ workon {{ PROJECT }}
-
-    $ pip install -r requirements/base.txt
-> FAILS on django-geojson in py3
-
-    $ cd nave
-
-    $ python manage.py 0.0.0.0:8000
-
-Now go to "http://{{ PROJECT }}.localhost:8000/api/search" and you can see your dev environment up and running
+Now you can navigate to "http://{{ project }}.localhost:8000" for the development version. All changes  you
+make in your preferred IDE are now picked up and reloaded on the guest machine.
 
 
 vagrant good-to-knows
@@ -136,6 +73,10 @@ vagrant good-to-knows
 Access
 
     $ vagrant ssh
+
+Re-provision
+
+    $ vagrant provision
 
 Starting the vagrant
 
