@@ -24,11 +24,14 @@ from lod import RDF_SUPPORTED_MIME_TYPES, USE_EDM_BINDINGS
 from lod.tests.resources import sparqlwrapper_result
 import lod.utils
 from lod.utils import rdfstore
+from lod.utils.lod import get_internal_rdf_base_uri
 from lod.utils.edm import GraphBindings
 from lod.utils.mimetype import best_match
 from lod.utils.mimetype import extension_to_mime, HTML_MIME, mime_to_extension, result_extension_to_mime
 from lod.utils.rdfstore import get_rdfstore, UnknownGraph
 from void.models import EDMRecord
+
+
 from .models import SPARQLQuery, RDFPrefix, RDFModel, CacheResource, RDFSubjectLookUp
 from .tasks import retrieve_and_cache_remote_lod_resource
 
@@ -79,9 +82,10 @@ class HubIDRedirectView(RedirectView):
         routed_uri = lod.utils.lod.get_external_rdf_url(document_uri, self.request)
         logger.debug("Routed uri: {}".format(routed_uri))
         print(routed_uri)
-        # format = self.query_string.get("rdf_format")
-        # if format and format in lod.RDF_SUPPORTED_EXTENSIONS:
-        #     routed_uri = "{}.{}".format(routed_uri, format())
+        rdf_format = self.request.GET.get("format")
+        print(rdf_format)
+        if rdf_format and rdf_format in lod.RDF_SUPPORTED_EXTENSIONS:
+            routed_uri = "{}.{}".format(routed_uri, rdf_format)
         return routed_uri
 
 
