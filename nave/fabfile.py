@@ -817,8 +817,12 @@ def deploy_dev():
     dev_templates["supervisor"] = {
                                   "local_path": "../deploy/supervisor_dev.conf",
                                   "remote_path": "/etc/supervisor/conf.d/%(proj_name)s.conf",
-                                  # "reload_command": "supervisorctl reload",
                               }
+    dev_templates["shiro"] = {
+        "local_path": "../deploy/shiro.ini",
+        "remote_path": "/opt/fuseki/run/shiro.ini",
+        "reload_command": "/etc/init.d/fuseki restart",
+    }
     del dev_templates['settings']
     for name in get_templates(templates_dict=dev_templates):
         upload_template_and_reload(name, dev_templates)
