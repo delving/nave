@@ -340,9 +340,6 @@ def upload_template_and_reload(name, templates_dict=templates):
     clean = lambda s: s.replace("\n", "").replace("\r", "").strip()
     if clean(remote_data) == clean(local_data):
         return
-    # print(local_path)
-    # print(remote_path)
-    # print(env)
     upload_template(local_path, remote_path, env, use_sudo=True, backup=False)
     if owner:
         sudo("chown %s %s" % (owner, remote_path))
@@ -904,11 +901,22 @@ def migrate_db():
 
 @task
 def local():
+    env.user = "vagrant"
+    env.password = "vagrant"
+    env.key_filename = None
     env.hosts = ['localhost']
     env.live_host = "{}.localhost".format(env.proj_name)
     env.preferred_live_host = "{}.localhost".format(env.proj_name)
     env.es_clustername = "{}".format(env.proj_name)
-    env.nave_authq_token = conf['ACC_NAVE_AUTH_TOKEN']
+    env.nave_auth_token = conf['ACC_NAVE_AUTH_TOKEN']
+    env.venv_home = "/home/vagrant"
+    env.narthex_files = "%s/%s" % (env.venv_home, "NarthexFiles")
+    env.venv_path = "%s/%s" % (env.venv_home, env.proj_name)
+    env.django_path = "%s/%s/%s" % (env.venv_path, env.proj_dirname, 'nave')
+    env.manage = "%s/bin/python %s/project/%s/manage.py" % (env.venv_path,
+                                                            env.venv_path, 'nave')
+    env.proj_path = "%s/%s" % (env.venv_path, env.proj_dirname)
+    env.narthex_versions_dir = "%s/%s" % (env.venv_home, "NarthexVersions")
 
 
 @task
