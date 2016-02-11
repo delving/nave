@@ -620,10 +620,9 @@ def refresh_templates():
 
 @task
 @log_call
-def setup_project(local=False):
+def setup_project():
     upload_template_and_reload("elastic_search")
-    if not local:
-        upload_template_and_reload("settings")
+    upload_template_and_reload("settings")
     upload_template_and_reload("fuseki-acceptance")
     upload_template_and_reload("fuseki-production")
     with project():
@@ -749,7 +748,7 @@ def create_dev():
     create_db()
     # Set up project.
     time.sleep(10)
-    setup_project(local=True)
+    setup_project()
     return True
 
 
@@ -904,12 +903,22 @@ def migrate_db():
 
 
 @task
+def local():
+    env.hosts = ['localhost']
+    env.live_host = "{}.localhost".format(env.proj_name)
+    env.preferred_live_host = "{}.localhost".format(env.proj_name)
+    env.es_clustername = "{}".format(env.proj_name)
+    env.nave_authq_token = conf['ACC_NAVE_AUTH_TOKEN']
+
+
+@task
 def prod():
     env.hosts = conf.get("PROD_HOSTS", [])
     env.live_host = conf.get("PROD_HOSTNAME", env.hosts[0] if env.hosts else None)
     env.preferred_live_host = env.live_host.split(' ')[0] if env.live_host else None
     env.es_clustername = conf.get("PROD_ES_CLUSTERNAME")
     env.nave_auth_token = conf['PROD_NAVE_AUTH_TOKEN']
+
 
 
 @task
