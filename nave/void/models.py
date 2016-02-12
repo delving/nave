@@ -815,12 +815,15 @@ class DataSet(TimeStampedModel, GroupOwned):
             return False
         return False
 
-    def process_narthex_file(self, store=None, acceptance=False):
+    def process_narthex_file(self, store=None, acceptance=False, path=None, console=False):
 
         if not store:
             store = rdfstore.get_rdfstore()
 
-        processed_fname = self.get_narthex_processed_fname()
+        if not path:
+            processed_fname = self.get_narthex_processed_fname()
+        else:
+            processed_fname = path
         logger.info("started processing {} for dataset {}".format(processed_fname, self.spec))
 
         with open(processed_fname, 'r') as f:
@@ -906,6 +909,8 @@ class DataSet(TimeStampedModel, GroupOwned):
                         sparql_update_queries[:] = []
                     if records % 1000 == 0:
                         logger.info("processed {} records of {} at {}".format(records, self.spec, time.ctime()))
+                        if console:
+                            print("processed {} records of {} at {}".format(records, self.spec, time.ctime()))
                         if len(es_actions) > 1000:
                             self.bulk_index(es_actions)
                             es_actions[:] = []
