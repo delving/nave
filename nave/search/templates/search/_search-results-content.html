@@ -58,10 +58,10 @@
                 {% include 'search/include/geo.html' %}
             {% endif %}
         </div>
-        {% if not facets_layout == 'horizontal' %}
-        {# VERTICAL FACETS #}
+        {% if facets_layout == 'horizontal' %}
+        {# HORIZONTAL FACETS #}
         <div class="col-sm-3">
-            {% include 'search/include/facets_vertical.html' %}
+            {% include 'search/include/facets_horizontal.html' %}
         </div>
         {% endif %}
     </div>

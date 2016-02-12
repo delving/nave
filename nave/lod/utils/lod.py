@@ -67,6 +67,16 @@ def get_geo_points(graph):
     return [list(elem) for elem in list(zipped)]
 
 
+def get_external_rdf_url(internal_uri, request):
+    """Convert the internal RDF base url to the external domain making the request. """
+    parsed_target = urlparse(internal_uri)
+    request_domain = request.get_host()
+    entry_points = settings.RDF_ROUTED_ENTRY_POINTS
+    if request_domain not in entry_points:
+        request_domain = parsed_target.netloc
+    return "http://{domain}{path}".format(domain=request_domain, path=parsed_target.path)
+
+
 def get_internal_rdf_base_uri(target_uri):
     """Converted web_uri to internal RDF base_url.
 

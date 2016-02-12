@@ -38,6 +38,10 @@ if 'rosetta' in settings.INSTALLED_APPS:
                             url(r'^rosetta/', include('rosetta.urls')),
                             )
 
+if os.path.exists(os.path.join(settings.DJANGO_ROOT, "projects", settings.SITE_NAME, "wagtail_urls.py")):
+    urlpatterns += patterns('',
+                           url(r'^', include('projects.{}.wagtail_urls'.format(settings.SITE_NAME))))
+
 # This is only needed when using runserver.
 if settings.DEBUG:
     urlpatterns = patterns('',

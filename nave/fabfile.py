@@ -7,11 +7,13 @@ from getpass import getpass, getuser
 from glob import glob
 from posixpath import join
 
+import time
 from django.utils import importlib
 from fabric.api import env, cd, prefix, sudo as _sudo, run as _run, hide, task
 from fabric.colors import yellow, green, blue, red
 from fabric.contrib.files import exists, upload_template
 from fabric.operations import put
+from fabric.context_managers import settings as fab_settings
 
 ################
 # Config setup #
@@ -57,6 +59,7 @@ env.manage = "%s/bin/python %s/project/%s/manage.py" % (env.venv_path,
 env.live_host = conf.get("ACC_HOSTNAME", env.hosts[0] if env.hosts else None)
 env.preferred_live_host = env.live_host.split(' ')[0]
 env.repo_url = conf.get("REPO_URL", "")
+env.project_repo_url = conf.get("PROJECT_REPO_URL", "")
 env.git_branch = conf.get("GIT_BRANCH", "master")
 env.git = env.repo_url.startswith("git") or env.repo_url.endswith(".git")
 env.reqs_path = conf.get("REQUIREMENTS_PATH", None)
@@ -82,6 +85,10 @@ env.secret_key = conf.get("SECRET_KEY", "")
 
 OS_DEPENDENCIES = [
     'gcc',
+    'build-essential',
+    'autoconf',
+    'libtool',
+    'pkg-config',
     'git-core',
     'libjpeg-dev',
     'libpq-dev',
@@ -92,9 +99,10 @@ OS_DEPENDENCIES = [
     'nginx',
     'iipimage-server',
     'postgresql-9.3-postgis-2.1',
-    'python3.4',
-    'python3.4-dev',
+    'python3',
+    'python3-dev',
     'python3-pip',
+    'python3-numpy',
     'python-dev',
     'python-pip',
     'python-setuptools',
@@ -136,6 +144,7 @@ os_dependencies_templates = {
         "remote_path": "/opt/fuseki/run/configuration/test.ttl",
         "reload_command": "update-rc.d fuseki default; service fuseki restart",
     },
+
 }
 
 
@@ -157,22 +166,22 @@ templates = {
     "fuseki-acceptance": {
         "local_path": "../deploy/fuseki_acceptance.ttl",
         "remote_path": "/opt/fuseki/run/configuration/%(proj_name)s_acceptance.ttl",
-        #"reload_command": "service fuseki restart",
+        "reload_command": "service fuseki restart",
     },
     "fuseki-production": {
         "local_path": "../deploy/fuseki_production.ttl",
         "remote_path": "/opt/fuseki/run/configuration/%(proj_name)s_production.ttl",
-        #"reload_command": "service fuseki restart",
+        "reload_command": "service fuseki restart",
     },
     "narthex_conf": {
        "local_path": "../deploy/narthex.conf",
        "remote_path": "%(narthex_files)s/narthex.conf",
        #"reload_command": "supervisorctl reload",
     },
-    # "narthex_logger": {
-    #     "local_path": "../deploy/narthex_logger.xml",
-    #     "remote_path": "%(narthex_files)s/logger.xml",
-    # },
+    "narthex_logger": {
+        "local_path": "../deploy/narthex_logger.xml",
+        "remote_path": "%(narthex_files)s/logger.xml",
+    },
     "wsgi": {
         "local_path": "../deploy/wsgi.py",
         "remote_path": "%(django_path)s/wsgi.py",
@@ -331,9 +340,6 @@ def upload_template_and_reload(name, templates_dict=templates):
     clean = lambda s: s.replace("\n", "").replace("\r", "").strip()
     if clean(remote_data) == clean(local_data):
         return
-    # print(local_path)
-    # print(remote_path)
-    # print(env)
     upload_template(local_path, remote_path, env, use_sudo=True, backup=False)
     if owner:
         sudo("chown %s %s" % (owner, remote_path))
@@ -367,7 +373,7 @@ def pip(packages):
     Installs one or more Python packages within the virtual environment.
     """
     with virtualenv():
-        return sudo("pip install %s" % packages)
+        return sudo("pip3 install %s" % packages)
 
 
 def postgres(command):
@@ -455,9 +461,12 @@ def install():
             sudo("dpkg-reconfigure locales")
             run("exit")
     apt('software-properties-common')
-    # sudo("add-apt-repository ppa:webupd8team/java -y")
+    sudo("add-apt-repository ppa:webupd8team/java -y")
     # sudo("add-apt-repository ppa:fkrull/deadsnakes -y")
     sudo("apt-get update -y -q")
+    sudo("apt-get install -y python-software-properties debconf-utils")
+    sudo('echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 select true" | sudo debconf-set-selections')
+    sudo('echo "oracle-java7-installer shared/accepted-oracle-license-v1-1 select true" | sudo debconf-set-selections')
     apt(" ".join(OS_DEPENDENCIES))
     sudo("pip2 install virtualenv virtualenvwrapper mercurial")  # supervisor when not installed via apt-get
     sudo("pip3 install virtualenv virtualenvwrapper")
@@ -490,10 +499,10 @@ def install_fuseki():
     """
     Install Apache fuseki with its base configuration.
     """
-    fuseki_version = "2.3.1"
+    fuseki_version = "2.3.0"
     with cd("/tmp"):
         if not exists('/opt/fuseki/fuseki-server.jar'):
-            sudo('wget -q http://www.interior-dsgn.com/apache/jena/binaries/apache-jena-fuseki-{}.tar.gz'.format(fuseki_version))
+            sudo('wget -q http://archive.apache.org/dist/jena/binaries/apache-jena-fuseki-{}.tar.gz'.format(fuseki_version))
             sudo('tar xvzf apache-jena-fuseki-{}.tar.gz'.format(fuseki_version))
             sudo('mkdir -p /opt/fuseki/run/configuration/')
             sudo('mv apache-jena-fuseki-{}/* /opt/fuseki/'.format(fuseki_version))
@@ -524,8 +533,24 @@ def install_elasticsearch():
 
 @task
 @log_call
+def install_blazegraph():
+    """Install elastic search."""
+    __version__ = "2.0.0"
+    sudo("http://sourceforge.net/projects/bigdata/files/bigdata/{}/blazegraph.deb/download blazegraph.deb".format(__version__))
+    sudo("dpkg -i blazegraph.deb")
+    sudo("rm blazegraph.deb".format(__version__))
+
+
+@task
+@log_call
 def remove_os_dependencies():
     apt(" ".join(OS_DEPENDENCIES), remove=True)
+
+
+@task
+@log_call
+def install_os_dependencies():
+    apt(" ".join(OS_DEPENDENCIES), remove=False)
 
 
 @task
@@ -549,8 +574,8 @@ def deploy_narthex():
         run("unzip narthex-{version}.zip".format(version=env.narthex_version))
     with cd(narthex_factory):
         run('rm -rf *.xml *.xsd')
-        run("wget https://raw.githubusercontent.com/delving/schemas.delving.eu/edm-2.5.6/edm/edm_5.2.6_record-definition.xml")
-        run("wget https://raw.githubusercontent.com/delving/schemas.delving.eu/edm-2.5.6/edm/edm_5.2.6_validation.xsd")
+        run("wget https://raw.githubusercontent.com/delving/schemas.delving.eu/master/edm/edm_5.2.6_record-definition.xml")
+        run("wget https://raw.githubusercontent.com/delving/schemas.delving.eu/master/edm/edm_5.2.6_validation.xsd")
     sudo("supervisorctl restart %s:narthex" % env.proj_name)
     return True
 
@@ -564,7 +589,7 @@ def create_nginx_certificates():
     # Set up SSL certificate.
     conf_path = "/etc/nginx/conf"
     if not exists(conf_path):
-        sudo("mkdir %s" % conf_path)
+        sudo("mkdir -p %s" % conf_path)
     with cd(conf_path):
         crt_file = env.proj_name + ".crt"
         key_file = env.proj_name + ".key"
@@ -589,17 +614,19 @@ def refresh_templates():
     for name in get_templates():
         upload_template_and_reload(name)
 
+
 @task
 @log_call
 def setup_project():
+    upload_template_and_reload("elastic_search")
     upload_template_and_reload("settings")
     upload_template_and_reload("fuseki-acceptance")
     upload_template_and_reload("fuseki-production")
     with project():
         if env.reqs_path:
-            pip("-r %s/%s" % (env.proj_path, env.reqs_path))
-        #pip("gunicorn setproctitle psycopg2 "
-        #    "django-compressor python3-memcached")
+            with fab_settings(warn_only=False):
+                pip("-r %s/%s" % (env.proj_path, env.reqs_path))
+        pip("gunicorn setproctitle psycopg2 django-compressor python3-memcached")
         manage("syncdb --noinput")
         python("import django;"
                "django.setup();"
@@ -620,19 +647,20 @@ def setup_project():
             python(user_py, show=False)
             shadowed = "*" * len(pw)
             print_command(user_py.replace("'%s'" % pw, "'%s'" % shadowed))
+        python("import django;"
+               "django.setup();"
+               "from django.conf import settings;"
+               "from rest_framework.authtoken.models import Token;"
+               "from django.contrib.auth.models import User;"
+               "u, _ = User.objects.get_or_create(username='admin');"
+               "Token.objects.get_or_create(user=u, key='{}');".format(env.nave_auth_token)
+               )
     return True
 
 
 @task
 @log_call
-def create():
-    """
-    Create a new virtual environment for a project.
-    Pulls the project's repo from version control, adds system-level
-    configs for the project, and initialises the database with the
-    live host.
-    """
-
+def create_venv():
     # Create virtualenv
     with cd(env.venv_home):
         print(env.venv_home)
@@ -643,13 +671,19 @@ def create():
                 print("\nAborting!")
                 return False
             remove()
-        run("/usr/local/bin/virtualenv -p python3.4 %s --distribute" % env.proj_name)
+        run("/usr/local/bin/virtualenv --system-site-packages -p python3 %s --distribute" % env.proj_name)
         vcs = "git" if env.git else "hg"
         run("%s clone %s %s" % (vcs, env.repo_url, env.proj_path))
+        # close private project
+        run("%s clone %s %s/nave/projects/%s" % (vcs, env.project_repo_url, env.proj_path, env.proj_name))
+        with project():
+            run("%s fetch" % vcs)
+            run("%s checkout %s" % (vcs, env.git_branch))
 
-    #
-    create_nginx_certificates()
-    # Create DB and DB user.
+
+@task
+@log_call
+def create_db():
     pw = db_pass()
     user_sql_args = (env.proj_name, pw.replace("'", "\'"))
     user_sql = "CREATE USER %s WITH ENCRYPTED PASSWORD '%s';" % user_sql_args
@@ -661,7 +695,56 @@ def create():
          (env.proj_name, env.proj_name, env.locale, env.locale))
     # make the database gis enabled
     postgres('psql -d %s -c "CREATE EXTENSION postgis; CREATE EXTENSION postgis_topology;"' % env.proj_name)
+
+
+@task
+@log_call
+def drop_db():
+    try:
+        psql("DROP DATABASE %s;" % env.proj_name)
+        psql("DROP USER %s;" % env.proj_name)
+    except Exception as e:
+        print(e)
+
+
+@task
+@log_call
+def create():
+    """
+    Create a new virtual environment for a project.
+    Pulls the project's repo from version control, adds system-level
+    configs for the project, and initialises the database with the
+    live host.
+    """
+    create_venv()
+    #
+    create_nginx_certificates()
+    # Create DB and DB user.
+    create_db()
     # Set up project.
+    setup_project()
+    return True
+
+@task
+@log_call
+def create_dev():
+    """
+    Create a new virtual environment for a project.
+    Pulls the project's repo from version control, adds system-level
+    configs for the project, and initialises the database with the
+    live host.
+    """
+    # link venv
+    venv_dirs = ['bin', 'djcelery', 'include', 'lib', 'pip-selfcheck.json', 'share']
+    for fname in venv_dirs:
+        run("rm -rf /home/vagrant/{}/{}".format(env.proj_name, fname))
+    run('ln -s /home/vagrant/.virtualenvs/%s/* /home/vagrant/%s/' % (env.proj_name, env.proj_name))
+    #
+    create_nginx_certificates()
+    # Create DB and DB user.
+    create_db()
+    # Set up project.
+    time.sleep(10)
     setup_project()
     return True
 
@@ -700,9 +783,11 @@ def restart():
         sudo("kill -HUP `cat %s`" % pid_path)
     else:
         start_args = (env.proj_name, env.proj_name)
+        sudo("supervisorctl reload")
+        sudo("service nginx restart")
         start_command = "supervisorctl start %s:gunicorn_%s" % start_args
-        sudo(start_command)
-        print("if you see 'out: %s:gunicorn_%s: ERROR (no such process)' you must run `fab reload_supervisor` and then run `fab restart` again." % start_command)
+        # sudo(start_command)
+        print("if you see 'out: %s:gunicorn_%s: ERROR (no such process)' you must run `fab reload_supervisor` and then run `fab restart` again." % (env.proj_name, env.proj_name, start_command))
 
 
 @task
@@ -713,6 +798,41 @@ def restart_celery():
     """
     sudo("supervisorctl restart %s_celery" % env.proj_name)
 
+
+@task
+@log_call
+def deploy_dev():
+    """
+    Deploy latest version of the project.
+    Check out the latest version of the project from version
+    control, install new requirements, sync and migrate the database,
+    collect any new static assets, and restart gunicorn's work
+    processes for the project.
+    """
+    dev_templates = templates.copy()
+    dev_templates["supervisor"] = {
+                                  "local_path": "../deploy/supervisor_dev.conf",
+                                  "remote_path": "/etc/supervisor/conf.d/%(proj_name)s.conf",
+                              }
+    dev_templates["shiro"] = {
+        "local_path": "../deploy/shiro.ini",
+        "remote_path": "/opt/fuseki/run/shiro.ini",
+        "reload_command": "/etc/init.d/fuseki restart",
+    }
+    del dev_templates['settings']
+    for name in get_templates(templates_dict=dev_templates):
+        upload_template_and_reload(name, dev_templates)
+    time.sleep(10)
+    with project():
+        # backup("last.db")
+        static_dir = static()
+        manage("collectstatic -v 0 --noinput")
+        manage("compilemessages")
+        manage("syncdb --noinput")
+        manage("migrate --noinput")
+    sudo("supervisorctl reload")
+    sudo("service nginx restart")
+    return True
 
 @task
 @log_call
@@ -742,6 +862,7 @@ def deploy():
         last_commit = "git rev-parse HEAD" if git else "hg id -i"
         run("%s > last.commit" % last_commit)
         with update_changed_requirements():
+            run("git checkout {}".format(env.git_branch))
             run("git pull origin {} -f".format(env.git_branch) if git else "hg pull && hg up -C")
         manage("collectstatic -v 0 --noinput")
         manage("compilemessages")
@@ -779,12 +900,33 @@ def migrate_db():
 
 
 @task
+def local():
+    env.user = "vagrant"
+    env.password = "vagrant"
+    env.key_filename = None
+    env.hosts = ['localhost']
+    env.live_host = "{}.localhost".format(env.proj_name)
+    env.preferred_live_host = "{}.localhost".format(env.proj_name)
+    env.es_clustername = "{}".format(env.proj_name)
+    env.nave_auth_token = conf['ACC_NAVE_AUTH_TOKEN']
+    env.venv_home = "/home/vagrant"
+    env.narthex_files = "%s/%s" % (env.venv_home, "NarthexFiles")
+    env.venv_path = "%s/%s" % (env.venv_home, env.proj_name)
+    env.django_path = "%s/%s/%s" % (env.venv_path, env.proj_dirname, 'nave')
+    env.manage = "%s/bin/python %s/project/%s/manage.py" % (env.venv_path,
+                                                            env.venv_path, 'nave')
+    env.proj_path = "%s/%s" % (env.venv_path, env.proj_dirname)
+    env.narthex_versions_dir = "%s/%s" % (env.venv_home, "NarthexVersions")
+
+
+@task
 def prod():
     env.hosts = conf.get("PROD_HOSTS", [])
     env.live_host = conf.get("PROD_HOSTNAME", env.hosts[0] if env.hosts else None)
     env.preferred_live_host = env.live_host.split(' ')[0] if env.live_host else None
     env.es_clustername = conf.get("PROD_ES_CLUSTERNAME")
     env.nave_auth_token = conf['PROD_NAVE_AUTH_TOKEN']
+
 
 
 @task
