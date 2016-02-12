@@ -52,13 +52,13 @@ $(function(){
 
         // Call functionality to retrieve linked data on mouseover
         setTimeout(function(){
-            Nave.initPopoverLink($('.js-lod-data-link'));
             $('#search-foldout-close').on('click', function () {
                 $('.result-item-foldout').remove();
                 // remove the current row classes
                 fo_container.children().removeClass('active-row current last active');
             });
-        },300);
+            LodView.initPopovers(); // needs LodView.js to be loaded
+        },500);
 
     });
 });

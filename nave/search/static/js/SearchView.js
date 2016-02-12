@@ -122,10 +122,9 @@ SearchView.initSearchTags = function() {
 };
 
 /***********************************************************************************/
-// SearchView.initGeo requires {% leaflet_js %} and {%leaflet_css %} to be loaded
+// SearchView.checkGeoCount: hide geo tab if no geo points are found.
+// Will also hide the grid tab because it has become redundant.
 /***********************************************************************************/
-
-
 SearchView.checkGeoCount = function () {
     if(queryStr){
         $.getJSON("/search/?format=geojson&cluster.factor=1&" + queryStr, function (data) {
@@ -136,6 +135,10 @@ SearchView.checkGeoCount = function () {
     }
 };
 
+
+/***********************************************************************************/
+// SearchView.initGeo requires {% leaflet_js %} and {%leaflet_css %} to be loaded
+/***********************************************************************************/
 SearchView.initGeo = function () {
 
     // init leaflet map
