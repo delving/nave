@@ -4,13 +4,45 @@ Vagrant local development setup
 Basic setup
 ^^^^^^^^^^^
 
-* extract project
+    * clone the nave project:
 
-cd project
+        $ git clone git@github.com:delving/nave.git nave_public
 
-vagrant up
+    * go into the projects directory
 
-============
+        $ cd nave_public/nave/projects
+
+    * clone your project
+
+        $ git clone git@github.com:delving/hub3_{{ project }}.git {{ project }}
+
+    * go into the project
+
+        $ cd {{ project }}
+
+    * create your local settings file
+
+        $ cp local_setting.py.template local_settings.py
+
+    * install plugins
+
+        $ vagrant plugin install vagrant-hostsupdater
+        $ vagrant plugin install vagrant-triggers
+
+    * provision and start-up vagrant
+
+        $ vagrant up
+
+    * wait for ca 20 minutes for everthing to be installed and configured. When it is done stop and start vagrant
+
+        $ vagrant halt
+        $ vagrant up
+
+    * now you can either login via `vagrant ssh` or you can go see the project in action on: http://{{project}}.localhost/
+
+
+Full setup
+==========
 
 Install vagrant and virtual box on your development machine, see https://www.vagrantup.com for instructions
 and the installer.
@@ -38,6 +70,8 @@ the first setup takes ca 15 minutes.
 
 And login to the machine in a separate terminal to verify vagant environ
 
+    $ vagrant halt
+    $ vagrant up
     $ vagrant ssh
 
 You can check the following urls for a quick system check:
@@ -70,7 +104,7 @@ When you have made changes to the configuration files of the services or to file
 that interact with the Queue manager you have to rerun the following command:
 
     $ workon {{ project }}_2
-    $ fab deploy_dev
+    $ fab local deploy_dev
     $ workon {{ project }}
 
 
@@ -78,7 +112,6 @@ vagrant good-to-knows
 ^^^^^^^^^^^^^^^^^^^^^
 
 Access
-
     $ vagrant ssh
 
 Re-provision
