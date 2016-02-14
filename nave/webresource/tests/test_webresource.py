@@ -1,9 +1,11 @@
 import os
+import shutil
 
-from webresource import WebResource
+from webresource.webresource import WebResource, SOURCE_DIR
 
 spec_name = "test-spec"
 test_uri = "urn:{}/123.jpg".format(spec_name)
+test_cache_uri = "http://example.com/123.jpg"
 
 
 def test__create_webresource__with_defaults():
@@ -11,12 +13,12 @@ def test__create_webresource__with_defaults():
     assert webresource is not None
     assert webresource.base_dir == "/tmp"
     assert webresource.settings is not None
-    assert webresource.org_id == "test"
+    assert webresource.org_id == "vagrant"
 
 
 def test__webresource__get_spec_dir(tmpdir):
     test_base = str(tmpdir)
-    webresource = WebResource(spec="test-spec", base_dir=test_base)
+    webresource = WebResource(spec=spec_name, base_dir=test_base)
     spec_dir = webresource.get_spec_dir
     assert spec_dir
     assert spec_dir.endswith(spec_name)
@@ -29,12 +31,14 @@ def test__create_dataset_webresource_dir(tmpdir):
     assert webresource is not None
     assert webresource.base_dir == test_base
     assert len(os.listdir(test_base)) == 0
+    assert not webresource.exist_webresource_dirs
     webresource.create_dataset_webresource_dirs()
     assert len(os.listdir(test_base)) != 0
     assert os.listdir(test_base) == [webresource.org_id]
     assert os.path.exists(
         os.path.join(webresource.get_spec_dir, "derivatives/thumbnails")
     )
+    assert webresource.exist_webresource_dirs
 
 
 def test__webresource__create_hash():
@@ -54,3 +58,53 @@ def test__webresource__get_derivative_base_path():
         test_uri,
         kind="deepzoom"
     ).startswith("deepzoom")
+
+
+def test__webresource__is_cached():
+    webresource = WebResource(spec=spec_name, uri=test_uri)
+    assert not webresource.is_cached
+    webresource = WebResource(spec=spec_name, uri=test_cache_uri)
+    assert webresource.is_cached
+
+
+def test__webresource__path_to_uri(tmpdir, settings):
+    test_base = str(tmpdir)
+    test_path = os.path.join(test_base, settings.ORG_ID, spec_name, SOURCE_DIR, "123.jpg")
+    webresource = WebResource(spec=spec_name, base_dir=test_base, path=test_path)
+    assert webresource.path_to_uri == test_uri
+    # TODO: implement test for cache url too
+
+
+def test__webresource__clean_uri():
+    webresource = WebResource(spec=spec_name, uri=test_uri)
+    assert not webresource.clean_uri.startswith("urn:")
+
+    webresource = WebResource(spec=spec_name, uri=test_cache_uri)
+    assert webresource.clean_uri.startswith("http://")
+
+
+def test__webresource__uri_to_path(tmpdir, settings):
+    test_base = str(tmpdir)
+    test_path = os.path.join(test_base, settings.ORG_ID, spec_name, SOURCE_DIR, "123.jpg")
+    webresource = WebResource(spec=spec_name, base_dir=test_base, uri=test_uri)
+    assert webresource.uri_to_path is not None
+    assert webresource.uri_to_path == test_path
+
+    webresource = WebResource(spec=spec_name, base_dir=test_base, uri=test_cache_uri)
+    assert webresource.is_cached
+    assert webresource.uri_to_path is not None
+    assert webresource.uri_to_path != test_path
+
+
+def test__webresource__source_path_exists(tmpdir, settings):
+    test_base = str(tmpdir)
+    webresource = WebResource(spec=spec_name, base_dir=test_base, uri=test_uri)
+    webresource.create_dataset_webresource_dirs()
+    test_image = os.path.join(os.path.dirname(__file__), 'nasa_ares_logo.png')
+    shutil.copy(test_image, webresource.uri_to_path)
+    assert os.path.exists(webresource.uri_to_path)
+    assert webresource.exists_source
+
+    webresource = WebResource(spec=spec_name, base_dir=test_base, uri='urn:{}/fake_image.jpg'.format(webresource.spec))
+    assert not os.path.exists(webresource.uri_to_path)
+    assert not webresource.exists_source

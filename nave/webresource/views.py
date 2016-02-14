@@ -1,15 +1,20 @@
-from django.shortcuts import render
+
+import logging
+
+from django.http import HttpResponseBadRequest, HttpResponsePermanentRedirect, HttpResponseSeeOtherRedirect
 from django.views.generic import RedirectView
+
+
+logger = logging.getLogger(__file__)
 
 
 class WebResourceRedirectView(RedirectView):
     """
-    The Redirect view does the content negotiation for a Linked Open Data request.
+    This View determines if the WebResource exists and then redirects it to
+    NGINX for serving.
 
-    When no content-type is requested or no content-extension specified, all traffic will be routed to the HTML view
-    at '/page'.
-
-    When a content type or extension is specified, all traffic will be routed to the data view
+    If the source web-resource exists but no derivatives they will be created
+    on the fly. 
     """
     permanent = False
     query_string = False
@@ -44,7 +49,7 @@ class WebResourceRedirectView(RedirectView):
         url = self.get_redirect_url(*args, **kwargs)
         if url:
             if self.permanent:
-                return http.HttpResponsePermanentRedirect(url)
+                return HttpResponsePermanentRedirect(url)
             else:
                 return HttpResponseSeeOtherRedirect(url)
         else:
@@ -53,3 +58,4 @@ class WebResourceRedirectView(RedirectView):
                                'status_code': 410,
                                'request': self.request
                            })
+            return HttpResponseBadRequest()
