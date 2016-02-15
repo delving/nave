@@ -93,6 +93,7 @@ OS_DEPENDENCIES = [
     'libjpeg-dev',
     'libopenjpeg-dev'
     'libpq-dev',
+    'libmagic1',
     'libxml2-dev',
     'zlib1g-dev',
     'libxslt1-dev',
@@ -906,8 +907,8 @@ def local():
     env.password = "vagrant"
     env.key_filename = None
     env.hosts = ['localhost']
-    env.live_host = "{}.localhost".format(env.proj_name)
-    env.preferred_live_host = "{}.localhost".format(env.proj_name)
+    env.live_host = "{}.localhost data.{}.localhost".format(env.proj_name, env.proj_name)
+    env.preferred_live_host = "{}.localhost data.{}.localhost".format(env.proj_name, env.proj_name)
     env.es_clustername = "{}".format(env.proj_name)
     env.nave_auth_token = conf['ACC_NAVE_AUTH_TOKEN']
     env.venv_home = "/home/vagrant"

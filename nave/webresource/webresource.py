@@ -11,6 +11,10 @@ In addition it will also be able to:
     the fly
 
 """
+import mimetypes
+import shutil
+import urllib
+from datetime import timedelta
 from glob import glob
 import hashlib
 import json
@@ -18,8 +22,10 @@ import logging
 import os
 import re
 import subprocess
+from urllib.error import HTTPError
 
-
+import magic
+import time
 from colorific.palette import extract_colors
 from PIL import Image
 import webcolors
@@ -66,17 +72,23 @@ class WebResource:
         self._org_id = org_id
         self._domain = domain
         self._json = None
+        self._mime_type = None
+        self.create_dataset_webresource_dirs()
 
     @property
     def base_dir(self):
         if not self._base_dir:
             self._base_dir = self.settings.WEB_RESOURCE_BASE
+        if not self._base_dir.rstrip('/').endswith("/webresource"):
+            self._base_dir = "{}/webresource".format(self._base_dir.rstrip('/'))
         return self._base_dir
 
     @property
     def domain(self):
         if not self._domain:
             self._domain = self.settings.RDF_BASE_URL
+        if "://" not in self._domain:
+            self._domain = "http://{}".format(self._domain)
         return self._domain
 
     @property
@@ -121,7 +133,7 @@ class WebResource:
         return all(os.path.exists(os.path.join(self.get_spec_dir, p)) for p in WEB_RESOURCE_DIRS)
 
     @property
-    def exists_deepzoom(self, width, height):
+    def exists_deepzoom(self):
         """Check if the deepzoom derivative already exists."""
         return os.path.exists(self.get_deepzoom_path)
 
@@ -130,17 +142,16 @@ class WebResource:
         """Check in the source of the WebResource exists."""
         return os.path.exists(self.uri_to_path)
 
-    @property
     def exists_thumbnail(self, width, height):
         """Check if the thumbnail derivative already exists."""
         return os.path.exists(self.get_thumbnail_path(width=width, height=height))
 
     def create_dataset_webresource_dirs(self):
         """Create all subdirectories for the WebResource based on spec."""
-        for folder in WEB_RESOURCE_DIRS:
-            full_path = os.path.join(self.get_spec_dir, folder)
-            if not os.path.exists(full_path):
-                os.makedirs(full_path)
+        if not self.exist_webresource_dirs:
+            for folder in WEB_RESOURCE_DIRS:
+                full_path = os.path.join(self.get_spec_dir, folder)
+                os.makedirs(full_path, exist_ok=True, mode=0o777)
 
     def create_deepzoom(self):
         """Create an IIPimage server compliant tiled deepzoom pyramid tiff.
@@ -150,21 +161,29 @@ class WebResource:
         # vips im_vips2tiff source_image output_image.tif:deflate,tile:256x256,pyramid
 
         """
+        start = time.time()
         input_file = self.get_source_path
         output_file = self.get_deepzoom_path
+        os.makedirs(os.path.dirname(output_file), exist_ok=True)
         created = subprocess.check_call(
             ["vips", "im_vips2tiff", input_file] +
             ["{}:deflate,tile:256x256,pyramid".format(output_file)])
+        elapsed = (time.time() - start)
+        logger.info("Deepzoomed {} => {} in {}".format(input_file, output_file, str(timedelta(seconds=elapsed))))
         return True if created == 0 else False
 
     def create_thumbnail(self, width, height):
         """Create the thumbnail derivative of the source digital object."""
+        start = time.time()
         infile = self.get_source_path
         outfile = self.get_thumbnail_path(width, height)
         try:
+            os.makedirs(os.path.dirname(outfile), exist_ok=True)
             im = Image.open(infile)
             im.thumbnail((width, height))
             im.save(outfile, "JPEG")
+            elapsed = (time.time() - start)
+            logger.info("Thumbnailed {} => {} in {}".format(infile, outfile, str(timedelta(seconds=elapsed))))
         except IOError as err:
             logger.error("cannot create thumbnail for {} because of {}".format(infile, err))
             return False
@@ -181,18 +200,20 @@ class WebResource:
     def remove_all_derivatives(self):
         """Remove all derivatives of the source digital object."""
         for path in self.get_all_derivatives():
-            os.remove(path)
+            if os.path.exists(path):
+                os.remove(path)
         logger.info("Deleted all derivatives for {}".format(self.uri))
 
-    @property
     def is_derivative_stale(self, derivative_path):
         """Determine if source is modified after the derivative is created.
 
         When the source has been modified after the derivative is created it,
         all derivatives should be cleared and on access recreated.
         """
+        if not self.exists_source:
+            return False
         source_path = self.get_source_path
-        return os.path.exists(derivative_path) and os.path.getmtime(derivative_path) > os.path.getmtime(source_path)
+        return os.path.exists(derivative_path) and os.path.getmtime(derivative_path) < os.path.getmtime(source_path)
 
     @staticmethod
     def get_hash(uri):
@@ -288,7 +309,7 @@ class WebResource:
     def get_deepzoom_path(self):
         """Get the fully qualified path to the Deepzoom Tile."""
         return os.path.join(
-            self.get_spec_dir(),
+            self.get_spec_dir,
             "{}.tif".format(self.get_derivative_base_path(kind=DEEPZOOM_DIR)),
         )
 
@@ -330,7 +351,6 @@ class WebResource:
             self.clean_uri
         )
 
-    @property
     def get_thumbnail_uri(self, width, height, mime_type="jpeg"):
         """Get fully qualified thumbnail URI for redirection to the WebServer."""
         return os.path.join(
@@ -346,9 +366,13 @@ class WebResource:
 
     def get_deepzoom_redirect(self):
         """All processing steps for finding, creating, and redirecting to the deepzoom derivative."""
-        if self.is_derivative_stale:
+        if self.is_derivative_stale(self.get_deepzoom_path):
             self.remove_all_derivatives()
-        if not self.exists_deepzoom():
+        if not self.exists_source and self.is_cached:
+            self.cache_external_uri()
+            if not self.exists_source:
+                return None
+        if not self.exists_deepzoom:
             created = self.create_deepzoom()
             if created:
                 uri = self.get_deepzoom_uri
@@ -369,8 +393,13 @@ class WebResource:
 
     def get_thumbnail_redirect(self, width, height):
         """All processing steps for finding, creating, and redirecting to the thumbnail derivative."""
-        if self.is_derivative_stale(self.get_thumbnail_path(width, height)):
+        thumbnail_path = self.get_thumbnail_path(width, height)
+        if self.is_derivative_stale(thumbnail_path):
             self.remove_all_derivatives()
+        if not self.exists_source and self.is_cached:
+            self.cache_external_uri()
+            if not self.exists_source:
+                return None
         if not self.exists_thumbnail(width, height):
             created = self.create_thumbnail(width, height)
             if created:
@@ -498,3 +527,26 @@ class WebResource:
     def generate_edm_rdf_graph(self):
         """Generate the EDM RDF graph that the WebResource is linked to."""
         return self.generate_edm_rdf_subject().rstrip('/') + "/graph"
+
+    def guess_mime_type(self, path):
+        """Guess the extension and mime-type of the file."""
+        with magic.Magic(flags=magic.MAGIC_MIME_TYPE) as m:
+            mime_type = m.id_filename(path)
+        extension = mimetypes.guess_extension(mime_type)
+        return mime_type, extension
+
+    def cache_external_uri(self):
+        """Retrieve digital object from remote URI and store it in the spec cache directory."""
+        if not self.is_cached:
+            return
+        try:
+            logger.info("Attempting to cache: {}".format(self.uri))
+            local_filename, headers = urllib.request.urlretrieve(self.uri)
+            mime_type = headers.get('Content-Type')
+            if not mime_type:
+                mime_type, extension = self.guess_mime_type(local_filename)
+            extension = mimetypes.guess_extension(mime_type)
+            os.makedirs(os.path.dirname(self.get_source_path), exist_ok=True)
+            shutil.move(local_filename, self.get_source_path)
+        except HTTPError as he:
+            logger.error(he.code, he.reason)
