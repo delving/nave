@@ -1,7 +1,7 @@
 import os
 import shutil
 
-from webresource.webresource import WebResource, SOURCE_DIR
+from webresource.webresource import WebResource, SOURCE_DIR, CACHE_DIR, THUMBNAIL_DIR, DEEPZOOM_DIR
 
 spec_name = "test-spec"
 test_uri = "urn:{}/123.jpg".format(spec_name)
@@ -20,7 +20,7 @@ def test__webresource__get_spec_dir(tmpdir):
     test_base = str(tmpdir)
     webresource = WebResource(spec=spec_name, base_dir=test_base)
     spec_dir = webresource.get_spec_dir
-    assert spec_dir
+    assert spec_dir is not None
     assert spec_dir.endswith(spec_name)
     assert webresource.org_id in spec_dir
 
@@ -36,7 +36,7 @@ def test__create_dataset_webresource_dir(tmpdir):
     assert len(os.listdir(test_base)) != 0
     assert os.listdir(test_base) == [webresource.org_id]
     assert os.path.exists(
-        os.path.join(webresource.get_spec_dir, "derivatives/thumbnails")
+        os.path.join(webresource.get_spec_dir, THUMBNAIL_DIR)
     )
     assert webresource.exist_webresource_dirs
 
@@ -52,12 +52,12 @@ def test__webresource__get_derivative_base_path():
     webresource = WebResource(spec=spec_name)
     d_path = webresource.get_derivative_base_path(test_uri)
     assert d_path
-    assert len(d_path.split('/')) == 5
-    assert d_path.startswith("thumbnails")
+    assert len(d_path.split('/')) == 6
+    assert d_path.startswith(THUMBNAIL_DIR)
     assert webresource.get_derivative_base_path(
         test_uri,
-        kind="deepzoom"
-    ).startswith("deepzoom")
+        kind=DEEPZOOM_DIR
+    ).startswith(DEEPZOOM_DIR)
 
 
 def test__webresource__is_cached():
@@ -108,3 +108,12 @@ def test__webresource__source_path_exists(tmpdir, settings):
     webresource = WebResource(spec=spec_name, base_dir=test_base, uri='urn:{}/fake_image.jpg'.format(webresource.spec))
     assert not os.path.exists(webresource.uri_to_path)
     assert not webresource.exists_source
+
+
+def test__webresource__get_deepzoom_uri(settings):
+    webresource = WebResource(spec=spec_name, uri=test_uri)
+    deepzoom_uri = webresource.get_deepzoom_uri
+    assert deepzoom_uri is not None
+    assert settings.RDF_BASE_URL in deepzoom_uri
+    assert webresource.get_derivative_base_path(kind=DEEPZOOM_DIR) in deepzoom_uri
+    assert deepzoom_uri.endswith(".tif.dzi")

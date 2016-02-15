@@ -1,8 +1,9 @@
 
 import logging
 
-from django.http import HttpResponseBadRequest, HttpResponsePermanentRedirect, HttpResponseSeeOtherRedirect
 from django.views.generic import RedirectView
+
+from webresource.webresource import WebResource
 
 
 logger = logging.getLogger(__file__)
@@ -14,48 +15,28 @@ class WebResourceRedirectView(RedirectView):
     NGINX for serving.
 
     If the source web-resource exists but no derivatives they will be created
-    on the fly. 
+    on the fly.
     """
     permanent = False
     query_string = False
 
     def get_redirect_url(self, *args, **kwargs):
         """
-        Do ContentNegotiation for some resource and
-        redirect to the appropriate place
+        Retrieving the WebResource derivative URIs
         """
-        label = self.kwargs.get('label')
-        type_ = self.kwargs.get('type_')
-        url_kwargs = {'label': label}
-        extension_ = self.kwargs.get('extension')
-        mimetype = get_lod_mime_type(extension_, self.request)
+        uri = self.query_string.get('uri')
+        hub_id = self.query_string.get('hubId')
+        doc_type = self.query_string.get('docType', "thumbnail")
+        width = self.query_string.get('width', "220")
+        height = self.query_string.get('height', "220")
+        # media_type = self.query_string.get('mediaType')
+        # default_image = self.query_string.get('defaultImage')
 
-        if mimetype and mimetype in RDF_SUPPORTED_MIME_TYPES:
-            path = "lod_data_detail"
-            url_kwargs['extension'] = mime_to_extension(mimetype)
-        elif USE_EDM_BINDINGS and type_ in ["aggregation"]:
-            path = "edm_lod_page_detail"
-            return reverse(path, kwargs=url_kwargs)
-        else:
-            path = "lod_page_detail"
-
-        if type_:
-            path = "typed_{}".format(path)
-            url_kwargs['type_'] = type_
-
-        return reverse(path, kwargs=url_kwargs)
-
-    def get(self, request, *args, **kwargs):
-        url = self.get_redirect_url(*args, **kwargs)
-        if url:
-            if self.permanent:
-                return HttpResponsePermanentRedirect(url)
-            else:
-                return HttpResponseSeeOtherRedirect(url)
-        else:
-            logger.warning('Gone: %s', self.request.path,
-                           extra={
-                               'status_code': 410,
-                               'request': self.request
-                           })
-            return HttpResponseBadRequest()
+        webresource = WebResource(uri=uri, hub_id=hub_id)
+        redirect_uri = None
+        if doc_type == 'thumbnail':
+            redirect_uri = webresource.get_thumbnail_redirect(width, height)
+        elif doc_type == "deepzoom":
+            redirect_uri = webresource.get_deepzoom_redirect()
+        # TODO: possibly later add route to source for logged in or APi token users
+        return redirect_uri
