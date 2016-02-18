@@ -91,7 +91,9 @@ OS_DEPENDENCIES = [
     'pkg-config',
     'git-core',
     'libjpeg-dev',
+    'libopenjpeg-dev',
     'libpq-dev',
+    'libmagic1',
     'libxml2-dev',
     'zlib1g-dev',
     'libxslt1-dev',
@@ -174,9 +176,9 @@ templates = {
         "reload_command": "service fuseki restart",
     },
     "narthex_conf": {
-       "local_path": "../deploy/narthex.conf",
-       "remote_path": "%(narthex_files)s/narthex.conf",
-       #"reload_command": "supervisorctl reload",
+        "local_path": "../deploy/narthex.conf",
+        "remote_path": "%(narthex_files)s/narthex.conf",
+        #"reload_command": "supervisorctl reload",
     },
     "narthex_logger": {
         "local_path": "../deploy/narthex_logger.xml",
@@ -224,6 +226,17 @@ def project():
     with virtualenv():
         with cd(env.django_dirname):
             yield
+
+
+@contextmanager
+def private_project():
+    """
+    Runs commands within the project's directory.
+    """
+    with virtualenv():
+        with cd(os.path.join(env.django_dirname, "projects", env.proj_name)):
+            yield
+
 
 
 @contextmanager
@@ -479,11 +492,11 @@ def install():
     install_fuseki()
     install_elasticsearch()
     upload_template(
-        "../deploy/supervisor_iipimageserver.conf",
-        "/etc/supervisor/conf.d/iip_image_server.conf",
-        env,
-        use_sudo=True,
-        backup=False
+            "../deploy/supervisor_iipimageserver.conf",
+            "/etc/supervisor/conf.d/iip_image_server.conf",
+            env,
+            use_sudo=True,
+            backup=False
     )
 
 
@@ -811,9 +824,9 @@ def deploy_dev():
     """
     dev_templates = templates.copy()
     dev_templates["supervisor"] = {
-                                  "local_path": "../deploy/supervisor_dev.conf",
-                                  "remote_path": "/etc/supervisor/conf.d/%(proj_name)s.conf",
-                              }
+        "local_path": "../deploy/supervisor_dev.conf",
+        "remote_path": "/etc/supervisor/conf.d/%(proj_name)s.conf",
+    }
     dev_templates["shiro"] = {
         "local_path": "../deploy/shiro.ini",
         "remote_path": "/opt/fuseki/run/shiro.ini",
@@ -864,6 +877,10 @@ def deploy():
         with update_changed_requirements():
             run("git checkout {}".format(env.git_branch))
             run("git pull origin {} -f".format(env.git_branch) if git else "hg pull && hg up -C")
+            # checkout the private branch
+            with private_project():
+                run("git checkout master")
+                run("git pull origin master")
         manage("collectstatic -v 0 --noinput")
         manage("compilemessages")
         manage("syncdb --noinput")
@@ -905,8 +922,8 @@ def local():
     env.password = "vagrant"
     env.key_filename = None
     env.hosts = ['localhost']
-    env.live_host = "{}.localhost".format(env.proj_name)
-    env.preferred_live_host = "{}.localhost".format(env.proj_name)
+    env.live_host = "{}.localhost data.{}.localhost".format(env.proj_name, env.proj_name)
+    env.preferred_live_host = "{}.localhost data.{}.localhost".format(env.proj_name, env.proj_name)
     env.es_clustername = "{}".format(env.proj_name)
     env.nave_auth_token = conf['ACC_NAVE_AUTH_TOKEN']
     env.venv_home = "/home/vagrant"
