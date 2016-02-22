@@ -22,5 +22,6 @@ Now you can start the project from the nave directory (where your manage.py file
 
 If you run into an `wsgi` related error make sure you have 'wsgi.py' file in the nave directory. You can copy it directly from the 'wsgi.py.template' file.
 
+For development purposes it is recommend to use the vagrant based setup that is included in each private project. 
+See 'docs/vagrant.rst' for more information on how to set this up and use it. 
 
-Aprox time 19mins
