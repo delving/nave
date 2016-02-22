@@ -1,11 +1,19 @@
 import os
 import shutil
 
-from webresource.webresource import WebResource, SOURCE_DIR, CACHE_DIR, THUMBNAIL_DIR, DEEPZOOM_DIR
+from webresource.webresource import WebResource, SOURCE_DIR, THUMBNAIL_DIR, DEEPZOOM_DIR
 
 spec_name = "test-spec"
-test_uri = "urn:{}/123.jpg".format(spec_name)
-test_cache_uri = "http://example.com/123.jpg"
+image_name = "123.jpg"
+test_uri = "urn:{}/{}".format(spec_name, image_name)
+test_cache_uri = "http://example.com/{}".format(image_name)
+
+
+# @pytest.fixture()
+# def base_dir(tmpdir, settings):
+# test_base = str(tmpdir)
+# test_path = os.path.join(test_base, settings.ORG_ID, spec_name, SOURCE_DIR, "123.jpg")
+# webresource = WebResource(spec=spec_name, base_dir=test_base, uri=test_uri)
 
 
 def test__create_webresource__with_defaults():
@@ -16,7 +24,7 @@ def test__create_webresource__with_defaults():
     assert webresource.org_id == "vagrant"
 
 
-def test__webresource__get_spec_dir(tmpdir):
+def test__webresource__get_spec_dir(tmpdir, settings):
     test_base = str(tmpdir)
     webresource = WebResource(spec=spec_name, base_dir=test_base)
     spec_dir = webresource.get_spec_dir
@@ -117,3 +125,45 @@ def test__webresource__get_deepzoom_uri(settings):
     assert settings.RDF_BASE_URL in deepzoom_uri
     assert webresource.get_derivative_base_path(kind=DEEPZOOM_DIR) in deepzoom_uri
     assert deepzoom_uri.endswith(".tif.dzi")
+
+
+def test__webresource__set_base_dir(settings):
+    webresource = WebResource(spec=spec_name, uri=test_uri)
+    assert webresource._base_dir is None
+    assert webresource.base_dir == settings.WEB_RESOURCE_BASE
+    assert webresource._base_dir is not None
+    assert webresource._base_dir == settings.WEB_RESOURCE_BASE
+
+    new_base_dir = "/tmp/unknown/"
+    webresource = WebResource(spec=spec_name, uri=test_uri, base_dir=new_base_dir)
+    assert webresource._base_dir is not None
+    assert webresource._base_dir == new_base_dir
+    assert webresource._base_dir == webresource.base_dir
+
+
+def test__webresource__set_domain(settings):
+    webresource = WebResource(spec=spec_name, uri=test_uri)
+    assert webresource._domain is None
+    assert webresource.domain == settings.RDF_BASE_URL
+    assert webresource._domain is not None
+    assert webresource._domain == settings.RDF_BASE_URL
+
+    new_domain = "http://test.domain.com"
+    webresource = WebResource(spec=spec_name, uri=test_uri, domain=new_domain)
+    assert webresource._domain is not None
+    assert webresource._domain == new_domain
+    assert webresource._domain == webresource.domain
+
+
+def test__webresource__hub_id_extract_object_number(settings):
+    test_object_number = "123"
+    hub_id = "{}_{}_{}".format(settings.ORG_ID, spec_name, test_object_number)
+    webresource = WebResource(spec=spec_name, uri=test_uri, hub_id=hub_id)
+    assert webresource
+    assert webresource._hub_id == hub_id
+    assert webresource.hub_id == webresource._hub_id
+
+    assert webresource.extract_object_number() == test_object_number
+    webresource = WebResource(spec=spec_name, uri=test_uri)
+    # TODO: include tests for the hub_id retrieval via json metadata
+    # assert webresource.extract_object_number() is None
