@@ -800,7 +800,7 @@ def restart():
         sudo("service nginx restart")
         start_command = "supervisorctl start %s:gunicorn_%s" % start_args
         # sudo(start_command)
-        print("if you see 'out: %s:gunicorn_%s: ERROR (no such process)' you must run `fab reload_supervisor` and then run `fab restart` again." % (env.proj_name, env.proj_name, start_command))
+        print("if you see 'out: %s:gunicorn_%s: ERROR (no such process)' you must run `fab reload_supervisor` and then run `fab restart` again." % (env.proj_name, env.proj_name))
 
 
 @task
