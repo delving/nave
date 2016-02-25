@@ -661,7 +661,7 @@ MLT_FIELDS = [
 #  IMAGE CONFIGURATION      #
 #############################
 
-WEB_RESOURCE_BASE = '/tmp'
+WEB_RESOURCE_BASE = '/tmp/webresource'
 ZIPPED_SEARCH_RESULTS_DOWNLOAD_FOLDER = '/tmp/zips'
 
 # TODO: remove these settings when the new webresource package is deployed

@@ -1,4 +1,5 @@
 *.pyc
+.cache
 *.pyo
 *.db
 *.iml
@@ -26,3 +27,4 @@ nave/wsgi.py
 *.mo
 nave/projects/*/*
 .vagrant
+*.swp
