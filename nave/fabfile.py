@@ -91,7 +91,7 @@ OS_DEPENDENCIES = [
     'pkg-config',
     'git-core',
     'libjpeg-dev',
-    'libopenjpeg-dev'
+    'libopenjpeg-dev',
     'libpq-dev',
     'libmagic1',
     'libxml2-dev',
