@@ -380,7 +380,7 @@ class NaveESQuery(object):
             return query
         # remove non filter keys
         for key, value in list(facet_params.items()):
-            if key in ['start', 'page', 'rows', 'format', 'diw-version', 'lang', 'callback']:
+            if key in ['start', 'page', 'rows', 'format', 'diw-version', 'lang', 'callback', 'q', 'query']:
                 del facet_params[key]
             if not value and key in facet_params:
                 del facet_params[key]
@@ -569,7 +569,7 @@ class FacetCountLink(object):
     def link(self):
         if not self._link:
             selected_facets = self._facet_params.getlist('qf')
-            facet_params = "{}&".format(self._facet_params.urlencode()) if self._facet_params else "?"
+            facet_params = "{}&".format(self._facet_params.urlencode())
             link = "{}qf={}".format(facet_params, self._filter_query.replace(":", "%3A"))
             if self._query.converter:
                 link = self._query.apply_converter_rules(
@@ -582,7 +582,7 @@ class FacetCountLink(object):
                 selected_facets.remove(self._filter_query)
                 self._facet_params.setlist('qf', selected_facets)
                 link = "{}".format(self._facet_params.urlencode())
-            self._link = link if link.startswith("?") else "?{}".format(link)
+            self._link = link
         return self._link
 
     @property
