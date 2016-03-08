@@ -742,9 +742,9 @@ class UserQuery(object):
     def _create_breadcrumbs(self):
         breadcrumbs = []
         filters = ['qf', 'qf[]']
-        base_params = [param for params in self._query.facet_params.lists() for param in self.expand_params(params) if
+        base_params = [param for params in self._query.base_params.lists() for param in self.expand_params(params) if
                        param[0] not in filters]
-        filter_params = [param for params in self._query.facet_params.lists() for param in self.expand_params(params) if
+        filter_params = [param for params in self._query.base_params.lists() for param in self.expand_params(params) if
                          param[0] in filters]
         query = BreadCrumb(
                 href=urllib.parse.urlencode(base_params),
