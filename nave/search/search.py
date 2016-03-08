@@ -582,7 +582,7 @@ class FacetCountLink(object):
                 selected_facets.remove(self._filter_query)
                 self._facet_params.setlist('qf', selected_facets)
                 link = "{}".format(self._facet_params.urlencode())
-            self._link = link
+            self._link = link if link.startswith('&') else "&{}".format(link)
         return self._link
 
     @property
