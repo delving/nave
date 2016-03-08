@@ -380,7 +380,7 @@ class NaveESQuery(object):
             return query
         # remove non filter keys
         for key, value in list(facet_params.items()):
-            if key in ['start', 'page', 'rows', 'format', 'diw-version', 'lang', 'callback', 'q', 'query']:
+            if key in ['start', 'page', 'rows', 'format', 'diw-version', 'lang', 'callback']:
                 del facet_params[key]
             if not value and key in facet_params:
                 del facet_params[key]
@@ -568,6 +568,12 @@ class FacetCountLink(object):
     @property
     def link(self):
         if not self._link:
+            facet_params = self._facet_params
+            for key, value in list(facet_params.items()):
+                if key in ['start', 'page', 'rows', 'format', 'diw-version', 'lang', 'callback', 'query', 'q']:
+                    del facet_params[key]
+                if not value and key in facet_params:
+                    del facet_params[key]
             selected_facets = self._facet_params.getlist('qf')
             facet_params = "{}&".format(self._facet_params.urlencode())
             link = "{}qf={}".format(facet_params, self._filter_query.replace(":", "%3A"))
@@ -742,7 +748,6 @@ class UserQuery(object):
     def _create_breadcrumbs(self):
         breadcrumbs = []
         filters = ['qf', 'qf[]']
-        # TODO: replace with base_params later
         base_params = [param for params in self._query.facet_params.lists() for param in self.expand_params(params) if
                        param[0] not in filters]
         filter_params = [param for params in self._query.facet_params.lists() for param in self.expand_params(params) if
