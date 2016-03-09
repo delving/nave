@@ -29,17 +29,19 @@
         <div class="row">
             <div class="col-sm-6">
                 {% detail_field 'dc_creator' label=_("dc_creator")  %}
+                {% detail_field 'dc_date' label=_("dc_date")  %}
                 {% detail_field 'dc_subject' multiple=True word_limit=55 label=_("dc_subject")  separator="" %}
-                {% detail_field 'dc_rights' label=_("dc_rights") %}
-                {% detail_field 'edm_rights' multiple=True label=_('edm_rights') is_link=True %}
+                {% detail_field 'dc_description' label=_("dc_description") word_limit=55 allow_html=True %}
+                {% detail_field 'dc_identifier' label=_("dc_identifier")  %}
             </div>
             <div class="col-sm-6">
-                {% detail_field 'dc_date' label=_("dc_date")  %}
                 {% detail_field 'dc_type'  multiple=True label=_('dc_type') %}
-                {% detail_field 'dc_description' label=_("dc_description") word_limit=55 allow_html=True %}
                 {% detail_field 'edm_dataProvider' label=_("edm_dataProvider") %}
                 {% detail_field 'nave_material' label=_("nave_material") %}
                 {% detail_field 'nave_technique' label=_("nave_technique") %}
+                {% detail_field 'dcterms_isReferencedBy' multiple=True label=_('dcterms_isReferencedBy') %}
+                {% detail_field 'dc_rights' label=_("dc_rights") %}
+                {% detail_field 'edm_rights' multiple=True label=_('edm_rights') is_link=True %}
             </div>
         </div>
         <br/>

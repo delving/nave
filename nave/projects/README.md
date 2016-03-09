@@ -1,6 +1,6 @@
 # Projects README
 
-The private project settings and code should be stored in a separated GIT repository. The name of this repository should be the site-id that should be consistently used everywhere. You can copy the default directory and replace default with your 'site-id'. Then include your private repository as a folder with the following command (make sure you don't commit the folder in the main repository):
+The private project settings and code should be stored in a separated GIT repository. The name of this repository should be the site-id that should be consistently used everywhere. You can copy the 'vagrant' directory and replace 'vagrant' with your 'site-id'. Then include your private repository as a folder with the following command (make sure you don't commit the folder in the main repository):
 
 	$ git clone git@mygithost:<git-repo> <site-id>
 
@@ -21,3 +21,7 @@ Now you can start the project from the nave directory (where your manage.py file
 	$ python manage.py runserver
 
 If you run into an `wsgi` related error make sure you have 'wsgi.py' file in the nave directory. You can copy it directly from the 'wsgi.py.template' file.
+
+For development purposes it is recommend to use the vagrant based setup that is included in each private project. 
+See 'docs/vagrant.rst' for more information on how to set this up and use it. 
+

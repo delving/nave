@@ -1,17 +1,18 @@
 function LodView() {}
 
+//############################################################}
+// Add proper classes to tabs and panes                      #}
+//############################################################}
 LodView.initNavTabs = function () {
-    //############################################################}
-    // Add proper classes to tabs and panes                      #}
-    //############################################################}
     $('.navigator-tabs li:first-of-type').addClass('active');
     $('.navigator-tabs .tab-pane').first().addClass('active');
 };
 
+
+//############################################################}
+// show predicate uris                                       #}
+//############################################################}
 LodView.initProperties = function (){
-    //############################################################}
-    // show predicate uris                                       #}
-    //############################################################}
     $('#display-predicate-uri-label').on('click', function(){
         $('.predicate-uri-label').toggle();
     });
@@ -32,13 +33,28 @@ LodView.initProperties = function (){
     }
 };
 
+
+//############################################################}
+// mouseover i icon for more info/definition                 #}
+//############################################################}
+LodView.initPopovers = function () {
+    $('.js-lod-popover-trigger').popover({
+        html: true,
+        trigger: 'hover',
+        content: function () {
+            return $(this).next('.js-lod-popover-content').html();
+        }
+    });
+};
+
+//############################################################}
+// click media image for fullscreen view                     #}
+//############################################################}
 LodView.initFullscreen = function () {
-    //############################################################}
-    // click media image for fullscreen view                     #}
-    //############################################################}
     $('a.fullscreen').fullsizable();
     $(".imgLiquidFill").imgLiquid();
 };
+
 
 LodView.initLinkedPropertiesModal = function (e, elem) {
     // don't go anywhere, modal is being activated by this class
@@ -50,6 +66,7 @@ LodView.initLinkedPropertiesModal = function (e, elem) {
     var endpoint = $('#'+elem.attr('data-endpoint'));
     $("#linked-data-container" ).html( endpoint.html());
 };
+
 
 LodView.initGeo = function (points) {
     map.invalidateSize(false);

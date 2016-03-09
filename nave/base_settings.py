@@ -213,7 +213,7 @@ MIDDLEWARE_CLASSES = (
     'oauth2_provider.middleware.OAuth2TokenMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.contrib.admindocs.middleware.XViewMiddleware',
-    # 'solid_i18n.middleware.SolidLocaleMiddleware',
+    'solid_i18n.middleware.SolidLocaleMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -325,11 +325,6 @@ LOCAL_APPS = (
 # ###########################
 
 DJANGO_WYSIWYG_FLAVOR = "ckeditor"
-
-# DJANGO_WYSIWYG_MEDIA_URL =
-
-# TODO enable custom image again. Add it to the void app.
-# FILER_IMAGE_MODEL = 'enrichment.models.NaveImage'
 
 
 ######################################################################
@@ -652,13 +647,6 @@ RDF_CONTENT_FOLDOUTS = {
 }
 
 
-NARTHEX_URL = "http://localhost:9000/narthex"
-NARTHEX_API_KEY = "secret"
-
-SCHEMA_REPOSITORY = "http://schemas.delving.eu/"
-DEFAULT_INDEX_SCHEMA = "abm"
-ENABLED_SCHEMAS = ['abm', 'icn', 'tib']
-
 DEFAULT_V1_CONVERTER = "icn"
 DEFAULT_V2_CONVERTER = "v2"
 
@@ -673,10 +661,13 @@ MLT_FIELDS = [
 #  IMAGE CONFIGURATION      #
 #############################
 
+WEB_RESOURCE_BASE = '/tmp/webresource'
+ZIPPED_SEARCH_RESULTS_DOWNLOAD_FOLDER = '/tmp/zips'
+
+# TODO: remove these settings when the new webresource package is deployed
 FILE_WATCH_BASE_FOLDER = '/tmp'
 DEEPZOOM_BASE_DIR = os.path.join(FILE_WATCH_BASE_FOLDER, "derivatives", "deepzoom")
 THUMBNAIL_BASE_DIR = os.path.join(FILE_WATCH_BASE_FOLDER, "derivatives", "thumbnail")
-ZIPPED_SEARCH_RESULTS_DOWNLOAD_FOLDER = '/tmp/zips'
 
 #############################
 ## Celery Broker settings.  #
