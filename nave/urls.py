@@ -7,6 +7,7 @@ from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.generic import TemplateView
 from solid_i18n.urls import solid_i18n_patterns
+from common.views import NarthexRedirectView
 
 admin.autodiscover()
 urlpatterns = patterns('',
@@ -16,8 +17,7 @@ urlpatterns = patterns('',
 urlpatterns += solid_i18n_patterns('',
                             url(r'^admin/', include(admin.site.urls)),  # NOQA
                             url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-                            # todo: create new sitemap not based on DJANGO CMS
-                            # url(r'^sitemap\.xml$', 'django.contrib.sitemaps.views.sitemap', {'sitemaps': {'cmspages': CMSSitemap}}),
+                            url(r'narthex/', NarthexRedirectView.as_view()),
                             url(r'^', include('projects.{}.urls'.format(settings.SITE_NAME))),
                             url(r'^', include('search.urls')),
                             (r'^crossdomain.xml$', TemplateView.as_view(template_name='crossdomain.xml')),
