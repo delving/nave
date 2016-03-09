@@ -8,7 +8,7 @@ jQuery(document).ready(function($) {
         dataOwner: "{{ diw.collection_spec }}",
         hasDigitalObject: true,
         rows: 10,
-        configHelp: false,
+        configHelp: true,
         resultsLayout: "list",
         defaultImg: "{% static 'img/blank.png' %}",
         language: "nl",
@@ -51,6 +51,7 @@ jQuery(document).ready(function($) {
         thumbnailWidth:"144",
         useDeepZoom: true,
         useFlashZoom: true,
+        usePushState: false,
         deepZoomFlashFile: "{% static 'flash/OpenZoomViewer.swf' %}",
         thumbnailField: "delving_thumbnail",
         displayFacets: [

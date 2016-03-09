@@ -9,14 +9,14 @@ class FacetInline(admin.TabularInline):
     model = DiwFacet
     fields = ['name', 'label', 'position']
     extra = 0
-    max_num = 6
+    max_num = 8
 
 
 class ResultFieldInline(admin.TabularInline):
     model = DiwResultField
     fields = ['name', 'label', 'position']
     extra = 0
-    max_num = 3
+    max_num = 5
 
 
 class ItemFieldInline(admin.TabularInline):

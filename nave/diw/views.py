@@ -33,6 +33,7 @@ class DiwConfigView(DetailView):
     template_name = 'diw-config.js'
     context_object_name = 'diw'
     model = DiwInstance
+    media_type = 'text/javascript'
 
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
