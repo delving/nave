@@ -7,6 +7,7 @@ from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.generic import TemplateView
 from solid_i18n.urls import solid_i18n_patterns
+from common.views import NarthexRedirectView
 
 admin.autodiscover()
 urlpatterns = patterns('',
@@ -16,8 +17,7 @@ urlpatterns = patterns('',
 urlpatterns += solid_i18n_patterns('',
                             url(r'^admin/', include(admin.site.urls)),  # NOQA
                             url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-                            # todo: create new sitemap not based on DJANGO CMS
-                            # url(r'^sitemap\.xml$', 'django.contrib.sitemaps.views.sitemap', {'sitemaps': {'cmspages': CMSSitemap}}),
+                            url(r'narthex/', NarthexRedirectView.as_view()),
                             url(r'^', include('projects.{}.urls'.format(settings.SITE_NAME))),
                             url(r'^', include('search.urls')),
                             (r'^crossdomain.xml$', TemplateView.as_view(template_name='crossdomain.xml')),
@@ -25,6 +25,7 @@ urlpatterns += solid_i18n_patterns('',
                             (r'^humans.xml$', TemplateView.as_view(template_name='humans.txt')),
                             url(r'^hm/', include('health_monitor.urls')),
                             url(r'^', include('lod.urls')),
+                            url(r'^', include('webresource.urls')),
                             url(r'^', include('search_widget.urls')),
                             url(r'^statistics/', TemplateView.as_view(template_name="statistics.html")), # template and data from void app
                             url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
@@ -37,6 +38,10 @@ if 'rosetta' in settings.INSTALLED_APPS:
     urlpatterns += patterns('',
                             url(r'^rosetta/', include('rosetta.urls')),
                             )
+
+if os.path.exists(os.path.join(settings.DJANGO_ROOT, "projects", settings.SITE_NAME, "wagtail_urls.py")):
+    urlpatterns += patterns('',
+                            url(r'^', include('projects.{}.wagtail_urls'.format(settings.SITE_NAME))))
 
 # This is only needed when using runserver.
 if settings.DEBUG:

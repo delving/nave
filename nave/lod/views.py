@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*- 
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 """
 
 """
@@ -19,15 +18,19 @@ from django.shortcuts import redirect
 from django.views.generic import TemplateView, RedirectView, View
 from rdflib.namespace import SKOS, RDF
 
+
 from lod import RDF_SUPPORTED_MIME_TYPES, USE_EDM_BINDINGS
 from lod.tests.resources import sparqlwrapper_result
+import lod.utils
 from lod.utils import rdfstore
-from lod.utils.edm import GraphBindings
 from lod.utils.lod import get_internal_rdf_base_uri
+from lod.utils.edm import GraphBindings
 from lod.utils.mimetype import best_match
 from lod.utils.mimetype import extension_to_mime, HTML_MIME, mime_to_extension, result_extension_to_mime
 from lod.utils.rdfstore import get_rdfstore, UnknownGraph
 from void.models import EDMRecord
+
+
 from .models import SPARQLQuery, RDFPrefix, RDFModel, CacheResource, RDFSubjectLookUp
 from .tasks import retrieve_and_cache_remote_lod_resource
 
@@ -62,12 +65,27 @@ class HubIDRedirectView(RedirectView):
 
     def get_redirect_url(self, *args, **kwargs):
         hub_id = self.kwargs.get('hubId')
-        doc_type = self.kwargs['doc_type']
+        if not hub_id:
+            if 'hubId' in self.query_string:
+                hub_id = self.query_string.get('hubId')
+            else:
+                raise Http404()
+        if 'doc_type' in self.kwargs:
+            doc_type = self.kwargs.get('doc_type')
+        else:
+            doc_type = "void_edmrecord"
         app_label, model_name = doc_type.split('_')
         model = get_model(app_label=app_label, model_name=model_name)
         rdf_object = model.objects.get(hub_id=hub_id)
         document_uri = rdf_object.document_uri
-        return document_uri
+        routed_uri = lod.utils.lod.get_external_rdf_url(document_uri, self.request)
+        logger.debug("Routed uri: {}".format(routed_uri))
+        print(routed_uri)
+        rdf_format = self.request.GET.get("format")
+        print(rdf_format)
+        if rdf_format and rdf_format in lod.RDF_SUPPORTED_EXTENSIONS:
+            routed_uri = "{}.{}".format(routed_uri, rdf_format)
+        return routed_uri
 
 
 class LoDRedirectView(RedirectView):
@@ -269,7 +287,7 @@ class LoDHTMLView(TemplateView):
                 target_uri = re.sub('about.rdf$', '', target_uri)
         else:
             target_uri = target_uri.rstrip('/')
-            resolved_uri = get_internal_rdf_base_uri(target_uri)
+            resolved_uri = lod.utils.lod.get_internal_rdf_base_uri(target_uri)
             if settings.RDF_USE_LOCAL_GRAPH:
                 object_local_cache = RDFSubjectLookUp.objects.filter(subject_uri=resolved_uri)
                 if not object_local_cache:

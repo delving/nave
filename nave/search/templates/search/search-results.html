@@ -37,7 +37,7 @@
 
 {% block content %}
     {# with options: facets_layout="horizontal|vertical" - defaults to vertical if not used #}
-    {% include "search/_search-results-content.html"%}
+    {% include "search/_search-results-content.html" %}
 {% endblock %}
 
 {% block content_below_wrapper %}{% endblock %}
@@ -59,6 +59,7 @@
     </script>
     <script src="{% static 'js/bootstrap-tagsinput.js' %}"></script>
     <script src="{% static 'js/SearchView.js' %}"></script>
+    <script src="{% static 'js/LodView.js' %}"></script>
     <script src="{% static 'js/jquery.matchHeights.js' %}"></script>
     <script src="{% static 'js/search-facets-sort.js' %}"></script>
     <script src="{% static 'js/jquery.fullsizable.2.0.2.min.js' %}"></script>
@@ -79,7 +80,7 @@
             {% endif %}
             SearchView.initFacets();
             {# TODO: make the nr_cols param that initFoldout takes dependent on the facets_layout: hor > 6, vert > 4 #}
-            SearchView.initFoldout(grid_cols, "{{ LANGUAGE_CODE }}");
+            SearchView.initFoldout(grid_cols);
             {% if view == 'grid' %}
                 SearchView.processImages();
             {% endif %}

@@ -1,6 +1,8 @@
 {% extends 'base.html' %}
 {% load i18n staticfiles %}
 
+{% block content_above_wrapper %}{% endblock %}
+
 {% block breadcrumbs %}
     <ul class="breadcrumb">
         <li>
@@ -53,6 +55,7 @@
         <div class="diw-pagination bottom"><!-- autogen bottom pagination here --></div>
     </div>
 
+
 {% endblock content %}
 
 
@@ -65,10 +68,8 @@
     <script type="text/javascript" src="{% static 'js/jquery-1.9.1.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/delving-instant-dependencies.1.0.5.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/delving-instant-core.1.0.5.min.js' %}"></script>
-
     {#  The config dynamically generated from the model   #}
-    <script type="text/javascript" src="{%  url 'diw_config'  diw.name %}"/>
-
+    <script type="text/javascript" src="{%  url 'diw_config'  diw.slug %}"></script>
 {% endblock %}
 
 </body>

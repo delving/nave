@@ -5,10 +5,9 @@ This module contains all the routing rules for the Linked Open Data app.
 from django.conf.urls import patterns, url
 from django.views.generic import TemplateView
 
-from lod import RDF_SUPPORTED_EXTENSIONS
+from . import RDF_SUPPORTED_EXTENSIONS
 from .views import SnorqlTemplateView, remote_sparql, LoDRedirectView, LoDDataView, LoDHTMLView, remote_sparql_test, \
     PropertyTemplateView, EDMHTMLMockView, HubIDRedirectView
-
 
 RDF_SUPPORTED_FORMATS = "|".join(RDF_SUPPORTED_EXTENSIONS)
 
@@ -23,7 +22,9 @@ urlpatterns = patterns("",
                        url(r'^relfinder/$', TemplateView.as_view(template_name='relfinder.html'), name='relfinder'),
 
                        # hubId
-                       url(r'^resolve/(?P<doc_type>(.*?))/(?P<hubId>(.*?))$', HubIDRedirectView.as_view()),
+                       url(r'^resolve/(?P<doc_type>(.*?))/(?P<hubId>(.*?))/$', HubIDRedirectView.as_view()),
+                       url(r'^api/resolve/(?P<doc_type>(.*?))/(?P<hubId>(.*?))/$', HubIDRedirectView.as_view()),
+                       url(r'^api/resolve/(?P<hubId>(.*?))/$', HubIDRedirectView.as_view()),
 
                        # redirects
                        url(r'^resource/(?P<type_>(.*))/(?P<label>(.*))\.(?P<extension>({}))$'.format(
