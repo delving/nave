@@ -20,4 +20,8 @@ def get(key, default):
         setting = env_val
     return setting
 
+
+"""
+Enable the routes to Narthex or disable this functionality completely.
+"""
 ENABLE_NARTHEX = get('ENABLE_NARTHEX', True)

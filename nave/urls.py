@@ -2,7 +2,6 @@ import os
 
 from django.conf import settings
 from django.conf.urls import *  # NOQA
-from django.conf.urls.i18n import i18n_patterns
 from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.generic import TemplateView
@@ -18,6 +17,10 @@ urlpatterns += solid_i18n_patterns('',
                             url(r'^admin/', include(admin.site.urls)),  # NOQA
                             url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
                             url(r'narthex/', NarthexRedirectView.as_view()),
+                            # todo: create new sitemap not based on DJANGO CMS
+                            # url(r'^sitemap\.xml$',
+                            #       'django.contrib.sitemaps.views.sitemap',
+                            #       {'sitemaps': {'cmspages': CMSSitemap}}),
                             url(r'^', include('projects.{}.urls'.format(settings.SITE_NAME))),
                             url(r'^', include('search.urls')),
                             (r'^crossdomain.xml$', TemplateView.as_view(template_name='crossdomain.xml')),
@@ -27,7 +30,8 @@ urlpatterns += solid_i18n_patterns('',
                             url(r'^', include('lod.urls')),
                             url(r'^', include('webresource.urls')),
                             url(r'^', include('search_widget.urls')),
-                            url(r'^statistics/', TemplateView.as_view(template_name="statistics.html")), # template and data from void app
+                            # template and data from void app
+                            url(r'^statistics/', TemplateView.as_view(template_name="statistics.html")),
                             url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
                             )
 

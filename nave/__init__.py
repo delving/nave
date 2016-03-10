@@ -16,5 +16,3 @@
 # Also add information on how to contact you by electronic and paper mail.
 
 __version__ = "0.8.0"
-
-
