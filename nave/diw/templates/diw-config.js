@@ -36,6 +36,7 @@ jQuery(document).ready(function($) {
             simpleSearchBlock: "#diw-search",
             advancedSearchBlock: "#diw-advanced-search",
             queryInfoBlock: "#diw-query-info",
+            breadcrumbsBlock: "#diw-breadcrumbs",
             paginationBlock: ".diw-pagination",
             resultsBlock: "#diw-results",
             facetsBlock: "#diw-facets",

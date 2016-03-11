@@ -38,10 +38,11 @@
         </div>
     {% endif %}
 
-    <div class="well well-sm">
+
         <div id="diw-search"><!-- autogen form here --></div>
         <div id="diw-advanced-search"><!-- autogen advanced search here --></div>
         <div id="diw-query-info"><!-- autogen query info here --></div>
+        <div id="diw-breadcrumbs"><!-- autogen query info here --></div>
         <div class="diw-pagination"><!-- autogen top pagination here --></div>
         <div id="diw-results-container">
             <div id="diw-facets"><!-- autogen facets here --></div>
@@ -53,14 +54,13 @@
             <div id="diw-item-related"><!-- autogen related items here --></div>
         </div>
         <div class="diw-pagination bottom"><!-- autogen bottom pagination here --></div>
-    </div>
 
 
 {% endblock content %}
 
 
 {% block extra_css %}
-    <link type="text/css" rel="stylesheet" href="{% static 'css/delving-instant-core.1.1.0.css' %}">
+    <link type="text/css" rel="stylesheet" href="{% static 'css/delving-instant-core.1.0.5.css' %}">
     <link type="text/css" rel="stylesheet" href="{% static 'css/delving-instant-custom.css' %}">
 {% endblock %}
 
