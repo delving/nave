@@ -560,8 +560,13 @@ class FacetCountLink(object):
         self._query = query
         self._filter_query = "{}:{}".format(self._name, self._value)
         self._facet_params = self._query.facet_params.copy()
-        self._is_selected = self._filter_query in self._facet_params.getlist('qf')
+        self._is_selected = self._is_selected()
         self._link = None
+
+    def _is_selected(self):
+        filter_query = self._filter_query
+        filter_params = self._facet_params.getlist('qf')
+        return filter_query in filter_params
 
     @property
     def value(self):
@@ -665,7 +670,11 @@ class FacetLink(object):
     @property
     def is_facet_selected(self):
         if not self._is_selected:
-            self._is_selected = self._name in list(self._query.applied_filters.keys())
+            facet_name = self._name
+            applied_filter_keys = self._query.applied_filters.keys()
+            if any([facet_name.endswith(legacy_suffix) for legacy_suffix in ['_string', '_facet', '_text']]):
+                facet_name = "_".join(facet_name.split("_")[:-1])
+            self._is_selected = facet_name in list(applied_filter_keys)
         return self._is_selected
 
     @property
