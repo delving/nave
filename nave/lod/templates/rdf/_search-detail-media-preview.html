@@ -22,12 +22,14 @@
             <div class="carousel-inner" role="listbox">
                 {% for value in values %}
                     <div class="item {% if forloop.first %}active{% endif %}">
-
                         {# TODO: check for deepzoom, video audio and render html accordingly #}
-
-                        {% if fullscreen %}<a href="{{ value.value }}" class="fullscreen">{% endif %}
+                        {% if fullscreen %}
+                            <a href="{{ value.value }}" class="fullscreen">
+                        {% endif %}
                         <img src="{{ value }}" alt="{% for a in alt %}{{ a }}{% endfor %}"/>
-                        {% if fullscreen %}</a>{% endif %}
+                        {% if fullscreen %}
+                            </a>
+                        {% endif %}
                     </div>
                 {% endfor %}
             </div>
@@ -44,8 +46,7 @@
                 <div class="carousel-thumbnails">
                     <ul class="carousel-indicators ">
                         {% for value in values %}
-                            <li data-target="#media-carousel" data-slide-to="{{ forloop.counter0 }}"
-                                class="{% if forloop.first %}active{% endif %}">
+                            <li data-target="#media-carousel" data-slide-to="{{ forloop.counter0 }}" class="{% if forloop.first %}active{% endif %}">
                                 <img src="{{ value }}" alt="{% for a in alt %}{{ a }}{% endfor %}" height="100"/>
                             </li>
                         {% endfor %}
@@ -57,7 +58,7 @@
     {% else %}
         <div class="no-image-placeholder" style="height:460px;">
             <div class="overlay"></div>
-            <span>{% trans 'no image available' noop %}</span>
+            <span>{% trans 'no previes available' noop %}</span>
         </div>
     {% endif %}
 </div>
