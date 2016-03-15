@@ -593,8 +593,12 @@ class FacetCountLink(object):
                 if not value and key in facet_params:
                     del facet_params[key]
             selected_facets = self._facet_params.getlist('qf')
-            facet_params = "{}&".format(self._facet_params.urlencode())
+            facet_params = "{}&".format(self._facet_params.urlencode() if self._facet_params else "?")
             link = "{}qf={}".format(facet_params, self._filter_query.replace(":", "%3A"))
+            if self.is_selected:
+                selected_facets.remove(self._filter_query)
+                self._facet_params.setlist('qf', selected_facets)
+                link = "{}".format(self._facet_params.urlencode())
             if self._query.converter:
                 link = self._query.apply_converter_rules(
                         query_string=link,
@@ -602,11 +606,9 @@ class FacetCountLink(object):
                         as_query_dict=False,
                         reverse=True
                 )
-            if self.is_selected:
-                selected_facets.remove(self._filter_query)
-                self._facet_params.setlist('qf', selected_facets)
-                link = "{}".format(self._facet_params.urlencode())
-            self._link = link if link.startswith('&') else "&{}".format(link)
+                self._link = link if link.startswith("&") else "&{}".format(link)
+            else:
+                self._link = link if link.startswith("?") else "?{}".format(link)
         return self._link
 
     @property
