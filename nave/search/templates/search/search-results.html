@@ -37,7 +37,7 @@
 
 {% block content %}
     {# with options: facets_layout="horizontal|vertical" - defaults to vertical if not used #}
-    {% include "search/_search-results-content.html" %}
+    {% include "search/_search-results-content.html" with facets_layout='vertical' %}
 {% endblock %}
 
 {% block content_below_wrapper %}{% endblock %}
