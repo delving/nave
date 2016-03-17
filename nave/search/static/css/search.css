@@ -1,3 +1,4 @@
+extend ' .clearfix' has no matches
 /**
  * MARGIN SHORTCUTS
  * these are shortcuts to the margin-{side} CSS property
@@ -46,8 +47,8 @@
   width: 180px;
 }
 .result-tools .form-pager .input-group-addon {
-  background: #555555;
-  color: #ffffff;
+  background: #555;
+  color: #fff;
 }
 .result-tools .form-pager input {
   border: none;
@@ -67,7 +68,7 @@
 }
 .result-tools .select-rows .selected {
   font-weight: bold;
-  color: #000000;
+  color: #000;
 }
 .result-tools .select-rows a {
   color: #707070;
@@ -107,6 +108,11 @@
   border: 1px solid #eee;
   min-height: 100px;
   text-align: center;
+  height: 200px;
+  width: 100%;
+}
+.results-grid-item .no-image-placeholder {
+  height: 200px;
 }
 .results-grid {
   margin-left: -10px;
@@ -155,7 +161,7 @@ a.result-item-link:hover {
   padding: 4px 8px;
 }
 .meta .title {
-  color: #444444;
+  color: #444;
   font-weight: bold;
 }
 .meta .creator {
@@ -176,7 +182,7 @@ a.result-item-link:hover {
   margin-bottom: 20px;
 }
 .result-item-foldout .close {
-  color: #000000;
+  color: #000;
   font-family: Verdana;
   font-weight: 100;
   opacity: 1;

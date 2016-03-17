@@ -1,4 +1,4 @@
-{% load i18n urls_tags %}
+{% load i18n urls_tags dataset_tags %}
     <div class="row results-grid">
         {% for result in data.items %}
             {# ATTENTION: col-sm-4 is 4/12 so 3 items per grid row. A necessary bit of info for the js further below:  var fo_cols =  3 #}
@@ -7,14 +7,15 @@
                     <a href="{% url 'results_detail_foldout' doc_type=result.item.doc_type slug=result.item.fields.system.slug  %}"
                        data-slug="{{ result.item.fields.system.slug }}" data-doc_type="{{ result.item.doc_type }}" data-mode="{{ acceptance }}"
                        class="result-item-link"  data-index="{{ forloop.counter0 }}">
-                        <div class="media" style="width:100%;height:200px;">
+                        <div class="media">
                             {% if result.item.fields.system.thumbnail %}
-{#                                <img src="{{ result.item.fields.edm_object.0.raw }}" class="img" alt="{% if result.item.fields.system.caption %}{{ result.item.fields.caption.0.value }}{% endif %}" />#}
-                                <img src="{{ result.item.fields.system.thumbnail }}?spec={{ result.item.legacy.delving_spec }}" class="img" alt="{% if result.item.fields.system.caption %}{{ result.item.fields.caption.0.value }}{% endif %}" />
+                                <img src="{{ result.item.fields.system.thumbnail }}?spec={{ result.item.legacy.delving_spec }}" class="img system" alt="{% if result.item.fields.system.caption %}{{ result.item.fields.caption.0.value }}{% endif %}" />
+                            {% elif not result.item.fields.system.thumbnail and result.item.fields.edm_object.0.raw %}
+                                <img src="{{ result.item.fields.edm_object.0.raw }}" class="img edm" alt="{% if result.item.fields.system.caption %}{{ result.item.fields.caption.0.value }}{% endif %}" />
                             {% else %}
-                                <div class="no-image-placeholder" style="height:160px;">
+                                <div class="no-image-placeholder">
                                     <div class="overlay"></div>
-                                    <span>{% trans 'no image available' %}</span>
+                                    <span>{% trans 'no preview available' %}</span>
                                 </div>
                             {% endif %}
                         </div>
