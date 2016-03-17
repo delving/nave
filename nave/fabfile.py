@@ -581,7 +581,9 @@ def deploy_narthex():
         run("mkdir -p {}".format(narthex_factory))
     with cd(env.narthex_versions_dir):
         run("rm -rf *")
-        run("wget 'http://artifactory.delving.org:8081/artifactory/simple/delving/narthex/narthex-{}.zip'".format(
+        # backup via dropbox when artifactory is not available
+        # run("wget https://db.tt/QkZQad3g")
+        run("wget 'http://artifactory.delving.org/artifactory/simple/delving/narthex/narthex-{}.zip'".format(
             env.narthex_version
         ))
         run("unzip narthex-{version}.zip".format(version=env.narthex_version))

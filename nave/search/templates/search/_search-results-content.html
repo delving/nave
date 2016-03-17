@@ -48,6 +48,9 @@
 
 {% block results %}
     <div class="row results-container">
+        {% if facets_layout == 'horizontal' %}
+            {% include 'search/include/facets_horizontal.html' %}
+        {% endif %}
         {# SEARCH RESULTS #}
         <div class="{% if facets_layout == 'horizontal' %}col-sm-12{% else %}col-sm-9{% endif %}">
             {% if view == 'grid' %}
@@ -58,10 +61,10 @@
                 {% include 'search/include/geo.html' %}
             {% endif %}
         </div>
-        {% if facets_layout == 'horizontal' %}
+        {% if not facets_layout == 'horizontal' %}
         {# HORIZONTAL FACETS #}
         <div class="col-sm-3">
-            {% include 'search/include/facets_horizontal.html' %}
+            {% include 'search/include/facets_vertical.html' %}
         </div>
         {% endif %}
     </div>
