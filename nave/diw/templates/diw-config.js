@@ -6,7 +6,7 @@ jQuery(document).ready(function($) {
         orgId: "{{ org_id }}",
         collectionSpecs: ["{{  diw.collection_spec }}"],
         dataOwner: "{{ diw.collection_spec }}",
-        hasDigitalObject: true,
+        hasDigitalObject: false,
         rows: 10,
         configHelp: {{diw.show_config_help|lower}},
         resultsLayout: "list",
