@@ -392,7 +392,8 @@ class NaveESQuery(object):
             return query
         # remove non filter keys
         for key, value in list(facet_params.items()):
-            if key in ['start', 'page', 'rows', 'format', 'diw-version', 'lang', 'callback']:
+            if key in ['start', 'page', 'rows', 'format', 'diw-version', 'lang', 'callback',
+                       'facetBoolType']:
                 del facet_params[key]
             if not value and key in facet_params:
                 del facet_params[key]
@@ -755,6 +756,8 @@ class UserQuery(object):
 
     def expand_params(self, param):
         key = param[0]
+        if key in ['q'] and self._query.converter:
+            key = "query"
         value_list = param[1]
         expanded_params = []
         for value in value_list:
