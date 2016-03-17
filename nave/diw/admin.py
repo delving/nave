@@ -27,7 +27,7 @@ class ItemFieldInline(admin.TabularInline):
 
 
 class DiwInstanceAdmin(admin.ModelAdmin):
-    fields = ['name', 'collection_spec']
+    fields = ['name', 'collection_spec', 'show_config_help']
     inlines = (FacetInline, ResultFieldInline, ItemFieldInline,)
 
 

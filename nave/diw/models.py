@@ -38,6 +38,12 @@ class DiwInstance(models.Model):
         verbose_name=_("Data provider")
     )
 
+    show_config_help = models.BooleanField(
+        default=False,
+        help_text=_("Show configuration help in the preview. UN-CHECK/TURN OFF before creating a zip for download"),
+        verbose_name=_("Show configuration help")
+    )
+
     slug = AutoSlugField(populate_from='name')
 
     class Meta(object):

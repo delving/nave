@@ -4,11 +4,11 @@ jQuery(document).ready(function($) {
     jQuery(document).delvingInstant({
         endPoint: "{{ endpoint }}",
         orgId: "{{ org_id }}",
-        collectionSpecs: ["{{ diw.collection_spec }}"],
+        collectionSpecs: ["{{  diw.collection_spec }}"],
         dataOwner: "{{ diw.collection_spec }}",
         hasDigitalObject: true,
         rows: 10,
-        configHelp: true,
+        configHelp: {{diw.show_config_help|lower}},
         resultsLayout: "list",
         defaultImg: "{% static 'img/blank.png' %}",
         language: "nl",

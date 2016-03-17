@@ -174,22 +174,17 @@ a img {
 }
 /* Query breadcrumbs *****************************/
 .breadcrumb {
+  padding: 0px;
+  margin-bottom: 20px;
   list-style: none;
-  margin: 0;
-  padding: 0;
 }
-.breadcrumb li {
+.breadcrumb>li {
   display: inline-block;
-  *display: inline;
-  /* IE7 inline-block hack */
-
-  *zoom: 1;
 }
-.breadcrumb .divider {
-  padding: 0 5px;
-}
-.breadcrumb .divider:first-of-type {
-  display: none;
+.breadcrumb>li+li:before {
+  padding: 0 10px;
+  color: #ccc;
+  content: "/\00a0";
 }
 /* Pagination ***********************************/
 .pagination {
