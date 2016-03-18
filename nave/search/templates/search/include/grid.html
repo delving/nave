@@ -9,7 +9,7 @@
                        class="result-item-link"  data-index="{{ forloop.counter0 }}">
                         <div class="media">
                             {% if result.item.fields.system.thumbnail %}
-                                <img src="{{ result.item.fields.system.thumbnail }}?spec={{ result.item.legacy.delving_spec }}" class="img system" alt="{% if result.item.fields.system.caption %}{{ result.item.fields.caption.0.value }}{% endif %}" />
+                                <img src="{{ result.item.fields.system.thumbnail }}" class="img system" alt="{% if result.item.fields.system.caption %}{{ result.item.fields.caption.0.value }}{% endif %}" />
                             {% elif not result.item.fields.system.thumbnail and result.item.fields.edm_object.0.raw %}
                                 <img src="{{ result.item.fields.edm_object.0.raw }}" class="img edm" alt="{% if result.item.fields.system.caption %}{{ result.item.fields.caption.0.value }}{% endif %}" />
                             {% else %}
