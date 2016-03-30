@@ -3,7 +3,6 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
@@ -129,7 +128,6 @@ msgid "production rdf"
 msgstr ""
 
 #: lod/models.py:196
-#, fuzzy
 #| msgid "dc_source"
 msgid "source hash"
 msgstr "Bron"
@@ -351,7 +349,7 @@ msgstr "Museum/Instelling"
 
 #: lod/templates/rdf/content_detail/ore_aggregation.html:21
 msgid "dc_contributor"
-msgstr ""
+msgstr "Bijdrager"
 
 #: lod/templates/rdf/content_detail/ore_aggregation.html:22
 msgid "dc_source"
@@ -437,7 +435,6 @@ msgid "Return to results"
 msgstr "Terug naar resultaten"
 
 #: lod/templates/rdf/lod_detail.html:54
-#, fuzzy
 #| msgid "Return to results"
 msgid "Return to previous object"
 msgstr "Terug naar resultaten"
