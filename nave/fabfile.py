@@ -110,8 +110,7 @@ OS_DEPENDENCIES = [
     'python-setuptools',
     'rabbitmq-server',
     'oracle-java8-installer',
-    'oracle-java7-installer',
-    'oracle-java7-set-default',
+    'oracle-java8-set-default',
     'libvips-tools',
     'imagemagick',
     'htop',
@@ -479,7 +478,6 @@ def install():
     sudo("apt-get update -y -q")
     sudo("apt-get install -y python-software-properties debconf-utils")
     sudo('echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 select true" | sudo debconf-set-selections')
-    sudo('echo "oracle-java7-installer shared/accepted-oracle-license-v1-1 select true" | sudo debconf-set-selections')
     apt(" ".join(OS_DEPENDENCIES))
     sudo("pip2 install virtualenv virtualenvwrapper mercurial")  # supervisor when not installed via apt-get
     sudo("pip3 install virtualenv virtualenvwrapper")
