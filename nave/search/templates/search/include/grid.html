@@ -6,12 +6,12 @@
                 <div class="results-grid-item  {{ grid_class }}" id="#result_{{ forloop.counter0 }}">
                     <a href="{% url 'results_detail_foldout' doc_type=result.item.doc_type slug=result.item.fields.system.slug  %}"
                        data-slug="{{ result.item.fields.system.slug }}" data-doc_type="{{ result.item.doc_type }}" data-mode="{{ acceptance }}"
-                       class="result-item-link"  data-index="{{ forloop.counter0 }}">
+                       class="result-item-link"  data-index="{{ forloop.counter0 }}" data-detail-uri="{{ result.item.fields.system.source_uri }}">
                         <div class="media">
                             {% if result.item.fields.system.thumbnail %}
-                                <img src="{{ result.item.fields.system.thumbnail }}" class="img system" alt="{% if result.item.fields.system.caption %}{{ result.item.fields.caption.0.value }}{% endif %}" />
+                                <img src="{{ result.item.fields.system.thumbnail }}" class="img system" alt="{% if result.item.fields.system.caption %}{{result.item.fields.system.caption.0  }}{% endif %}" />
                             {% elif not result.item.fields.system.thumbnail and result.item.fields.edm_object.0.raw %}
-                                <img src="{{ result.item.fields.edm_object.0.raw }}" class="img edm" alt="{% if result.item.fields.system.caption %}{{ result.item.fields.caption.0.value }}{% endif %}" />
+                                <img src="{{ result.item.fields.edm_object.0.raw }}" class="img edm" alt="{% if result.item.fields.system.caption %}{{ result.item.fields.system.caption.0 }}{% endif %}" />
                             {% else %}
                                 <div class="no-image-placeholder">
                                     <div class="overlay"></div>
@@ -43,3 +43,4 @@
             <h3 class="col-md-12">{% trans 'No search results' %}</h3>
         {% endfor %}
     </div>
+
