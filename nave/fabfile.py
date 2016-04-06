@@ -927,6 +927,7 @@ def local():
     env.es_clustername = "{}".format(env.proj_name)
     env.nave_auth_token = conf['ACC_NAVE_AUTH_TOKEN']
     env.venv_home = "/home/vagrant"
+    env.rdf_base_url = "http://{}.localhost".format(env.proj_name)
     env.narthex_files = "%s/%s" % (env.venv_home, "NarthexFiles")
     env.venv_path = "%s/%s" % (env.venv_home, env.proj_name)
     env.django_path = "%s/%s/%s" % (env.venv_path, env.proj_dirname, 'nave')
