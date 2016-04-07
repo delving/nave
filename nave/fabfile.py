@@ -513,7 +513,8 @@ def install_fuseki():
     fuseki_version = "2.3.0"
     with cd("/tmp"):
         if not exists('/opt/fuseki/fuseki-server.jar'):
-            sudo('wget -q http://archive.apache.org/dist/jena/binaries/apache-jena-fuseki-{}.tar.gz'.format(fuseki_version))
+            #sudo('wget -q http://archive.apache.org/dist/jena/binaries/apache-jena-fuseki-{}.tar.gz'.format(fuseki_version))
+            sudo('wget -q http://monitor.delving.eu/apache-jena-fuseki-{}.tar.gz'.format(fuseki_version))
             sudo('tar xvzf apache-jena-fuseki-{}.tar.gz'.format(fuseki_version))
             sudo('mkdir -p /opt/fuseki/run/configuration/')
             sudo('mv apache-jena-fuseki-{}/* /opt/fuseki/'.format(fuseki_version))
