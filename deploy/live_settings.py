@@ -53,4 +53,6 @@ FILE_WATCH_BASE_FOLDER = "%(file_watch_base_folder)s"
 
 RDF_STORE_HOST = "%(rdf_store_host)s"
 
+RDF_BASE_URL = "%{rdf_base_url}"
+
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"

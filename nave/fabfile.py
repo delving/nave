@@ -195,6 +195,15 @@ templates = {
         "local_path": "../deploy/live_settings.py",
         "remote_path": "%(django_path)s/projects/%(proj_name)s/local_settings.py",
     },
+    "narthex_conf": {
+        "local_path": "../deploy/narthex.conf",
+        "remote_path": "%(narthex_files)s/narthex.conf",
+        #"reload_command": "supervisorctl reload",
+    },
+    "narthex_logger": {
+        "local_path": "../deploy/narthex_logger.xml",
+        "remote_path": "%(narthex_files)s/logger.xml",
+    },
     "elastic_search": {
         "local_path": "../deploy/elasticsearch.yml",
         "remote_path": "/etc/elasticsearch/elasticsearch.yml",
@@ -928,7 +937,7 @@ def local():
     env.es_clustername = "{}".format(env.proj_name)
     env.nave_auth_token = conf['ACC_NAVE_AUTH_TOKEN']
     env.venv_home = "/home/vagrant"
-    env.rdf_base_url = "http://{}.localhost".format(env.proj_name)
+    env.gunicorn_port = 8000  # set the gunicorn_port for development mode
     env.narthex_files = "%s/%s" % (env.venv_home, "NarthexFiles")
     env.venv_path = "%s/%s" % (env.venv_home, env.proj_name)
     env.django_path = "%s/%s/%s" % (env.venv_path, env.proj_dirname, 'nave')
