@@ -80,6 +80,7 @@ if "://" not in env.rdf_base_url:
     env.rdf_base_url = "http://{}".format(env.rdf_base_url)
 env.locale = conf.get("LOCALE", "en_US.UTF-8")
 env.nave_auth_token = conf['ACC_NAVE_AUTH_TOKEN']
+env.debug_mode = False
 
 env.secret_key = conf.get("SECRET_KEY", "")
 
@@ -937,7 +938,9 @@ def local():
     env.es_clustername = "{}".format(env.proj_name)
     env.nave_auth_token = conf['ACC_NAVE_AUTH_TOKEN']
     env.venv_home = "/home/vagrant"
+    env.debug_mode = True
     env.gunicorn_port = 8000  # set the gunicorn_port for development mode
+    env.venv_home = True
     env.narthex_files = "%s/%s" % (env.venv_home, "NarthexFiles")
     env.venv_path = "%s/%s" % (env.venv_home, env.proj_name)
     env.django_path = "%s/%s/%s" % (env.venv_path, env.proj_dirname, 'nave')

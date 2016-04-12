@@ -5,7 +5,7 @@ import raven
 
 SECRET_KEY = "%(secret_key)s"
 
-DEBUG = False
+DEBUG = %{debug_mode}
 
 DATABASES = {
     "default": {
