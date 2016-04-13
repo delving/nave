@@ -1,0 +1,472 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2016-04-13 11:39+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: models.py:58
+msgid "Author"
+msgstr ""
+
+#: models.py:59
+msgid "The first creator of the object"
+msgstr ""
+
+#: models.py:66
+msgid "Group"
+msgstr ""
+
+#: models.py:67
+msgid "The groups that have access to this metadata record"
+msgstr ""
+
+#: models.py:92
+msgid "title"
+msgstr ""
+
+#: models.py:93
+msgid "description"
+msgstr ""
+
+#: models.py:109 models.py:110
+msgid "RDF Subject LookUp"
+msgstr ""
+
+#: models.py:135
+msgid "hub id"
+msgstr ""
+
+#: models.py:138
+msgid "legacy culture hubId for documents"
+msgstr ""
+
+#: models.py:141
+msgid "slug"
+msgstr ""
+
+#: models.py:146
+msgid "document_uri"
+msgstr ""
+
+#: models.py:148
+msgid "The document uri or cache uri "
+msgstr ""
+
+#: models.py:151
+msgid "named_graph"
+msgstr ""
+
+#: models.py:152
+msgid "The named graph that this record belongs to"
+msgstr ""
+
+#: models.py:155
+msgid "local identifier"
+msgstr ""
+
+#: models.py:157
+msgid "The local identifier supplied by the provider"
+msgstr ""
+
+#: models.py:160
+msgid "uuid"
+msgstr ""
+
+#: models.py:161
+msgid "The unique uuid created on first save"
+msgstr ""
+
+#: models.py:164
+msgid "source uri"
+msgstr ""
+
+#: models.py:167
+msgid ""
+"If the item is cached this is the original uri where this object is found. "
+"It is also saved in the graph as owl:sameAs"
+msgstr ""
+
+#: models.py:171
+msgid "acceptance rdf"
+msgstr ""
+
+#: models.py:173 models.py:193
+msgid "The rdf stored in the ntriples (nt) format. "
+msgstr ""
+
+#: models.py:176
+msgid "acceptance hash"
+msgstr ""
+
+#: models.py:181 models.py:201
+msgid "The sha1 content has of the stored ntriples."
+msgstr ""
+
+#: models.py:184
+msgid "acceptance update date"
+msgstr ""
+
+#: models.py:188
+msgid "The date the acceptance source was updated"
+msgstr ""
+
+#: models.py:191
+msgid "production rdf"
+msgstr ""
+
+#: models.py:196
+msgid "source hash"
+msgstr ""
+
+#: models.py:204
+msgid "production update date"
+msgstr ""
+
+#: models.py:208
+msgid "The date the source was updated"
+msgstr ""
+
+#: models.py:211
+msgid "has store error"
+msgstr ""
+
+#: models.py:213
+msgid "If post save actions have thrown an error."
+msgstr ""
+
+#: models.py:216
+msgid "error message"
+msgstr ""
+
+#: models.py:714
+msgid "prefix"
+msgstr ""
+
+#: models.py:715
+msgid "prefix url"
+msgstr ""
+
+#: models.py:718
+msgid "RDF Prefix"
+msgstr ""
+
+#: models.py:719
+msgid "RDF Prefixes"
+msgstr ""
+
+#: models.py:738 models.py:758
+msgid "prefixes"
+msgstr ""
+
+#: models.py:739 models.py:759
+msgid "SPARQL query"
+msgstr ""
+
+#: models.py:742
+msgid "SPARQL Query"
+msgstr ""
+
+#: models.py:743
+msgid "SPARQL Queries"
+msgstr ""
+
+#: models.py:760
+msgid "active"
+msgstr ""
+
+#: models.py:760
+msgid "If the SPARQL update query is scheduled for periodic execution."
+msgstr ""
+
+#: models.py:764
+msgid "SPARQL Update Query"
+msgstr ""
+
+#: models.py:765
+msgid "SPARQL Update Queries"
+msgstr ""
+
+#: models.py:787
+msgid "name"
+msgstr ""
+
+#: models.py:789
+msgid "The name of the remote resource"
+msgstr ""
+
+#: models.py:792
+msgid "base_url"
+msgstr ""
+
+#: models.py:794
+msgid "The base url of the LoD target"
+msgstr ""
+
+#: models.py:797
+msgid "sparql endpoint"
+msgstr ""
+
+#: models.py:800
+msgid "The sparql endpoint"
+msgstr ""
+
+#: models.py:803
+msgid "ontology url"
+msgstr ""
+
+#: models.py:806
+msgid "The link to an RDF version of the Ontology"
+msgstr ""
+
+#: models.py:836
+msgid "stored"
+msgstr ""
+
+#: templates/rdf/_rdf_properties.html:21
+#: templates/rdf/_search-detail-field.html:60
+msgid "Opens in new window"
+msgstr "Opent in nieuw venster"
+
+#: templates/rdf/_rdf_properties.html:38 templates/rdf/_rdf_properties.html:39
+#: templates/rdf/_rdf_properties.html:53 templates/rdf/_rdf_properties.html:54
+msgid "Show more"
+msgstr "Toon meer"
+
+#: templates/rdf/_rdf_properties.html:38 templates/rdf/_rdf_properties.html:53
+msgid "Show less"
+msgstr "Toon minder"
+
+#: templates/rdf/_search-detail-field.html:56
+msgid "Definition"
+msgstr "Definitie"
+
+#: templates/rdf/_search-detail-field.html:70
+msgid "Free text"
+msgstr "Vrije tekst"
+
+#: templates/rdf/_search-detail-media-preview.html:60
+msgid "no image available"
+msgstr "Geen voorbeeld beschikbaar"
+
+#: templates/rdf/content_detail/gn_feature.html:5
+#: templates/rdf/content_foldout/gn_feature.html:4
+msgid "Name"
+msgstr "Naam"
+
+#: templates/rdf/content_detail/gn_feature.html:6
+msgid "Country Code"
+msgstr "Land code"
+
+#: templates/rdf/content_detail/ore_aggregation.html:5
+#: templates/rdf/lod_detail.html:211
+msgid "dc_title"
+msgstr "Titel"
+
+#: templates/rdf/content_detail/ore_aggregation.html:6
+#: templates/rdf/content_foldout/lod-detail-foldout.html:31
+#: templates/rdf/lod_detail.html:215
+msgid "dc_creator"
+msgstr "Vervaardiger"
+
+#: templates/rdf/content_detail/ore_aggregation.html:7
+#: templates/rdf/content_detail/ore_aggregation.html:19
+#: templates/rdf/content_foldout/lod-detail-foldout.html:32
+msgid "dc_date"
+msgstr "Datum"
+
+#: templates/rdf/content_detail/ore_aggregation.html:8
+#: templates/rdf/content_foldout/lod-detail-foldout.html:40
+msgid "nave_material"
+msgstr "Materiaal"
+
+#: templates/rdf/content_detail/ore_aggregation.html:9
+#: templates/rdf/content_foldout/lod-detail-foldout.html:41
+msgid "nave_technique"
+msgstr "Technique"
+
+#: templates/rdf/content_detail/ore_aggregation.html:10
+msgid "dc_format"
+msgstr "Formaat"
+
+#: templates/rdf/content_detail/ore_aggregation.html:11
+#: templates/rdf/content_foldout/lod-detail-foldout.html:34
+#: templates/rdf/lod_detail.html:68
+msgid "dc_description"
+msgstr "Beschrijving"
+
+#: templates/rdf/content_detail/ore_aggregation.html:12
+#: templates/rdf/content_foldout/lod-detail-foldout.html:33
+msgid "dc_subject"
+msgstr "Onderwerp"
+
+#: templates/rdf/content_detail/ore_aggregation.html:13
+#: templates/rdf/content_foldout/lod-detail-foldout.html:38
+msgid "dc_type"
+msgstr "Type"
+
+#: templates/rdf/content_detail/ore_aggregation.html:14
+#: templates/rdf/content_foldout/lod-detail-foldout.html:35
+msgid "dc_identifier"
+msgstr "Identifier"
+
+#: templates/rdf/content_detail/ore_aggregation.html:15
+msgid "dc_relation"
+msgstr "Relatie"
+
+#: templates/rdf/content_detail/ore_aggregation.html:16
+msgid "dc_provenance"
+msgstr "Herkomst"
+
+#: templates/rdf/content_detail/ore_aggregation.html:17
+msgid "nave_collection"
+msgstr "Collectie"
+
+#: templates/rdf/content_detail/ore_aggregation.html:18
+msgid "nave_collectionPart"
+msgstr "Deelcollectie"
+
+#: templates/rdf/content_detail/ore_aggregation.html:20
+#: templates/rdf/content_foldout/lod-detail-foldout.html:39
+#: templates/rdf/lod_detail.html:305
+msgid "edm_dataProvider"
+msgstr "Dataprovider"
+
+#: templates/rdf/content_detail/ore_aggregation.html:21
+msgid "dc_contributor"
+msgstr "Bijdrager"
+
+#: templates/rdf/content_detail/ore_aggregation.html:22
+msgid "dc_source"
+msgstr "Bron"
+
+#: templates/rdf/content_detail/ore_aggregation.html:23
+msgid "nave_province"
+msgstr "Provincie"
+
+#: templates/rdf/content_detail/ore_aggregation.html:24
+msgid "nave_musipMuseumUri"
+msgstr "Musip Museum URI"
+
+#: templates/rdf/content_detail/ore_aggregation.html:25
+msgid "edm_isShownAt"
+msgstr "Is shown at"
+
+#: templates/rdf/content_detail/ore_aggregation.html:26
+#: templates/rdf/content_foldout/lod-detail-foldout.html:43
+#: templates/rdf/lod_detail.html:219
+msgid "dc_rights"
+msgstr "Rechten"
+
+#: templates/rdf/content_detail/ore_aggregation.html:27
+#: templates/rdf/content_foldout/lod-detail-foldout.html:44
+msgid "edm_rights"
+msgstr "Rechten"
+
+#: templates/rdf/content_detail/ore_aggregation.html:28
+msgid "coordinate"
+msgstr "Coordinaten"
+
+#: templates/rdf/content_detail/rce_RijksMonument.html:3
+#: templates/rdf/content_foldout/rce_RijksMonument.html:27
+msgid "compleet straat adres"
+msgstr "Kompleet straat adres"
+
+#: templates/rdf/content_detail/rce_RijksMonument.html:4
+#: templates/rdf/content_foldout/rce_RijksMonument.html:28
+msgid "plaats"
+msgstr "Plaats"
+
+#: templates/rdf/content_detail/rce_RijksMonument.html:5
+msgid "naam"
+msgstr "Naam"
+
+#: templates/rdf/content_detail/rce_RijksMonument.html:6
+msgid "typemonum"
+msgstr "Type monument"
+
+#: templates/rdf/content_detail/rce_RijksMonument.html:7
+#: templates/rdf/content_foldout/rce_RijksMonument.html:29
+msgid "cbscategor"
+msgstr "CBS Categorie"
+
+#: templates/rdf/content_detail/rce_RijksMonument.html:8
+msgid "oorsprfunc"
+msgstr "Oorspronkelijke functie"
+
+#: templates/rdf/content_detail/rce_RijksMonument.html:9
+msgid "subcatoms"
+msgstr ""
+
+#: templates/rdf/content_detail/rce_RijksMonument.html:10
+msgid "hfdcatoms"
+msgstr ""
+
+#: templates/rdf/content_foldout/lod-detail-foldout.html:42
+msgid "dcterms_isReferencedBy"
+msgstr "Wordt verwezen door"
+
+#: templates/rdf/content_foldout/lod-detail-foldout.html:48
+#: templates/rdf/content_foldout/rce_RijksMonument.html:26
+msgid "View details"
+msgstr "Bekijk details"
+
+#: templates/rdf/lod_detail.html:21
+msgid "Home"
+msgstr ""
+
+#: templates/rdf/lod_detail.html:26 templates/rdf/lod_detail.html.py:29
+msgid "Search"
+msgstr "Zoeken"
+
+#: templates/rdf/lod_detail.html:48
+msgid "Return to results"
+msgstr "Terug naar resultaten"
+
+#: templates/rdf/lod_detail.html:54
+msgid "Return to previous object"
+msgstr "Terug naar het vorige object"
+
+#: templates/rdf/lod_detail.html:77
+msgid "Content"
+msgstr "Inhoud"
+
+#: templates/rdf/lod_detail.html:81 templates/rdf/lod_detail.html.py:113
+msgid "Properties"
+msgstr "Eigenschappen"
+
+#: templates/rdf/lod_detail.html:85
+msgid "Statistics"
+msgstr "Statistieken"
+
+#: templates/rdf/lod_detail.html:89
+msgid "Media"
+msgstr "Media"
+
+#: templates/rdf/lod_detail.html:92
+msgid "Map"
+msgstr "Kaart"
+
+#: templates/rdf/lod_detail.html:95
+msgid "Related"
+msgstr "Gerelateerd"
+
+#: templates/rdf/lod_detail.html:116
+msgid "Display predicate uris"
+msgstr "Toon predicate uris"
+
+#: templates/snorql/properties.html:70
+msgid "More properties"
+msgstr "Meer eigenschappen"
