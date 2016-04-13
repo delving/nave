@@ -5,7 +5,7 @@ import raven
 
 SECRET_KEY = "%(secret_key)s"
 
-DEBUG = %{debug_mode}
+DEBUG = True if "%(debug_mode)s".lower in ["true"] else False
 
 DATABASES = {
     "default": {
@@ -53,6 +53,6 @@ FILE_WATCH_BASE_FOLDER = "%(file_watch_base_folder)s"
 
 RDF_STORE_HOST = "%(rdf_store_host)s"
 
-RDF_BASE_URL = "%{rdf_base_url}"
+RDF_BASE_URL = "%(rdf_base_url)s"
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
