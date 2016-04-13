@@ -59,7 +59,7 @@ env.manage = "%s/bin/python %s/project/%s/manage.py" % (env.venv_path,
 env.live_host = conf.get("ACC_HOSTNAME", env.hosts[0] if env.hosts else None)
 env.preferred_live_host = env.live_host.split(' ')[0]
 env.repo_url = conf.get("REPO_URL", "")
-env.project_repo_url = conf.get("PROJECT_REPO_URL", "")
+env.project_repo_url = conf.get("PROJECT_REPO_URL", "git@github.com:delving/hub3_{}".format(env.proj_name))
 env.git_branch = conf.get("GIT_BRANCH", "master")
 env.git = env.repo_url.startswith("git") or env.repo_url.endswith(".git")
 env.reqs_path = conf.get("REQUIREMENTS_PATH", None)
@@ -80,6 +80,7 @@ if "://" not in env.rdf_base_url:
     env.rdf_base_url = "http://{}".format(env.rdf_base_url)
 env.locale = conf.get("LOCALE", "en_US.UTF-8")
 env.nave_auth_token = conf['ACC_NAVE_AUTH_TOKEN']
+env.debug_mode = False
 
 env.secret_key = conf.get("SECRET_KEY", "")
 
@@ -110,8 +111,7 @@ OS_DEPENDENCIES = [
     'python-setuptools',
     'rabbitmq-server',
     'oracle-java8-installer',
-    'oracle-java7-installer',
-    'oracle-java7-set-default',
+    'oracle-java8-set-default',
     'libvips-tools',
     'imagemagick',
     'htop',
@@ -195,6 +195,15 @@ templates = {
     "settings": {
         "local_path": "../deploy/live_settings.py",
         "remote_path": "%(django_path)s/projects/%(proj_name)s/local_settings.py",
+    },
+    "narthex_conf": {
+        "local_path": "../deploy/narthex.conf",
+        "remote_path": "%(narthex_files)s/narthex.conf",
+        #"reload_command": "supervisorctl reload",
+    },
+    "narthex_logger": {
+        "local_path": "../deploy/narthex_logger.xml",
+        "remote_path": "%(narthex_files)s/logger.xml",
     },
     "elastic_search": {
         "local_path": "../deploy/elasticsearch.yml",
@@ -479,7 +488,6 @@ def install():
     sudo("apt-get update -y -q")
     sudo("apt-get install -y python-software-properties debconf-utils")
     sudo('echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 select true" | sudo debconf-set-selections')
-    sudo('echo "oracle-java7-installer shared/accepted-oracle-license-v1-1 select true" | sudo debconf-set-selections')
     apt(" ".join(OS_DEPENDENCIES))
     sudo("pip2 install virtualenv virtualenvwrapper mercurial")  # supervisor when not installed via apt-get
     sudo("pip3 install virtualenv virtualenvwrapper")
@@ -930,6 +938,9 @@ def local():
     env.es_clustername = "{}".format(env.proj_name)
     env.nave_auth_token = conf['ACC_NAVE_AUTH_TOKEN']
     env.venv_home = "/home/vagrant"
+    env.debug_mode = True
+    env.gunicorn_port = 8000  # set the gunicorn_port for development mode
+    env.venv_home = True
     env.narthex_files = "%s/%s" % (env.venv_home, "NarthexFiles")
     env.venv_path = "%s/%s" % (env.venv_home, env.proj_name)
     env.django_path = "%s/%s/%s" % (env.venv_path, env.proj_dirname, 'nave')

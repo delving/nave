@@ -15,7 +15,8 @@ It provides the following functionality:
 * /snorql SPARQL query exploration app
     * access to stored example queries
     * saving in different output formats
-* /relfinder visualisation of Graph relations
+* /relfinder visualisation of Graph relations (to function it needs its configuration file at 'nave/lod/static/relfinder/config/Config.xml'
+    to be configured to use the local SPARQL endpoint at /sparql.)
 * sparqlutils for building sparql queries
 * Graph normalisation to can be used for
     * indexing related content via links

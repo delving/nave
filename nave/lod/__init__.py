@@ -152,28 +152,60 @@ for db in ["{}".format(RDF_STORE_DB), "test"]:
 
                 For Fuseki an example configuration would look as follows:
 
-                <ttl config>
+                # Licensed under the terms of http://www.apache.org/licenses/LICENSE-2.0
 
-                    <#{db}_service>  rdf:type fuseki:Service ;
-                        fuseki:name              	       "{db}" ;       # http://host:port/tdb
-                        fuseki:serviceQuery                "sparql" ;
-                        fuseki:serviceQuery                "query" ;
-                        fuseki:serviceUpdate               "update" ;
-                        fuseki:serviceUpload               "upload" ;
-                        fuseki:serviceReadWriteGraphStore  "data" ;
-                        fuseki:serviceReadGraphStore       "get" ;
-                        fuseki:dataset           		   <#{db}> ;
-                        .
+                ## Basic Fuseki configuation file.
+                ##
+                ## See also config-tdb.ttl for TDB specific examples.
+                ## See also config-examples.ttl for commented examples.
 
-                    <#brabantcloud> rdf:type      tdb:DatasetTDB ;
-                        tdb:location "{db}" ;
-                        # Query timeout on this dataset (1s, 1000 milliseconds)
-                        #     ja:context [ ja:cxtName "arq:queryTimeout" ;  ja:cxtValue "1000" ] ;
-                        #Make the default graph be the union of all named graphs.
-                        tdb:unionDefaultGraph true ;
-                        .
+                @prefix :        <#> .
+                @prefix fuseki:  <http://jena.apache.org/fuseki#> .
+                @prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 
-                </ttl config>
+                @prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+                @prefix tdb:     <http://jena.hpl.hp.com/2008/tdb#> .
+                @prefix ja:      <http://jena.hpl.hp.com/2005/11/Assembler#> .
+
+                [] rdf:type fuseki:Server ;
+                # Timeout - server-wide default: milliseconds.
+                # Format 1: "1000" -- 1 second timeout
+                # Format 2: "10000,60000" -- 10s timeout to first result, then 60s timeout for the rest of query.
+                # See java doc for ARQ.queryTimeout
+                # ja:context [ ja:cxtName "arq:queryTimeout" ;  ja:cxtValue "10000" ] ;
+
+                # ja:loadClass "your.code.Class" ;
+
+                fuseki:services (
+                <#{db}s_service>
+                ) .
+
+                ## ---------------------------------------------------------------
+                <#{db}s_service>  rdf:type fuseki:Service ;
+                fuseki:name              	       "{db}s" ;       # http://host:port/tdb
+                fuseki:serviceQuery                "sparql" ;
+                fuseki:serviceQuery                "query" ;
+                fuseki:serviceUpdate               "update" ;
+                fuseki:serviceUpload               "upload" ;
+                fuseki:serviceReadWriteGraphStore  "data" ;
+                fuseki:serviceReadGraphStore       "get" ;
+                fuseki:dataset           		   <{db}s> ;
+                .
+
+                <{db}s> rdf:type      tdb:DatasetTDB ;
+                    tdb:location                        "/opt/fuseki/run/databases/{db}s";
+                    # Query timeout on this dataset (1s, 1000 milliseconds)
+                    ja:context [ ja:cxtName "arq:queryTimeout" ;  ja:cxtValue "4000,20000" ] ;
+                    # Make the default graph be the union of all named graphs.
+                    tdb:unionDefaultGraph               true;
+                    .
+
+
+                # end of configuration file
+
+                This file needs to be save to $FUSEKI_HOME/run/configuration and you then need to restart.
+
+                For a full configuration that is used during standard provisioning see deploy/fuseki_production.ttl
 
                 """.format(db=db, store=RDF_STORE_DB)
         )

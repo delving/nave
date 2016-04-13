@@ -217,6 +217,8 @@ class RDFModel(TimeStampedModel, GroupOwned):
         blank=True,
         null=True
     )
+    # TODO: currently the marking as orphan is not fully implemented. It needs to be tested with the BULK API update
+    # mechanism
     orphaned = models.BooleanField(default=False)
     subjects = GenericRelation(RDFSubjectLookUp)
 
@@ -233,7 +235,6 @@ class RDFModel(TimeStampedModel, GroupOwned):
         self._pre_save()
         super(RDFModel, self).save(*args, **kwargs)
 
-
     @staticmethod
     def create_rdf_content_hash(rdf_as_string):
         import hashlib
@@ -244,10 +245,6 @@ class RDFModel(TimeStampedModel, GroupOwned):
         return self.document_uri
 
     def get_absolute_uri(self):
-        label = self.document_uri.split('resource/')[-1]
-        return reverse('lod_page_detail', kwargs={'label': label})
-
-    def get_absolute_lod_uri(self):
         label = self.document_uri.split('resource/')[-1]
         return reverse('lod_page_detail', kwargs={'label': label})
 

@@ -117,6 +117,8 @@
 	
 -->
 
+
+{# TODO: configure relfinder to point to the local sparql endpoint at /sparql #}
 <data>
   <!--proxy>
     <url>http://www.visualdataweb.org/relfinder/proxy.php</url>

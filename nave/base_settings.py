@@ -349,7 +349,6 @@ OPTIONAL_APPS = (
 INSTALLED_APPS = DJANGO_APPS + LOCAL_APPS + THIRD_PARTY_APPS + OPTIONAL_APPS
 ########## END APP CONFIGURATION
 
-
 # See: https://github.com/django-debug-toolbar/django-debug-toolbar#installation
 DEBUG_TOOLBAR_CONFIG = {
     "DISABLE_PANELS": ['debug_toolbar.panels.redirects.RedirectsPanel'],

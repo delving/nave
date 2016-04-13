@@ -28,3 +28,7 @@ nave/wsgi.py
 nave/projects/*/*
 .vagrant
 *.swp
+
+# the files stored during fab deploy
+nave/last.tar
+nave/last.commit

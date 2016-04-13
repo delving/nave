@@ -1,4 +1,4 @@
-# Copyright (C) 2016  Delving B.V.
+# Copyright (C) 2026  Delving B.V.
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -15,6 +15,4 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # Also add information on how to contact you by electronic and paper mail.
 
-__version__ = "0.8.1"
-
-
+__version__ = "0.8.2"
