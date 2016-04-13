@@ -1,7 +1,9 @@
 {% load staticfiles i18n thumbnail dataset_tags  leaflet_tags %}
 <div class="row row-eq-height">
     <div class="col-sm-4 hidden-xs">
-        {% detail_media_preview 'edm_isShownBy' fullscreen=True %}
+
+        {% detail_media_preview 'edm_isShownBy' alt="dc_title" fullscreen=True %}
+
         {#############################################################}
         {# MAP GEO                                                   #}
         {#############################################################}
