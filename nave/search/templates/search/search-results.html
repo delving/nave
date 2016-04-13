@@ -68,6 +68,7 @@
     {% leaflet_js %}
     <script src="{% static 'js/leaflet/leaflet.label-src.js' %}"></script>
     <script src="{% static 'js/leaflet.markercluster.js' %}"></script>
+    <script src="{% static 'js/isMobile.min.js' %}"></script>
     <script>
         var grid_cols = 4;
         {% if num_cols %}
@@ -88,6 +89,21 @@
             {% if lod_facets %}
                 SearchView.initLodFacetsPanel();
             {% endif %}
+            if(!isMobile.any){
+                $('a.result-item-link').on('click', function(e) {
+                    setTimeout(function(){
+                        $('a.fullscreen').fullsizable();
+                    },500);
+                });
+            }
+            else {
+                $("a.result-item-link").unbind('click');
+                $("a.result-item-link").on('click', function (e) {
+                    e.preventDefault();
+                    var location = $(this).data("detail-uri");
+                    document.location.href = location;
+                });
+            }
         });
     </script>
 {% endblock %}

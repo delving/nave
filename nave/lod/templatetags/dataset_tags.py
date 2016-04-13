@@ -55,7 +55,10 @@ def detail_media_preview(context, fieldname, alt="", fullscreen=False, thumbnail
     """
     bindings = context['resources']
     values = bindings.get_list(fieldname)
-    alt = bindings[alt].value if alt else []
+    alt = bindings[alt].value if bindings[alt] else []
+
+
+
     fullscreen = fullscreen
     thumbnail_nav = thumbnail_nav
     # values = ['http://www.dcn-images.nl/img/BDM/BDM_09809.jpg', 'http://www.dcn-images.nl/img/BDM/BDM_00807.jpg', 'http://www.dcn-images.nl/img/BDM/BDM_01999.jpg']
