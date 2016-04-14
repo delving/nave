@@ -84,7 +84,7 @@ class XMLRenderer(BaseRenderer):
                     self._to_xml(xml, value)
                     xml.endElementNS(full_uri, qname)
                     xml.endPrefixMapping(prefix)
-                elif tag_name in ['breadcrumb', 'link']:
+                elif tag_name in ['breadcrumb', 'link', 'facet']:
                     has_text = False
                     output = None
                     output_keys = [key for key in item.keys() if key in ['display', 'pageNumber', 'displayString']]
