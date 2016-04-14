@@ -23,6 +23,7 @@
                 {% for value in values %}
                     <div class="item {% if forloop.first %}active{% endif %}">
                         {# TODO: check for deepzoom, video audio and render html accordingly #}
+                        {#  deepzoom info in nave_deepZoomUrl #}
                         {% if fullscreen %}
                             <a href="{{ value.value }}" class="fullscreen">
                         {% endif %}
