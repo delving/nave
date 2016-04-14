@@ -91,9 +91,17 @@ class XMLRenderer(BaseRenderer):
                     if output_keys:
                         for key in output_keys:
                             output = item.pop(key)
+                    # Remove links from item dict
+                    facet_links = None
+                    if 'links' in item:
+                        facet_links = item.pop('links')
+                    # run with _to_xml
                     attr = {key: self.normalize_attribute(value) for key, value in item.items()}
                     xml.startElement(tag_name, attr)
-                    xml.characters(smart_text(output))
+                    if facet_links:
+                        self._to_xml(xml, facet_links, tag_name="link")
+                    else:
+                        xml.characters(smart_text(output))
                     xml.endElement(tag_name)
                 else:
                     xml.startElement(tag_name, {})

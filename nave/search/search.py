@@ -587,15 +587,17 @@ class FacetCountLink(object):
     @property
     def link(self):
         if not self._link:
-            facet_params = self._facet_params
+            facet_params = self._facet_params.copy()
             for key, value in list(facet_params.items()):
                 if key in ['start', 'page', 'rows', 'format', 'diw-version', 'lang', 'callback', 'query', 'q']:
                     del facet_params[key]
                 if not value and key in facet_params:
                     del facet_params[key]
             selected_facets = self._facet_params.getlist('qf')
-            facet_params = "{}&".format(self._facet_params.urlencode() if self._facet_params else "?")
-            link = "{}qf={}".format(facet_params, self._filter_query.replace(":", "%3A"))
+            if facet_params:
+                link = "{}&qf={}".format(facet_params.urlencode() , self._filter_query.replace(":", "%3A"))
+            else:
+                link = "qf={}".format(self._filter_query.replace(":", "%3A"))
             if self.is_selected:
                 selected_facets.remove(self._filter_query)
                 self._facet_params.setlist('qf', selected_facets)
