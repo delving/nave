@@ -565,11 +565,24 @@ class FacetCountLink(object):
         self._value = value
         self._count = count
         self._name = facet_name
+        self._clean_name = None
         self._query = query
-        self._filter_query = "{}:{}".format(self._name, self._value)
+        self._filter_query = "{}:{}".format(self._get_clean_name, self._value)
         self._facet_params = self._query.facet_params.copy()
         self._is_selected = self._is_selected()
         self._link = None
+
+    @property
+    def _get_clean_name(self):
+        if not self._clean_name:
+            if self._query.converter:
+                self._clean_name = self._query.apply_converter_rules(
+                    query_string=self._name,
+                    converter=self._query.converter,
+                    as_query_dict=False,
+                    reverse=False
+                )
+        return self._clean_name
 
     def _is_selected(self):
         filter_query = self._filter_query
@@ -595,13 +608,15 @@ class FacetCountLink(object):
                     del facet_params[key]
             selected_facets = self._facet_params.getlist('qf')
             if facet_params:
-                link = "{}&qf={}".format(facet_params.urlencode() , self._filter_query.replace(":", "%3A"))
+                link = "{}&qf={}".format(facet_params.urlencode(), self._filter_query.replace(":", "%3A"))
             else:
                 link = "qf={}".format(self._filter_query.replace(":", "%3A"))
             if self.is_selected:
-                selected_facets.remove(self._filter_query)
+                selected_facets = [facet for facet in selected_facets if facet != self._filter_query]
                 self._facet_params.setlist('qf', selected_facets)
                 link = "{}".format(self._facet_params.urlencode())
+            if not link:
+                return ""
             if self._query.converter:
                 link = self._query.apply_converter_rules(
                         query_string=link,
@@ -686,6 +701,13 @@ class FacetLink(object):
             applied_filter_keys = self._query.applied_filters.keys()
             if any([facet_name.endswith(legacy_suffix) for legacy_suffix in ['_string', '_facet', '_text']]):
                 facet_name = "_".join(facet_name.split("_")[:-1])
+            if self._query.converter:
+                facet_name = self._query.apply_converter_rules(
+                    query_string=facet_name,
+                    converter=self._query.converter,
+                    as_query_dict=False,
+                    reverse=False
+                )
             self._is_selected = facet_name in list(applied_filter_keys)
         return self._is_selected
 
