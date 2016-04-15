@@ -39,7 +39,7 @@ class FacetCountLinkSerializer(serializers.Serializer):
 class FacetLinkSerializer(serializers.Serializer):
     name = serializers.CharField()
     isSelected = serializers.BooleanField(source='is_facet_selected')
-    i18n = serializers.CharField(source='name')
+    i18n = serializers.CharField()
     total = serializers.IntegerField()
     missingDocs = serializers.IntegerField(source="missing_count")
     otherDocs = serializers.IntegerField(source="other_count")

@@ -851,7 +851,6 @@ def deploy_dev():
         # backup("last.db")
         static_dir = static()
         manage("collectstatic -v 0 --noinput")
-        manage("compilemessages")
         manage("syncdb --noinput")
         manage("migrate --noinput")
     sudo("supervisorctl reload")
@@ -893,7 +892,6 @@ def deploy():
                 run("git checkout master")
                 run("git pull origin master")
         manage("collectstatic -v 0 --noinput")
-        manage("compilemessages")
         manage("syncdb --noinput")
         manage("migrate --noinput")
     restart()
@@ -940,7 +938,6 @@ def local():
     env.venv_home = "/home/vagrant"
     env.debug_mode = True
     env.gunicorn_port = 8000  # set the gunicorn_port for development mode
-    env.venv_home = True
     env.narthex_files = "%s/%s" % (env.venv_home, "NarthexFiles")
     env.venv_path = "%s/%s" % (env.venv_home, env.proj_name)
     env.django_path = "%s/%s/%s" % (env.venv_path, env.proj_dirname, 'nave')
