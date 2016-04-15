@@ -20,8 +20,11 @@ from geojson import Point, Feature, FeatureCollection
 # noinspection PyMethodMayBeStatic
 from rest_framework.request import Request
 import six
+
+
 from .utils import gis
 from void import get_es
+from void.convertors import BaseConverter
 
 logger = logging.getLogger(__name__)
 
@@ -654,6 +657,8 @@ class FacetCountLink(object):
 class FacetLink(object):
     def __init__(self, name, facet_terms, query, total=0, other=0, missing=0):
         self._name = name
+        self._clean_name = None
+        self._i18n = None
         self._total = total
         self._other = other
         self._missing = missing
@@ -683,6 +688,12 @@ class FacetLink(object):
         return self._name
 
     @property
+    def i18n(self):
+        if not self._i18n:
+            self._i18n = BaseConverter.get_translated_field(self._get_clean_name)
+        return self._i18n
+
+    @property
     def total(self):
         return self._total
 
@@ -695,10 +706,9 @@ class FacetLink(object):
         return self._facet_count_links
 
     @property
-    def is_facet_selected(self):
-        if not self._is_selected:
+    def _get_clean_name(self):
+        if not self._clean_name:
             facet_name = self._name
-            applied_filter_keys = self._query.applied_filters.keys()
             if any([facet_name.endswith(legacy_suffix) for legacy_suffix in ['_string', '_facet', '_text']]):
                 facet_name = "_".join(facet_name.split("_")[:-1])
             if self._query.converter:
@@ -708,6 +718,14 @@ class FacetLink(object):
                     as_query_dict=False,
                     reverse=False
                 )
+            self._clean_name = facet_name
+        return self._clean_name
+
+    @property
+    def is_facet_selected(self):
+        if not self._is_selected:
+            facet_name = self._name
+            applied_filter_keys = self._query.applied_filters.keys()
             self._is_selected = facet_name in list(applied_filter_keys)
         return self._is_selected
 
@@ -819,7 +837,7 @@ class UserQuery(object):
                             href=urllib.parse.urlencode(base_params),
                             display=filt[1],
                             field=filt[1].split(":")[0],
-                            localised_field=filt[1].split(":")[0],
+                            localised_field=BaseConverter.get_translated_field(filt[1].split(":")[0]),
                             value=":".join(filt[1].split(":")[1:]),
                             is_last=False
                     )
