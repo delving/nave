@@ -585,6 +585,8 @@ class FacetCountLink(object):
                     as_query_dict=False,
                     reverse=False
                 )
+            else:
+                self._clean_name = self._name
         return self._clean_name
 
     def _is_selected(self):
