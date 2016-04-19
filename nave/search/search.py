@@ -574,6 +574,7 @@ class FacetCountLink(object):
         self._facet_params = self._query.facet_params.copy()
         self._is_selected = self._is_selected()
         self._link = None
+        self._full_link = None
 
     @property
     def _get_clean_name(self):
@@ -601,6 +602,13 @@ class FacetCountLink(object):
     @property
     def count(self):
         return self._count
+
+    @property
+    def full_link(self):
+        if not self._full_link:
+            query = self._query.base_params.get('q', "")
+            self._full_link = "?q={}&{}".format(query, self.link.lstrip('&?'))
+        return self._full_link
 
     @property
     def link(self):

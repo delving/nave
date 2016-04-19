@@ -14,7 +14,7 @@
                         <ul class="dropdown-menu  scrollable-menu" role="menu" aria-labelledby="{{ facet.facet_link.name }}">
                             {% for term in facet.facet_link.links %}
                                 <li role="presentation" data-value="{{ term.value  }}" data-count="{{ term.count }}">
-                                    <a href="{{ term.link }}" class="facet-link" role="menuitem" tabindex="-1">
+                                    <a href="{{ term.full_link }}" class="facet-link" role="menuitem" tabindex="-1">
                                         <i class="fa fa-fw {% if not term.is_selected %}fa-square-o{% else %}fa-check-square{% endif %}"></i>
                                         {{ term.value }} ({{ term.count }})
                                     </a>
