@@ -6,7 +6,7 @@ jQuery(document).ready(function($) {
         orgId: "{{ org_id }}",
         collectionSpecs: ["{{  diw.collection_spec }}"],
         dataOwner: "{{ diw.collection_spec }}",
-        hasDigitalObject: false,
+        hasDigitalObject: true,
         rows: 10,
         configHelp: {{diw.show_config_help|lower}},
         resultsLayout: "list",
@@ -51,7 +51,7 @@ jQuery(document).ready(function($) {
         maxCharactersTitle: 200,
         thumbnailWidth:"144",
         useDeepZoom: true,
-        useFlashZoom: true,
+        useFlashZoom: false,
         usePushState: false,
         deepZoomFlashFile: "{% static 'flash/OpenZoomViewer.swf' %}",
         thumbnailField: "delving_thumbnail",
@@ -80,7 +80,7 @@ jQuery(document).ready(function($) {
             thumb:"delving_thumbnail",
             title:"dc_title"
         },
-        showRelatedItems: true,
+        showRelatedItems: false,
         relatedItemsCount: 5,
         relatedItemsFields: {
             thumb:"delving_thumbnail",
