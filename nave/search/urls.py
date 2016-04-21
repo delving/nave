@@ -8,7 +8,7 @@ from search.viewsets import GroupViewSet
 from search.viewsets import UserViewSet, OauthTokenViewSet
 from .views import DetailResultView, FoldOutDetailImageView, \
     HubIDRedirectView, LegacyAPIRedirectView, SearchListHTMLView, LodRelatedSearchHTMLView, V1SearchListApiView, \
-    V2SearchListApiView, BigDownloadView
+    V2SearchListApiView, BigDownloadView, KNReiseGeoView
 
 router = routers.DefaultRouter(trailing_slash=True)
 router.register(r'search/v1', V1SearchListApiView, base_name='v1-list')
@@ -38,4 +38,5 @@ urlpatterns = [
     url(r'^{}/(?P<spec>(.*))/(?P<local_id>(.*))$'.format(settings.ORG_ID), HubIDRedirectView.as_view(), name='hub_id_redirect'),
     url(r'/?', include(search_router.urls), name='search_routers'),
     url(r'^docs/', include('rest_framework_swagger.urls')),
+    url(r'^geoviewer/$', KNReiseGeoView.as_view()),
 ]
