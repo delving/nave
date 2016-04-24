@@ -51,7 +51,7 @@ jQuery(document).ready(function($) {
         maxCharactersTitle: 200,
         thumbnailWidth:"144",
         useDeepZoom: true,
-        useFlashZoom: false,
+        useFlashZoom: true,
         usePushState: false,
         deepZoomFlashFile: "{% static 'flash/OpenZoomViewer.swf' %}",
         thumbnailField: "delving_thumbnail",
