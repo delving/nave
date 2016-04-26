@@ -1,8 +1,8 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 from django.conf import settings
 from django.contrib import admin
 from django.db.models import Q
-import reversion
+from reversion.admin import VersionAdmin
 
 from .models import RDFPrefix, SPARQLQuery, SPARQLUpdateQuery, CacheResource, UserGeneratedContent
 
@@ -50,7 +50,7 @@ class GroupOwnedAdmin(admin.ModelAdmin):
         return qs.filter(Q(groups__in=request.user.groups.values_list('id', flat=True)) | Q(user__id=request.user.id))
 
 
-class SPARQLQueryAdmin(reversion.admin.VersionAdmin):
+class SPARQLQueryAdmin(VersionAdmin):
     list_filter = ['prefixes', 'modified']
     filter_horizontal = ('prefixes',)
     fields = ['title', 'prefixes', 'query', 'description']
@@ -58,19 +58,19 @@ class SPARQLQueryAdmin(reversion.admin.VersionAdmin):
 admin.site.register(SPARQLQuery, SPARQLQueryAdmin)
 
 
-class RDFPrefixAdmin(reversion.admin.VersionAdmin):
+class RDFPrefixAdmin(VersionAdmin):
     pass
 
 admin.site.register(RDFPrefix, RDFPrefixAdmin)
 
 
-class CacheResourceAdmin(reversion.admin.VersionAdmin):
+class CacheResourceAdmin(VersionAdmin):
     pass
 
 admin.site.register(CacheResource, CacheResourceAdmin)
 
 
-class SPARQLUpdateQueryAdmin(reversion.admin.VersionAdmin):
+class SPARQLUpdateQueryAdmin(VersionAdmin):
     list_filter = ['prefixes', 'modified']
     filter_horizontal = ('prefixes',)
     fields = ['title', 'prefixes', 'query', 'description']
@@ -78,7 +78,7 @@ class SPARQLUpdateQueryAdmin(reversion.admin.VersionAdmin):
 admin.site.register(SPARQLUpdateQuery, SPARQLUpdateQueryAdmin)
 
 
-class UserGeneratedContentAdmin(reversion.admin.VersionAdmin):
+class UserGeneratedContentAdmin(VersionAdmin):
     list_display = ['name', 'content_type', 'link']
     list_filter = ['content_type', 'published']
     fields = ['name', 'content_type', 'link',

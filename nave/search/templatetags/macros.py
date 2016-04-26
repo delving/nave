@@ -32,7 +32,7 @@ Bear in mind that defined and loaded macros are local to each template file and 
 """
 
 from django import template
-from django.template import FilterExpression
+from django.template.base import FilterExpression
 from django.template.loader import get_template
 
 register = template.Library()

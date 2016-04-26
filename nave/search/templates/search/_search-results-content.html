@@ -9,7 +9,7 @@
 
 {# QUERY/FACET TAGS #}
 {% block query-tags %}
-    {% if request.REQUEST.q or request.REQUEST.qf %}
+    {% if request.query_params.q or request.query_params.qf %}
     <div class="query-tags">
         <div class="input-group">
             <div class="form-control" id="qtags"></div>

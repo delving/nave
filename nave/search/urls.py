@@ -27,14 +27,15 @@ search_router.register(r'search-lod-related/?', LodRelatedSearchHTMLView, base_n
 # Wire up our API using automatic URL routing.
 urlpatterns = [
     # redirect
-    url(r'^api/search/$', LegacyAPIRedirectView.as_view(), name='api_redirect'),
-    url(r'^organizations/.*?/api/search$', LegacyAPIRedirectView.as_view(), name='api_redirect'),
+    url(r'^organizations/.*?/api/search/?$', LegacyAPIRedirectView.as_view(), name='api_redirect_hub1'),
     url(r'^api/download/task/(?P<id>(.*))/$', BigDownloadView.as_view(), name='big_download'),
     url(r'^detail/foldout/(?P<doc_type>([^/]*))/(?P<slug>(.*?))/?$', DetailResultView.as_view(), name='results_detail_foldout'),
     url(r'^detail/(?P<slug>(.*))$', DetailResultView.as_view(template_name="search-detail.html"), name='result_detail'),
     url(r'^detail/fold-out/(?P<slug>(.*))$', DetailResultView.as_view(), name='results_detail_foldout'),
     url(r'^detail/foldout/image/(?P<slug>(.*))$', FoldOutDetailImageView.as_view(), name='image_detail'),
     # url(r'^proxy/$', 'dataset.views.proxy', name='proxy'),
+    url(r'^{}/(?P<spec>(.*))/(?P<local_id>(.*))$'.format(settings.ORG_ID), HubIDRedirectView.as_view(), name='hub_id_redirect'),
+    # todo: check if removed /? does not regress functionality
     url(r'/?', include(search_router.urls), name='search_routers'),
     url(r'^docs/', include('rest_framework_swagger.urls')),
     url(r'^geoviewer/$', KNReiseGeoView.as_view()),

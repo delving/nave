@@ -197,10 +197,10 @@ class NaveESQuery(object):
     def _as_list(param):
         """ always return params as list
 
-        >>> _as_list('sjoerd')
+        >>> NaveESQuery._as_list('sjoerd')
         ['sjoerd']
 
-        >>> _as_list(['sjoerd'])
+        >>> NaveESQuery._as_list(['sjoerd'])
         ['sjoerd']
         """
         if isinstance(param, list):
@@ -213,14 +213,15 @@ class NaveESQuery(object):
 
     def _filters_as_dict(self, filters, filter_dict=None, exclude=None):
         """
-        >>> _filters_as_dict(['gemeente:best'])
+        >>> query = NaveESQuery()
+        >>> query._filters_as_dict(['gemeente:best'])
         defaultdict(<type 'set'>, {'gemeente': set(['best'])})
 
-        >>> _filters_as_dict(['gemeente:best', 'gemeente:son en breugel'])
+        >>> query._filters_as_dict(['gemeente:best', 'gemeente:son en breugel'])
         defaultdict(<type 'set'>, {'gemeente': set(['son en breugel', 'best'])})
 
 
-        >>> _filters_as_dict(['gemeente:best', 'plaats:best'])
+        >>> query._filters_as_dict(['gemeente:best', 'plaats:best'])
         defaultdict(<type 'set'>, {'gemeente': set(['best']), 'plaats': set(['best'])})
         """
 
@@ -256,11 +257,12 @@ class NaveESQuery(object):
     def _clean_params(param_dict):
         """
         >>> from django.http import QueryDict
-        >>> _clean_params(QueryDict('qf=gemeente:best&qf[]=plaats:best').copy()).getlist('qf')
+        >>> query = NaveESQuery()
+        >>> query._clean_params(QueryDict('qf=gemeente:best&qf[]=plaats:best').copy()).getlist('qf')
         [u'gemeente:best', u'plaats:best']
 
         >>> from django.http import QueryDict
-        >>> list(_clean_params(QueryDict('qf[]=plaats:best').copy())['qf'])
+        >>> list(query._clean_params(QueryDict('qf[]=plaats:best').copy())['qf'])
         [u'plaats:best']
 
         """
@@ -659,7 +661,7 @@ class NaveESQuery(object):
         self.facet_params = facet_params
         self.base_params = params
         import json
-        logger.info(json.dumps(query.build_search()))
+        logger.debug(json.dumps(query.build_search()))
         return query
 
     def build_geo_query(self, request):

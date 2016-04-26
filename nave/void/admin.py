@@ -1,9 +1,9 @@
+import importlib
 import logging
 
 import reversion
 from django.conf import settings
 from django.contrib import admin
-from django.utils import importlib
 from django_object_actions import takes_instance_or_queryset
 
 from lod.utils import rdfstore

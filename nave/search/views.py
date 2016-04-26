@@ -12,7 +12,6 @@ from collections import OrderedDict
 
 import requests
 from django.conf import settings
-from django.db.models.loading import get_model
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed, JsonResponse
 from django.shortcuts import redirect
 from django.utils.translation import ugettext_lazy as _, activate
@@ -33,9 +32,10 @@ from lod.utils.resolver import GraphBindings, RDFRecord
 from lod.utils.rdfstore import UnknownGraph
 from lod.utils.resolver import ElasticSearchRDFRecord
 from search.tasks import download_all_search_results
-from void import REGISTERED_CONVERTERS
 from void.models import EDMRecord
 
+
+from void.views import REGISTERED_CONVERTERS
 from .renderers import N3Renderer, JSONLDRenderer, TURTLERenderer, NTRIPLESRenderer, RDFRenderer, GeoJsonRenderer, \
     XMLRenderer, KMLRenderer, GeoBufRenderer
 from .search import NaveESQuery, NaveQueryResponse, NaveQueryResponseWrapper, NaveItemResponse, \
@@ -263,7 +263,7 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
 
     @property
     def acceptance_mode(self):
-        mode = self.request.query_params.get('mode', 'default')
+        mode = self.request.GET.get('mode', 'default')
         acceptance = True if mode == 'acceptance' else False
         if not acceptance:
             acceptance = self.request.COOKIES.get('NAVE_ACCEPTANCE_MODE', False)
@@ -357,7 +357,7 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
         geo_query = request.accepted_renderer.format in ['geojson', 'kml']
         queryset = self.get_queryset(geo_query=geo_query)
         # HTML VIEW ##############################################################
-        mode = self.request.REQUEST.get('mode', 'default')
+        mode = self.request.GET.get('mode', 'default')
         if request.accepted_renderer.format == 'html':
             # set results view and add to context.
             # 1: check url param, 1: check cookie, 3: use grid as default
@@ -626,7 +626,7 @@ class NaveDocumentDetailView(DetailView):
             if cache_resource.exists():
                 graph = cache_resource.first().get_graph()
         elif settings.RDF_USE_LOCAL_GRAPH:
-            mode = self.request.REQUEST.get('mode', 'default')
+            mode = self.request.GET.get('mode', 'default')
             acceptance = True if mode == 'acceptance' else False
             context['acceptance'] = acceptance
             if isinstance(self.object, EDMRecord):
@@ -665,7 +665,8 @@ class NaveDocumentDetailView(DetailView):
     def get_queryset(self):
         doc_type = self.kwargs['doc_type']
         app_label, model_name = doc_type.split('_')
-        model = get_model(app_label=app_label, model_name=model_name)
+        from django.apps import apps
+        model = apps.get_model(app_label=app_label, model_name=model_name)
         return model.objects.get_queryset()
 
 

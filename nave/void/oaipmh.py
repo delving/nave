@@ -14,7 +14,7 @@ from elasticsearch_dsl import Search, A, Q
 from lxml import etree as ET
 
 from lod.utils.resolver import RDFRecord, ElasticSearchRDFRecord
-from void import REGISTERED_CONVERTERS
+from void.views import REGISTERED_CONVERTERS
 from void.models import DataSet, OaiPmhPublished, EDMRecord
 
 from search import get_es_client

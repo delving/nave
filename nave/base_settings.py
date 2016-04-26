@@ -49,8 +49,6 @@ path.append(DJANGO_ROOT)
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#debug
 DEBUG = True
 
-# See: https://docs.djangoproject.com/en/dev/ref/settings/#template-debug
-TEMPLATE_DEBUG = DEBUG
 ########## END DEBUG CONFIGURATION
 
 APPEND_SLASH = True
@@ -166,10 +164,12 @@ ALLOWED_HOSTS = ["localhost", "82.94.206.176"]
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'APP_DIRS': True,
+        # 'APP_DIRS': True,
+        # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-debug
+        # 'DEBUG': DEBUG,
         'OPTIONS': {
             'context_processors':
-                (
+                [
                     'django.contrib.auth.context_processors.auth',
                     'django.contrib.messages.context_processors.messages',
                     'django.core.context_processors.i18n',
@@ -181,22 +181,18 @@ TEMPLATES = [
                     'django.core.context_processors.request',
                     'django.core.context_processors.static',
                     'common.context_processors.current_url',
-                )
+                ],
+            # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-loaders
+            'loaders': [
+                'django.template.loaders.filesystem.Loader',
+                'django.template.loaders.app_directories.Loader',
+                'django.template.loaders.eggs.Loader'
+                ],
         }
     },
 ]
 
-# See: https://docs.djangoproject.com/en/dev/ref/settings/#template-loaders
-TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.Loader',
-    'django.template.loaders.app_directories.Loader',
-    'django.template.loaders.eggs.Loader'
-)
 
-# See: https://docs.djangoproject.com/en/dev/ref/settings/#template-dirs
-TEMPLATE_DIRS = (
-    normpath(join(PROJECT_ROOT, 'templates')),
-)
 ########## END TEMPLATE CONFIGURATION
 
 
@@ -319,8 +315,8 @@ THIRD_PARTY_APPS = (
     'corsheaders',
     'rosetta',  # for translation
     'raven.contrib.django.raven_compat',
-    'health_check',
-    'health_monitor',
+    #'health_check',
+    #'health_monitor',
 )
 
 # Apps specific for this project go here.

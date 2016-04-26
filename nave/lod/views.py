@@ -6,10 +6,11 @@ import re
 
 import requests
 from django import http
+from django.apps import apps
 from django.conf import settings
 from django.core.urlresolvers import reverse
-from django.http.response import HttpResponseRedirectBase, HttpResponse, \
-    Http404, HttpResponseNotAllowed, HttpResponseBadRequest
+from django.http.response import HttpResponseRedirectBase, HttpResponse, Http404, HttpResponseNotAllowed, \
+    HttpResponseBadRequest
 from django.shortcuts import redirect
 from django.views.generic import TemplateView, RedirectView, View
 from rdflib.namespace import SKOS, RDF
@@ -183,7 +184,7 @@ class LoDDataView(View):
             else:
                 raise UnknownGraph("URI {} is not known in our graph store".format(target_uri))
         elif settings.RDF_USE_LOCAL_GRAPH:
-            mode = self.request.REQUEST.get('mode', 'default')
+            mode = self.request.GET.get('mode', 'default')
             acceptance = True if mode == 'acceptance' else False
             local_object = ElasticSearchRDFRecord(source_uri=resolved_uri)
             local_object.get_graph_by_source_uri(uri=resolved_uri)
@@ -257,7 +258,7 @@ class LoDHTMLView(TemplateView):
         context = super(LoDHTMLView, self).get_context_data(**kwargs)
 
         # default and test mode
-        mode = self.request.REQUEST.get('mode', 'default')
+        mode = self.request.GET.get('mode', 'default')
         acceptance = True if mode == 'acceptance' else False
         if not acceptance:
             acceptance = self.request.COOKIES.get('NAVE_ACCEPTANCE_MODE', False)
@@ -492,7 +493,7 @@ class EDMHTMLMockView(TemplateView):
         context['about'] = target_uri
         context['about_label'] = target_uri.split('/')[-1]
         # test for modes normal, test, acceptance
-        mode = self.request.REQUEST.get('mode', 'default')
+        mode = self.request.GET.get('mode', 'default')
         if mode == 'test':
             print('test')
         elif mode == "acceptance":

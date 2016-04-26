@@ -30,7 +30,6 @@ from urllib.parse import urlparse, quote
 
 import re
 from django.conf import settings
-from django.db.models.loading import get_model
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search, Q
 from rdflib import ConjunctiveGraph

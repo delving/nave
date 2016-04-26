@@ -8,6 +8,8 @@ from django.views.generic import TemplateView
 from solid_i18n.urls import solid_i18n_patterns
 from common import views
 
+from search.views import LegacyAPIRedirectView
+
 admin.autodiscover()
 urlpatterns = patterns(
     '',
@@ -30,6 +32,7 @@ urlpatterns += solid_i18n_patterns('',
                             url(r'^admin/', include(admin.site.urls)),  # NOQA
                             url(r'^api-auth', include('rest_framework.urls', namespace='rest_framework')),
                             url(r'narthex/', views.NarthexRedirectView.as_view()),
+                            url(r'^api/search/$', LegacyAPIRedirectView.as_view(), name='api_redirect'),
                             url(r'^', include('projects.{}.urls'.format(settings.SITE_NAME))),
                             url(r'^', include('search.urls')),
                             url(r'^', include('virtual_collection.urls')),

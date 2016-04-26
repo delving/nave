@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 """
 This module contains all the routing rules for the Linked Open Data app.
 """
 from django.conf import settings
 from django.conf.urls import patterns, url
-from django.utils import importlib
 from django.views.generic import TemplateView
 
 from . import RDF_SUPPORTED_EXTENSIONS
@@ -17,6 +16,7 @@ RDF_SUPPORTED_FORMATS = "|".join(RDF_SUPPORTED_EXTENSIONS)
 def get_lod_detail_view_class():
     cls = getattr(settings, "LOD_HTML_DETAIL_VIEW", "lod.views.LoDHTMLView")
     module_name, class_name = cls.rsplit(".", 1)
+    import importlib
     module = importlib.import_module(module_name)
     return getattr(module, class_name)
 

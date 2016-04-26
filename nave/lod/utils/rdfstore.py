@@ -12,12 +12,11 @@ import requests
 from SPARQLWrapper import SPARQLWrapper, GET, JSON, POST
 from django.conf import settings
 from django.http import Http404
-from django.utils.log import getLogger
 from rdflib import Graph
 
 from lod import RDF_STORE_DB, RDF_STORE_HOST, RDF_STORE_PORT, namespace_manager
 
-logger = getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 urllib3_logger = logging.getLogger('requests')
 urllib3_logger.setLevel(logging.WARN)
