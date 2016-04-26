@@ -61,6 +61,15 @@ SearchView.initFacets = function () {
             type = _this.data('sort-type');
         sortFacets(_this, target, type);
     });
+    // facet fixing
+    $(".facet-link").each(function(){
+        link = $(this);
+        href = link.attr('href')
+        if (href.indexOf(' & ') > 0){
+            newHref = href.replace(' & ', '%20%26%20');
+            link.attr('href', newHref);
+        }
+    })
 };
 
 /***********************************************************************************/
