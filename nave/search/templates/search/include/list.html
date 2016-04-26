@@ -6,12 +6,19 @@
         <div class="media">
             <div class="media-left">
                 <a href="{{ result.item.fields.system.source_uri }}">
-                    {% if result.item.fields.edm_object %}
-                        <img src="{{ result.item.fields.edm_object.0.raw }}" class="media-object" alt="{% if result.item.fields.system.caption %}{{ result.item.fields.caption.0.value }}{% endif %}" width="100" />
+                    {# nave_thumbSmall #}
+                    {% if result.item.fields.nave_thumbSmall.0.raw %}
+                        <img src="{{ result.item.fields.nave_thumbSmall.0.raw }}" class="img-foldout nave" alt="{% if result.item.fields.system.caption %}{{result.item.fields.system.caption.0  }}{% endif %}" />
+                        {# system.thumbnail #}
+                    {% elif not result.item.fields.nave_thumbSmall.0.raw and result.item.fields.system.thumbnail %}
+                        <img src="{{ result.item.fields.system.thumbnail }}" class="img-foldout system" alt="{% if result.item.fields.system.caption %}{{result.item.fields.system.caption.0  }}{% endif %}" />
+                        {# emd_object #}
+                    {% elif not result.item.fields.nave_thumbSmall.0.raw and not result.item.fields.system.thumbnail and result.item.fields.edm_object.0.raw %}
+                        <img src="{{ result.item.fields.edm_object.0.raw }}" class="img-foldout edm" alt="{% if result.item.fields.system.caption %}{{ result.item.fields.system.caption.0 }}{% endif %}" />
                     {% else %}
-                        <div class="no-image-placeholder" style="width:100px;max-height:100px">
+                        <div class="no-image-placeholder">
                             <div class="overlay"></div>
-                            <span>{% trans 'no image available' %}</span>
+                            <span>{% trans 'no preview available' %}</span>
                         </div>
                     {% endif %}
                 </a>

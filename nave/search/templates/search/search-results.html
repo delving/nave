@@ -79,10 +79,12 @@
             {% if view == 'geo' %}
                 SearchView.initGeo();
             {% endif %}
+
             SearchView.initFacets();
+
             {# TODO: make the nr_cols param that initFoldout takes dependent on the facets_layout: hor > 6, vert > 4 #}
-            SearchView.initFoldout(grid_cols);
-            {% if view == 'grid' %}
+            {% if 'grid' in view %}
+                SearchView.initFoldout(grid_cols);
                 SearchView.processImages();
             {% endif %}
             {# TODO - IS THIS STILL USED??? #}
