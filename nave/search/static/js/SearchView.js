@@ -63,13 +63,14 @@ SearchView.initFacets = function () {
     });
     // facet fixing
     $(".facet-link").each(function(){
-        link = $(this);
-        href = link.attr('href')
+        var link = $(this),
+            href = link.attr('href'),
+            newHref = '';
         if (href.indexOf(' & ') > 0){
             newHref = href.replace(' & ', '%20%26%20');
             link.attr('href', newHref);
         }
-    })
+    });
 };
 
 /***********************************************************************************/
