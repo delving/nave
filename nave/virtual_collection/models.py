@@ -4,6 +4,7 @@
 """
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.http import QueryDict
 from django.utils.encoding import python_2_unicode_compatible
 from django_extensions.db.fields import AutoSlugField
 from django_extensions.db.models import TimeStampedModel
@@ -75,3 +76,15 @@ class VirtualCollection(TimeStampedModel, GroupOwned):
     def get_absolute_url(self):
         return reverse('virtual_collection_detail', kwargs={'slug': self.slug})
 
+    def save(self, *args, **kwargs):
+        allowed_filters = ["qf=", 'hfq=', "q=", "hqf[]=", "qf[]="]
+        if any(key in self.query for key in allowed_filters):
+            # create the proper format string
+            filter_list = []
+            query_dict = QueryDict(self.query.lstrip("?"))
+            for k, v in query_dict.items():
+                if any([key.startswith(k) for key in allowed_filters]):
+                    applied_filter = query_dict.getlist(k)
+                    filter_list.extend(applied_filter)
+            self.query = ";;;".join(["\"{}\"".format(k) for k in filter_list])
+        super(VirtualCollection, self).save(*args, **kwargs)
