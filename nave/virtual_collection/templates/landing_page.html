@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <h1>Virtual Collection</h1>
+
+    <div>
+        {% autoescape off %}
+            {{ vc.body}}
+        {% endautoescape %}
+    </div>
+
+{% endblock %}
