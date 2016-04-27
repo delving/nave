@@ -25,21 +25,25 @@
     </h1>
 
     {% if user.is_authenticated %}
-        <div class="toolbar well">
-            <a href="download" target="_blank" class="btn btn-info btn-lg" style="width:180px; display: inline-block">
-                <i class="fa fa-download"></i><br/>
-                {% trans 'Download<br/> Instant Website' %}
-            </a>
-            <a href="{% url 'admin:diw_diwinstance_change' diw.id %}" class="btn btn-default btn-lg"
-               style="width:180px; display: inline-block;">
-                <i class="fa fa-edit"></i><br/>
-                {% trans 'Wijzig<br/> configuratie' %}
-            </a>
-        </div>
+
+
+                <a href="{% url 'admin:diw_diwinstance_change' diw.id %}" class="btn btn-default navbar-btn">
+                    <i class="fa fa-edit"></i>
+                    {% trans 'Wijzig configuratie' %}
+                </a>
+
+                <a href="download" target="_blank" class="btn btn-info navbar-btn">
+                    <i class="fa fa-download"></i>
+                    {% trans 'Download Instant Website' %}
+                </a>
+
+                <hr/>
+
     {% endif %}
 
 
         <div id="diw-search"><!-- autogen form here --></div>
+        <br/>
         <div id="diw-advanced-search"><!-- autogen advanced search here --></div>
         <div id="diw-query-info"><!-- autogen query info here --></div>
         <div id="diw-breadcrumbs"><!-- autogen query info here --></div>
