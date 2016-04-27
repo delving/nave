@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 # @login_required
 class VirtualCollectionDetailView(DetailView):
-    template_name = 'landing_page.html'
+    template_name = 'virtual_collection/landing_page.html'
     context_object_name = 'vc'
     model = VirtualCollection
 
@@ -29,7 +29,7 @@ class VirtualCollectionDetailView(DetailView):
 
 
 class VirtualCollectionSearchView(SearchListAPIView):
-    template_name = "search_page.html"
+    template_name = "virtual_collection/search_page.html"
     renderer_classes = (TemplateHTMLRenderer, JSONRenderer, JSONPRenderer, XMLRenderer)
 
     def get(self, request, *args, **kwargs):
