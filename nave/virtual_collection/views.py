@@ -35,7 +35,7 @@ class VirtualCollectionSearchView(SearchListAPIView):
     def get(self, request, *args, **kwargs):
         slug = kwargs.get('slug', None)
         virtual_collection = get_object_or_404(VirtualCollection, slug=slug)
-        self.lookup_query_object = virtual_collection
+        self.set_hidden_query_filters(virtual_collection.query.split(";;"))
         return super().get(request, *args, **kwargs)
 
 
