@@ -607,7 +607,7 @@ class FacetCountLink(object):
     def full_link(self):
         if not self._full_link:
             query = self._query.base_params.get('q', "")
-            self._full_link = "?q={}&{}".format(query, self.link.lstrip('&?').replace('&', '%26'))
+            self._full_link = "?q={}&{}".format(query, self.link.lstrip('&?'))
         return self._full_link
 
     @property
