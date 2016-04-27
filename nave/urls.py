@@ -14,6 +14,14 @@ urlpatterns = patterns('',
                        url(r'^', include('void.urls')),
                        )
 
+if settings.USE_WAGTAIL_CMS:
+    from wagtail.wagtailadmin import urls as wagtailadmin_urls
+    from wagtail.wagtailcore import urls as wagtail_urls
+
+    urlpatterns += solid_i18n_patterns('',
+                                       url(r'^cms/', include(wagtailadmin_urls)),
+                                       )
+
 urlpatterns += solid_i18n_patterns('',
                             url(r'^admin/', include(admin.site.urls)),  # NOQA
                             url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
@@ -32,6 +40,17 @@ urlpatterns += solid_i18n_patterns('',
                             url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
                             )
 
+if settings.USE_WAGTAIL_CMS:
+    from wagtail.wagtailcore import urls as wagtail_urls
+
+    urlpatterns += solid_i18n_patterns('',
+                                       url(r'^', include(wagtail_urls)),
+                                       )
+    if os.path.exists(os.path.join(settings.DJANGO_ROOT, "projects", settings.SITE_NAME, "wagtail_urls.py")):
+        urlpatterns += patterns('',
+                                url(r'^', include('projects.{}.wagtail_urls'.format(settings.SITE_NAME))))
+
+
 staticurls = [('^%s$' % f, 'redirect_to', {'url': settings.STATIC_URL + f}) for f in
               ('crossdomain.xml', 'robots.txt', 'humans.txt')]
 
@@ -40,9 +59,6 @@ if 'rosetta' in settings.INSTALLED_APPS:
                             url(r'^rosetta/', include('rosetta.urls')),
                             )
 
-if os.path.exists(os.path.join(settings.DJANGO_ROOT, "projects", settings.SITE_NAME, "wagtail_urls.py")):
-    urlpatterns += patterns('',
-                            url(r'^', include('projects.{}.wagtail_urls'.format(settings.SITE_NAME))))
 
 # This is only needed when using runserver.
 if settings.DEBUG:

@@ -725,8 +725,36 @@ THUMBNAIL_PROCESSORS = (
     'easy_thumbnails.processors.background',
 )
 
+# ################################
+# Wagtail
+# ################################
 
+USE_WAGTAIL_CMS = True
 
+if USE_WAGTAIL_CMS:
+
+    # extend base_settings with wagtail cms middleware
+    MIDDLEWARE_CLASSES += (
+        'wagtail.wagtailcore.middleware.SiteMiddleware',
+        'wagtail.wagtailredirects.middleware.RedirectMiddleware',
+    )
+    CMS_APPS = (
+        'wagtail.wagtailforms',
+        'wagtail.wagtailredirects',
+        'wagtail.wagtailembeds',
+        'wagtail.wagtailsites',
+        'wagtail.wagtailusers',
+        'wagtail.wagtailsnippets',
+        'wagtail.wagtaildocs',
+        'wagtail.wagtailimages',
+        'wagtail.wagtailsearch',
+        'wagtail.wagtailadmin',
+        'wagtail.wagtailcore',
+
+        'modelcluster',
+        'overextends',
+    )
+    INSTALLED_APPS += CMS_APPS
 ##################
 # Django Cities  #
 ##################
