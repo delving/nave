@@ -16,7 +16,7 @@ from django.db.models.loading import get_model
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.utils.translation import ugettext_lazy as _, activate, get_language
-from django.views.generic import ListView, DetailView, RedirectView, View
+from django.views.generic import ListView, DetailView, RedirectView, View, TemplateView
 from rest_framework.decorators import list_route
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
@@ -523,3 +523,8 @@ class FoldOutDetailImageView(NaveDocumentDetailView):
     template_name = 'search-detail-image-foldout.html'
     context_object_name = 'detail'
     model = EDMRecord
+
+
+class KNReiseGeoView(TemplateView):
+    """The KNReise clustered geoviewer."""
+    template_name = 'geoviewer/geoviewer.html'
