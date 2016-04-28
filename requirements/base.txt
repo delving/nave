@@ -1,7 +1,7 @@
 amqp==1.4.9
 anyjson==0.3.3
 billiard==3.3.0.22
-celery==3.1.20
+celery[redis]==3.1.20
 colorific==0.3
 colormath==2.1.1
 diff-match-patch==20121119

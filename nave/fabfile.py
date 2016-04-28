@@ -120,6 +120,8 @@ OS_DEPENDENCIES = [
     'unzip',
     'supervisor',
     'gettext',
+    'redis',
+    'redis-tools',
 ]
 
 ##################
