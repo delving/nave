@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% load i18n staticfiles leaflet_tags %}
+{% load i18n staticfiles leaflet_tags urls_tags %}
 
 {% block body_id %}vc_search{% endblock %}
 
@@ -10,7 +10,10 @@
             <a href="/">{% trans 'Home' %}</a>
         </li>
         <li>
-            <span><a href="{% url 'results-list' %}">{% trans 'Search' %}</a></span>
+            <span><a href="../">{% trans 'Virtual Collection' %}</a></span>
+        </li>
+        <li>
+            <span><a href="./">{% trans 'Search' %}</a></span>
         </li>
         {% if data.user_query.breadcrumbs %}
             {% for breadcrumb in data.user_query.breadcrumbs %}
@@ -36,7 +39,18 @@
 {% endblock %}
 
 {% block content %}
-
+    <div class="vc-search-form">
+        <form action="." method="GET" class="form-search">
+            {% form_hidden_field request 'view' %}
+            <div class="input-group">
+                <input class="form-control" name="q" id="q" placeholder="{% trans "Enter search term(s) for Virtual collection here" %}" type="text" value="{{ request.query_params.q }}">
+            <span class="input-group-btn">
+                <button type="submit" class="btn btn-default">{% trans 'Search inside Virtual Collection' %}</button>
+            </span>
+            </div>
+        </form>
+        <br/>
+    </div>
     {# with options: facets_layout="horizontal|vertical" - defaults to vertical if not used #}
     {% include "search/_search-results-content.html" with facets_layout='vertical' %}
 

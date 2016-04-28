@@ -20,7 +20,8 @@ class VirtualCollectionAdmin(reversion.admin.VersionAdmin):
     list_display = ('title', 'user')
     form = VirtualCollectionForm
     fieldsets = [
-        ('Description', {'classes': ('full-width',), 'fields': ('title', 'query')}),
+        ('Description', {'classes': ('full-width',), 'fields': ('title',)}),
+        ('Query', {'classes': ('full-width',), 'fields': ('query',)}),
         ('Body', {'classes': ('full-width',), 'fields': ('body',)}),
         ('Meta', {'fields': ('groups', 'user', 'oai_pmh', 'published', 'owner', 'creator')})
     ]
