@@ -3,7 +3,7 @@
 """
 from rest_framework import serializers
 
-from virtual_collection.models import VirtualCollection
+from .models import VirtualCollection
 
 
 class VirtualCollectionSerializer(serializers.HyperlinkedModelSerializer):

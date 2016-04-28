@@ -16,7 +16,7 @@ from django.db.models.loading import get_model
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.utils.translation import ugettext_lazy as _, activate, get_language
-from django.views.generic import ListView, DetailView, RedirectView, View
+from django.views.generic import ListView, DetailView, RedirectView, View, TemplateView
 from rest_framework.decorators import list_route
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
@@ -171,6 +171,11 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
     mlt_fields = settings.MLT_FIELDS
     lookup_value_regex = '[^/]+'
     facet_size = 50
+    lookup_query_object = None
+
+    def set_hidden_query_filters(self, filter_list):
+        # clean list
+        self.hidden_filters = [hqf.strip('"')  for hqf in filter_list]
 
     def get_converter(self, converter_key=None):
         request_converter_key = self.request.GET.get("converter")
@@ -233,7 +238,10 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
             facet_size=self.facet_size,
             acceptance=acceptance
         )
-        query.build_query_from_request(request)
+        if self.lookup_query_object:
+            query.build_query_from_request(request=request, raw_query_string=self.lookup_query_object.query)
+        else:
+            query.build_query_from_request(request)
         if demote and 'q' in request.query_params:
             for demote in demote:
                 demote_query, amount, _ = demote
@@ -523,3 +531,8 @@ class FoldOutDetailImageView(NaveDocumentDetailView):
     template_name = 'search-detail-image-foldout.html'
     context_object_name = 'detail'
     model = EDMRecord
+
+
+class KNReiseGeoView(TemplateView):
+    """The KNReise clustered geoviewer."""
+    template_name = 'geoviewer/geoviewer.html'
