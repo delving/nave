@@ -367,7 +367,7 @@ class NaveESQuery(object):
         value_list = param[1]
         return [(key, value) for value in value_list]
 
-    def build_query_from_request(self, request):
+    def build_query_from_request(self, request, raw_query_string=None):
 
         @contextmanager
         def robust(key):
@@ -382,8 +382,11 @@ class NaveESQuery(object):
                 raise
 
         query = self.query
+        query_string = raw_query_string if raw_query_string else request._request.META['QUERY_STRING']
         if self.converter is not None:
-            query_dict = self.apply_converter_rules(request._request.META['QUERY_STRING'], self.converter)
+            query_dict = self.apply_converter_rules(query_string, self.converter)
+        elif raw_query_string:
+            query_dict = QueryDict(query_string=query_string)
         else:
             query_dict = request.query_params if isinstance(request, Request) else request.GET
 

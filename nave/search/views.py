@@ -171,6 +171,11 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
     mlt_fields = settings.MLT_FIELDS
     lookup_value_regex = '[^/]+'
     facet_size = 50
+    lookup_query_object = None
+
+    def set_hidden_query_filters(self, filter_list):
+        # clean list
+        self.hidden_filters = [hqf.strip('"')  for hqf in filter_list]
 
     def get_converter(self, converter_key=None):
         request_converter_key = self.request.GET.get("converter")
@@ -233,7 +238,10 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
             facet_size=self.facet_size,
             acceptance=acceptance
         )
-        query.build_query_from_request(request)
+        if self.lookup_query_object:
+            query.build_query_from_request(request=request, raw_query_string=self.lookup_query_object.query)
+        else:
+            query.build_query_from_request(request)
         if demote and 'q' in request.query_params:
             for demote in demote:
                 demote_query, amount, _ = demote

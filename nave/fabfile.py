@@ -541,16 +541,23 @@ def install_fuseki():
 
 @task
 @log_call
-def install_elasticsearch():
+def install_elasticsearch(version="1.7.4"):
     """Install elastic search."""
-    __version__ = "1.7.4"
+    __version__ = version
     sudo("wget -q https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-{}.deb".format(__version__))
     sudo("dpkg -i elasticsearch-{}.deb".format(__version__))
     sudo("update-rc.d elasticsearch defaults 95 10")
-    link = "https://github.com/triforkams/geohash-facet/releases/download/geohash-facet-0.0.19/geohash-facet-0.0.19.jar"
-    sudo("/usr/share/elasticsearch/bin/plugin --url {} --install geohash-facet".format(link))
+    # link = "https://github.com/triforkams/geohash-facet/releases/download/geohash-facet-0.0.19/geohash-facet-0.0.19.jar"
+    # sudo("/usr/share/elasticsearch/bin/plugin --url {} --install geohash-facet".format(link))
     sudo("service elasticsearch start")
     sudo("rm elasticsearch-{}.deb".format(__version__))
+
+
+@task
+@log_call
+def install_elasticsearch2():
+    __version__ = "2.3.2"
+    install_elasticsearch(version=__version__)
 
 
 @task

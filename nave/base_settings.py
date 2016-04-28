@@ -277,6 +277,7 @@ DJANGO_APPS = (
     'common',
     # django-suit to pimp the admin
     'suit',
+    'suit_ckeditor',
     'django.contrib.admin',
     # 'admin_reorder',
 )
@@ -291,7 +292,6 @@ THIRD_PARTY_APPS = (
     'filer',
     'easy_thumbnails',
     'oauth2_provider',
-    'django_wysiwyg',
     'django_extensions',
     'import_export',
     'rest_framework',
@@ -318,13 +318,8 @@ LOCAL_APPS = (
     'lod',
     'void',
     'search',
+    'virtual_collection',
 )
-
-# ###########################
-#   DJANGO WYSIWYG          #
-# ###########################
-
-DJANGO_WYSIWYG_FLAVOR = "ckeditor"
 
 
 ######################################################################
@@ -730,8 +725,36 @@ THUMBNAIL_PROCESSORS = (
     'easy_thumbnails.processors.background',
 )
 
+# ################################
+# Wagtail
+# ################################
 
+USE_WAGTAIL_CMS = True
 
+if USE_WAGTAIL_CMS:
+
+    # extend base_settings with wagtail cms middleware
+    MIDDLEWARE_CLASSES += (
+        'wagtail.wagtailcore.middleware.SiteMiddleware',
+        'wagtail.wagtailredirects.middleware.RedirectMiddleware',
+    )
+    CMS_APPS = (
+        'wagtail.wagtailforms',
+        'wagtail.wagtailredirects',
+        'wagtail.wagtailembeds',
+        'wagtail.wagtailsites',
+        'wagtail.wagtailusers',
+        'wagtail.wagtailsnippets',
+        'wagtail.wagtaildocs',
+        'wagtail.wagtailimages',
+        'wagtail.wagtailsearch',
+        'wagtail.wagtailadmin',
+        'wagtail.wagtailcore',
+
+        'modelcluster',
+        'overextends',
+    )
+    INSTALLED_APPS += CMS_APPS
 ##################
 # Django Cities  #
 ##################

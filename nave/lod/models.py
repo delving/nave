@@ -631,7 +631,8 @@ class RDFModel(TimeStampedModel, GroupOwned):
             'caption': bindings.get_about_caption if bindings.get_about_caption else "",
             'about_uri': self.document_uri,
             'source_uri': self.source_uri,
-            'timestamp': datetime.datetime.now().isoformat()
+            'timestamp': datetime.datetime.now().isoformat(),
+            'modified_at': datetime.datetime.now().isoformat(),
             # 'about_type': [rdf_type.qname for rdf_type in bindings.get_about_resource().get_types()]
             # 'collections': None, todo find a way to add collections via link
         }
