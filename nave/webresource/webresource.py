@@ -28,6 +28,7 @@ import magic
 import time
 from colorific.palette import extract_colors
 from PIL import Image
+import requests
 import webcolors
 
 
@@ -323,11 +324,11 @@ class WebResource:
     def get_thumbnail_path(self, width, height):
         """Get the fully qualified path to the thumbnail."""
         return os.path.join(
-           self.get_spec_dir,
-           "{}_{}x{}.jpg".format(
+            self.get_spec_dir,
+            "{}_{}x{}.jpg".format(
                 self.get_derivative_base_path(kind=THUMBNAIL_DIR),
                 width,
-                height,
+                height
             )
         )
 
@@ -510,7 +511,7 @@ class WebResource:
         if "__" in self.uri and not self.is_cached:
             object_number, fname = self.clean_uri.split("__", max_split=1)
         elif self.has_linked_hub_id:
-            object_number = self.hub_id.split('_')[-1] 
+            object_number = self.hub_id.split('_')[-1]
         return object_number
 
     def generate_edm_rdf_subject(self):
@@ -518,15 +519,36 @@ class WebResource:
 
         This link can be used to connect the webresource to the EDM record.
         """
-        return "{domain}/resource/aggregation/{spec}/{id}".format(
-            self.domain,
-            self.spec,
-            self.extract_object_number
-        )
+        object_number = self.extract_object_number
+        subject = None
+        if object_number:
+            subject = "{domain}/resource/aggregation/{spec}/{id}".format(
+                self.domain,
+                self.spec,
+                object_number
+            )
+        return subject
 
     def generate_edm_rdf_graph(self):
         """Generate the EDM RDF graph that the WebResource is linked to."""
-        return self.generate_edm_rdf_subject().rstrip('/') + "/graph"
+        subject = self.generate_edm_rdf_subject()
+        graph_name = None
+        if subject:
+            graph_name = subject.rstrip('/') + "/graph"
+        return graph_name
+
+    def cache_remote_link(self, uri):
+        """Retrieve remoted digital object and store it as cached object.
+
+        HTML pages are not considered digital objects in this context.
+        """
+        response = requests.get(uri)
+        if response.status == 200:
+            pass
+        # TODO: implement me
+
+    def test_something(self):
+        self.cache_remote_link()
 
     def guess_mime_type(self, path):
         """Guess the extension and mime-type of the file."""
