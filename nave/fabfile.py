@@ -120,7 +120,7 @@ OS_DEPENDENCIES = [
     'unzip',
     'supervisor',
     'gettext',
-    'redis',
+    #'redis', # seems to no longer be available
     'redis-tools',
 ]
 
