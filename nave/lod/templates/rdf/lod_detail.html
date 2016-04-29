@@ -2,6 +2,8 @@
 
 {% load staticfiles i18n dataset_tags leaflet_tags %}
 
+{% block body_class %}body-offcanvas{% endblock %}
+
 {% block extra_css %}
     {% leaflet_css %}
     <link rel="stylesheet" href="{% static "css/fullscreen.css" %}"/>
@@ -36,10 +38,8 @@
 {% endblock %}
 
 
-{% block content_above_class %}collapse{% endblock %}
-{% block content_above %}
-    {% include 'rdf/include/enrichment_form.html' %}
-{% endblock %}
+{% block content_above_wrapper %}{% endblock %}
+
 
 {% block content %}
 
@@ -256,72 +256,28 @@
 
     </div><!-- end role tabpanel -->
 
-    {#############################################################}
-    {# MODAL/LIGHTBOX FOR LINK FORM                              #}
-    {#############################################################}
-
-    <div class="modal fade" id="lod-form">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <form method="PUT" action="" name="lod-link-form">
-                    <input type="hidden" name="spec" value="{{ spec.goes.here }}"/>
-                    <input type="hidden" name="literal_value" value=""/>
-                    <input type="hidden" name="literal_property" value=""/>
-
+    {% if user.is_superuser %}
+        {#############################################################}
+        {# MODAL WITH ENRICHMENT FORM - user with admin priv. only   #}
+        {#############################################################}
+        <div class="modal fade" id="enrichment-form">
+            <div class="modal-dialog">
+                <div class="modal-content">
                     <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-                                aria-hidden="true">&times;</span></button>
-                        <h4 class="modal-title">LOD Link Form</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="enrichment-label">{% trans 'Enrichment form' %}</h4>
                     </div>
                     <div class="modal-body">
-                        <span class="current-fieldname">lod fieldname</span>:
-                        <span class="current-literal">lod literal</span>
-                        <hr/>
-                        <label for="lod-form-link">lod link</label>
-                        <input type="text" class="form-control" placeholder="URL link here" name="source_uri"/>
+                        {% include 'rdf/include/enrichment_form.html' %}
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary">Save changes</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    {#############################################################}
-    {# MODAL/LIGHTBOX FOR LINK VALUE DISPLAY                     #}
-    {#############################################################}
-
-    <div class="modal fade" id="lod-data">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-                            aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title">
-                        <span class="current-fieldname">lod fieldname</span>:
-                        <span class="current-literal">lod literal</span>
-                    </h4>
-                </div>
-                <div class="modal-body" id="modal-data">
-                    {% detail_field 'edm_dataProvider' multiple=True label=_('edm_dataProvider') %}
-                    <div id="linked-data-container">
-                        {#############################################################}
-                        {# filled via ajax call l.401                                #}
-                        {#############################################################}
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
-    </div>
-
-    {% if user.is_superuser %}
-        <a type="button" class="btn btn-primary btn-sm" id="btn_enr_toggle" data-toggle="collapse" href="#page-content-above">{% trans 'Add enrichment' %}</a>
+        <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#enrichment-form">
+            {% trans 'Add enrichment' %}
+        </button>
     {% endif %}
+
 {% endblock content %}
 
 {% block content_below_wrapper %}{% endblock %}
@@ -352,12 +308,6 @@
                 $(this).next().toggleClass('on');
             });
             {#############################################################}
-            {# do after clicking on linked term                          #}
-            {#############################################################}
-            $('.js-lod-data-link').on('click', function (e) {
-                LodView.initLinkedPropertiesModal(e, $(this));
-            });
-            {#############################################################}
             {# do after clicking on map tab                              #}
             {#############################################################}
             $('#click-map').on('click', function () {
@@ -369,38 +319,6 @@
             $('#click-related').on('click', function () {
                 LodView.initRelated("{{ source_uri|urlencode }}");
             });
-            {#############################################################}
-            {# launch modal with form to add link                        #}
-            {# todo: is this still being used??                          #}
-            {#############################################################}
-            {#                $('.js-lod-form-link').on('click', function () {#}
-            {#                    $('.current-fieldname').html($(this).attr('data-current-fieldname'));#}
-            {#                    $('.current-literal').html($(this).attr('data-current-literal'));#}
-            {##}
-            {#                    $('input[name=literal_property]').val($(this).attr('data-current-fieldname'));#}
-            {#                    $('input[name=literal_value]').val($(this).attr('data-current-literal'));#}
-            {#                });#}
-            {#############################################################}
-            {# is there deepzoom, if so then do this                     #}
-            {#############################################################}
-            {#                if($('#deep-zoom-viewer-1').length){#}
-            {#                    var viewerName = 'deep-zoom-viewer-1';#}
-            {#                    var viewerObj = $('#deep-zoom-viewer-1');#}
-            {#                    var zoomUri = viewerObj.attr('data-deepzoom-uri');#}
-            {#                    LodView.loadDeepZoom(viewerName, zoomUri);#}
-            {#                    $('.carousel').carousel({#}
-            {#                        interval: false,#}
-            {#                        wrap:false#}
-            {#                    }).on('slide.bs.carousel', function (e) {#}
-            {#                        viewerName = 'deep-zoom-viewer-'+$(e.relatedTarget).attr('data-index');#}
-            {#                        viewerObj = $('#deep-zoom-viewer-'+$(e.relatedTarget).attr('data-index'));#}
-            {#                        if (typeof viewerObj == "undefined") {#}
-            {#                            // no view object...#}
-            {#                        }#}
-            {#                        zoomUri = viewerObj.attr('data-deepzoom-uri');#}
-            {#                        LodView.loadDeepZoom(viewerName, zoomUri);#}
-            {#                    });#}
-            {#                };#}
         });
     </script>
 
