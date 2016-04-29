@@ -36,7 +36,10 @@
 {% endblock %}
 
 
-{% block content_above_wrapper %}{% endblock %}
+{% block content_above_class %}collapse{% endblock %}
+{% block content_above %}
+    {% include 'rdf/include/enrichment_form.html' %}
+{% endblock %}
 
 {% block content %}
 
@@ -315,6 +318,10 @@
             </div>
         </div>
     </div>
+
+    {% if user.is_superuser %}
+        <a type="button" class="btn btn-primary btn-sm" id="btn_enr_toggle" data-toggle="collapse" href="#page-content-above">{% trans 'Add enrichment' %}</a>
+    {% endif %}
 {% endblock content %}
 
 {% block content_below_wrapper %}{% endblock %}
