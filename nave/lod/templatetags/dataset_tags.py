@@ -46,7 +46,7 @@ def field_exists(context, fieldname):
 
 # ######### result detail predicate and field value display ############################
 
-@register.inclusion_tag('rdf/_search-detail-media-preview.html', takes_context=True)
+@register.inclusion_tag('rdf/tags/_search-detail-media-preview.html', takes_context=True)
 def detail_media_preview(context, fieldname, alt="", fullscreen=False, thumbnail_nav=False):
     """
     :param context: page context
@@ -65,7 +65,7 @@ def detail_media_preview(context, fieldname, alt="", fullscreen=False, thumbnail
     return {'values': values, 'alt': alt, 'fullscreen': fullscreen, 'thumbnail_nav': thumbnail_nav}
 
 
-@register.inclusion_tag('rdf/_rdf_properties.html', takes_context=True)
+@register.inclusion_tag('rdf/tags/_rdf_properties.html', takes_context=True)
 def render_properties(context, resources, obj=None, items=None, predicate=None, level=1):
     if not items:
         if not obj:
@@ -92,7 +92,7 @@ def render_properties(context, resources, obj=None, items=None, predicate=None, 
 
 ########## result detail return field value only  for media item ######################
 
-@register.inclusion_tag('rdf/_search-detail-field.html', takes_context=True)
+@register.inclusion_tag('rdf/tags/_search-detail-field.html', takes_context=True)
 def detail_field(
         context,
         fieldname,
