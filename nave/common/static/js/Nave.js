@@ -82,3 +82,20 @@ Nave.initMapSearchModal = function () {
     });
 
 };
+
+
+/***********************************************************************************/
+// Nave.initSidePanel depends on jquery to be loaded. Toggles side panel
+/***********************************************************************************/
+Nave.initSidePanel = function () {
+    $(".side-panel-tab").click(function(e){
+        e.preventDefault();
+        $(this).parent().toggleClass("open");
+    });
+    // close on escape key
+    $(document).keyup(function(e) {
+        if (e.keyCode == 27) {
+            $(".side-panel").removeClass("open");
+        }
+    });
+};
