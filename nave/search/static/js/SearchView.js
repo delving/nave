@@ -285,17 +285,3 @@ SearchView.initGeo = function () {
         }
     });
 };
-
-SearchView.initLodFacetsPanel = function () {
-    $("#show-side-panel-right").click(function(e){
-        e.preventDefault();
-        $(".side-panel").toggleClass("show-right");
-    });
-    // close on escape key
-    $(document).keyup(function(e) {
-        if (e.keyCode == 27) {
-            $(".side-panel").removeClass("show-right");
-        }
-    });
-};
-

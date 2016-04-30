@@ -24,9 +24,9 @@
 {% endblock %}
 
 {% block query-info %}
-    <div class="sr-content query-info">
-        <span class="count">{{ data.user_query.num_found}}</span> {% trans 'results' %}
-    </div>
+{#    <div class="sr-content query-info">#}
+{#        <span class="count">{{ data.user_query.num_found}}</span> {% trans 'results' %}#}
+{#    </div>#}
 {% endblock %}
 
 {# PAGINATION, PAGER, VIEW SWITCHER #}
@@ -78,72 +78,4 @@
         {% endif %}
     {% endif %}
 {% endblock %}
-
-
-{# remove if's to see what it looks like #}
-{% if lod_facets %}
-    <nav id="lod-facets-panel" class="side-panel right">
-        <a href="#" id="show-side-panel-right" rel="tooltip" title="LOD Facets"><i class="lod-facets-link fa fa-link"></i></a>
-        <div class="side-panel-inner">
-            <div class="facets">
-                {% for facet in data.facet_list %}
-                    {% if facet.facet_link %}
-                        <div class="facet-container" id="{{ facet.facet_link.name }}">
-                            <div class="facet-header">
-                                {{ facet.label }}
-                                <span class="facet-tools">
-                                    <a href="#" class="sort sort-alpha" data-sort-type="value" data-id="{{ facet.facet_link.name }}" data-text-ascending="A-Z" data-text-descending="Z-A"><i class="fa fa-sort"></i> <span>A-Z</span></a>
-                                    <a href="#" class="sort sort-numeric" data-sort-type="count" data-id="{{ facet.facet_link.name }}" data-text-ascending="0-9" data-text-descending="9-0"><i class="fa fa-sort"></i> <span>0-9</span></a>
-                                </span>
-                            </div>
-                            <div class="facet-body">
-                                <ul class="list-unstyled list-facets">
-                                    {% for term in facet.facet_link.links %}
-                                        <li data-value="{{ term.value  }}" data-count="{{ term.count }}">
-                                            <a href="{{ term.full_link }}">
-                                                <i class="fa fa-fw {% if not term.is_selected %}fa-square-o{% else %}fa-check-square{% endif %}"></i>
-                                                {{ term.value }} ({{ term.count }})
-                                            </a>
-                                        </li>
-                                    {% endfor %}
-                                </ul>
-                            </div>
-                        </div>
-                    {% endif %}
-                {% endfor %}
-            </div>
-        </div>
-    </nav>
-{% endif %}
-
-
-{#############################################################}
-{# MODAL/LIGHTBOX FOR LINK VALUE DISPLAY                     #}
-{#############################################################}
-
-<div class="modal fade" id="lod-data">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title">
-                    <span class="current-literal">lod literal</span>
-                    <small><span class="current-fieldname">lod fieldname</span></small>
-                </h4>
-            </div>
-            <div class="modal-body">
-
-                <div id="linked-data-container">
-                    {#############################################################}
-                    {# filled via ajax call                                      #}
-                    {#############################################################}
-                </div>
-
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">{% trans 'Close' %}</button>
-            </div>
-        </div>
-    </div>
-</div>
 
