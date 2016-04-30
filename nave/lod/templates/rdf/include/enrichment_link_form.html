@@ -1,0 +1,22 @@
+{% load i18n %}
+<form action="." method="post" id="enrichment_link_form" role="form" class="form">
+    <div class="form-group">
+        <label for="enr_type" class="control-label">{% trans 'Type' %}</label>
+        <input type="text" class="form-control" id="enr_type" placeholder="{% trans 'Type' %}">
+    </div>
+    <div class="form-group">
+        <label for="enr_name" class="control-label">{% trans 'Short description' %}</label>
+        <input type="text" class="form-control" id="enr_short_description" placeholder="{% trans 'Short description' %}">
+    </div>
+    <div class="form-group">
+        <label for="enr_long_description" class="control-label">{% trans 'Short description' %}</label>
+        <textarea class="form-control" id="enr_long_description" placeholder="{% trans 'Long description' %}"></textarea>
+    </div>
+    <div class="form-group">
+        <label for="enr_url" class="control-label">{% trans 'URL/Link' %}</label>
+        <input type="text" class="form-control" id="enr_url" placeholder="{% trans 'URL' %}">
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">{% trans 'Save' %}</button>
+    </div>
+</form>
