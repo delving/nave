@@ -59,7 +59,6 @@
         <hr/>
     {% endif %}
 
-
     {#############################################################}
     {# TITLE                                                     #}
     {#############################################################}
@@ -256,7 +255,20 @@
 
     </div><!-- end role tabpanel -->
 
- 
+    {% if user.is_superuser %}
+        {#############################################################}
+        {# ENRICHMENT FORM - user with admin priv. only   #}
+        {#############################################################}
+        <nav class="side-panel right">
+            <span class="side-panel-tab" title="{% trans 'Add enrichment link' %}"><i class="fa fa-link"></i></span>
+
+            <div class="side-panel-inner">
+                <h2>{% trans 'Add/Edit enrichment link' %}</h2>
+                {% include 'rdf/include/enrichment_link_form.html' %}
+            </div>
+        </nav>
+    {% endif %}
+
 {% endblock content %}
 
 {% block content_below_wrapper %}{% endblock %}
@@ -277,7 +289,9 @@
             {#############################################################}
             {# do on document ready                                      #}
             {#############################################################}
+            {% if user.is_superuser %}
             Nave.initSidePanel();
+            {% endif %}
             LodView.initNavTabs();
             LodView.initFullscreen();
             LodView.initProperties();
