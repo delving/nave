@@ -120,7 +120,7 @@ OS_DEPENDENCIES = [
     'unzip',
     'supervisor',
     'gettext',
-    #'redis', # seems to no longer be available
+    'redis-server',
     'redis-tools',
 ]
 
@@ -180,7 +180,7 @@ templates = {
     "narthex_conf": {
         "local_path": "../deploy/narthex.conf",
         "remote_path": "%(narthex_files)s/narthex.conf",
-        #"reload_command": "supervisorctl reload",
+        # "reload_command": "supervisorctl reload",
     },
     "narthex_logger": {
         "local_path": "../deploy/narthex_logger.xml",
@@ -201,7 +201,7 @@ templates = {
     "narthex_conf": {
         "local_path": "../deploy/narthex.conf",
         "remote_path": "%(narthex_files)s/narthex.conf",
-        #"reload_command": "supervisorctl reload",
+        # "reload_command": "supervisorctl reload",
     },
     "narthex_logger": {
         "local_path": "../deploy/narthex_logger.xml",
@@ -247,7 +247,6 @@ def private_project():
     with virtualenv():
         with cd(os.path.join(env.django_dirname, "projects", env.proj_name)):
             yield
-
 
 
 @contextmanager
@@ -502,11 +501,11 @@ def install():
     install_fuseki()
     install_elasticsearch()
     upload_template(
-            "../deploy/supervisor_iipimageserver.conf",
-            "/etc/supervisor/conf.d/iip_image_server.conf",
-            env,
-            use_sudo=True,
-            backup=False
+        "../deploy/supervisor_iipimageserver.conf",
+        "/etc/supervisor/conf.d/iip_image_server.conf",
+        env,
+        use_sudo=True,
+        backup=False
     )
 
 
@@ -599,7 +598,7 @@ def deploy_narthex():
         run("mkdir -p {}".format(narthex_factory))
     with cd(env.narthex_versions_dir):
         run("rm -rf *")
-        run("wget 'http://artifactory.delving.org:8081/artifactory/simple/delving/narthex/narthex-{}.zip'".format(
+        run("wget 'http://artifactory.delving.org/artifactory/simple/delving/narthex/narthex-{}.zip'".format(
             env.narthex_version
         ))
         run("unzip narthex-{version}.zip".format(version=env.narthex_version))
