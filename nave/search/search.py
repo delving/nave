@@ -763,13 +763,21 @@ class FacetLink(object):
 
 class NaveFacets(object):
     def __init__(self, nave_query, facets):
-        self._facets = facets
+        self._facets = NaveFacets._respect_facet_config_ordering(facets)
         self._nave_query = nave_query
         self._facet_querylinks = self._create_facet_query_links()
 
+    @staticmethod
+    def _respect_facet_config_ordering(facets):
+        facet_order = settings.FACET_CONFIG
+        ordered_dict = collections.OrderedDict()
+        for facet in facet_order:
+            ordered_dict[facet.es_field] = facets.get(facet.es_field)
+        return ordered_dict
+
     def _create_facet_query_links(self):
-        facet_query_links = {}
-        for key, facet in list(self._facets.items()):
+        facet_query_links = collections.OrderedDict()
+        for key, facet in self._facets.items():
             if key in ['places.raw']:
                 continue
             clean_name = key.replace('.raw', '')
