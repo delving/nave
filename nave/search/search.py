@@ -512,6 +512,8 @@ class NaveESQuery(object):
                 # facet_list = ["{}.raw".format(facet.rstrip('.raw')) for facet in facet_list]
                 for facet in facet_list:
                     filtered = facet.replace('.raw', '') not in applied_facet_fields
+                    if facet_bool_type_and:
+                        filtered = True
                     query = query.facet(facet, filtered=filtered, size=self.facet_size)
 
         # add bounding box
