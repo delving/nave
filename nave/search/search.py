@@ -477,6 +477,9 @@ class NaveESQuery(object):
         filter_dict.update(hidden_filter_dict)
         self.applied_filters = filter_dict
         applied_facet_fields = []
+        facet_bool_type_and = False
+        if "facetBoolType" in params:
+            facet_bool_type_and = params.get("facetBoolType").lower() in ["and"]
         if filter_dict:
             for key, values in list(filter_dict.items()):
                 applied_facet_fields.append(key.lstrip('-+').replace('.raw', ''))
@@ -484,6 +487,8 @@ class NaveESQuery(object):
                 for value in values:
                     if key.startswith('-'):
                         f |= ~F(**{self.query_to_facet_key(key): value})
+                    elif facet_bool_type_and:
+                        f &= F(**{self.query_to_facet_key(key): value})
                     else:
                         f |= F(**{self.query_to_facet_key(key): value})
 
