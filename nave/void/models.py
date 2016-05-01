@@ -647,7 +647,7 @@ class DataSet(TimeStampedModel, GroupOwned):
     def delete_from_index(self, index='{}'.format(settings.SITE_NAME)):
         """Delete all dataset records from the Search Index. """
         # TODO: use nested query for this to delete by spec and not only for the unfielded spec name
-        response = es.delete_by_query(index=index, q="legacy.delving_spec.raw:\"{}\"".format(self.spec))
+        response = es.delete_by_query(index=index, q="delving_spec.raw:\"{}\"".format(self.spec))
         logger.info("Deleted {} from Search index with message: {}".format(self.spec, response))
         return response
 
@@ -1132,9 +1132,6 @@ class EDMRecord(RDFModel):
 #     from lod import tasks
 #     tasks.delete_rdf_resource.delay(instance)
 #     tasks.remove_rdf_from_index.delay(instance)
-
-
-
 #
 #
 # class EDMBaseModel(TimeStampedModel):

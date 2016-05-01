@@ -616,6 +616,14 @@ class RDFModel(TimeStampedModel, GroupOwned):
         index_doc = bindings.to_flat_index_doc() if flat else bindings.to_index_doc()
         if exclude_fields:
             index_doc = {k: v for k, v in index_doc.items() if k not in exclude_fields}
+        # add delving spec for default searchability
+        index_doc["delving_spec"] = [
+            {'@type': "Literal",
+             'value': self.get_spec_name(),
+             'raw': self.get_spec_name(),
+             'lang': None}
+        ]
+        logger.info(index_doc)
         mapping = {
             '_op_type': action,
             '_index': index,

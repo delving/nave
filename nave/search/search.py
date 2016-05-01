@@ -176,7 +176,7 @@ class NaveESQuery(object):
         self.page = 1
         self.converter = converter
         self.non_legacy_keys = ['delving_deepZoomUrl', 'delving_geohash', 'delving_year', 'delving_thumbnail',
-                                'delving_fullTextObjectUrl', 'delving_fullText', 'delving_geohash']
+                                'delving_fullTextObjectUrl', 'delving_fullText', 'delving_geohash', 'delving_spec']
 
     @staticmethod
     def _as_list(param):
@@ -317,7 +317,9 @@ class NaveESQuery(object):
         query_string = multiple_replace(mapping_dict, query_string)
         # default fielded query is to .value
         query_string = re.sub("([\w]+)_([\w]+):", r"\1_\2.value:", query_string)
-        if "delving_" in query_string:
+        if "delving_spec.value" in query_string:
+            query_string = query_string.replace("delving_spec.value", "delving_spec.raw")
+        elif "delving_" in query_string:
             exclude = "(delving_{}[a-zA-Z]+).value:".format(
                 "".join(["(?!{})".format(key) for key in self.non_legacy_keys]))
             query_string = re.sub(exclude, "legacy.\\1.value:", query_string)
@@ -553,7 +555,9 @@ class NaveESQuery(object):
         return query
 
     def query_to_facet_key(self, facet_key):
-        if facet_key.startswith('delving_') and facet_key not in self.non_legacy_keys:
+        if facet_key.startswith('delving_spec'):
+            facet_key = "delving_spec.raw"
+        elif facet_key.startswith('delving_') and facet_key not in self.non_legacy_keys:
             facet_key = 'legacy.{}'.format(facet_key)
         if "." not in facet_key:
             facet_key = "{}.raw".format(facet_key)
