@@ -15,7 +15,7 @@ from django.core.paginator import Paginator, Page
 from django.http import QueryDict
 from elasticsearch_dsl import Search
 from elasticsearch_dsl.result import Result
-from elasticutils import S, F
+from elasticutils import S, F, Q
 from geojson import Point, Feature, FeatureCollection
 # noinspection PyMethodMayBeStatic
 from rest_framework.request import Request
@@ -474,14 +474,27 @@ class NaveESQuery(object):
                         exclude=exclude_filter_list
                 )
                 facet_params.pop('hqf')
-
-        # combine all filters
-        filter_dict.update(hidden_filter_dict)
-        self.applied_filters = filter_dict
-        applied_facet_fields = []
         facet_bool_type_and = False
         if "facetBoolType" in params:
             facet_bool_type_and = params.get("facetBoolType").lower() in ["and"]
+        # Important: hidden query filters need to be additional query and not filters.
+        if hidden_filter_dict:
+            for key, values in hidden_filter_dict.items():
+                query_list = []
+                for value in values:
+                    if key.startswith('-'):
+                        query_list.append("(NOT {})".format(value))
+                    else:
+                        query_list.append("{}".format(value))
+                if facet_bool_type_and:
+                    query_string = " AND ".join(query_list)
+                else:
+                    query_string = " AND ".join(query_list)
+                query = query.query(Q(**{self.query_to_facet_key(key): query_string}))
+        # filter_dict.update(hidden_filter_dict)
+        self.applied_filters = filter_dict
+        applied_facet_fields = []
+
         if filter_dict:
             for key, values in list(filter_dict.items()):
                 applied_facet_fields.append(key.lstrip('-+').replace('.raw', ''))
