@@ -525,11 +525,27 @@ class NaveESQuery(object):
                     self.facet_size = int(params.get('facet.size'))
                 # add .raw if not already there
                 # facet_list = ["{}.raw".format(facet.rstrip('.raw')) for facet in facet_list]
+                facet_filt_dict = {"{}.raw".format(k.split('.')[0]): list(v) for k, v in filter_dict.items()}
                 for facet in facet_list:
-                    filtered = facet.replace('.raw', '') not in applied_facet_fields
-                    if facet_bool_type_and:
-                        filtered = True
-                    query = query.facet(facet, filtered=filtered, size=self.facet_size)
+                    # remove current facet from filter dict
+                    if not facet_bool_type_and:
+                        facet_filter = {k: v for k, v in facet_filt_dict.items() if k != facet}
+                    else:
+                        facet_filter = facet_filt_dict
+                    # implement facet raw queries
+                    formatted_facet_filter = {
+                        facet:
+                        {
+                            'terms': {'field': facet, 'size': self.facet_size}
+                        }
+                    }
+                    if facet_filter:
+                        formatted_facet_filter[facet]['facet_filter'] = {
+                            #'terms': facet_filter
+                            "and": [{"terms": {k: v}} for k, v in facet_filter.items()]
+                        }
+                    query = query.facet_raw(**formatted_facet_filter
+                    )
 
         # add bounding box
         bounding_box_param_keys = GeoS.BOUNDING_BOX_PARAM_KEYS

@@ -136,13 +136,13 @@ SearchView.initSearchTags = function() {
 // Will also hide the grid tab because it has become redundant.
 /***********************************************************************************/
 SearchView.checkGeoCount = function () {
-    if(queryStr){
-        $.getJSON("/search/?format=geojson&cluster.factor=1&" + queryStr, function (data) {
-            if(!data.features.length) {
-                $('#tab-geo, #tab-grid').hide();
-            }
-        });
-    }
+    // if(queryStr){
+    //     $.getJSON("/search/?format=geojson&cluster.factor=1&" + queryStr, function (data) {
+    //         if(!data.features.length) {
+    //             $('#tab-geo, #tab-grid').hide();
+    //         }
+    //     });
+    // }
 };
 
 
@@ -157,27 +157,27 @@ SearchView.initGeo = function () {
 
     function buildMap(mapReceiver) {
 
-        $.getJSON("/search/?format=geojson&cluster.factor=1&" + queryStr, function (data) {
-            // first check if there is any data
-            if(data.features.length && data.features.length > 0){
-                var centerPoint = L.latLng(51.55, 0); // default should not be necessary
-                if (data.features.length == 1) {
-                    var feature = data.features[0];
-                    centerPoint = L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]);
-                }
-                //console.log("set view to center point", centerPoint);
-                map.setView([centerPoint.lat, centerPoint.lng], 5);
-                var featureGroup = new L.FeatureGroup();
-                featureGroup.addTo(map);
-                var markerClusterGroup = new L.MarkerClusterGroup();
-                markerClusterGroup.addTo(map);
-                mapReceiver(featureGroup, markerClusterGroup)
-            }
-            // if there is no data then hide geo functionality
-            else {
-                $('#tab-geo, #tab-grid').hide();
-            }
-        });
+        // $.getJSON("/search/?format=geojson&cluster.factor=1&" + queryStr, function (data) {
+        //     // first check if there is any data
+        //     if(data.features.length && data.features.length > 0){
+        //         var centerPoint = L.latLng(51.55, 0); // default should not be necessary
+        //         if (data.features.length == 1) {
+        //             var feature = data.features[0];
+        //             centerPoint = L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]);
+        //         }
+        //         //console.log("set view to center point", centerPoint);
+        //         map.setView([centerPoint.lat, centerPoint.lng], 5);
+        //         var featureGroup = new L.FeatureGroup();
+        //         featureGroup.addTo(map);
+        //         var markerClusterGroup = new L.MarkerClusterGroup();
+        //         markerClusterGroup.addTo(map);
+        //         mapReceiver(featureGroup, markerClusterGroup)
+        //     }
+        //     // if there is no data then hide geo functionality
+        //     else {
+        //         $('#tab-geo, #tab-grid').hide();
+        //     }
+        // });
     }
 
     buildMap(function(featureGroup, markerClusterGroup) {
@@ -216,7 +216,7 @@ SearchView.initGeo = function () {
             //                console.log("westToEast=" + westToEast +" factor=" + factor);
             //var boundsQueryString = "&min_x="+bounds._southWest.lat+"&min_y="+bounds._southWest.lng+"&max_x="+bounds._northEast.lat+"&max_y="+bounds._northEast.lng;
             //$.getJSON("/search/?format=geojson&cluster.factor=" + factor + "&" + queryStr + boundsQueryString, showGeo);
-            $.getJSON("/search/?format=geojson&cluster.factor=" + factor + "&" + queryStr, showGeo);
+            // $.getJSON("/search/?format=geojson&cluster.factor=" + factor + "&" + queryStr, showGeo);
         }
 
         function showGeo(data) {
