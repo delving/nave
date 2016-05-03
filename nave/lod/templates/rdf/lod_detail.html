@@ -278,6 +278,9 @@
     <script type="text/javascript" src="{% static 'js/swfobject.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/imageLiquid.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/LodView.js' %}"></script>
+    {% if user.is_superuser %}
+        <script type="text/javascript" src="{% static 'js/LodEnrichment.js' %}"></script>
+    {% endif %}
 
     <script>
         {# set ajax cache to true so that files like swfobject.js that is being called in #}
@@ -290,7 +293,8 @@
             {# do on document ready                                      #}
             {#############################################################}
             {% if user.is_superuser %}
-            Nave.initSidePanel();
+                Nave.initSidePanel();
+                LodEnrichment.initForm();
             {% endif %}
             LodView.initNavTabs();
             LodView.initFullscreen();
