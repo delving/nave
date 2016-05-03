@@ -6,6 +6,7 @@ from django.views.generic import ListView, RedirectView
 from rest_framework import status
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication, TokenAuthentication
 from rest_framework.decorators import api_view, authentication_classes, permission_classes, parser_classes
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.parsers import JSONParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -14,6 +15,9 @@ from void import tasks
 from void.models import ProxyResourceField, ProxyMapping
 from void.parsers import PlainTextParser
 from void.processors import BulkApiProcessor
+
+from void.models import UserGeneratedContent
+from void.serializers import UserGeneratedContentSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -108,3 +112,13 @@ class ImageResolveRedirectView(RedirectView):
         label = self.kwargs.get('link')
         redirect_url = unquote(label)
         return redirect_url
+
+
+class UserGeneratedContentList(ListCreateAPIView):
+    queryset = UserGeneratedContent.objects.all()
+    serializer_class = UserGeneratedContentSerializer
+
+
+class UserGeneratedContentDetail(RetrieveUpdateDestroyAPIView):
+    queryset = UserGeneratedContent.objects.all()
+    serializer_class = UserGeneratedContentSerializer

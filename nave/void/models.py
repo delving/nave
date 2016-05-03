@@ -113,6 +113,36 @@ class DataSetType(Choices):
     placeholder = Choice(_("Placeholder"))
 
 
+class UserGeneratedContent(GroupOwned, TimeStampedModel):
+    """Model for enrichments created by Users via a form on the Detail pages."""
+    link = models.URLField(
+        verbose_name=_("link")
+    )
+    short_description = models.CharField(
+        verbose_name=_("short description"),
+        blank=False,
+        null=False,
+        max_length=512
+    )
+    content_type = models.CharField(
+        verbose_name=_("content_type"),
+        blank=False,
+        null=False,
+        max_length=64,
+        help_text=_("The content type of the link, e.g. wikipedia or youtube.")
+    )
+    html_summary = models.TextField(
+        verbose_name=_("html summary"),
+        blank=True,
+        null=True,
+        help_text=_("Contains the unfurled HTML from the saved link")
+    )
+
+    class Meta:
+        verbose_name = _("User Generated Content")
+        verbose_name_plural = _("User Generated Content")
+
+
 class ProxyResourceField(TimeStampedModel):
     """
     This class contains the RDF properties of which all the literal values need to be converted into RDF
