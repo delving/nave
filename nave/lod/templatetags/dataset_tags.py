@@ -47,7 +47,7 @@ def field_exists(context, fieldname):
 # ######### result detail predicate and field value display ############################
 
 @register.inclusion_tag('rdf/tags/_search-detail-media-preview.html', takes_context=True)
-def detail_media_preview(context, fieldname, alt="", fullscreen=False, thumbnail_nav=False):
+def detail_media_preview(context, fieldname, alt="", fullscreen=False, indicators=False, thumbnail_nav=False):
     """
     :param context: page context
     :param fieldname: DataSet.MetadataRecord field name
@@ -61,8 +61,9 @@ def detail_media_preview(context, fieldname, alt="", fullscreen=False, thumbnail
 
     fullscreen = fullscreen
     thumbnail_nav = thumbnail_nav
+    indicators = indicators
     # values = ['http://www.dcn-images.nl/img/BDM/BDM_09809.jpg', 'http://www.dcn-images.nl/img/BDM/BDM_00807.jpg', 'http://www.dcn-images.nl/img/BDM/BDM_01999.jpg']
-    return {'values': values, 'alt': alt, 'fullscreen': fullscreen, 'thumbnail_nav': thumbnail_nav}
+    return {'values': values, 'alt': alt, 'fullscreen': fullscreen, 'indicators': indicators, 'thumbnail_nav': thumbnail_nav}
 
 
 @register.inclusion_tag('rdf/tags/_rdf_properties.html', takes_context=True)

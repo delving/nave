@@ -10,15 +10,14 @@
         {% if fullscreen %}</a>{% endif %}
         {% endfor %}
     {% elif values %}
-
         <div id="media-carousel" class="carousel slide" data-ride="carousel">
-            <!-- Indicators -->
-            {#        <ol class="carousel-indicators2">#}
-            {#            {% for value in values %}#}
-            {#                <li data-target="#media-carousel" data-slide-to="{{ forloop.counter0  }}" class="{% if forloop.first %}active{% endif %}"></li>#}
-            {#            {% endfor %}#}
-            {#        </ol>#}
-            <!-- Items -->
+            {% if indicators %}
+                <ol class="carousel-indicators">
+                    {% for value in values %}
+                        <li data-target="#media-carousel" data-slide-to="{{ forloop.counter0  }}" class="{% if forloop.first %}active{% endif %}"></li>
+                    {% endfor %}
+                </ol>
+            {% endif %}
             <div class="carousel-inner" role="listbox">
                 {% for value in values %}
                     <div class="item {% if forloop.first %}active{% endif %}">
@@ -45,10 +44,10 @@
             </a>
             {% if thumbnail_nav %}
                 <div class="carousel-thumbnails">
-                    <ul class="carousel-indicators ">
+                    <ul class="list-inline">
                         {% for value in values %}
                             <li data-target="#media-carousel" data-slide-to="{{ forloop.counter0 }}" class="{% if forloop.first %}active{% endif %}">
-                                <img src="{{ value }}" alt="{% for a in alt %}{{ a }}{% endfor %}" height="100"/>
+                                <img src="{{ value.value }}" alt="{% for a in alt %}{{ a }}{% endfor %}" height="100" width="100"/>
                             </li>
                         {% endfor %}
                     </ul>
