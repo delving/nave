@@ -28,10 +28,12 @@ from lod.utils.edm import GraphBindings
 from lod.utils.mimetype import best_match
 from lod.utils.mimetype import extension_to_mime, HTML_MIME, mime_to_extension, result_extension_to_mime
 from lod.utils.rdfstore import get_rdfstore, UnknownGraph
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from void.models import EDMRecord
 
-
-from .models import SPARQLQuery, RDFPrefix, RDFModel, CacheResource, RDFSubjectLookUp
+from .serializers import UserGeneratedContentSerializer
+from .models import SPARQLQuery, RDFPrefix, RDFModel, CacheResource, RDFSubjectLookUp, UserGeneratedContent
 from .tasks import retrieve_and_cache_remote_lod_resource
 
 logger = logging.getLogger(__name__)
@@ -544,3 +546,15 @@ class EDMHTMLMockView(TemplateView):
         # * get NaveResponse
         # * add to context as data
         return context
+
+
+class UserGeneratedContentList(ListCreateAPIView):
+    queryset = UserGeneratedContent.objects.all()
+    serializer_class = UserGeneratedContentSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+
+
+class UserGeneratedContentDetail(RetrieveUpdateDestroyAPIView):
+    queryset = UserGeneratedContent.objects.all()
+    serializer_class = UserGeneratedContentSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly,)
