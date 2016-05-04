@@ -280,6 +280,7 @@ class LoDHTMLView(TemplateView):
         cached = False
 
         context['about'] = target_uri
+        context['ugc'] = None
 
         if "/resource/cache/" in target_uri:
             # lookup solution # rdfstore.get_rdfstore().get_cached_source_uri(target_uri)
@@ -290,6 +291,8 @@ class LoDHTMLView(TemplateView):
         else:
             target_uri = target_uri.rstrip('/')
             resolved_uri = lod.utils.lod.get_internal_rdf_base_uri(target_uri)
+            if UserGeneratedContent.objects.exists(source_uri=resolved_uri):
+                context['ugc'] = UserGeneratedContent.objects.filter(source_uri=resolved_uri)
             if settings.RDF_USE_LOCAL_GRAPH:
                 object_local_cache = RDFSubjectLookUp.objects.filter(subject_uri=resolved_uri)
                 if not object_local_cache:
