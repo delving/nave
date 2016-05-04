@@ -690,6 +690,10 @@ class RDFModel(TimeStampedModel, GroupOwned):
         for s in removed:
             RDFSubjectLookUp.objects.filter(subject_uri=s).delete()
 
+    def get_enrichments(self):
+        """Return all linked UserGeneratedContent Objects."""
+        return UserGeneratedContent.objects.filter(source_uri=self.document_uri)
+
 
 class RDFModelTest(RDFModel):
     """ Model used for unit testing only.
@@ -714,6 +718,62 @@ class RDFModelTest(RDFModel):
 
     def get_rdf_type(self):
         return "Document"
+
+
+class UserGeneratedContent(GroupOwned, TimeStampedModel):
+    """Model for enrichments created by Users via a form on the Detail pages."""
+    source_uri = models.URLField(
+        verbose_name=_("RDF source URI"),
+    )
+    link = models.URLField(
+        verbose_name=_("External link")
+    )
+    name = models.CharField(
+        verbose_name=_("name"),
+        blank=False,
+        null=False,
+        max_length=128
+    )
+    short_description = models.CharField(
+        verbose_name=_("short description"),
+        blank=False,
+        null=False,
+        max_length=512
+    )
+    content_type = models.CharField(
+        verbose_name=_("content_type"),
+        blank=False,
+        null=False,
+        max_length=64,
+        help_text=_("The content type of the link, e.g. wikipedia or youtube.")
+    )
+    html_summary = models.TextField(
+        verbose_name=_("html summary"),
+        blank=True,
+        null=True,
+        help_text=_("Contains the unfurled HTML from the saved link")
+    )
+    published = models.BooleanField(
+        verbose_name=_("published"),
+        default=True,
+        help_text=_("Should the UGC be published to unauthorised users.")
+    )
+
+    class Meta:
+        unique_together = ("source_uri", "link")
+        verbose_name = _("User Generated Content")
+        verbose_name_plural = _("User Generated Content")
+
+    def __str__(self):
+        return "{} linked to {}".format(self.link, self.source_uri)
+
+    def save(self, *args, **kwargs):
+        # point to resource and not page or data
+        source_uri = self.source_uri.replace('/data/', '/resource/').replace('/page/', '/resource/')
+        # rewrite to base url
+        from lod.utils.lod import get_internal_rdf_base_uri
+        self.source_uri = get_internal_rdf_base_uri(source_uri)
+        super(UserGeneratedContent, self).save(*args, **kwargs)
 
 
 class RDFPrefix(TitleSlugDescriptionModel, TimeStampedModel):
