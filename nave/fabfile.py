@@ -482,7 +482,7 @@ def install():
             sudo("locale-gen %s" % locale)
             sudo("update-locale %s" % locale)
             sudo("dpkg-reconfigure locales")
-            run("exit")
+            #run("exit")
     apt('software-properties-common')
     sudo("add-apt-repository ppa:webupd8team/java -y")
     # sudo("add-apt-repository ppa:fkrull/deadsnakes -y")
@@ -657,7 +657,7 @@ def setup_project():
             with fab_settings(warn_only=False):
                 pip("-r %s/%s" % (env.proj_path, env.reqs_path))
         pip("gunicorn setproctitle psycopg2 django-compressor python3-memcached")
-        manage("syncdb --noinput")
+        manage("migrate")
         python("import django;"
                "django.setup();"
                "from django.conf import settings;"
@@ -709,6 +709,8 @@ def create_venv():
         with project():
             run("%s fetch" % vcs)
             run("%s checkout %s" % (vcs, env.git_branch))
+        run('echo "DJANGO_SETTINGS_MODULE=projects.{}.settings" >> ~/.profile'.format(env.proj_name))
+        run('echo "TERM=xterm" >> ~/.profile'.format(env.proj_name))
 
 
 @task
