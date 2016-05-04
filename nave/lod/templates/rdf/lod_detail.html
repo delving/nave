@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="{% static "css/fullscreen.css" %}"/>
     <link rel="stylesheet" href="{% static "css/lod-detail.css" %}"/>
     <link rel="stylesheet" href="{% static "css/search.css" %}"/>
+    <link rel="stylesheet" href="{% static "css/parsley.css" %}"/>
 {% endblock %}
 
 {% block prefixes %}
@@ -99,6 +100,16 @@
     </ul>
     <div class="tab-content">
 
+
+    {%  for item in ugc %}
+        {% if item.published %}
+        {# add unplished ones as well but only for logged in user #}
+        name: {{ item.name }}<br/>
+        type: {{ item.content_type }}<br/>
+        descrp:{{ item.short_description }}<br/>
+        link: {{ item.link }}<br/><hr/>
+        {% endif %}
+    {% endfor %}
 
         {#############################################################}
         {# CONTENT - CORE METADATA                                   #}
@@ -278,8 +289,9 @@
     <script type="text/javascript" src="{% static 'js/swfobject.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/imageLiquid.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/LodView.js' %}"></script>
+    <script src="{% static 'js/parsley.min.js' %}"></script>
     {% if user.is_superuser %}
-        <script type="text/javascript" src="{% static 'js/LodEnrichment.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/LodUgcEnrichment.js' %}"></script>
     {% endif %}
 
     <script>
@@ -294,7 +306,7 @@
             {#############################################################}
             {% if user.is_superuser %}
                 Nave.initSidePanel();
-                LodEnrichment.initForm();
+                Ugc.initForm();
             {% endif %}
             LodView.initNavTabs();
             LodView.initFullscreen();
