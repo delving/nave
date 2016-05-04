@@ -32,13 +32,14 @@ Ugc.sendForm = function (ugcObj, authToken) {
         data: ugcObj,
         beforeSend : function(xhr) {
             xhr.setRequestHeader("X-CSRFToken", authToken);
+            xhr.setRequestHeader("Accept","application/json");
         },
         success: function () {
             console.log('form sent!');
         },
-        error: function (e) {
-            console.log(ugcObj);
-            console.log(e);
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            //todo get the serializer or view to return json error response
+            console.log(XMLHttpRequest);
         }
     });
 };
