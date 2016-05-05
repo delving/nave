@@ -2,7 +2,6 @@ import os
 
 from django.conf import settings
 from django.conf.urls import *  # NOQA
-from django.conf.urls.i18n import i18n_patterns
 from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.generic import TemplateView
@@ -16,7 +15,6 @@ urlpatterns = patterns('',
 
 if settings.USE_WAGTAIL_CMS:
     from wagtail.wagtailadmin import urls as wagtailadmin_urls
-    from wagtail.wagtailcore import urls as wagtail_urls
 
     urlpatterns += solid_i18n_patterns('',
                                        url(r'^cms/', include(wagtailadmin_urls)),
@@ -24,11 +22,12 @@ if settings.USE_WAGTAIL_CMS:
 
 urlpatterns += solid_i18n_patterns('',
                             url(r'^admin/', include(admin.site.urls)),  # NOQA
-                            url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+                            url(r'^api-auth', include('rest_framework.urls', namespace='rest_framework')),
                             url(r'narthex/', NarthexRedirectView.as_view()),
                             url(r'^', include('projects.{}.urls'.format(settings.SITE_NAME))),
                             url(r'^', include('search.urls')),
                             url(r'^', include('virtual_collection.urls')),
+                            url(r'^', include('webresource.urls')),
                             (r'^crossdomain.xml$', TemplateView.as_view(template_name='crossdomain.xml')),
                             (r'^robots.txt$', TemplateView.as_view(template_name='robots.txt')),
                             (r'^humans.xml$', TemplateView.as_view(template_name='humans.txt')),
@@ -36,7 +35,8 @@ urlpatterns += solid_i18n_patterns('',
                             url(r'^', include('lod.urls')),
                             url(r'^', include('webresource.urls')),
                             url(r'^', include('search_widget.urls')),
-                            url(r'^statistics/', TemplateView.as_view(template_name="statistics.html")), # template and data from void app
+                            # template and data from void app
+                            url(r'^statistics/', TemplateView.as_view(template_name="statistics.html")),
                             url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
                             )
 
