@@ -1365,7 +1365,11 @@ class NaveQueryResponse(object):
 
     @property
     def layout(self):
-        if not self._converter:
+        converter = self._converter
+        if not converter and settings.DEFAULT_V1_CONVERTER is not None:
+                from void import REGISTERED_CONVERTERS
+                converter = REGISTERED_CONVERTERS.get(settings.DEFAULT_V1_CONVERTER, None)
+        if not converter:
             return {}
-        layout_fields = self._converter().get_layout_fields()
+        layout_fields = converter().get_layout_fields()
         return {"layout": layout_fields}
