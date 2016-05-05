@@ -434,7 +434,7 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
 
 class V1SearchListApiView(SearchListAPIView):
     default_converter = settings.DEFAULT_V1_CONVERTER
-    doc_types = ["void_edmrecord"]
+    doc_types = []
 
 
 class V2SearchListApiView(SearchListAPIView):
