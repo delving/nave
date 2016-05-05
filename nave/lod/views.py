@@ -28,10 +28,12 @@ from lod.utils.edm import GraphBindings
 from lod.utils.mimetype import best_match
 from lod.utils.mimetype import extension_to_mime, HTML_MIME, mime_to_extension, result_extension_to_mime
 from lod.utils.rdfstore import get_rdfstore, UnknownGraph
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from void.models import EDMRecord
 
-
-from .models import SPARQLQuery, RDFPrefix, RDFModel, CacheResource, RDFSubjectLookUp
+from .serializers import UserGeneratedContentSerializer
+from .models import SPARQLQuery, RDFPrefix, RDFModel, CacheResource, RDFSubjectLookUp, UserGeneratedContent
 from .tasks import retrieve_and_cache_remote_lod_resource
 
 logger = logging.getLogger(__name__)
@@ -203,7 +205,10 @@ class LoDDataView(View):
                     raise UnknownGraph("URI {} is not known in our graph store".format(resolved_uri))
             mode = self.get_mode(request)
             if mode in ['context', 'api', 'api-flat']:
-                content = local_object.get_graph(with_mappings=True, include_mapping_target=True, acceptance=acceptance)
+                if isinstance(local_object, EDMRecord):
+                    content = local_object.get_graph(with_mappings=True, include_mapping_target=True, acceptance=acceptance)
+                else:
+                    content = local_object.get_graph(acceptance=acceptance)
                 if mode in ['api', 'api-flat']:
                     bindings = GraphBindings(about_uri=resolved_uri, graph=content)
                     index_doc = bindings.to_index_doc() if mode == 'api' else bindings.to_flat_index_doc()
@@ -212,12 +217,18 @@ class LoDDataView(View):
                 else:
                     content = content.serialize(format=rdf_format)
             else:
-                content = local_object.get_graph(
-                        with_mappings=False,
-                        include_mapping_target=False,
+                if isinstance(local_object, EDMRecord):
+                    content = local_object.get_graph(
+                            with_mappings=False,
+                            include_mapping_target=False,
+                            acceptance=acceptance,
+                            target_uri=resolved_uri
+                    )
+                else:
+                    content = local_object.get_graph(
                         acceptance=acceptance,
                         target_uri=resolved_uri
-                )
+                    )
                 content = content.serialize(format=rdf_format)
         elif self.store.ask(uri=resolved_uri):
             target_uri = resolved_uri
@@ -278,6 +289,7 @@ class LoDHTMLView(TemplateView):
         cached = False
 
         context['about'] = target_uri
+        context['ugc'] = None
 
         if "/resource/cache/" in target_uri:
             # lookup solution # rdfstore.get_rdfstore().get_cached_source_uri(target_uri)
@@ -288,6 +300,8 @@ class LoDHTMLView(TemplateView):
         else:
             target_uri = target_uri.rstrip('/')
             resolved_uri = lod.utils.lod.get_internal_rdf_base_uri(target_uri)
+            if UserGeneratedContent.objects.filter(source_uri=resolved_uri).exists():
+                context['ugc'] = UserGeneratedContent.objects.filter(source_uri=resolved_uri)
             if settings.RDF_USE_LOCAL_GRAPH:
                 object_local_cache = RDFSubjectLookUp.objects.filter(subject_uri=resolved_uri)
                 if not object_local_cache:
@@ -318,8 +332,10 @@ class LoDHTMLView(TemplateView):
                     subject=target_uri, predicate=RDF.type, object=SKOS.Concept))
 
         if object_local_cache:
-            graph = object_local_cache.get_graph(with_mappings=True, include_mapping_target=True, acceptance=acceptance)
-
+            if object_local_cache.__class__._meta.model_name == "EDMRecord":
+                graph = object_local_cache.get_graph(with_mappings=True, include_mapping_target=True, acceptance=acceptance)
+            else:
+                graph = object_local_cache.get_graph(acceptance=acceptance)
             nr_levels = 4
         elif cached:
             if CacheResource.objects.filter(document_uri=target_uri).exists():
@@ -544,3 +560,15 @@ class EDMHTMLMockView(TemplateView):
         # * get NaveResponse
         # * add to context as data
         return context
+
+
+class UserGeneratedContentList(ListCreateAPIView):
+    queryset = UserGeneratedContent.objects.all()
+    serializer_class = UserGeneratedContentSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+
+
+class UserGeneratedContentDetail(RetrieveUpdateDestroyAPIView):
+    queryset = UserGeneratedContent.objects.all()
+    serializer_class = UserGeneratedContentSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly,)

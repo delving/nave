@@ -6,14 +6,16 @@ from django.views.generic import ListView, RedirectView
 from rest_framework import status
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication, TokenAuthentication
 from rest_framework.decorators import api_view, authentication_classes, permission_classes, parser_classes
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.parsers import JSONParser
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
 from void import tasks
 from void.models import ProxyResourceField, ProxyMapping
 from void.parsers import PlainTextParser
 from void.processors import BulkApiProcessor
+
 
 logger = logging.getLogger(__name__)
 
@@ -108,3 +110,4 @@ class ImageResolveRedirectView(RedirectView):
         label = self.kwargs.get('link')
         redirect_url = unquote(label)
         return redirect_url
+

@@ -30,7 +30,7 @@ from django.utils import timezone
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 from django_extensions.db.fields import AutoSlugField
-from django_extensions.db.models import TimeStampedModel
+from django_extensions.db.models import TimeStampedModel, TitleDescriptionModel
 from elasticsearch import Elasticsearch, helpers
 from rdflib import URIRef, Graph, Literal, ConjunctiveGraph
 from rdflib.namespace import RDF, SKOS
@@ -1109,6 +1109,7 @@ class EDMRecord(RDFModel):
             update_values['hub_id'] = hub_id
             edm_record = EDMRecord(**update_values)
         return edm_record
+
 
 # @receiver(post_save, sender=EDMRecord)
 # def update_in_index(sender, instance, **kw):

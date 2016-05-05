@@ -483,6 +483,8 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'oauth2_provider.ext.rest_framework.OAuth2Authentication',
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ),
     'PAGINATE_BY': 10,
 }
@@ -561,9 +563,8 @@ RDF_SUPPORTED_NAMESPACES = {
     'http://delving.eu/namespaces/raw': 'raw',
     'http://www.icn.nl/schemas/icn/': 'icn',
     'http://schemas.delving.eu/aff/': 'aff',
-    'http://schemas.delving.eu/abm/': 'abm',
+    # 'http://schemas.delving.eu/abm/': 'abm',
     'http://www.w3.org/2004/02/skos/core#': 'skos',
-    # 'http://acc.lodd2.delving.org/rce/ns/': 'rce',
     'http://dbpedia.org/ontology/': 'dbpedia-owl',
     'http://www.w3.org/2003/01/geo/wgs84_pos#': 'wgs84_pos',
     'http://xmlns.com/foaf/0.1/': 'foaf',
@@ -578,7 +579,7 @@ RDF_SUPPORTED_NAMESPACES = {
     'http://schemas.delving.eu/resource/ns/tib/': 'tib',
     'http://creativecommons.org/ns#': 'cc',
     'http://www.geonames.org/ontology#': 'gn',
-    'http://rdvocab.info/ElementsGr2/': 'rda'
+    'http://rdvocab.info/ElementsGr2/': 'rda',
 }
 
 RDF_SUPPORTED_PREFIXES = defaultdict(list)
