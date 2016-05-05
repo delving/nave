@@ -147,6 +147,21 @@ class GeoS(S):
         return bounding_box
 
 
+    @staticmethod
+    def get_solr_style_bounding_box(distance, point):
+        """The hub2 equivalent filter for a bounding box."""
+        # lonLat conform geojson
+        lat, lon = point.split(',')
+        point = "{},{}".format(lon, lat)
+        bb_filter = {
+            "geo_distance": {
+                "distance": "{}km".format(distance),
+                "point": point
+            }
+        }
+        return bb_filter
+
+
 class NaveESQuery(object):
     """
     This class builds ElasticSearch queries from default settings and HTTP request as provided by Django
@@ -508,7 +523,14 @@ class NaveESQuery(object):
                         f |= F(**{self.query_to_facet_key(key): value})
 
                 query = query.filter(f)
-
+                # old solr style bounding box query
+        bbox_filter = None
+        if {'pt', 'd'}.issubset(list(params.keys())):
+            point = params.get('pt')
+            if point:
+                bbox_filter = GeoS.get_solr_style_bounding_box(params.get('d', '10'), point)
+                query = query.filter_raw(bbox_filter)
+                # todo: test this with the monument data
         # add facets
         facet_list = self._as_list(self.default_facets) if self.default_facets else []
         if 'facet' in params:
@@ -539,14 +561,15 @@ class NaveESQuery(object):
                             'terms': {'field': facet, 'size': self.facet_size}
                         }
                     }
-                    if facet_filter:
+                    and_face_filter_list = [{"terms": {k: v}} for k, v in facet_filter.items()]
+                    if bbox_filter:
+                        and_face_filter_list.append(bbox_filter)
+                    if and_face_filter_list:
                         formatted_facet_filter[facet]['facet_filter'] = {
                             #'terms': facet_filter
-                            "and": [{"terms": {k: v}} for k, v in facet_filter.items()]
+                            "and": and_face_filter_list
                         }
-                    query = query.facet_raw(**formatted_facet_filter
-                    )
-
+                    query = query.facet_raw(**formatted_facet_filter)
         # add bounding box
         bounding_box_param_keys = GeoS.BOUNDING_BOX_PARAM_KEYS
         if set(bounding_box_param_keys).issubset(list(params.keys())):
