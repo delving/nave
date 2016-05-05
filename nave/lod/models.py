@@ -371,10 +371,17 @@ class RDFModel(TimeStampedModel, GroupOwned):
                 predicate = URIRef("{}/{}".format(str(ns).rstrip('/'), label))
             else:
                 raise ValueError("unknown predicate key in mapping dict: {}".format(key))
-            if isinstance(value, str):
-                if value and not value.isspace():
+            if type(value) in [str, float, int] and value:
+                if isinstance(value, str) and any([value.startswith(uri_prefix) for uri_prefix in ["http", "urn"]]):
+                    value = URIRef(value)
+                else:
                     value = Literal(value)
-            graph.add((subject, predicate, value))
+            elif type(value) in [Literal, URIRef]:
+                value = value
+            else:
+                logger.warn("Unsupported datatype {} for value {}".format(type(value), value))
+            if value:
+                graph.add((subject, predicate, value))
         graph.namespace_manager = namespace_manager
         return graph
 
@@ -409,7 +416,7 @@ class RDFModel(TimeStampedModel, GroupOwned):
         return source_rdf.decode('utf-8'), self.named_graph
 
     def _generate_doc_type(self):
-        return "{}_{}".format(self.__class__.__module__.split(".")[0], self.__class__.__name__.lower())
+        return "{}_{}".format(self.__class__._meta.app_label, self.__class__._meta.model_name)
 
     @staticmethod
     def get_object_from_sparql_result(value_dict):
@@ -582,9 +589,9 @@ class RDFModel(TimeStampedModel, GroupOwned):
 
     def create_es_action(self, action="index", record_type=None, index=settings.SITE_NAME, store=None, doc_type=None,
                          context=True, flat=True, exclude_fields=None, acceptance=False):
-        if not doc_type:
+        if doc_type is None:
             doc_type = self._generate_doc_type()
-        if not record_type:
+        if record_type is None:
             record_type = self.get_rdf_type()
         if not store:
             store = rdfstore.get_rdfstore()

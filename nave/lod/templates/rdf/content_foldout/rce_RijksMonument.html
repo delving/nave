@@ -23,7 +23,7 @@
         {% endif %}
     </div>
     <div class="col-sm-6">
-        <a href="{{ detail.document_uri }}" class="btn btn-default btn-xs pull-right">{% trans 'View details' %}</a>
+        <a href="{{ detail.get_absolute_uri }}{% if acceptance %}?mode=acceptance{% endif %}" class="btn btn-default" id="btn-to-detail">{% trans 'View details' %}</a>
         {% detail_field 'rce_compleet_straat_adres' label=_('compleet straat adres') %}
         {% detail_field 'rce_plaats' label=_('plaats') %}
         {% detail_field 'rce_cbscategor' label=_('cbscategor') %}

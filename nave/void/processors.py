@@ -84,14 +84,17 @@ class BulkApiProcessor:
             content_hash = action.get('contentHash', None)
             try:
                 graph = ConjunctiveGraph(identifier=record_graph_uri)
-                graph.parse(data=graph_ntriples, format='nt')
+                rdf_format = "nt" if "<rdf:RDF" not in graph_ntriples else "xml"
+                graph.parse(data=graph_ntriples, format=rdf_format)
             except ParseError as e:
                 self.rdf_errors.append((e, action))
+                logger.error(e, action)
                 return None
             if self.current_dataset is None or self.current_dataset.spec is not spec:
                 try:
                     self.current_dataset = DataSet.objects.get(spec=spec)
                 except DataSet.DoesNotExist as dne:
+                    logger.warn(dne)
                     self.current_dataset = self.synchronise_dataset_metadata(
                         store=self.store,
                         dataset_graph_uri=self._create_dataset_uri(record_graph_uri)
