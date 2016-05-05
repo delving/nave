@@ -323,8 +323,10 @@ class LoDHTMLView(TemplateView):
                     subject=target_uri, predicate=RDF.type, object=SKOS.Concept))
 
         if object_local_cache:
-            graph = object_local_cache.get_graph(with_mappings=True, include_mapping_target=True, acceptance=acceptance)
-
+            if object_local_cache.__class__._meta.model_name == "EDMRecord":
+                graph = object_local_cache.get_graph(with_mappings=True, include_mapping_target=True, acceptance=acceptance)
+            else:
+                graph = object_local_cache.get_graph(acceptance=acceptance)
             nr_levels = 4
         elif cached:
             if CacheResource.objects.filter(document_uri=target_uri).exists():
