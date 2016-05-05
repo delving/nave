@@ -205,7 +205,10 @@ class LoDDataView(View):
                     raise UnknownGraph("URI {} is not known in our graph store".format(resolved_uri))
             mode = self.get_mode(request)
             if mode in ['context', 'api', 'api-flat']:
-                content = local_object.get_graph(with_mappings=True, include_mapping_target=True, acceptance=acceptance)
+                if isinstance(local_object, EDMRecord):
+                    content = local_object.get_graph(with_mappings=True, include_mapping_target=True, acceptance=acceptance)
+                else:
+                    content = local_object.get_graph(acceptance=acceptance)
                 if mode in ['api', 'api-flat']:
                     bindings = GraphBindings(about_uri=resolved_uri, graph=content)
                     index_doc = bindings.to_index_doc() if mode == 'api' else bindings.to_flat_index_doc()
@@ -214,12 +217,18 @@ class LoDDataView(View):
                 else:
                     content = content.serialize(format=rdf_format)
             else:
-                content = local_object.get_graph(
-                        with_mappings=False,
-                        include_mapping_target=False,
+                if isinstance(local_object, EDMRecord):
+                    content = local_object.get_graph(
+                            with_mappings=False,
+                            include_mapping_target=False,
+                            acceptance=acceptance,
+                            target_uri=resolved_uri
+                    )
+                else:
+                    content = local_object.get_graph(
                         acceptance=acceptance,
                         target_uri=resolved_uri
-                )
+                    )
                 content = content.serialize(format=rdf_format)
         elif self.store.ask(uri=resolved_uri):
             target_uri = resolved_uri

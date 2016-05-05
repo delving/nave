@@ -125,7 +125,7 @@ class RDFModel(TimeStampedModel, GroupOwned):
         super().__init__(*args, **kwargs)
         self.base_uri = r'{}/resource'.format(get_rdf_base_url(prepend_scheme=True))
         if self.get_namespace_prefix():
-            self.ns = Namespace('http://{}/resource/ns/{}/'.format(RDF_BASE_URL, self.get_namespace_prefix()))
+            self.ns = Namespace('http://{}/resource/ns/{}/'.format(RDF_BASE_URL.replace("http://", ""), self.get_namespace_prefix()))
             self.rdf_type_base = Namespace("{}/{}/".format(self.base_uri, self.get_rdf_type().lower()))
             namespace_manager.bind(self.get_namespace_prefix(), self.ns)
         self.ns_dict = dict(list(namespace_manager.namespaces()))
@@ -614,8 +614,8 @@ class RDFModel(TimeStampedModel, GroupOwned):
             graph = self.get_graph()
         else:
             graph, nr_levels = self.get_context_graph(store=store, named_graph=self.named_graph)
+            graph.namespace_manager = namespace_manager
 
-        graph.namespace_manager = namespace_manager
         bindings = GraphBindings(
             about_uri=self.source_uri,
             graph=graph
