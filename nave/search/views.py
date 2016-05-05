@@ -434,7 +434,7 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
 
 class V1SearchListApiView(SearchListAPIView):
     default_converter = settings.DEFAULT_V1_CONVERTER
-    doc_types = ["void_edmrecord"]
+    doc_types = []
 
 
 class V2SearchListApiView(SearchListAPIView):
@@ -483,7 +483,10 @@ class NaveDocumentDetailView(DetailView):
             mode = self.request.REQUEST.get('mode', 'default')
             acceptance = True if mode == 'acceptance' else False
             context['acceptance'] = acceptance
-            graph = self.object.get_graph(with_mappings=True, include_mapping_target=True, acceptance=acceptance)
+            if isinstance(self.object, EDMRecord):
+                graph = self.object.get_graph(with_mappings=True, include_mapping_target=True, acceptance=acceptance)
+            else:
+                graph = self.object.get_graph(acceptance=acceptance)
         elif '/resource/aggregation' in target_uri:
             target_named_graph = "{}/graph".format(target_uri.rstrip('/'))
             graph, nr_levels = RDFModel.get_context_graph(store=rdfstore.get_rdfstore(), named_graph=target_named_graph)

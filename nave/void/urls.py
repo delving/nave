@@ -10,5 +10,6 @@ urlpatterns = [
     url(r'^api/index/narthex/toggle/proxyfield/$', views.toggle_proxy_field, name='toggle_proxy_field'),
     url(r'^api/index/narthex/toggle/proxymapping/$', views.toggle_proxy_mapping, name='toggle_proxy_mapping'),
     url(r'^api/oai-pmh/$', OAIProvider.as_view(), name='dataset_oai'),
-    url(r'^resolve/(?P<link>(.*))$', ImageResolveRedirectView.as_view(),)
+    url(r'^resolve/(?P<link>(.*))$', ImageResolveRedirectView.as_view(),),
+
     ]

@@ -155,8 +155,7 @@ SearchView.initGeo = function () {
     tiles = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png',{maxZoom:22});
     map = L.map('ds-map',  { layers: [tiles] });
 
-    function buildMap(mapReceiver) {
-
+    // function buildMap(mapReceiver) {
         // $.getJSON("/search/?format=geojson&cluster.factor=1&" + queryStr, function (data) {
         //     // first check if there is any data
         //     if(data.features.length && data.features.length > 0){
@@ -178,7 +177,7 @@ SearchView.initGeo = function () {
         //         $('#tab-geo, #tab-grid').hide();
         //     }
         // });
-    }
+    // }
 
     buildMap(function(featureGroup, markerClusterGroup) {
 
