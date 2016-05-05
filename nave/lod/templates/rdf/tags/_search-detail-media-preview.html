@@ -42,18 +42,19 @@
                 <span class="glyphicon glyphicon-chevron-right carousel-nav carousel-next" aria-hidden="true"></span>
                 <span class="sr-only">Next</span>
             </a>
-            {% if thumbnail_nav %}
-                <div class="carousel-thumbnails">
-                    <ul class="list-inline">
-                        {% for value in values %}
-                            <li data-target="#media-carousel" data-slide-to="{{ forloop.counter0 }}" class="{% if forloop.first %}active{% endif %}">
-                                <img src="{{ value.value }}" alt="{% for a in alt %}{{ a }}{% endfor %}" height="100" width="100"/>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            {% endif %}
         </div>
+
+        {% if thumbnail_nav %}
+            <div class="carousel-thumbnails">
+                <ul class="list-inline">
+                    {% for value in values %}
+                        <li data-target="#media-carousel" data-slide-to="{{ forloop.counter0 }}" class="{% if forloop.first %}active{% endif %}">
+                            <img src="{{ value.value }}" alt="{% for a in alt %}{{ a }}{% endfor %}" height="100" width="100"/>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
 
     {% else %}
         <div class="no-image-placeholder" style="height:460px;">
