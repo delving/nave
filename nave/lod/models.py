@@ -610,6 +610,8 @@ class RDFModel(TimeStampedModel, GroupOwned):
                 '_id': self.hub_id
             }
 
+        graph = None
+
         if not context:
             graph = self.get_graph()
         else:
@@ -646,8 +648,11 @@ class RDFModel(TimeStampedModel, GroupOwned):
             'caption': bindings.get_about_caption if bindings.get_about_caption else "",
             'about_uri': self.document_uri,
             'source_uri': self.source_uri,
-            'timestamp': datetime.datetime.now().isoformat(),
+            'created_at': datetime.datetime.now().isoformat(),
             'modified_at': datetime.datetime.now().isoformat(),
+            'source_graph': graph.serialize(format='nt', encoding="utf-8").decode(encoding="utf-8"),
+            'proxy_resource_graph': None,
+            'web_resource_graph': None,
             # 'about_type': [rdf_type.qname for rdf_type in bindings.get_about_resource().get_types()]
             # 'collections': None, todo find a way to add collections via link
         }
