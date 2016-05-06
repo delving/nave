@@ -643,9 +643,9 @@ class RDFModel(TimeStampedModel, GroupOwned):
         }
         thumbnail = bindings.get_about_thumbnail
         mapping['_source']['system'] = {
-            'slug': self.slug,
+            'slug': self.hub_id,
             'thumbnail': thumbnail if thumbnail else "",
-            'preview': "detail/foldout/{}/{}".format(doc_type, self.slug),
+            'preview': "detail/foldout/{}/{}".format(doc_type, self.hub_id),
             'caption': bindings.get_about_caption if bindings.get_about_caption else "",
             'about_uri': self.document_uri,
             'source_uri': self.source_uri,
