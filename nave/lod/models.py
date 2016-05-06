@@ -272,8 +272,8 @@ class RDFModel(TimeStampedModel, GroupOwned):
         return "{}_{}_{}".format(settings.ORG_ID, self.get_spec_name(), self.local_id)
 
     def create_sparql_update_query(self, delete=False, acceptance=False):
-        source_rdf = self.source_rdf if not acceptance else self.acceptance_rdf
-        rdf_triples = source_rdf if not isinstance(source_rdf, bytes) else source_rdf.decode('utf-8')
+        graph = self.get_graph(acceptance=acceptance)
+        rdf_triples = graph.serialize(format='nt', encoding="utf-8").decode('utf-8')
         sparql_update = """DROP SILENT GRAPH <{graph_uri}>;
         INSERT DATA {{ GRAPH <{graph_uri}> {{
             {triples}
@@ -401,6 +401,7 @@ class RDFModel(TimeStampedModel, GroupOwned):
                 for p, o in self.graph.predicate_objects(subject=subject):
                     g.add((subject, p, o))
                 self.graph = g
+            self._add_about_triples(self.graph)
         return self.graph
 
     def get_nquads_string(self):
@@ -648,6 +649,7 @@ class RDFModel(TimeStampedModel, GroupOwned):
             'caption': bindings.get_about_caption if bindings.get_about_caption else "",
             'about_uri': self.document_uri,
             'source_uri': self.source_uri,
+            'graph_name': self.named_graph,
             'created_at': datetime.datetime.now().isoformat(),
             'modified_at': datetime.datetime.now().isoformat(),
             'source_graph': graph.serialize(format='nt', encoding="utf-8").decode(encoding="utf-8"),

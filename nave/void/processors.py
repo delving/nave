@@ -102,6 +102,7 @@ class BulkApiProcessor:
             app, model = action['type'].split('_')
             action_model = apps.get_model(app_label=app, model_name=model)
             record = action_model.graph_to_record(graph=graph,
+                                                  bulk=True,
                                                   ds=self.current_dataset,
                                                   content_hash=content_hash,
                                                   force_insert=self.force_insert,
