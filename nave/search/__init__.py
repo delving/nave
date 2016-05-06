@@ -85,6 +85,14 @@ mappings = {
                             "type": "date",
                         }
                     }},
+                    {
+                        "nested_system": {
+                            "match": "system",
+                            "mapping": {
+                                "type": "nested"
+                            }
+                        }
+                    },
                     {"system": {
                         "path_match": "system.*",
                         # "match_mapping_type": "string",
@@ -102,8 +110,41 @@ mappings = {
                             }
                         }
                     }},
+                    {
+                        "nested_legacy": {
+                            "match": "legacy",
+                            "mapping": {
+                                "type": "nested"
+                            }
+                        }
+                    },
                     {"legacy": {
                         "path_match": "legacy.*",
+                        # "match_mapping_type": "string",
+                        "mapping": {
+                            "type": "string",
+                            "index": "not_analyzed",
+                            "fields": {
+                                "raw": {
+                                    "type": "string",
+                                    "index": "not_analyzed"
+                                },
+                                "value": {
+                                    "type": "string",
+                                }
+                            }
+                        }
+                    }},
+                    {
+                        "nested_rdf": {
+                            "match": "rdf",
+                            "mapping": {
+                                "type": "nested"
+                            }
+                        }
+                    },
+                    {"rdf": {
+                        "path_match": "rdf.*",
                         # "match_mapping_type": "string",
                         "mapping": {
                             "type": "string",
