@@ -1,10 +1,12 @@
 import logging
+from collections import namedtuple
 from urllib.parse import urlparse
 
 from django import template
 from django.conf import settings
 
 from lod import get_rdf_base_url
+from lod.utils.edm import RDFObject
 from lod.utils.lod import get_cache_url
 
 register = template.Library()
@@ -46,6 +48,9 @@ def field_exists(context, fieldname):
 
 # ######### result detail predicate and field value display ############################
 
+MockRDFObject = namedtuple('MockRDFObject', ["value"])
+
+
 @register.inclusion_tag('rdf/tags/_search-detail-media-preview.html', takes_context=True)
 def detail_media_preview(context, fieldname, alt="", fullscreen=False, indicators=False, thumbnail_nav=False):
     """
@@ -56,7 +61,7 @@ def detail_media_preview(context, fieldname, alt="", fullscreen=False, indicator
     bindings = context['resources']
     values = bindings.get_list(fieldname)
     if not values:
-        values = [bindings.get_about_thumbnail]
+        values = [MockRDFObject(bindings.get_about_thumbnail)]
     alt = bindings[alt].value if bindings[alt] else []
 
     fullscreen = fullscreen
