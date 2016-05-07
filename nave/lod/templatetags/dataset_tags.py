@@ -55,6 +55,8 @@ def detail_media_preview(context, fieldname, alt="", fullscreen=False, indicator
     """
     bindings = context['resources']
     values = bindings.get_list(fieldname)
+    if not values:
+        values = [bindings.get_about_thumbnail]
     alt = bindings[alt].value if bindings[alt] else []
 
     fullscreen = fullscreen

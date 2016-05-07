@@ -37,7 +37,7 @@ from search.tasks import download_all_search_results
 from void import REGISTERED_CONVERTERS
 from void.models import EDMRecord
 
-from lod.utils.lod import get_internal_rdf_base_uri
+from lod.utils.lod import get_internal_rdf_base_uri, get_external_rdf_url
 from .renderers import N3Renderer, JSONLDRenderer, TURTLERenderer, NTRIPLESRenderer, RDFRenderer, GeoJsonRenderer, \
     XMLRenderer
 from .search import NaveESQuery, NaveQueryResponse, NaveQueryResponseWrapper, NaveItemResponse
@@ -472,8 +472,6 @@ class NaveDocumentTemplateView(TemplateView):
     template_name = 'rdf/content_foldout/lod-detail-foldout.html'
     context_object_name = 'detail'
 
-    from lod import namespace_manager
-
     def get_graph_by_id(self, identifier, index=None):
         s = Search(index=index).using(client).query("match", _id=identifier)
         response = s.execute()
@@ -484,6 +482,7 @@ class NaveDocumentTemplateView(TemplateView):
         named_graph = system_fields['graph_name']
         # namespace manager
         g = Graph(identifier=named_graph)
+        from lod import namespace_manager
         g.namespace_manager = namespace_manager
         g.parse(data=raw_graph, format='nt')
         return g
@@ -510,8 +509,9 @@ class NaveDocumentTemplateView(TemplateView):
         system_fields = response.hits.hits[0]['_source']['system']
         raw_graph = system_fields['source_graph']
         named_graph = system_fields['graph_name']
-        namespace_manager = namespace_manager
         g = Graph(identifier=named_graph)
+        from lod import namespace_manager
+        g.namespace_manager = namespace_manager
         g.parse(data=raw_graph, format='nt')
         return g
 
@@ -526,10 +526,11 @@ class NaveDocumentTemplateView(TemplateView):
         absolute_uri = self.request.build_absolute_uri()
         target_uri = get_internal_rdf_base_uri(absolute_uri)
         if "detail/foldout/" in target_uri:
-            es_graph_record = self.get_graph_by_id(self.kwargs.get('slug'))
+            graph = self.get_graph_by_id(self.kwargs.get('slug'))
+            target_uri = graph.identifier.replace("/graph", "")
         else:
-            es_graph_record = self.get_graph_by_source_uri(target_uri)
-        if es_graph_record is None:
+            graph = self.get_graph_by_source_uri(target_uri)
+        if graph is None:
             raise UnknownGraph("URI {} is not known in our graph store".format(target_uri))
         if "/resource/cache/" in target_uri:
             target_uri = target_uri.rstrip('/')
@@ -560,6 +561,7 @@ class NaveDocumentTemplateView(TemplateView):
             excluded_properties=settings.RDF_EXCLUDED_PROPERTIES
         )
         context['resources'] = bindings
+        context['absolute_uri'] = get_external_rdf_url(target_uri, self.request)
         for rdf_type in bindings.get_about_resource().get_types():
             search_label = rdf_type.search_label.lower()
             content_template = settings.RDF_CONTENT_FOLDOUTS.get(search_label)
@@ -636,13 +638,13 @@ class NaveDocumentDetailView(DetailView):
         return model.objects.get_queryset()
 
 
-class DetailResultView(NaveDocumentDetailView):
+class DetailResultView(NaveDocumentTemplateView):
     template_name = 'rdf/content_foldout/lod-detail-foldout.html'
     context_object_name = 'detail'
     model = EDMRecord
 
 
-class FoldOutDetailImageView(NaveDocumentDetailView):
+class FoldOutDetailImageView(NaveDocumentTemplateView):
     template_name = 'search-detail-image-foldout.html'
     context_object_name = 'detail'
     model = EDMRecord
