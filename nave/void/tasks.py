@@ -45,11 +45,14 @@ def process_bulk_api_request(self, request_payload):
         processor = BulkApiProcessor(request_payload)
         return processor.process()
     except URLError as ue:
-        self.retry(ue)
+        logger.error("Got url error for {}, but will retry again".format(ue))
+        self.retry()
     except socket.timeout as to:
-        self.retry(to)
+        logger.error("Got socket timeout for {}, but will retry again".format(to))
+        self.retry()
     except socket.error as err:
-        self.retry(err)
+        logger.error("Got socket error for {}, but will retry again".format(err))
+        self.retry()
 
 
 # ########################### Datasets #############################
