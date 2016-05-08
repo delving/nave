@@ -9,7 +9,7 @@ from dateutil import parser
 from django.conf import settings
 from django.views.generic import TemplateView
 
-from lod import get_rdf_base_url
+from lod.utils.resolver import RDFRecord
 from void import REGISTERED_CONVERTERS
 from void.models import DataSet, OaiPmhPublished, EDMRecord
 
@@ -172,7 +172,7 @@ class OAIProvider(TemplateView):
             # description - optional
             # (place-holder values from OAI docs example)
             'identifier_scheme': 'oai',
-            'repository_identifier': "{}".format(get_rdf_base_url(prepend_scheme=True)),
+            'repository_identifier': "{}".format(RDFRecord.get_rdf_base_url(prepend_scheme=True)),
             'identifier_delimiter': '_',
             'sample_identifier': '{}_spec_localId'.format(settings.SITE_NAME)
         }

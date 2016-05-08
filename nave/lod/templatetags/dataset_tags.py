@@ -5,9 +5,7 @@ from urllib.parse import urlparse
 from django import template
 from django.conf import settings
 
-from lod import get_rdf_base_url
-from lod.utils.edm import RDFObject
-from lod.utils.lod import get_cache_url
+from lod.utils.resolver import RDFRecord, get_cache_url
 
 register = template.Library()
 
@@ -18,13 +16,14 @@ logger = logging.getLogger(__name__)
 def get_binding(value, arg):
     return value[arg]
 
+
 @register.simple_tag(takes_context=True)
 def get_resolved_uri(context, uri):
     """Returns resolved uri, or Cached URI."""
     request = context['request']
     request_base = urlparse(request.build_absolute_uri()).netloc
     rdf_base = urlparse(uri).netloc
-    if request_base in settings.RDF_ROUTED_ENTRY_POINTS and rdf_base in get_rdf_base_url():
+    if request_base in settings.RDF_ROUTED_ENTRY_POINTS and rdf_base in RDFRecord.get_rdf_base_url():
         resolved_uri = uri.replace(rdf_base, request_base)
     elif rdf_base not in request_base:
         resolved_uri = get_cache_url(uri)

@@ -16,29 +16,124 @@ The NormalisedRDFResource get as resource URI and deals with:
     * constructing
 
 """
-import itertools
-import logging
-import os
-from collections import defaultdict
+from collections import defaultdict, Counter
 from collections import namedtuple, OrderedDict
+import itertools
+from urllib.error import HTTPError
+
+import os
+import logging
+from urllib.parse import urlparse, quote
 
 from django.conf import settings
-from rdflib import URIRef, BNode, Literal
+from elasticsearch import Elasticsearch
+from elasticsearch_dsl import Search
+from rdflib import Graph, URIRef, BNode, Literal
 from rdflib.namespace import RDF, SKOS, RDFS, DC, FOAF
 
-from lod import namespace_manager, get_rdf_base_url
-from lod.utils.lod import get_geo_points, get_cache_url
-
-logger = logging.getLogger(__name__)
+from lod import namespace_manager
 
 
-class GraphNormalizer():
-    pass
+logger = logging.getLogger(__file__)
+client = Elasticsearch()
 
 
 Predicate = namedtuple('Predicate', ['uri', 'label', 'ns', 'prefix'])
 Object = namedtuple('Object', ['value', 'is_uriref', 'is_resource', 'datatype', 'language', 'predicate'])
 
+
+def get_geo_points(graph):
+    try:
+        lat_list = [float(str(lat)) for lat in
+                    graph.objects(predicate=URIRef("http://www.w3.org/2003/01/geo/wgs84_pos#lat"))]
+        lon_list = [float(str(lon)) for lon in
+                    graph.objects(predicate=URIRef("http://www.w3.org/2003/01/geo/wgs84_pos#long"))]
+    except ValueError as ve:
+        logger.error("Unable to get geopoints because of {}".format(ve.args))
+        return []
+    zipped = zip(lat_list, lon_list)
+    if not lat_list and not lon_list:
+        return []
+    return [list(elem) for elem in list(zipped)]
+
+
+def get_cache_url(uri):
+    cache_url = "{}/resource/cache/{}".format(
+        RDFRecord.get_rdf_base_url(prepend_scheme=True),
+        quote(uri, safe='/')
+    )
+    return cache_url
+
+
+def _add_cache_url(url, graph):
+    cache_url = get_cache_url(url)
+    graph.add((
+        URIRef(url),
+        URIRef('http://schemas.delving.org/nave/terms/cacheUrl'),
+        URIRef(cache_url)
+    ))
+
+
+def get_remote_lod_resource(url):
+    graph = Graph()
+    try:
+        graph.parse(url)
+    except HTTPError as he:
+        logger.warn("Unable to cache LoD resource: {}".format(url))
+        return None
+    return graph
+
+
+def store_remote_cached_resource(graph, graph_store, named_graph):
+    response = graph_store.put(
+        named_graph=named_graph,
+        data=graph
+    )
+    return response
+
+
+def get_external_rdf_url(internal_uri, request):
+    """Convert the internal RDF base url to the external domain making the request. """
+    parsed_target = urlparse(internal_uri)
+    request_domain = request.get_host()
+    entry_points = settings.RDF_ROUTED_ENTRY_POINTS
+    if request_domain not in entry_points:
+        request_domain = parsed_target.netloc
+    return "http://{domain}{path}".format(domain=request_domain, path=parsed_target.path)
+
+
+def get_internal_rdf_base_uri(target_uri):
+    """Converted web_uri to internal RDF base_url.
+
+    The main purpose of this function is to enable routing from multiple external urls,
+    but still use a single internal base url
+    """
+    parsed_target = urlparse(target_uri)
+    domain = parsed_target.netloc
+    entry_points = settings.RDF_ROUTED_ENTRY_POINTS
+    if domain in entry_points:
+        domain = RDFRecord.get_rdf_base_url()
+    return "http://{domain}{path}".format(domain=domain, path=parsed_target.path)
+
+
+def get_graph_statistics(graph):
+    def get_counter(entries):
+        return Counter(entries).most_common(50)
+
+    def get_qname(uri):
+        return graph.namespace_manager.qname(uri)
+
+    languages = [obj.language for obj in graph.objects() if isinstance(obj, Literal) and obj.language is not None]
+    rdf_class = [get_qname(obj) for obj in graph.objects(predicate=RDF.type) if isinstance(obj, URIRef)]
+    properties = [get_qname(obj) for obj in graph.predicates() if
+                  isinstance(obj, URIRef) and str(obj) not in settings.RDF_EXCLUDED_PROPERTIES]
+
+    stats = {
+        'language': get_counter(languages),
+        'RDF class': get_counter(rdf_class),
+        'property': get_counter(properties)
+    }
+    return stats
 
 class GraphBindings:
     def __init__(self, about_uri, graph,
@@ -275,7 +370,7 @@ class GraphBindings:
              'raw': str(entry),
              'lang': entry.language if entry.language else None}
             for entry in captions
-        ]
+            ]
         for obj in self.get_all_items():
             index_doc[obj.predicate.search_label].append(obj.to_index_entry(nested=False))
         return index_doc
@@ -308,7 +403,7 @@ class GraphBindings:
              'raw': str(entry),
              'lang': entry.language if entry.language else None}
             for entry in caption
-        ]
+            ]
         about['thumbnail'] = [
             {'@type': "URIRef", 'id': self.get_about_thumbnail}
         ] if self.get_about_thumbnail else []
@@ -532,7 +627,7 @@ class RDFPredicate():
         return hash(self.uri)
 
 
-class RDFObject():
+class RDFObject:
     def __init__(self, rdf_object, graph, predicate, bindings=None):
         self._predicate = predicate
         self._rdf_object = rdf_object
@@ -612,7 +707,7 @@ class RDFObject():
         if self.is_uri:
             uri = str(self._rdf_object)
             # todo: check if this works correctly
-            if not get_rdf_base_url() in uri:
+            if not RDFRecord.get_rdf_base_url() in uri:
                 return get_cache_url(uri)
         return None
 
@@ -706,3 +801,160 @@ class RDFObject():
             else:
                 entry['inline'] = self._bindings.get_resource(uri_ref=self.id, obj=self).to_index_entry()
         return entry
+
+
+class RDFRecord:
+    """"""
+
+    DEFAULT_RDF_FORMAT = "nt" if not settings.RDF_DEFAULT_FORMAT else settings.RDF_DEFAULT_FORMAT
+
+    def __init__(self, hub_id=None, source_uri=None, spec=None, rdf_string=None):
+        if hub_id is None and source_uri is None:
+            raise ValueError("either source_uri or hub_id must be given at initialisation.")
+        self._hub_id = hub_id
+        self._spec = spec
+        self._source_uri = source_uri
+        self._named_graph = None
+        self._source_uri = None
+        self._absolute_uri = None
+        self._graph = None
+        self._rdf_string = rdf_string
+        self._query_response = None
+        self._bindings = None
+        self._setup_rdfrecord()
+
+    def _setup_rdfrecord(self):
+        if self._hub_id:
+            self.get_graph_by_id(hub_id=self._hub_id)
+        elif self._source_uri:
+            self.get_graph_by_source_uri(uri=self._source_uri)
+
+    def exists(self):
+        return self._graph is not None
+
+    @staticmethod
+    def get_rdf_base_url(prepend_scheme=False, scheme="http"):
+        base_url = settings.RDF_BASE_URL
+        stripped_url = urlparse(base_url).netloc
+        if stripped_url:
+            base_url = stripped_url
+        if prepend_scheme:
+            base_url = "{}://{}".format(scheme, base_url)
+        return base_url
+
+    @staticmethod
+    def parse_graph_from_string(rdf_string, graph_identifier=None, input_format=DEFAULT_RDF_FORMAT):
+        g = Graph(identifier=graph_identifier)
+        from lod import namespace_manager
+        g.namespace_manager = namespace_manager
+        g.parse(data=rdf_string, format=input_format)
+        return g
+
+    @staticmethod
+    def get_external_rdf_url(internal_uri, request):
+        """Convert the internal RDF base url to the external domain making the request. """
+        parsed_target = urlparse(internal_uri)
+        request_domain = request.get_host()
+        entry_points = settings.RDF_ROUTED_ENTRY_POINTS
+        if request_domain not in entry_points:
+            request_domain = parsed_target.netloc
+        return "http://{domain}{path}".format(domain=request_domain, path=parsed_target.path)
+
+    @staticmethod
+    def get_internal_rdf_base_uri(target_uri):
+        """Converted web_uri to internal RDF base_url.
+
+        The main purpose of this function is to enable routing from multiple external urls,
+        but still use a single internal base url
+        """
+        parsed_target = urlparse(target_uri)
+        domain = parsed_target.netloc
+        entry_points = settings.RDF_ROUTED_ENTRY_POINTS
+        if domain in entry_points:
+            domain = RDFRecord.get_rdf_base_url()
+        return "http://{domain}{path}".format(domain=domain, path=parsed_target.path)
+
+    def get_graph_by_id(self, hub_id, store_name=None, as_bindings=False):
+        raise NotImplementedError("Implement me")
+
+    def get_graph_by_source_uri(self, uri, store_name=None, as_bindings=False):
+        raise NotImplementedError("Implement me")
+
+    @property
+    def named_graph(self):
+        return self._named_graph
+
+    @property
+    def source_uri(self):
+        return self._source_uri
+
+    @property
+    def absolute_uri(self):
+        pass
+
+    def get_bindings(self):
+        if not self._bindings:
+            if not self._graph:
+                pass
+        return self._bindings
+
+    def get_graph(self, **kwargs):
+        return self._graph
+
+    class Meta:
+        abstract = True
+
+
+class ElasticSearchRDFRecord(RDFRecord):
+    """RDF resolved using ElasticSearch as its backend."""
+
+    def get_absolute_uri(self):
+        pass
+
+    def get_named_graph(self):
+        pass
+
+    @property
+    def source_uri(self):
+        return self._source_uri
+
+    def query_for_graph(self, query_type, query, store_name=None, as_bindings=False):
+        s = Search(index=store_name).using(client).query(query_type, **query)
+        response = s.execute()
+        if response.hits.total != 1:
+            return None
+        self._query_response = response.hits.hits[0]
+        system_fields = self._query_response['_source']['system']
+        self._rdf_string = system_fields['source_graph']
+        self._named_graph = system_fields['graph_name']
+        self._source_uri = system_fields['source_uri']
+        self._spec = system_fields.get('delving_spec')
+        self._hub_id = system_fields.get('slug')
+        g = self.parse_graph_from_string(self._rdf_string, self._named_graph)
+        self._graph = g
+        if as_bindings:
+            return GraphBindings(about_uri=self._source_uri, graph=self._graph)
+        return self._graph
+
+    def get_graph_by_id(self, hub_id, store_name=None, as_bindings=False):
+        return self.query_for_graph("match", {"_id": hub_id}, store_name, as_bindings)
+
+    def get_graph_by_source_uri(self, uri, store_name=None, as_bindings=False):
+        return self.query_for_graph(
+            query_type="nested",
+            query={
+                "path": "system",
+                "score_mode": "avg",
+                "query": {
+                    "bool": {
+                        "must": [
+                            {
+                                "match": {"system.source_uri": uri}
+                            }
+                        ]
+                    }
+                }
+            },
+            store_name=store_name,
+            as_bindings=as_bindings
+        )

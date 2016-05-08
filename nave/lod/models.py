@@ -27,12 +27,13 @@ from rdflib import Namespace, ConjunctiveGraph, URIRef, Literal, BNode, Graph
 from rdflib.namespace import RDFS, RDF, FOAF, DC, DCTERMS, OWL
 from rdflib.plugins.serializers.nquads import _nq_row
 
-from lod import namespace_manager, RDF_BASE_URL, get_rdf_base_url
+from lod import namespace_manager, RDF_BASE_URL
 from lod.namespace import NAVE
 from lod.utils import rdfstore
-from lod.utils.edm import GraphBindings
-from lod.utils.lod import get_cache_url, get_remote_lod_resource, store_remote_cached_resource, get_geo_points, \
+from lod.utils.resolver import GraphBindings
+from lod.utils.resolver import get_cache_url, get_remote_lod_resource, store_remote_cached_resource, get_geo_points, \
     get_graph_statistics
+from lod.utils.resolver import RDFRecord
 
 fmt = '%Y-%m-%d %H:%M:%S%z'  # '%Y-%m-%d %H:%M:%S %Z%z'
 
@@ -123,7 +124,7 @@ class RDFModel(TimeStampedModel, GroupOwned):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.base_uri = r'{}/resource'.format(get_rdf_base_url(prepend_scheme=True))
+        self.base_uri = r'{}/resource'.format(RDFRecord.get_rdf_base_url(prepend_scheme=True))
         if self.get_namespace_prefix():
             self.ns = Namespace('http://{}/resource/ns/{}/'.format(RDF_BASE_URL.replace("http://", ""), self.get_namespace_prefix()))
             self.rdf_type_base = Namespace("{}/{}/".format(self.base_uri, self.get_rdf_type().lower()))
@@ -644,6 +645,7 @@ class RDFModel(TimeStampedModel, GroupOwned):
         thumbnail = bindings.get_about_thumbnail
         mapping['_source']['system'] = {
             'slug': self.hub_id,
+            'spec': self.get_spec_name(),
             'thumbnail': thumbnail if thumbnail else "",
             'preview': "detail/foldout/{}/{}".format(doc_type, self.hub_id),
             'caption': bindings.get_about_caption if bindings.get_about_caption else "",
@@ -785,8 +787,7 @@ class UserGeneratedContent(GroupOwned, TimeStampedModel):
         # point to resource and not page or data
         source_uri = self.source_uri.replace('/data/', '/resource/').replace('/page/', '/resource/')
         # rewrite to base url
-        from lod.utils.lod import get_internal_rdf_base_uri
-        self.source_uri = get_internal_rdf_base_uri(source_uri)
+        self.source_uri = RDFRecord.get_internal_rdf_base_uri(source_uri)
         super(UserGeneratedContent, self).save(*args, **kwargs)
 
 
