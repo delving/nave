@@ -634,7 +634,7 @@ class RDFModel(TimeStampedModel, GroupOwned):
              'raw': self.get_spec_name(),
              'lang': None}
         ]
-        logger.info(index_doc)
+        logger.debug(index_doc)
         mapping = {
             '_op_type': action,
             '_index': index,
