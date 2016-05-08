@@ -35,6 +35,7 @@ class BulkApiProcessor:
         self.force_insert = force_insert
         self.api_requests = self._get_json_entries_from_payload()
         self.current_dataset = None
+        self.spec = None
 
     def set_force_insert(self, force_insert):
         self.force_insert = force_insert
@@ -75,7 +76,7 @@ class BulkApiProcessor:
 
     def _process_action(self, action):
         try:
-            spec = action['dataset']
+            self.spec = action['dataset']
             record_graph_uri = action['graphUri']
             graph_ntriples = action['graph']
             process_verb = action['action']
@@ -90,9 +91,9 @@ class BulkApiProcessor:
                 self.rdf_errors.append((e, action))
                 logger.error(e, action)
                 return None
-            if self.current_dataset is None or self.current_dataset.spec is not spec:
+            if self.current_dataset is None or self.current_dataset.spec is not self.spec:
                 try:
-                    self.current_dataset = DataSet.objects.get(spec=spec)
+                    self.current_dataset = DataSet.objects.get(spec=self.spec)
                 except DataSet.DoesNotExist as dne:
                     logger.warn(dne)
                     self.current_dataset = self.synchronise_dataset_metadata(
@@ -170,12 +171,13 @@ class BulkApiProcessor:
 
     def _processing_statistics(self):
         return {
+            'spec': self.spec,
             'total_received': len(self.api_requests),
-            # 'rdf_errors': len(self.rdf_errors),
-            # 'store_errors': self.records_with_errors,
-            # 'json_errors': len(self.json_errors),
-            # 'index_errors': len(self.index_errors),
-            'content_hash_matches': self.records_already_stored,
+            'rdf_errors': len(self.rdf_errors),
+            'store_errors': self.records_with_errors,
+            'json_errors': len(self.json_errors),
+            'index_errors': len(self.index_errors),
+            # 'content_hash_matches': self.records_already_stored,
             'records_stored': self.records_stored,
             # 'errors': {
             #
