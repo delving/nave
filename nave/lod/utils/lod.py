@@ -17,4 +17,3 @@ from lod.utils.resolver import RDFRecord
 log = logging.getLogger(__name__)
 
 
-
