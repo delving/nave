@@ -6,7 +6,7 @@ This model contains the functionality to save SPARQL queries that can be used in
 
 TODO: create model for external SPARQL-Endpoints that can be used via a proxy in the SNORQL app.
 """
-#import datetime
+import datetime
 import logging
 from urllib.parse import quote
 
