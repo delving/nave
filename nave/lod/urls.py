@@ -24,7 +24,7 @@ urlpatterns = patterns("",
                        # hubId
                        url(r'^resolve/(?P<doc_type>(.*?))/(?P<hubId>(.*?))/$', HubIDRedirectView.as_view()),
                        url(r'^api/resolve/(?P<doc_type>(.*?))/(?P<hubId>(.*?))/$', HubIDRedirectView.as_view()),
-                       url(r'^api/resolve/(?P<hubId>(.*?))/$', HubIDRedirectView.as_view()),
+                       url(r'^api/resolve/(?P<hubId>(.*?))/?$', HubIDRedirectView.as_view()),
 
                        # redirects
                        url(r'^resource/(?P<type_>(.*))/(?P<label>(.*))\.(?P<extension>({}))$'.format(

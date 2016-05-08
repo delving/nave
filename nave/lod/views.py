@@ -23,13 +23,14 @@ from lod import RDF_SUPPORTED_MIME_TYPES, USE_EDM_BINDINGS
 from lod.tests.resources import sparqlwrapper_result
 import lod.utils
 from lod.utils import rdfstore
-from lod.utils.lod import get_internal_rdf_base_uri
-from lod.utils.edm import GraphBindings
+from lod.utils.resolver import GraphBindings, RDFRecord
 from lod.utils.mimetype import best_match
 from lod.utils.mimetype import extension_to_mime, HTML_MIME, mime_to_extension, result_extension_to_mime
 from lod.utils.rdfstore import get_rdfstore, UnknownGraph
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+
+from lod.utils.resolver import ElasticSearchRDFRecord
 from void.models import EDMRecord
 
 from .serializers import UserGeneratedContentSerializer
@@ -76,15 +77,13 @@ class HubIDRedirectView(RedirectView):
             doc_type = self.kwargs.get('doc_type')
         else:
             doc_type = "void_edmrecord"
-        app_label, model_name = doc_type.split('_')
-        model = get_model(app_label=app_label, model_name=model_name)
-        rdf_object = model.objects.get(hub_id=hub_id)
-        document_uri = rdf_object.document_uri
-        routed_uri = lod.utils.lod.get_external_rdf_url(document_uri, self.request)
+        record = ElasticSearchRDFRecord()
+        graph = record.get_graph_by_id(self.kwargs.get('slug'))
+        if not graph:
+            raise Http404()
+        routed_uri = lod.utils.lod.get_external_rdf_url(record.source_uri, self.request)
         logger.debug("Routed uri: {}".format(routed_uri))
-        print(routed_uri)
         rdf_format = self.request.GET.get("format")
-        print(rdf_format)
         if rdf_format and rdf_format in lod.RDF_SUPPORTED_EXTENSIONS:
             routed_uri = "{}.{}".format(routed_uri, rdf_format)
         return routed_uri
@@ -176,7 +175,7 @@ class LoDDataView(View):
         if rdf_format == "rdf":
             rdf_format = "xml"
 
-        resolved_uri = get_internal_rdf_base_uri(target_uri)
+        resolved_uri = RDFRecord.get_internal_rdf_base_uri(target_uri)
         if "/resource/cache/" in target_uri:
             # old lookup rdfstore.get_rdfstore().get_cached_source_uri(target_uri)
             target_uri = target_uri.split('/resource/cache/')[-1]
@@ -190,25 +189,16 @@ class LoDDataView(View):
         elif settings.RDF_USE_LOCAL_GRAPH:
             mode = self.request.REQUEST.get('mode', 'default')
             acceptance = True if mode == 'acceptance' else False
-            local_object = RDFSubjectLookUp.objects.filter(subject_uri=resolved_uri)
-            if local_object:
-                local_object = local_object.first().content_object
-            else:
+            local_object = ElasticSearchRDFRecord(source_uri=resolved_uri)
+            local_object.get_graph_by_source_uri(uri=resolved_uri)
+            if not local_object.exists():
                 # todo: temporary work around for EDMRecords not saved with subjects
-                local_object = EDMRecord.objects.filter(document_uri=resolved_uri)
-                if local_object:
-                    local_object = local_object.first()
-                    # create the RDFSubjectLookUp entries
-                    local_object.save()
-                else:
-                    logger.warn("Unable to find graph for: {}".format(resolved_uri))
-                    raise UnknownGraph("URI {} is not known in our graph store".format(resolved_uri))
+                logger.warn("Unable to find graph for: {}".format(resolved_uri))
+                raise UnknownGraph("URI {} is not known in our graph store".format(resolved_uri))
             mode = self.get_mode(request)
             if mode in ['context', 'api', 'api-flat']:
-                if isinstance(local_object, EDMRecord):
-                    content = local_object.get_graph(with_mappings=True, include_mapping_target=True, acceptance=acceptance)
-                else:
-                    content = local_object.get_graph(acceptance=acceptance)
+                # get_graph(with_mappings=True, include_mapping_target=True, acceptance=acceptance)
+                content = local_object.get_graph()
                 if mode in ['api', 'api-flat']:
                     bindings = GraphBindings(about_uri=resolved_uri, graph=content)
                     index_doc = bindings.to_index_doc() if mode == 'api' else bindings.to_flat_index_doc()
@@ -217,18 +207,7 @@ class LoDDataView(View):
                 else:
                     content = content.serialize(format=rdf_format)
             else:
-                if isinstance(local_object, EDMRecord):
-                    content = local_object.get_graph(
-                            with_mappings=False,
-                            include_mapping_target=False,
-                            acceptance=acceptance,
-                            target_uri=resolved_uri
-                    )
-                else:
-                    content = local_object.get_graph(
-                        acceptance=acceptance,
-                        target_uri=resolved_uri
-                    )
+                content = local_object.get_graph()
                 content = content.serialize(format=rdf_format)
         elif self.store.ask(uri=resolved_uri):
             target_uri = resolved_uri
@@ -299,24 +278,16 @@ class LoDHTMLView(TemplateView):
                 target_uri = re.sub('about.rdf$', '', target_uri)
         else:
             target_uri = target_uri.rstrip('/')
-            resolved_uri = lod.utils.lod.get_internal_rdf_base_uri(target_uri)
+            resolved_uri = RDFRecord.get_internal_rdf_base_uri(target_uri)
             if UserGeneratedContent.objects.filter(source_uri=resolved_uri).exists():
                 context['ugc'] = UserGeneratedContent.objects.filter(source_uri=resolved_uri)
             if settings.RDF_USE_LOCAL_GRAPH:
-                object_local_cache = RDFSubjectLookUp.objects.filter(subject_uri=resolved_uri)
-                if not object_local_cache:
-                    # todo: temporary work around for EDMRecords not saved with subjects
-                    object_local_cache = EDMRecord.objects.filter(document_uri=resolved_uri)
-                    if object_local_cache:
-                        object_local_cache = object_local_cache.first()
-                        # create the RDFSubjectLookUp entries
-                        object_local_cache.save()
-                    else:
-                        context['source_uri'] = target_uri
-                        context['unknown_graph'] = True
-                        return context
-                else:
-                    object_local_cache = object_local_cache.first().content_object
+                object_local_cache = ElasticSearchRDFRecord(source_uri=resolved_uri)
+                object_local_cache.get_graph_by_source_uri(uri=resolved_uri)
+                if not object_local_cache.exists():
+                    context['source_uri'] = target_uri
+                    context['unknown_graph'] = True
+                    return context
                 target_uri = resolved_uri
             elif self.store.ask(uri=resolved_uri):
                 target_uri = resolved_uri
@@ -332,10 +303,9 @@ class LoDHTMLView(TemplateView):
                     subject=target_uri, predicate=RDF.type, object=SKOS.Concept))
 
         if object_local_cache:
-            if object_local_cache.__class__._meta.model_name == "EDMRecord":
-                graph = object_local_cache.get_graph(with_mappings=True, include_mapping_target=True, acceptance=acceptance)
-            else:
-                graph = object_local_cache.get_graph(acceptance=acceptance)
+            # todo: add code to retrieve proxyresources
+            # (with_mappings=True, include_mapping_target=True, acceptance=acceptance)
+            graph = object_local_cache.get_graph()
             nr_levels = 4
         elif cached:
             if CacheResource.objects.filter(document_uri=target_uri).exists():

@@ -29,10 +29,13 @@ from base_settings import FacetConfig
 from lod import EXTENSION_TO_MIME_TYPE
 from lod.models import RDFModel, CacheResource
 from lod.utils import rdfstore
-from lod.utils.edm import GraphBindings
+from lod.utils.resolver import GraphBindings, RDFRecord
+from lod.utils.rdfstore import UnknownGraph
+from lod.utils.resolver import ElasticSearchRDFRecord
 from search.tasks import download_all_search_results
 from void import REGISTERED_CONVERTERS
 from void.models import EDMRecord
+
 from .renderers import N3Renderer, JSONLDRenderer, TURTLERenderer, NTRIPLESRenderer, RDFRenderer, GeoJsonRenderer, \
     XMLRenderer
 from .search import NaveESQuery, NaveQueryResponse, NaveQueryResponseWrapper, NaveItemResponse
@@ -460,7 +463,78 @@ class LodRelatedSearchHTMLView(SearchListAPIView):
     filters = []
 
 
+class NaveDocumentTemplateView(TemplateView):
+    template_name = 'rdf/content_foldout/lod-detail-foldout.html'
+    context_object_name = 'detail'
+
+    def get(self, request, *args, **kwargs):
+        absolute_uri = request.build_absolute_uri()
+        if absolute_uri.endswith("/"):
+            redirect(absolute_uri.rstrip('/'))
+        return super().get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(NaveDocumentTemplateView, self).get_context_data(**kwargs)
+        absolute_uri = self.request.build_absolute_uri()
+        target_uri = RDFRecord.get_internal_rdf_base_uri(absolute_uri)
+
+        if "detail/foldout/" in target_uri:
+            record = ElasticSearchRDFRecord(hub_id=self.kwargs.get('slug'))
+            graph = record.get_graph_by_id(self.kwargs.get('slug'))
+            target_uri = record.source_uri
+        else:
+            target_uri = RDFRecord.get_internal_rdf_base_uri(absolute_uri)
+            record = ElasticSearchRDFRecord(hub_id=self.kwargs.get('slug'))
+            graph = record.get_graph_by_source_uri(target_uri)
+        if graph is None:
+            raise UnknownGraph("URI {} is not known in our graph store".format(target_uri))
+        if "/resource/cache/" in target_uri:
+            target_uri = target_uri.rstrip('/')
+            cache_resource = CacheResource.objects.filter(document_uri=target_uri)
+            if cache_resource.exists():
+                graph = cache_resource.first().get_graph()
+        elif settings.RDF_USE_LOCAL_GRAPH:
+            mode = self.request.REQUEST.get('mode', 'default')
+            acceptance = True if mode == 'acceptance' else False
+            context['acceptance'] = acceptance
+
+        elif '/resource/aggregation' in target_uri:
+            target_named_graph = "{}/graph".format(target_uri.rstrip('/'))
+            graph, nr_levels = RDFModel.get_context_graph(store=rdfstore.get_rdfstore(), named_graph=target_named_graph)
+        else:
+            graph, nr_levels = RDFModel.get_context_graph(
+                store=rdfstore.get_rdfstore(),
+                target_uri=target_uri
+            )
+        # todo: remove: should no longer be necessary with the addition of common.middleware.ForceLangMiddleware
+        language = self.request.GET.get('lang', None)
+        current_language = get_language()
+        if language:
+            activate(language)
+        bindings = GraphBindings(
+            about_uri=target_uri,
+            graph=graph,
+            excluded_properties=settings.RDF_EXCLUDED_PROPERTIES
+        )
+        context['resources'] = bindings
+        context['absolute_uri'] = RDFRecord.get_external_rdf_url(target_uri, self.request)
+        for rdf_type in bindings.get_about_resource().get_types():
+            search_label = rdf_type.search_label.lower()
+            content_template = settings.RDF_CONTENT_FOLDOUTS.get(search_label)
+            if content_template:
+                self.template_name = content_template
+                break
+
+        context['points'] = RDFModel.get_geo_points(graph)
+
+        return context
+
+
 class NaveDocumentDetailView(DetailView):
+    """
+    .. deprecated::
+        Use NaveDocumentTemplateView instead.
+    """
     template_name = 'rdf/content_foldout/lod-detail-foldout.html'
     context_object_name = 'detail'
     model = EDMRecord
@@ -524,16 +598,14 @@ class NaveDocumentDetailView(DetailView):
         return model.objects.get_queryset()
 
 
-class DetailResultView(NaveDocumentDetailView):
+class DetailResultView(NaveDocumentTemplateView):
     template_name = 'rdf/content_foldout/lod-detail-foldout.html'
     context_object_name = 'detail'
-    model = EDMRecord
 
 
-class FoldOutDetailImageView(NaveDocumentDetailView):
+class FoldOutDetailImageView(NaveDocumentTemplateView):
     template_name = 'search-detail-image-foldout.html'
     context_object_name = 'detail'
-    model = EDMRecord
 
 
 class KNReiseGeoView(TemplateView):

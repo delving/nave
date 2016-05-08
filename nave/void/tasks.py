@@ -148,6 +148,11 @@ def purge_deleted_datasets(store):
 
 
 @shared_task()
+def disable_dataset_in_index(ds, acceptance=False):
+    return ds.delete_from_index()
+
+
+@shared_task()
 def reindex_dataset(ds, acceptance=False):
     """ Reindex the dataset for elasticsearch from the edm_record cache.
     :param acceptance:

@@ -67,6 +67,7 @@ mappings = {
                 "_all": {
                     "enabled": True
                 },
+                "date_detection": False,
                 'properties': {
                     'id': {'type': 'integer'},
                     'absolute_url': {'type': 'string'},
@@ -78,6 +79,20 @@ mappings = {
                     },
                 },
                 "dynamic_templates": [
+                    {"dates": {
+                        "match": "*_at",
+                        "mapping": {
+                            "type": "date",
+                        }
+                    }},
+                    {
+                        "nested_system": {
+                            "match": "system",
+                            "mapping": {
+                                "type": "nested"
+                            }
+                        }
+                    },
                     {"system": {
                         "path_match": "system.*",
                         # "match_mapping_type": "string",
@@ -95,8 +110,41 @@ mappings = {
                             }
                         }
                     }},
+                    {
+                        "nested_legacy": {
+                            "match": "legacy",
+                            "mapping": {
+                                "type": "nested"
+                            }
+                        }
+                    },
                     {"legacy": {
                         "path_match": "legacy.*",
+                        # "match_mapping_type": "string",
+                        "mapping": {
+                            "type": "string",
+                            "index": "not_analyzed",
+                            "fields": {
+                                "raw": {
+                                    "type": "string",
+                                    "index": "not_analyzed"
+                                },
+                                "value": {
+                                    "type": "string",
+                                }
+                            }
+                        }
+                    }},
+                    {
+                        "nested_rdf": {
+                            "match": "rdf",
+                            "mapping": {
+                                "type": "nested"
+                            }
+                        }
+                    },
+                    {"rdf": {
+                        "path_match": "rdf.*",
                         # "match_mapping_type": "string",
                         "mapping": {
                             "type": "string",
@@ -157,6 +205,13 @@ mappings = {
                             "index": "not_analyzed"
                         }
                     }},
+                    {"graphs": {
+                        "match": "*_graph",
+                        "mapping": {
+                            "type": "string",
+                            "index": "not_analyzed"
+                        }
+                    }},
                     {"inline": {
                         "match": "inline",
                         "mapping": {
@@ -204,6 +259,8 @@ def create_index(index_name, aliases=None, mapping=None, force_create=False):
     if not es.indices.exists(index_name):
         es.indices.create(index=index_name, body=local_mapping)
         created = True
+    #else:
+    #    es.indices.put_mapping(index=index_name, body=local_mapping, doc_type="void_edmrecord")
     index_aliases = es.indices.get_alias(index_name)
     logger.info("Index {} is now available with the following aliases: {}".format(index_name, index_aliases))
     return created

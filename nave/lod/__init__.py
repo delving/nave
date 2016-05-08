@@ -108,23 +108,6 @@ for uri, ns in list(settings.RDF_SUPPORTED_NAMESPACES.items()):
     namespace_manager.bind(ns, Namespace(uri), override=False)
 
 
-def get_graph_from_sting(rdf_sting, rdf_format='nt'):
-    g = Graph()
-    g.namespace_manager = namespace_manager
-    g.parse(rdf_sting, format=rdf_format)
-    return g
-
-
-def get_rdf_base_url(prepend_scheme=False, scheme="http"):
-    base_url = settings.RDF_BASE_URL
-    stripped_url = urlparse(base_url).netloc
-    if stripped_url:
-        base_url = stripped_url
-    if prepend_scheme:
-        base_url = "{}://{}".format(scheme, base_url)
-    return base_url
-
-
 # test if all databases are defined
 # TOdo add  "{}_acceptance".format(RDF_STORE_DB),
 # TODO review the URL composition below:

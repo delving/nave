@@ -36,10 +36,10 @@ from rdflib import URIRef, Graph, Literal, ConjunctiveGraph
 from rdflib.namespace import RDF, SKOS
 from taggit.managers import TaggableManager
 
-from lod import namespace_manager, get_rdf_base_url
+from lod import namespace_manager
 from lod.models import RDFModel
 from lod.utils import rdfstore
-from lod.utils.edm import RDFPredicate
+from lod.utils.resolver import RDFPredicate, RDFRecord
 from lod.utils.rdfstore import QueryType, RDFStore
 
 logger = logging.getLogger(__name__)
@@ -602,7 +602,7 @@ class DataSet(TimeStampedModel, GroupOwned):
         if language:
             label = "{}/{}".format(language, label)
         return "{}/resource/dataset/{}/{}".format(
-                get_rdf_base_url(prepend_scheme=True),
+                RDFRecord.get_rdf_base_url(prepend_scheme=True),
                 self.spec,
                 label
         )
@@ -651,10 +651,8 @@ class DataSet(TimeStampedModel, GroupOwned):
         logger.info("Deleted {} from Search index with message: {}".format(self.spec, response))
         return response
 
-    def _delete_dataset_records_in_rdfstore(self, store):
-        """Only delete all records in the rdf store linked to this Dataset."""
-        delete_records = """
-        PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+    def _sparql_delete_all_query(self):
+        delete_records = """DROP SILENT GRAPH <{graph_uri}>;
           DELETE {{
              GRAPH ?g {{
                 ?s ?p ?o .
@@ -662,14 +660,19 @@ class DataSet(TimeStampedModel, GroupOwned):
           }}
           WHERE {{
              GRAPH ?g {{
-                ?foafDoc foaf:PrimaryTopic ?record .
+                ?foafDoc <http://xmlns.com/foaf/0.1/primaryTopic> ?record .
                 ?foafDoc <http://schemas.delving.eu/narthex/terms/belongsTo>  <{dataset_uri}> .
                 ?record a <http://schemas.delving.eu/narthex/terms/Record> .
              }}
              GRAPH ?g {{
                 ?s ?p ?o .
              }}
-          }};""".format(dataset_uri=self.document_uri)
+          }};""".format(dataset_uri=self.document_uri, graph_uri=self.named_graph)
+        return delete_records
+
+    def _delete_dataset_records_in_rdfstore(self, store):
+        """Only delete all records in the rdf store linked to this Dataset."""
+        delete_records = self._sparql_delete_all_query()
         logger.info("Drop all graphs for dataset {}".format(self.spec))
         return store.update(query=delete_records)
 

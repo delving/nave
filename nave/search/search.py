@@ -451,14 +451,25 @@ class NaveESQuery(object):
             if "&quot;" in query_string:
                 query_string = query_string.replace('&quot;', '"')
             if self._is_fielded_query(query_string):
+                query_string = self._created_fielded_query(query_string)
                 query = query.query_raw({
                     "query_string": {
                         "default_field": "_all",
-                        "query": self._created_fielded_query(query_string)
+                        "query": query_string,
+                        "auto_generate_phrase_queries": True,
                     }
                 })
             else:
-                query = query.query(_all__match=query_string)
+                query = query.query_raw({
+                        "query_string": {
+                            "default_field": "_all",
+                            "query": query_string,
+                            "auto_generate_phrase_queries": True,
+                            # "default_operator": "AND",
+                            "minimum_should_match": "2<50%"
+                        }
+                    }
+                )
         # add lod_filtering support
         elif "lod_id" in params:
             lod_uri = params.get("lod_id")

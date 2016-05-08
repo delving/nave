@@ -549,6 +549,8 @@ RDF_STORE_TRIPLES = True
 
 RDF_DYNAMIC_CACHE = True
 
+RDF_DEFAULT_FORMAT = 'nt'
+
 RDF_SUPPORTED_NAMESPACES = {
     'http://purl.org/abm/sen': 'abm',
     'http://www.europeana.eu/schemas/ese/': 'europeana',
