@@ -135,14 +135,14 @@ mappings = {
                             }
                         }
                     }},
-                    {
-                        "nested_rdf": {
-                            "match": "rdf",
-                            "mapping": {
-                                "type": "nested"
-                            }
-                        }
-                    },
+                    # {
+                    #     "nested_rdf": {
+                    #         "match": "rdf",
+                    #         "mapping": {
+                    #             "type": "nested"
+                    #         }
+                    #     }
+                    # },
                     {"rdf": {
                         "path_match": "rdf.*",
                         # "match_mapping_type": "string",
