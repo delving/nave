@@ -126,9 +126,14 @@ class RDFModel(TimeStampedModel, GroupOwned):
         super().__init__(*args, **kwargs)
         self.base_uri = r'{}/resource'.format(RDFRecord.get_rdf_base_url(prepend_scheme=True))
         if self.get_namespace_prefix():
-            self.ns = Namespace('http://{}/resource/ns/{}/'.format(RDF_BASE_URL.replace("http://", ""), self.get_namespace_prefix()))
+            namespace_string = 'http://{}/resource/ns/{}/'.format(
+                RDF_BASE_URL.replace("http://", ""),
+                self.get_namespace_prefix()
+            )
+            self.ns = Namespace(namespace_string)
             self.rdf_type_base = Namespace("{}/{}/".format(self.base_uri, self.get_rdf_type().lower()))
-            namespace_manager.bind(self.get_namespace_prefix(), self.ns)
+            if namespace_string not in settings.RDF_SUPPORTED_NAMESPACES:
+                namespace_manager.bind(self.get_namespace_prefix(), self.ns)
         self.ns_dict = dict(list(namespace_manager.namespaces()))
         self.graph = None
 
