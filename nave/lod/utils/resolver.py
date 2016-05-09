@@ -20,8 +20,10 @@ from collections import defaultdict, Counter
 from collections import namedtuple, OrderedDict
 import itertools
 from datetime import datetime
+from time import sleep
 from urllib.error import HTTPError
 
+import elasticsearch
 import os
 import logging
 from urllib.parse import urlparse, quote
@@ -1056,6 +1058,44 @@ class RDFRecord:
             'delving_hasDeepZoom': "true" if 'nave_deepZoom' in index_doc else "false",
         }
         return mapping
+
+    @staticmethod
+    def remove_orphans(spec, timestamp):
+        """
+        date_string.isoformat()"""
+        # make sure you don't erase things from the same second
+        sleep(1)
+        orphan_query = {"query": {"nested": {
+            "path": "system",
+            "score_mode": "avg",
+            "query": {
+                "bool": {
+                    "must": [
+                        {
+                            "range": {
+                                "system.modified_at": {"lte": timestamp}
+                            }
+                        },
+                        {
+                            "match": {
+                                "system.spec": spec
+                            }
+                        }
+
+                    ]
+                }
+            }
+        }}}
+        orphan_counter = 0
+        # todo later implement this as with the bulk api and es_actions
+        for rec in elasticsearch.helpers.scan(client, orphan_query):
+            _id = rec.get('_id')
+            _index = rec.get('_index')
+            _doc_type = rec.get('_type')
+            client.delete(index=_index, doc_type=_doc_type, id=_id)
+        return orphan_counter
+
+
 
     @staticmethod
     def get_geo_points(graph):

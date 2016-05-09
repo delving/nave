@@ -1,7 +1,7 @@
 import logging
 from collections import defaultdict
 from datetime import time, datetime
-from time import ctime
+from time import ctime, sleep
 
 import os
 import re
@@ -84,6 +84,8 @@ class NarthexBulkLoader:
 
     def process_narthex_file(self, spec, store=None, acceptance=False, path=None, console=False):
 
+        start = datetime.now()
+
         if not store:
             store = rdfstore.get_rdfstore()
 
@@ -103,7 +105,7 @@ class NarthexBulkLoader:
             sparql_update_queries = []
             es_actions = []
             # set orphaned records
-            start = datetime.now()
+
             for line in f:
                 lines += 1
                 exists, named_graph, content_hash = self.is_line_marker(line)
@@ -146,12 +148,9 @@ class NarthexBulkLoader:
                 records=records,
                 seconds=datetime.now() - start
             ))
-            self.remove_orphans(spec, start.isoformat())
+
+            RDFRecord.remove_orphans(spec, start.isoformat())
             return lines, records
-
-
-    def remove_orphans(self, spec, time_stamp):
-        pass
 
     ### old stuff
 
