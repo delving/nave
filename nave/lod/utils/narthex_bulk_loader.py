@@ -52,6 +52,8 @@ class NarthexBulkLoader:
     def spec_processed_files(self, spec):
         """Return a list of processed files."""
         processed_dir = self.spec_processed_path(spec)
+        if not os.path.exists(processed_dir):
+            return []
         return [fname for fname in os.listdir(processed_dir) if fname.endswith(".xml")]
 
     def specs(self):
