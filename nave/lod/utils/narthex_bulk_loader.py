@@ -129,17 +129,17 @@ class NarthexBulkLoader:
                         sparql_update_queries.append(
                             record.create_sparql_update_query(acceptance=acceptance)
                         )
-                nr_sparql_updates = len(sparql_update_queries)
-                if settings.RDF_STORE_TRIPLES and nr_sparql_updates > 0 and nr_sparql_updates % 50 == 0:
-                    store.update("\n".join(sparql_update_queries))
-                    sparql_update_queries[:] = []
-                if records % 1000 == 0 and records > 0:
-                    logger.info("processed {} records of {} at {}".format(records, spec, ctime()))
-                    if console:
-                        print("processed {} records of {} at {}".format(records, spec, ctime()))
-                    if len(es_actions) > 1000:
-                        self.bulk_index(es_actions, spec)
-                        es_actions[:] = []
+                    nr_sparql_updates = len(sparql_update_queries)
+                    if settings.RDF_STORE_TRIPLES and nr_sparql_updates > 0 and nr_sparql_updates % 50 == 0:
+                        store.update("\n".join(sparql_update_queries))
+                        sparql_update_queries[:] = []
+                    if records % 1000 == 0 and records > 0:
+                        logger.info("processed {} records of {} at {}".format(records, spec, ctime()))
+                        if console:
+                            print("processed {} records of {} at {}".format(records, spec, ctime()))
+                        if len(es_actions) > 1000:
+                            self.bulk_index(es_actions, spec)
+                            es_actions[:] = []
                 else:
                     rdf_record.append(line)
             # store the remaining bulk items
