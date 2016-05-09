@@ -209,7 +209,7 @@ mappings = {
                         "match": "*_graph",
                         "mapping": {
                             "type": "string",
-                            "index": "not_analyzed"
+                            "index": "no"
                         }
                     }},
                     {"inline": {
