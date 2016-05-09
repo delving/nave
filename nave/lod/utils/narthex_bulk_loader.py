@@ -116,8 +116,14 @@ class NarthexBulkLoader:
                     records += 1
                     triples = " ".join(rdf_record)
                     record = RDFRecord(rdf_string=triples, spec=spec)
-                    record.from_rdf_string(named_graph=named_graph, rdf_string=triples, input_format="xml")
-                    es_actions.append(record.create_es_action(doc_type="void_edmrecord", record_type="mdr"))
+                    try:
+                        record.from_rdf_string(named_graph=named_graph, rdf_string=triples, input_format="xml")
+                        es_actions.append(record.create_es_action(doc_type="void_edmrecord", record_type="mdr"))
+                    except Exception as ex:
+                        if console:
+                            print("problem with {} for spec {} caused by {}".format(triples, spec, ex))
+                        else:
+                            logger.error("problem with {} for spec {} caused by {}".format(triples, spec, ex))
                     rdf_record[:] = []
                     if settings.RDF_STORE_TRIPLES:
                         sparql_update_queries.append(
