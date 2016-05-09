@@ -17,15 +17,10 @@
                             {% elif not result.item.fields.nave_thumbSmall.0.raw and not result.item.fields.system.thumbnail and result.item.fields.edm_object.0.raw %}
                                 <img src="{{ result.item.fields.edm_object.0.raw }}" class="img edm" alt="{% if result.item.fields.system.caption %}{{ result.item.fields.system.caption.0 }}{% endif %}" />
                             {% else %}
-                                {%if result.item.doc_type == 'rijksmonumenten_rijksmonument'%}
-                                    <img src="{% static 'img/rijks_monument_icon.png' %}" />
-                                {% else %}
                                 <div class="no-image-placeholder">
                                     <div class="overlay"></div>
                                     <span>{% trans 'no preview available' %}</span>
                                 </div>
-                                {% endif %}
-
                             {% endif %}
                         </div>
                         <div class="meta" data-match-height="result-meta">
@@ -43,9 +38,6 @@
                                     <label for="">{% trans 'Source' %}:</label>
                                     {{ result.item.fields.edm_dataProvider.0.value }}
                                 </div>
-                            {% endif %}
-                            {%if result.item.doc_type == 'rijksmonumenten_rijksmonument'%}
-                                <div class="provider">{% trans 'Rijksmonument' %}</div>
                             {% endif %}
                         </div>
                     </a>
