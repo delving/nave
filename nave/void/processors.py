@@ -126,6 +126,9 @@ class BulkApiProcessor:
             self.rdf_graphs.append(record.get_triples(acceptance=acceptance))
             if settings.RDF_STORE_TRIPLES:
                 self.sparql_update_queries.append(record.create_sparql_update_query(acceptance=acceptance))
+            if action in ['clear_orphans']:
+                # todo: implement orphan clear out with RDFRecord
+                pass
             return record
             # if process_verb in ['index', 'delete']:
             #     self.es_actions.append(
@@ -141,6 +144,7 @@ class BulkApiProcessor:
             #     if process_verb in ['store', 'index', 'delete']:
             #         deleted = process_verb == 'delete'
             #         self.sparql_update_queries.append(record.create_sparql_update_query(delete=deleted))
+
         except KeyError as ke:
             self.json_errors.append((ke, action))
             self.records_with_errors += 1

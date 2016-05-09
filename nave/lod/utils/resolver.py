@@ -19,6 +19,7 @@ The NormalisedRDFResource get as resource URI and deals with:
 from collections import defaultdict, Counter
 from collections import namedtuple, OrderedDict
 import itertools
+from datetime import datetime
 from urllib.error import HTTPError
 
 import os
@@ -32,7 +33,7 @@ from rdflib import Graph, URIRef, BNode, Literal
 from rdflib.namespace import RDF, SKOS, RDFS, DC, FOAF
 
 from lod import namespace_manager
-
+from lod.utils import rdfstore
 
 logger = logging.getLogger(__file__)
 client = Elasticsearch()
@@ -202,6 +203,21 @@ class GraphBindings:
         objects = self.get_list(search_label)
         if objects:
             return objects[0]
+        return None
+
+    def get_first_literal(self, predicate, graph=None):
+        if graph is None:
+            graph = self._graph
+        if not isinstance(predicate, URIRef):
+            predicate = URIRef(predicate)
+        for s, o in graph.subject_objects(predicate=predicate):
+            if isinstance(o, Literal):
+                if o.datatype == URIRef('http://www.w3.org/2001/XMLSchema#boolean'):
+                    return True if o.value in ['true', 'True'] else False
+                elif o.datatype == URIRef('http://www.w3.org/2001/XMLSchema#integer'):
+                    return int(o.value)
+                else:
+                    return o.value
         return None
 
     def get_list(self, search_label):
@@ -808,11 +824,12 @@ class RDFRecord:
 
     DEFAULT_RDF_FORMAT = "nt" if not settings.RDF_DEFAULT_FORMAT else settings.RDF_DEFAULT_FORMAT
 
-    def __init__(self, hub_id=None, source_uri=None, spec=None, rdf_string=None):
-        if hub_id is None and source_uri is None:
-            raise ValueError("either source_uri or hub_id must be given at initialisation.")
+    def __init__(self, hub_id=None, source_uri=None, spec=None, rdf_string=None, org_id=None):
+        if hub_id is None and source_uri is None and rdf_string is None:
+            raise ValueError("either source_uri or hub_id or rdf_string must be given at initialisation.")
         self._hub_id = hub_id
         self._spec = spec
+        self._org_id = org_id if org_id is not None else settings.ORG_ID
         self._source_uri = source_uri
         self._named_graph = None
         self._source_uri = None
@@ -821,7 +838,7 @@ class RDFRecord:
         self._rdf_string = rdf_string
         self._query_response = None
         self._bindings = None
-        self._setup_rdfrecord()
+        # self._setup_rdfrecord()
 
     def _setup_rdfrecord(self):
         if self._hub_id:
@@ -841,6 +858,24 @@ class RDFRecord:
         if prepend_scheme:
             base_url = "{}://{}".format(scheme, base_url)
         return base_url
+
+    def source_uri_as_hub_id(self, source_uri=None):
+        if not self._hub_id:
+            if source_uri is None:
+                source_uri = self._source_uri
+            uri_parts = source_uri.split('/')
+            if self._spec is None:
+                self._spec = uri_parts[-2]
+            local_id = uri_parts[-1]
+            self._hub_id = "{}_{}_{}".format(self._org_id, self._spec, local_id)
+        return self._hub_id
+
+    def from_rdf_string(self, named_graph=None, source_uri=None, rdf_string=None, input_format=DEFAULT_RDF_FORMAT):
+        self._graph = self.parse_graph_from_string(rdf_string, named_graph, input_format)
+        self._named_graph = named_graph
+        self._source_uri = source_uri
+        self._rdf_string = rdf_string
+        return self._graph
 
     @staticmethod
     def parse_graph_from_string(rdf_string, graph_identifier=None, input_format=DEFAULT_RDF_FORMAT):
@@ -886,20 +921,145 @@ class RDFRecord:
 
     @property
     def source_uri(self):
+        if not self._source_uri:
+            self._source_uri = self.named_graph.replace('/graph', '')
         return self._source_uri
 
     @property
     def absolute_uri(self):
         pass
 
+    @property
+    def hub_id(self):
+        if not self._hub_id and self.source_uri:
+            self._hub_id = self.source_uri_as_hub_id()
+        return self._hub_id
+
     def get_bindings(self):
         if not self._bindings:
-            if not self._graph:
-                pass
+            graph = self.get_graph()
+            if graph:
+                self._bindings = GraphBindings(self.source_uri, graph)
         return self._bindings
 
     def get_graph(self, **kwargs):
         return self._graph
+
+    def get_context_graph(self, store, named_graph):
+        return Graph(), 0
+
+    def rdf_string(self):
+        if not self._rdf_string and self.get_graph():
+            self._rdf_string = self.get_graph().serialize(
+                format=self.DEFAULT_RDF_FORMAT,
+                encoding="utf-8").decode(encoding="utf-8")
+        return self._rdf_string
+
+    def get_spec_name(self):
+        return self._spec
+
+    def create_sparql_update_query(self, delete=False, acceptance=False):
+        sparql_update = """DROP SILENT GRAPH <{graph_uri}>;
+        INSERT DATA {{ GRAPH <{graph_uri}> {{
+            {triples}
+            }}
+        }};
+        """.format(
+            graph_uri=self.named_graph,
+            triples=self.rdf_string()
+        )
+        if delete:
+            sparql_update = """DROP SILENT GRAPH <{graph_uri}>;""".format(graph_uri=self.named_graph)
+        return sparql_update
+
+    def create_es_action(self, doc_type, record_type, action="index", index=settings.SITE_NAME, store=None,
+                         context=True, flat=True, exclude_fields=None, acceptance=False):
+
+        if not store:
+            store = rdfstore.get_rdfstore()
+
+        if acceptance:
+            index = "{}_acceptance".format(index)
+
+        if record_type == "http://www.openarchives.org/ore/terms/Aggregation":
+            record_type = "mdr"
+
+        if action == "delete":
+            return {
+                '_op_type': action,
+                '_index': index,
+                '_type': doc_type,
+                '_id': self.hub_id
+            }
+
+        graph = None
+
+        if not context:
+            graph = self.get_graph()
+        else:
+            graph, nr_levels = self.get_context_graph(store=store, named_graph=self.named_graph)
+            graph.namespace_manager = namespace_manager
+
+        bindings = self.get_bindings()
+        index_doc = bindings.to_flat_index_doc() if flat else bindings.to_index_doc()
+        if exclude_fields:
+            index_doc = {k: v for k, v in index_doc.items() if k not in exclude_fields}
+        # add delving spec for default searchability
+        index_doc["delving_spec"] = [
+            {'@type': "Literal",
+             'value': self.get_spec_name(),
+             'raw': self.get_spec_name(),
+             'lang': None}
+        ]
+        logger.debug(index_doc)
+        mapping = {
+            '_op_type': action,
+            '_index': index,
+            '_type': doc_type,
+            '_id': self.hub_id,
+            '_source': index_doc
+        }
+        thumbnail = bindings.get_about_thumbnail
+        mapping['_source']['system'] = {
+            'slug': self.hub_id,
+            'spec': self.get_spec_name(),
+            'thumbnail': thumbnail if thumbnail else "",
+            'preview': "detail/foldout/{}/{}".format(doc_type, self.hub_id),
+            'caption': bindings.get_about_caption if bindings.get_about_caption else "",
+            'about_uri': self.source_uri,
+            'source_uri': self.source_uri,
+            'graph_name': self.named_graph,
+            'created_at': datetime.now().isoformat(),
+            'modified_at': datetime.now().isoformat(),
+            'source_graph': self.rdf_string(),
+            'proxy_resource_graph': None,
+            'web_resource_graph': None,
+            # 'about_type': [rdf_type.qname for rdf_type in bindings.get_about_resource().get_types()]
+            # 'collections': None, todo find a way to add collections via link
+        }
+        data_owner = self.dataset.data_owner if hasattr(self, 'dataset') else None
+        dataset_name = self.dataset.name if hasattr(self, 'dataset') else None
+        mapping['_source']['legacy'] = {
+            'delving_hubId': self.hub_id,
+            'delving_recordType': record_type,
+            'delving_spec': self.get_spec_name(),
+            'delving_owner': data_owner,
+            'delving_orgId': settings.ORG_ID,
+            'delving_collection': dataset_name,
+            'delving_title': bindings.get_first_literal(DC.title),
+            'delving_creator': bindings.get_first_literal(DC.creator),
+            'delving_description': bindings.get_first_literal(DC.description),
+            'delving_provider': index_doc.get('edm_provider')[0].get('value') if 'edm_provider' in index_doc else None,
+            'delving_hasGeoHash': "true" if bindings.has_geo() else "false",
+            'delving_hasDigitalObject': "true" if thumbnail else "false",
+            'delving_hasLandingePage': "true" if 'edm_isShownAt' in index_doc else "false",
+            'delving_hasDeepZoom': "true" if 'nave_deepZoom' in index_doc else "false",
+        }
+        return mapping
+
+    @staticmethod
+    def get_geo_points(graph):
+        return get_geo_points(graph)
 
     class Meta:
         abstract = True

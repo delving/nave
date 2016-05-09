@@ -2,7 +2,7 @@ from django.conf import settings
 
 from rdflib import Literal, URIRef, ConjunctiveGraph
 
-from void.models import EDMRecord, DataSet
+from void.models import DataSet
 
 from lod.utils.rdfstore import get_rdfstore
 
