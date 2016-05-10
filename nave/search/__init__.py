@@ -77,6 +77,44 @@ mappings = {
                     "delving_geohash": {
                         "type": "geo_point"
                     },
+                    "system": {
+                        'properties': {'about_uri': {'fields': {'raw': {
+                            'index': 'not_analyzed',
+                            'type': 'string'}},
+                            'type': 'string'},
+                            'caption': {'fields': {'raw': {
+                                'index': 'not_analyzed',
+                                'type': 'string'}},
+                                'type': 'string'},
+                            'created_at': {'format': 'dateOptionalTime', 'type': 'date'},
+                            'graph_name': {'fields': {'raw': {
+                                'index': 'not_analyzed',
+                                'type': 'string'}},
+                                'type': 'string'},
+                            'modified_at': {'format': 'dateOptionalTime', 'type': 'date'},
+                            'preview': {'fields': {'raw': {
+                                'index': 'not_analyzed',
+                                'type': 'string'}},
+                                'type': 'string'},
+                            'slug': {'fields': {'raw': {
+                                'index': 'not_analyzed',
+                                'type': 'string'}},
+                                'type': 'string'},
+                            'source_graph': {'index': 'no', 'type': 'string'},
+                            'source_uri': {'fields': {'raw': {
+                                'index': 'not_analyzed',
+                                'type': 'string'}},
+                                'type': 'string'},
+                            'spec': {'fields': {'raw': {
+                                'index': 'not_analyzed',
+                                'type': 'string'}},
+                                'type': 'string'},
+                            'thumbnail': {'fields': {'raw': {
+                                'index': 'not_analyzed',
+                                'type': 'string'}},
+                                'type': 'string'},
+                        }
+                    }
                 },
                 "dynamic_templates": [
                     {"dates": {
@@ -85,39 +123,6 @@ mappings = {
                             "type": "date",
                         }
                     }},
-                    {
-                        "nested_system": {
-                            "match": "system",
-                            "mapping": {
-                                "type": "nested"
-                            }
-                        }
-                    },
-                    {"system": {
-                        "path_match": "system.*",
-                        # "match_mapping_type": "string",
-                        "mapping": {
-                            "type": "string",
-                            "index": "not_analyzed",
-                            "fields": {
-                                "raw": {
-                                    "type": "string",
-                                    "index": "not_analyzed"
-                                },
-                                "value": {
-                                    "type": "string",
-                                }
-                            }
-                        }
-                    }},
-                    {
-                        "nested_legacy": {
-                            "match": "legacy",
-                            "mapping": {
-                                "type": "nested"
-                            }
-                        }
-                    },
                     {"legacy": {
                         "path_match": "legacy.*",
                         # "match_mapping_type": "string",
@@ -135,14 +140,6 @@ mappings = {
                             }
                         }
                     }},
-                    # {
-                    #     "nested_rdf": {
-                    #         "match": "rdf",
-                    #         "mapping": {
-                    #             "type": "nested"
-                    #         }
-                    #     }
-                    # },
                     {"rdf": {
                         "path_match": "rdf.*",
                         # "match_mapping_type": "string",
@@ -227,15 +224,14 @@ mappings = {
                                 "raw": {
                                     "type": "string",
                                     "index": "not_analyzed",
-                                    "ignore_above": 256
+                                    "ignore_above": 1024
                                 }
                             }
                         }
-                    }},
-                ],
+                    }}
+                ]
             }
-    }
-}
+    }}
 
 
 def create_index(index_name, aliases=None, mapping=None, force_create=False):
