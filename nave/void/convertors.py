@@ -325,7 +325,8 @@ class DefaultAPIV2Converter(BaseConverter):
             index_doc = self.bindings().to_flat_index_doc()
         else:
             raise ValueError("Unable to convert due to missing bindings or es_fields")
-        del index_doc['rdf']
+        if 'rdf' in index_doc:
+            del index_doc['rdf']
         output_doc = copy.deepcopy(index_doc)
         for k, value_list in index_doc.items():
             if k.startswith("narthex_"):
