@@ -1067,9 +1067,7 @@ class RDFRecord:
         date_string.isoformat()"""
         # make sure you don't erase things from the same second
         sleep(1)
-        orphan_query = {"query": {"nested": {
-            "path": "system",
-            "score_mode": "avg",
+        orphan_query = {
             "query": {
                 "bool": {
                     "must": [
@@ -1080,21 +1078,21 @@ class RDFRecord:
                         },
                         {
                             "match": {
-                                "system.spec": spec
+                                "system.spec.raw": spec
                             }
                         }
 
                     ]
                 }
             }
-        }}}
+        }
         orphan_counter = 0
-        # todo later implement this as with the bulk api and es_actions
         for rec in elasticsearch.helpers.scan(client, orphan_query):
             _id = rec.get('_id')
             _index = rec.get('_index')
             _doc_type = rec.get('_type')
             client.delete(index=_index, doc_type=_doc_type, id=_id)
+            orphan_counter += 1
         return orphan_counter
 
 
