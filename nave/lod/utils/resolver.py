@@ -1062,6 +1062,13 @@ class RDFRecord:
         return mapping
 
     @staticmethod
+    def delete_from_index(spec, index='{}'.format(settings.SITE_NAME)):
+        """Delete all dataset records from the Search Index. """
+        response = client.delete_by_query(index=index, q="system.spec.raw:\"{}\"".format(spec))
+        logger.info("Deleted {} from Search index with message: {}".format(spec, response))
+        return response
+
+    @staticmethod
     def remove_orphans(spec, timestamp):
         """
         date_string.isoformat()"""
