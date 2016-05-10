@@ -177,10 +177,10 @@ class BulkApiProcessor:
         return {
             'spec': self.spec,
             'total_received': len(self.api_requests),
-            'rdf_errors': len(self.rdf_errors),
-            'store_errors': self.records_with_errors,
-            'json_errors': len(self.json_errors),
-            'index_errors': len(self.index_errors),
+            # 'rdf_errors': len(self.rdf_errors),
+            # 'store_errors': self.records_with_errors,
+            # 'json_errors': len(self.json_errors),
+            # 'index_errors': len(self.index_errors),
             # 'content_hash_matches': self.records_already_stored,
             'records_stored': self.records_stored,
             # 'errors': {
