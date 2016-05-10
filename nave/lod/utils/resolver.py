@@ -389,6 +389,8 @@ class GraphBindings:
              'lang': entry.language if entry.language else None}
             for entry in captions
             ]
+        # todo remove rdf for now enable later  again
+        del index_doc['rdf']
         for obj in self.get_all_items():
             index_doc[obj.predicate.search_label].append(obj.to_index_entry(nested=False))
         return index_doc
@@ -1143,20 +1145,8 @@ class ElasticSearchRDFRecord(RDFRecord):
 
     def get_graph_by_source_uri(self, uri, store_name=None, as_bindings=False):
         return self.query_for_graph(
-            query_type="nested",
-            query={
-                "path": "system",
-                "score_mode": "avg",
-                "query": {
-                    "bool": {
-                        "must": [
-                            {
-                                "match": {"system.source_uri": uri}
-                            }
-                        ]
-                    }
-                }
-            },
+            "match",
+            {"system.source_uri.raw" : uri},
             store_name=store_name,
             as_bindings=as_bindings
         )
