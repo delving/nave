@@ -11,6 +11,7 @@ from rdflib import ConjunctiveGraph
 from rdflib.plugins.parsers.ntriples import ParseError
 
 from lod.utils import rdfstore
+from lod.utils.resolver import RDFRecord
 from void import get_es
 from void.models import DataSet
 
@@ -126,9 +127,14 @@ class BulkApiProcessor:
             self.rdf_graphs.append(record.get_triples(acceptance=acceptance))
             if settings.RDF_STORE_TRIPLES:
                 self.sparql_update_queries.append(record.create_sparql_update_query(acceptance=acceptance))
-            if action in ['clear_orphans']:
-                # todo: implement orphan clear out with RDFRecord
-                pass
+            if process_verb in ['clear_orphans']:
+                purge_date = action.get('modification_date')
+                if purge_date:
+                    orphans_removed = RDFRecord.remove_orphans(spec=self.spec, timestamp=purge_date)
+                    logger.info("Deleted {} orphans for {} before {}".format(orphans_removed, self.spec, purge_date))
+            if process_verb in ['disable_index']:
+                RDFRecord.delete_from_index(self.spec)
+                logger.info("Deleted dataset {} from index. ".format(self.spec))
             return record
             # if process_verb in ['index', 'delete']:
             #     self.es_actions.append(
