@@ -536,12 +536,13 @@ class NaveESQuery(object):
                 applied_facet_fields.append(key.lstrip('-+').replace('.raw', ''))
                 f = F()
                 for value in values:
+                    clean_value = value.strip("\"")
                     if key.startswith('-'):
-                        f |= ~F(**{self.query_to_facet_key(key): value})
+                        f |= ~F(**{self.query_to_facet_key(key): clean_value})
                     elif facet_bool_type_and:
-                        f &= F(**{self.query_to_facet_key(key): value})
+                        f &= F(**{self.query_to_facet_key(key): clean_value})
                     else:
-                        f |= F(**{self.query_to_facet_key(key): value})
+                        f |= F(**{self.query_to_facet_key(key): clean_value})
 
                 query = query.filter(f)
                 # old solr style bounding box query
