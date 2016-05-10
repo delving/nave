@@ -648,16 +648,16 @@ def refresh_templates():
 @task
 @log_call
 def setup_project():
-    # upload_template_and_reload("elastic_search")
-    # upload_template_and_reload("settings")
-    # upload_template_and_reload("fuseki-acceptance")
-    # upload_template_and_reload("fuseki-production")
+    upload_template_and_reload("elastic_search")
+    upload_template_and_reload("settings")
+    upload_template_and_reload("fuseki-acceptance")
+    upload_template_and_reload("fuseki-production")
     with project():
         if env.reqs_path:
             with fab_settings(warn_only=False):
                 pip("-r %s/%s" % (env.proj_path, env.reqs_path))
         pip("gunicorn setproctitle psycopg2 django-compressor python3-memcached")
-        # manage("migrate")
+        manage("migrate")
         python("import django;"
                "django.setup();"
                "from django.conf import settings;"
