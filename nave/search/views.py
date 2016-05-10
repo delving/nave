@@ -454,7 +454,7 @@ class LodRelatedSearchHTMLView(SearchListAPIView):
                         GeoJsonRenderer)
     template_name = "search/_search-results-linked.html"
     facets = [
-        FacetConfig('delving_spec.raw', _("Collection")),
+        FacetConfig('system.spec.raw', _("Collection")),
         FacetConfig('system.about_type', _("RDF primary type")),
         FacetConfig('rdf.class.value', _("RDF secondary type")),
         FacetConfig('rdf.predicate.value', _("RDF predicates")),

@@ -333,7 +333,7 @@ class NaveESQuery(object):
         # default fielded query is to .value
         query_string = re.sub("([\w]+)_([\w]+):", r"\1_\2.value:", query_string)
         if "delving_spec.value" in query_string:
-            query_string = query_string.replace("delving_spec.value", "delving_spec.raw")
+            query_string = query_string.replace("delving_spec.value", "system.spec.raw")
         elif "delving_" in query_string:
             exclude = "(delving_{}[a-zA-Z]+).value:".format(
                 "".join(["(?!{})".format(key) for key in self.non_legacy_keys]))
@@ -619,7 +619,7 @@ class NaveESQuery(object):
 
     def query_to_facet_key(self, facet_key):
         if facet_key.startswith('delving_spec'):
-            facet_key = "delving_spec.raw"
+            facet_key = "system.spec.raw"
         elif facet_key.startswith('delving_') and facet_key not in self.non_legacy_keys:
             facet_key = 'legacy.{}'.format(facet_key)
         if "." not in facet_key:
