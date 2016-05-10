@@ -247,6 +247,9 @@ class NaveESQuery(object):
                 if key.startswith('delving_') and key not in self.non_legacy_keys:
                     key = "legacy.{}".format(key)
                 filter_dict[key].add(":".join(value))
+            else:
+                # add support for query based filters
+                filter_dict['query'].add(filt)
         return filter_dict
 
     @staticmethod
@@ -308,6 +311,28 @@ class NaveESQuery(object):
             query = query.indexes(*self._as_list(self.get_index_name))
         if self.doc_types:
             query = query.doctypes(*self._as_list(self.doc_types))
+        return query
+
+    def _create_query_string(self, query_string):
+        if self._is_fielded_query(query_string):
+            query_string = self._created_fielded_query(query_string)
+            query = {
+                "query_string": {
+                    "default_field": "_all",
+                    "query": query_string,
+                    "auto_generate_phrase_queries": True,
+                }
+            }
+        else:
+            query = {
+                "query_string": {
+                    "default_field": "_all",
+                    "query": query_string,
+                    "auto_generate_phrase_queries": True,
+                    # "default_operator": "AND",
+                    "minimum_should_match": "2<50%"
+                }
+            }
         return query
 
     @staticmethod
@@ -445,37 +470,28 @@ class NaveESQuery(object):
         # update key
         if 'query' in params and 'q' not in params:
             params['q'] = params.get('query')
+        # add hidden filters:
+        exclude_filter_list = params.getlist("pop.filterkey")
+        hidden_filter_dict = self._filters_as_dict(
+            self.hidden_filters,
+            exclude=exclude_filter_list
+        ) if self.hidden_filters else defaultdict(set)
+        hidden_queries = hidden_filter_dict.pop("query", [])
         if self.param_is_valid('q', params) and not params.get('q') in ['*:*']:
             query_string = params.get('q')
 
             if "&quot;" in query_string:
                 query_string = query_string.replace('&quot;', '"')
-            if self._is_fielded_query(query_string):
-                query_string = self._created_fielded_query(query_string)
-                query = query.query_raw({
-                    "query_string": {
-                        "default_field": "_all",
-                        "query": query_string,
-                        "auto_generate_phrase_queries": True,
-                    }
-                })
-            else:
-                query = query.query_raw({
-                        "query_string": {
-                            "default_field": "_all",
-                            "query": query_string,
-                            "auto_generate_phrase_queries": True,
-                            # "default_operator": "AND",
-                            "minimum_should_match": "2<50%"
-                        }
-                    }
-                )
+            for hq in hidden_queries:
+                query_string = "{} {}".format(query_string, hq)
+            query = query.query_raw(self._create_query_string(query_string))
         # add lod_filtering support
         elif "lod_id" in params:
             lod_uri = params.get("lod_id")
             query = query.query(
                     **{'rdf.object.id': lod_uri, "must": True}).filter(~F(**{'system.about_uri': lod_uri}))
-
+        elif hidden_queries:
+            query = query.query_raw(self._create_query_string(" ".join(hidden_queries)))
         else:
             query = query.query()
 
@@ -484,12 +500,6 @@ class NaveESQuery(object):
         if 'qf' in params:
             with robust('qf'):
                 self._filters_as_dict(params.getlist('qf'), filter_dict)
-        # add hidden filters:
-        exclude_filter_list = params.getlist("pop.filterkey")
-        hidden_filter_dict = self._filters_as_dict(
-                self.hidden_filters,
-                exclude=exclude_filter_list
-        ) if self.hidden_filters else defaultdict(set)
 
         if 'hqf' in params:
             with robust('hqf'):
@@ -515,8 +525,8 @@ class NaveESQuery(object):
                 if facet_bool_type_and:
                     query_string = " AND ".join(query_list)
                 else:
-                    query_string = " AND ".join(query_list)
-                query = query.query(Q(**{self.query_to_facet_key(key): query_string}))
+                    query_string = " OR ".join(query_list)
+                query = query.filter(F(**{self.query_to_facet_key(key): query_string}))
         # filter_dict.update(hidden_filter_dict)
         self.applied_filters = filter_dict
         applied_facet_fields = []
