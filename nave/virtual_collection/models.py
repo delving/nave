@@ -81,7 +81,7 @@ class VirtualCollection(TimeStampedModel, GroupOwned):
         if any(key in self.query for key in allowed_filters):
             # create the proper format string
             filter_list = []
-            query_dict = QueryDict(self.query.lstrip("?"))
+            query_dict = QueryDict(query_string=self.query.split("?", maxsplit=1)[-1])
             for k, v in query_dict.items():
                 if any([key.startswith(k) for key in allowed_filters]):
                     applied_filter = query_dict.getlist(k)
