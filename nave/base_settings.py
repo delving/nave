@@ -225,7 +225,7 @@ AUTHENTICATION_BACKENDS = (
 )
 
 ########### solid_i18n CONFIGURATIONS
-SOLID_I18N_USE_REDIRECTS = False
+SOLID_I18N_USE_REDIRECTS = True
 
 
 # Every cache key will get prefixed with this value - here we set it to
