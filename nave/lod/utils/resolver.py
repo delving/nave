@@ -1119,6 +1119,8 @@ class ElasticSearchRDFRecord(RDFRecord):
         return self._source_uri
 
     def query_for_graph(self, query_type, query, store_name=None, as_bindings=False):
+        if store_name is None:
+            store_name = settings.SITE_NAME
         s = Search(index=store_name).using(client).query(query_type, **query)
         response = s.execute()
         if response.hits.total != 1:
