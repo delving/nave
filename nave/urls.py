@@ -40,6 +40,12 @@ urlpatterns += solid_i18n_patterns('',
                             url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
                             )
 
+
+if 'rosetta' in settings.INSTALLED_APPS:
+    urlpatterns += solid_i18n_patterns('',
+                                       url(r'^rosetta/', include('rosetta.urls')),
+                                       )
+
 if settings.USE_WAGTAIL_CMS:
     from wagtail.wagtailcore import urls as wagtail_urls
 
@@ -53,11 +59,6 @@ if settings.USE_WAGTAIL_CMS:
 
 staticurls = [('^%s$' % f, 'redirect_to', {'url': settings.STATIC_URL + f}) for f in
               ('crossdomain.xml', 'robots.txt', 'humans.txt')]
-
-if 'rosetta' in settings.INSTALLED_APPS:
-    urlpatterns += solid_i18n_patterns('',
-                            url(r'^rosetta/', include('rosetta.urls')),
-                            )
 
 
 # This is only needed when using runserver.
