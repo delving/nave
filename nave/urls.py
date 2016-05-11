@@ -55,7 +55,7 @@ staticurls = [('^%s$' % f, 'redirect_to', {'url': settings.STATIC_URL + f}) for 
               ('crossdomain.xml', 'robots.txt', 'humans.txt')]
 
 if 'rosetta' in settings.INSTALLED_APPS:
-    urlpatterns += patterns('',
+    urlpatterns += solid_i18n_patterns('',
                             url(r'^rosetta/', include('rosetta.urls')),
                             )
 
