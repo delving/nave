@@ -709,8 +709,8 @@ def create_venv():
         with project():
             run("%s fetch" % vcs)
             run("%s checkout %s" % (vcs, env.git_branch))
-        run('echo "DJANGO_SETTINGS_MODULE=projects.{}.settings" >> ~/.profile'.format(env.proj_name))
-        run('echo "TERM=xterm" >> ~/.profile'.format(env.proj_name))
+        run('echo "export DJANGO_SETTINGS_MODULE=projects.{}.settings" >> ~/.profile'.format(env.proj_name))
+        run('echo "export TERM=xterm" >> ~/.profile'.format(env.proj_name))
 
 
 @task
