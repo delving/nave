@@ -40,5 +40,5 @@ class FallBackLanguageMiddleware(LocaleMiddleware):
                     if redirect_language is not None:
                         redirect_uri = "/{}/".format(os.path.join(redirect_language, *request_path[1:]))
                         return HttpResponseRedirect(redirect_uri)
-        elif not request.path.endswith('/'):
-            return HttpResponseRedirect("{}/".format(request.path))
+        # elif not request.path.endswith('/'):
+        #     return HttpResponseRedirect("{}/".format(request.path))
