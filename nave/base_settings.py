@@ -227,6 +227,11 @@ AUTHENTICATION_BACKENDS = (
 ########### solid_i18n CONFIGURATIONS
 SOLID_I18N_USE_REDIRECTS = True
 
+ROSETTA_MESSAGES_PER_PAGE = 100
+
+ROSETTA_AUTO_COMPILE = True
+
+ROSETTA_WSGI_AUTO_RELOAD = True
 
 # Every cache key will get prefixed with this value - here we set it to
 # the name of the directory the project is in to try and use something
