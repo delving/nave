@@ -120,6 +120,8 @@ OS_DEPENDENCIES = [
     'unzip',
     'supervisor',
     'gettext',
+    'redis-server',
+    'redis-tools',
 ]
 
 ##################
@@ -178,7 +180,7 @@ templates = {
     "narthex_conf": {
         "local_path": "../deploy/narthex.conf",
         "remote_path": "%(narthex_files)s/narthex.conf",
-        #"reload_command": "supervisorctl reload",
+        # "reload_command": "supervisorctl reload",
     },
     "narthex_logger": {
         "local_path": "../deploy/narthex_logger.xml",
@@ -199,7 +201,7 @@ templates = {
     "narthex_conf": {
         "local_path": "../deploy/narthex.conf",
         "remote_path": "%(narthex_files)s/narthex.conf",
-        #"reload_command": "supervisorctl reload",
+        # "reload_command": "supervisorctl reload",
     },
     "narthex_logger": {
         "local_path": "../deploy/narthex_logger.xml",
@@ -245,7 +247,6 @@ def private_project():
     with virtualenv():
         with cd(os.path.join(env.django_dirname, "projects", env.proj_name)):
             yield
-
 
 
 @contextmanager
@@ -481,7 +482,7 @@ def install():
             sudo("locale-gen %s" % locale)
             sudo("update-locale %s" % locale)
             sudo("dpkg-reconfigure locales")
-            run("exit")
+            #run("exit")
     apt('software-properties-common')
     sudo("add-apt-repository ppa:webupd8team/java -y")
     # sudo("add-apt-repository ppa:fkrull/deadsnakes -y")
@@ -500,11 +501,11 @@ def install():
     install_fuseki()
     install_elasticsearch()
     upload_template(
-            "../deploy/supervisor_iipimageserver.conf",
-            "/etc/supervisor/conf.d/iip_image_server.conf",
-            env,
-            use_sudo=True,
-            backup=False
+        "../deploy/supervisor_iipimageserver.conf",
+        "/etc/supervisor/conf.d/iip_image_server.conf",
+        env,
+        use_sudo=True,
+        backup=False
     )
 
 
@@ -541,16 +542,23 @@ def install_fuseki():
 
 @task
 @log_call
-def install_elasticsearch():
+def install_elasticsearch(version="1.7.4"):
     """Install elastic search."""
-    __version__ = "1.7.4"
+    __version__ = version
     sudo("wget -q https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-{}.deb".format(__version__))
     sudo("dpkg -i elasticsearch-{}.deb".format(__version__))
     sudo("update-rc.d elasticsearch defaults 95 10")
-    link = "https://github.com/triforkams/geohash-facet/releases/download/geohash-facet-0.0.19/geohash-facet-0.0.19.jar"
-    sudo("/usr/share/elasticsearch/bin/plugin --url {} --install geohash-facet".format(link))
+    # link = "https://github.com/triforkams/geohash-facet/releases/download/geohash-facet-0.0.19/geohash-facet-0.0.19.jar"
+    # sudo("/usr/share/elasticsearch/bin/plugin --url {} --install geohash-facet".format(link))
     sudo("service elasticsearch start")
     sudo("rm elasticsearch-{}.deb".format(__version__))
+
+
+@task
+@log_call
+def install_elasticsearch2():
+    __version__ = "2.3.2"
+    install_elasticsearch(version=__version__)
 
 
 @task
@@ -590,8 +598,6 @@ def deploy_narthex():
         run("mkdir -p {}".format(narthex_factory))
     with cd(env.narthex_versions_dir):
         run("rm -rf *")
-        # backup via dropbox when artifactory is not available
-        # run("wget https://db.tt/QkZQad3g")
         run("wget 'http://artifactory.delving.org/artifactory/simple/delving/narthex/narthex-{}.zip'".format(
             env.narthex_version
         ))
@@ -651,7 +657,7 @@ def setup_project():
             with fab_settings(warn_only=False):
                 pip("-r %s/%s" % (env.proj_path, env.reqs_path))
         pip("gunicorn setproctitle psycopg2 django-compressor python3-memcached")
-        manage("syncdb --noinput")
+        manage("migrate")
         python("import django;"
                "django.setup();"
                "from django.conf import settings;"
@@ -703,6 +709,8 @@ def create_venv():
         with project():
             run("%s fetch" % vcs)
             run("%s checkout %s" % (vcs, env.git_branch))
+        run('echo "export DJANGO_SETTINGS_MODULE=projects.{}.settings" >> ~/.profile'.format(env.proj_name))
+        run('echo "export TERM=xterm" >> ~/.profile'.format(env.proj_name))
 
 
 @task

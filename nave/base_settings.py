@@ -214,6 +214,7 @@ MIDDLEWARE_CLASSES = (
     'oauth2_provider.middleware.OAuth2TokenMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.contrib.admindocs.middleware.XViewMiddleware',
+    'common.middleware.FallBackLanguageMiddleware',
     'solid_i18n.middleware.SolidLocaleMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -225,8 +226,13 @@ AUTHENTICATION_BACKENDS = (
 )
 
 ########### solid_i18n CONFIGURATIONS
-SOLID_I18N_USE_REDIRECTS = False
+SOLID_I18N_USE_REDIRECTS = True
 
+ROSETTA_MESSAGES_PER_PAGE = 100
+
+ROSETTA_AUTO_COMPILE = True
+
+ROSETTA_WSGI_AUTO_RELOAD = True
 
 # Every cache key will get prefixed with this value - here we set it to
 # the name of the directory the project is in to try and use something
@@ -277,6 +283,7 @@ DJANGO_APPS = (
     'common',
     # django-suit to pimp the admin
     'suit',
+    'suit_ckeditor',
     'django.contrib.admin',
     # 'admin_reorder',
 )
@@ -291,7 +298,6 @@ THIRD_PARTY_APPS = (
     'filer',
     'easy_thumbnails',
     'oauth2_provider',
-    'django_wysiwyg',
     'django_extensions',
     'import_export',
     'rest_framework',
@@ -318,13 +324,8 @@ LOCAL_APPS = (
     'lod',
     'void',
     'search',
+    'virtual_collection',
 )
-
-# ###########################
-#   DJANGO WYSIWYG          #
-# ###########################
-
-DJANGO_WYSIWYG_FLAVOR = "ckeditor"
 
 
 ######################################################################
@@ -488,6 +489,8 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'oauth2_provider.ext.rest_framework.OAuth2Authentication',
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ),
     'PAGINATE_BY': 10,
 }
@@ -552,13 +555,14 @@ RDF_STORE_TRIPLES = True
 
 RDF_DYNAMIC_CACHE = True
 
+RDF_DEFAULT_FORMAT = 'nt'
+
 RDF_SUPPORTED_NAMESPACES = {
     'http://purl.org/abm/sen': 'abm',
     'http://www.europeana.eu/schemas/ese/': 'europeana',
     'http://purl.org/dc/elements/1.1/': 'dc',
     'http://schemas.delving.eu/': 'delving',
     'http://purl.org/dc/terms/': 'dcterms',
-    'http://www.tib.nl/schemas/tib/': 'tib',
     'http://www.delving.eu/namespaces/custom': 'custom',
     'http://www.musip.nl/': 'musip',
     'http://www.itin.nl/namespace': 'itin',
@@ -567,9 +571,8 @@ RDF_SUPPORTED_NAMESPACES = {
     'http://delving.eu/namespaces/raw': 'raw',
     'http://www.icn.nl/schemas/icn/': 'icn',
     'http://schemas.delving.eu/aff/': 'aff',
-    'http://schemas.delving.eu/abm/': 'abm',
+    # 'http://schemas.delving.eu/abm/': 'abm',
     'http://www.w3.org/2004/02/skos/core#': 'skos',
-    # 'http://acc.lodd2.delving.org/rce/ns/': 'rce',
     'http://dbpedia.org/ontology/': 'dbpedia-owl',
     'http://www.w3.org/2003/01/geo/wgs84_pos#': 'wgs84_pos',
     'http://xmlns.com/foaf/0.1/': 'foaf',
@@ -584,7 +587,7 @@ RDF_SUPPORTED_NAMESPACES = {
     'http://schemas.delving.eu/resource/ns/tib/': 'tib',
     'http://creativecommons.org/ns#': 'cc',
     'http://www.geonames.org/ontology#': 'gn',
-    'http://rdvocab.info/ElementsGr2/': 'rda'
+    'http://rdvocab.info/ElementsGr2/': 'rda',
 }
 
 RDF_SUPPORTED_PREFIXES = defaultdict(list)
@@ -729,8 +732,6 @@ THUMBNAIL_PROCESSORS = (
     'easy_thumbnails.processors.filters',
     'easy_thumbnails.processors.background',
 )
-
-
 
 ##################
 # Django Cities  #

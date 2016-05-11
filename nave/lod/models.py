@@ -27,12 +27,13 @@ from rdflib import Namespace, ConjunctiveGraph, URIRef, Literal, BNode, Graph
 from rdflib.namespace import RDFS, RDF, FOAF, DC, DCTERMS, OWL
 from rdflib.plugins.serializers.nquads import _nq_row
 
-from lod import namespace_manager, RDF_BASE_URL, get_rdf_base_url
+from lod import namespace_manager, RDF_BASE_URL
 from lod.namespace import NAVE
 from lod.utils import rdfstore
-from lod.utils.edm import GraphBindings
-from lod.utils.lod import get_cache_url, get_remote_lod_resource, store_remote_cached_resource, get_geo_points, \
+from lod.utils.resolver import GraphBindings
+from lod.utils.resolver import get_cache_url, get_remote_lod_resource, store_remote_cached_resource, get_geo_points, \
     get_graph_statistics
+from lod.utils.resolver import RDFRecord
 
 fmt = '%Y-%m-%d %H:%M:%S%z'  # '%Y-%m-%d %H:%M:%S %Z%z'
 
@@ -123,11 +124,16 @@ class RDFModel(TimeStampedModel, GroupOwned):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.base_uri = r'{}/resource'.format(get_rdf_base_url(prepend_scheme=True))
+        self.base_uri = r'{}/resource'.format(RDFRecord.get_rdf_base_url(prepend_scheme=True))
         if self.get_namespace_prefix():
-            self.ns = Namespace('http://{}/resource/ns/{}/'.format(RDF_BASE_URL, self.get_namespace_prefix()))
+            namespace_string = 'http://{}/resource/ns/{}/'.format(
+                RDF_BASE_URL.replace("http://", ""),
+                self.get_namespace_prefix()
+            )
+            self.ns = Namespace(namespace_string)
             self.rdf_type_base = Namespace("{}/{}/".format(self.base_uri, self.get_rdf_type().lower()))
-            namespace_manager.bind(self.get_namespace_prefix(), self.ns)
+            if namespace_string not in settings.RDF_SUPPORTED_NAMESPACES:
+                namespace_manager.bind(self.get_namespace_prefix(), self.ns)
         self.ns_dict = dict(list(namespace_manager.namespaces()))
         self.graph = None
 
@@ -272,8 +278,8 @@ class RDFModel(TimeStampedModel, GroupOwned):
         return "{}_{}_{}".format(settings.ORG_ID, self.get_spec_name(), self.local_id)
 
     def create_sparql_update_query(self, delete=False, acceptance=False):
-        source_rdf = self.source_rdf if not acceptance else self.acceptance_rdf
-        rdf_triples = source_rdf if not isinstance(source_rdf, bytes) else source_rdf.decode('utf-8')
+        graph = self.get_graph(acceptance=acceptance)
+        rdf_triples = graph.serialize(format='nt', encoding="utf-8").decode('utf-8')
         sparql_update = """DROP SILENT GRAPH <{graph_uri}>;
         INSERT DATA {{ GRAPH <{graph_uri}> {{
             {triples}
@@ -371,10 +377,17 @@ class RDFModel(TimeStampedModel, GroupOwned):
                 predicate = URIRef("{}/{}".format(str(ns).rstrip('/'), label))
             else:
                 raise ValueError("unknown predicate key in mapping dict: {}".format(key))
-            if isinstance(value, str):
-                if value and not value.isspace():
+            if type(value) in [str, float, int] and value:
+                if isinstance(value, str) and any([value.startswith(uri_prefix) for uri_prefix in ["http", "urn"]]):
+                    value = URIRef(value)
+                else:
                     value = Literal(value)
-            graph.add((subject, predicate, value))
+            elif type(value) in [Literal, URIRef]:
+                value = value
+            else:
+                logger.warn("Unsupported datatype {} for value {}".format(type(value), value))
+            if value:
+                graph.add((subject, predicate, value))
         graph.namespace_manager = namespace_manager
         return graph
 
@@ -394,6 +407,7 @@ class RDFModel(TimeStampedModel, GroupOwned):
                 for p, o in self.graph.predicate_objects(subject=subject):
                     g.add((subject, p, o))
                 self.graph = g
+            self._add_about_triples(self.graph)
         return self.graph
 
     def get_nquads_string(self):
@@ -409,7 +423,7 @@ class RDFModel(TimeStampedModel, GroupOwned):
         return source_rdf.decode('utf-8'), self.named_graph
 
     def _generate_doc_type(self):
-        return "{}_{}".format(self.__class__.__module__.split(".")[0], self.__class__.__name__.lower())
+        return "{}_{}".format(self.__class__._meta.app_label, self.__class__._meta.model_name)
 
     @staticmethod
     def get_object_from_sparql_result(value_dict):
@@ -582,9 +596,9 @@ class RDFModel(TimeStampedModel, GroupOwned):
 
     def create_es_action(self, action="index", record_type=None, index=settings.SITE_NAME, store=None, doc_type=None,
                          context=True, flat=True, exclude_fields=None, acceptance=False):
-        if not doc_type:
+        if doc_type is None:
             doc_type = self._generate_doc_type()
-        if not record_type:
+        if record_type is None:
             record_type = self.get_rdf_type()
         if not store:
             store = rdfstore.get_rdfstore()
@@ -603,12 +617,14 @@ class RDFModel(TimeStampedModel, GroupOwned):
                 '_id': self.hub_id
             }
 
+        graph = None
+
         if not context:
             graph = self.get_graph()
         else:
             graph, nr_levels = self.get_context_graph(store=store, named_graph=self.named_graph)
+            graph.namespace_manager = namespace_manager
 
-        graph.namespace_manager = namespace_manager
         bindings = GraphBindings(
             about_uri=self.source_uri,
             graph=graph
@@ -616,6 +632,14 @@ class RDFModel(TimeStampedModel, GroupOwned):
         index_doc = bindings.to_flat_index_doc() if flat else bindings.to_index_doc()
         if exclude_fields:
             index_doc = {k: v for k, v in index_doc.items() if k not in exclude_fields}
+        # add delving spec for default searchability
+        index_doc["delving_spec"] = [
+            {'@type': "Literal",
+             'value': self.get_spec_name(),
+             'raw': self.get_spec_name(),
+             'lang': None}
+        ]
+        logger.debug(index_doc)
         mapping = {
             '_op_type': action,
             '_index': index,
@@ -625,13 +649,19 @@ class RDFModel(TimeStampedModel, GroupOwned):
         }
         thumbnail = bindings.get_about_thumbnail
         mapping['_source']['system'] = {
-            'slug': self.slug,
+            'slug': self.hub_id,
+            'spec': self.get_spec_name(),
             'thumbnail': thumbnail if thumbnail else "",
-            'preview': "detail/foldout/{}/{}".format(doc_type, self.slug),
+            'preview': "detail/foldout/{}/{}".format(doc_type, self.hub_id),
             'caption': bindings.get_about_caption if bindings.get_about_caption else "",
             'about_uri': self.document_uri,
             'source_uri': self.source_uri,
-            'timestamp': datetime.datetime.now().isoformat()
+            'graph_name': self.named_graph,
+            'created_at': datetime.datetime.now().isoformat(),
+            'modified_at': datetime.datetime.now().isoformat(),
+            'source_graph': graph.serialize(format='nt', encoding="utf-8").decode(encoding="utf-8"),
+            'proxy_resource_graph': None,
+            'web_resource_graph': None,
             # 'about_type': [rdf_type.qname for rdf_type in bindings.get_about_resource().get_types()]
             # 'collections': None, todo find a way to add collections via link
         }
@@ -681,6 +711,10 @@ class RDFModel(TimeStampedModel, GroupOwned):
         for s in removed:
             RDFSubjectLookUp.objects.filter(subject_uri=s).delete()
 
+    def get_enrichments(self):
+        """Return all linked UserGeneratedContent Objects."""
+        return UserGeneratedContent.objects.filter(source_uri=self.document_uri)
+
 
 class RDFModelTest(RDFModel):
     """ Model used for unit testing only.
@@ -705,6 +739,61 @@ class RDFModelTest(RDFModel):
 
     def get_rdf_type(self):
         return "Document"
+
+
+class UserGeneratedContent(GroupOwned, TimeStampedModel):
+    """Model for enrichments created by Users via a form on the Detail pages."""
+    source_uri = models.URLField(
+        verbose_name=_("RDF source URI"),
+    )
+    link = models.URLField(
+        verbose_name=_("External link")
+    )
+    name = models.CharField(
+        verbose_name=_("name"),
+        blank=False,
+        null=False,
+        max_length=128
+    )
+    short_description = models.CharField(
+        verbose_name=_("short description"),
+        blank=False,
+        null=False,
+        max_length=512
+    )
+    content_type = models.CharField(
+        verbose_name=_("content_type"),
+        blank=False,
+        null=False,
+        max_length=64,
+        help_text=_("The content type of the link, e.g. wikipedia or youtube.")
+    )
+    html_summary = models.TextField(
+        verbose_name=_("html summary"),
+        blank=True,
+        null=True,
+        help_text=_("Contains the unfurled HTML from the saved link")
+    )
+    published = models.BooleanField(
+        verbose_name=_("published"),
+        default=True,
+        help_text=_("Should the UGC be published to unauthorised users.")
+    )
+
+    class Meta:
+        unique_together = ("source_uri", "link")
+        verbose_name = _("User Generated Content")
+        verbose_name_plural = _("User Generated Content")
+
+    def __str__(self):
+        return "{} linked to {}".format(self.link, self.source_uri)
+
+    def save(self, *args, **kwargs):
+        # point to resource and not page or data
+        source_uri = self.source_uri.replace('/data/', '/resource/').replace('/page/', '/resource/')
+        # rewrite to base url
+        self.source_uri = RDFRecord.get_internal_rdf_base_uri(source_uri)
+        super(UserGeneratedContent, self).save(*args, **kwargs)
 
 
 class RDFPrefix(TitleSlugDescriptionModel, TimeStampedModel):

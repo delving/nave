@@ -11,9 +11,10 @@ from elasticsearch_dsl import Search
 from rdflib import Graph
 from rdflib.namespace import RDF
 
-from lod import tasks, get_rdf_base_url
+from lod import tasks
 from lod.models import ResourceCacheTarget, CacheResource
 from lod.utils import rdfstore
+from lod.utils.resolver import RDFRecord
 from void.tests.test_tasks import load_nquad_fixtures
 
 
@@ -58,7 +59,7 @@ class TestResourceCache(TestCase):
         assert len(resource) > 0
         store._clear_all()
         graph_store = store.get_graph_store
-        cache_graph = "http://{}/resource/cache#graph".format(get_rdf_base_url())
+        cache_graph = "http://{}/resource/cache#graph".format(RDFRecord.get_rdf_base_url())
         self.assertFalse(
             store.ask(
                 query="where {{<{}> ?p ?o}}".format(test_uri)

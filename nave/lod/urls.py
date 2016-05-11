@@ -7,7 +7,7 @@ from django.views.generic import TemplateView
 
 from . import RDF_SUPPORTED_EXTENSIONS
 from .views import SnorqlTemplateView, remote_sparql, LoDRedirectView, LoDDataView, LoDHTMLView, remote_sparql_test, \
-    PropertyTemplateView, EDMHTMLMockView, HubIDRedirectView
+    PropertyTemplateView, EDMHTMLMockView, HubIDRedirectView, UserGeneratedContentList, UserGeneratedContentDetail
 
 RDF_SUPPORTED_FORMATS = "|".join(RDF_SUPPORTED_EXTENSIONS)
 
@@ -24,7 +24,7 @@ urlpatterns = patterns("",
                        # hubId
                        url(r'^resolve/(?P<doc_type>(.*?))/(?P<hubId>(.*?))/$', HubIDRedirectView.as_view()),
                        url(r'^api/resolve/(?P<doc_type>(.*?))/(?P<hubId>(.*?))/$', HubIDRedirectView.as_view()),
-                       url(r'^api/resolve/(?P<hubId>(.*?))/$', HubIDRedirectView.as_view()),
+                       url(r'^api/resolve/(?P<hubId>(.*?))/?$', HubIDRedirectView.as_view()),
 
                        # redirects
                        url(r'^resource/(?P<type_>(.*))/(?P<label>(.*))\.(?P<extension>({}))$'.format(
@@ -68,4 +68,6 @@ urlpatterns = patterns("",
                        #url(r'^schema)$', LoDHTMLView.as_view(), name="rdf_schema_data"),
                        # /resource/class/id
 
+                       url(r'^api/enrich/ugc/$', UserGeneratedContentList.as_view()),
+                       url(r'^api/enrich/ugc/(?P<pk>[0-9]+)/$', UserGeneratedContentDetail.as_view()),
 )

@@ -11,6 +11,7 @@ from rdflib import ConjunctiveGraph
 from rdflib.plugins.parsers.ntriples import ParseError
 
 from lod.utils import rdfstore
+from lod.utils.resolver import RDFRecord
 from void import get_es
 from void.models import DataSet
 
@@ -35,6 +36,7 @@ class BulkApiProcessor:
         self.force_insert = force_insert
         self.api_requests = self._get_json_entries_from_payload()
         self.current_dataset = None
+        self.spec = None
 
     def set_force_insert(self, force_insert):
         self.force_insert = force_insert
@@ -75,7 +77,7 @@ class BulkApiProcessor:
 
     def _process_action(self, action):
         try:
-            spec = action['dataset']
+            self.spec = action['dataset']
             record_graph_uri = action['graphUri']
             graph_ntriples = action['graph']
             process_verb = action['action']
@@ -84,14 +86,17 @@ class BulkApiProcessor:
             content_hash = action.get('contentHash', None)
             try:
                 graph = ConjunctiveGraph(identifier=record_graph_uri)
-                graph.parse(data=graph_ntriples, format='nt')
+                rdf_format = "nt" if "<rdf:RDF" not in graph_ntriples else "xml"
+                graph.parse(data=graph_ntriples, format=rdf_format)
             except ParseError as e:
                 self.rdf_errors.append((e, action))
+                logger.error(e, action)
                 return None
-            if self.current_dataset is None or self.current_dataset.spec is not spec:
+            if self.current_dataset is None or self.current_dataset.spec is not self.spec:
                 try:
-                    self.current_dataset = DataSet.objects.get(spec=spec)
+                    self.current_dataset = DataSet.objects.get(spec=self.spec)
                 except DataSet.DoesNotExist as dne:
+                    logger.warn(dne)
                     self.current_dataset = self.synchronise_dataset_metadata(
                         store=self.store,
                         dataset_graph_uri=self._create_dataset_uri(record_graph_uri)
@@ -99,6 +104,7 @@ class BulkApiProcessor:
             app, model = action['type'].split('_')
             action_model = apps.get_model(app_label=app, model_name=model)
             record = action_model.graph_to_record(graph=graph,
+                                                  bulk=True,
                                                   ds=self.current_dataset,
                                                   content_hash=content_hash,
                                                   force_insert=self.force_insert,
@@ -121,6 +127,14 @@ class BulkApiProcessor:
             self.rdf_graphs.append(record.get_triples(acceptance=acceptance))
             if settings.RDF_STORE_TRIPLES:
                 self.sparql_update_queries.append(record.create_sparql_update_query(acceptance=acceptance))
+            if process_verb in ['clear_orphans']:
+                purge_date = action.get('modification_date')
+                if purge_date:
+                    orphans_removed = RDFRecord.remove_orphans(spec=self.spec, timestamp=purge_date)
+                    logger.info("Deleted {} orphans for {} before {}".format(orphans_removed, self.spec, purge_date))
+            if process_verb in ['disable_index']:
+                RDFRecord.delete_from_index(self.spec)
+                logger.info("Deleted dataset {} from index. ".format(self.spec))
             return record
             # if process_verb in ['index', 'delete']:
             #     self.es_actions.append(
@@ -136,6 +150,7 @@ class BulkApiProcessor:
             #     if process_verb in ['store', 'index', 'delete']:
             #         deleted = process_verb == 'delete'
             #         self.sparql_update_queries.append(record.create_sparql_update_query(delete=deleted))
+
         except KeyError as ke:
             self.json_errors.append((ke, action))
             self.records_with_errors += 1
@@ -166,12 +181,13 @@ class BulkApiProcessor:
 
     def _processing_statistics(self):
         return {
+            'spec': self.spec,
             'total_received': len(self.api_requests),
             # 'rdf_errors': len(self.rdf_errors),
             # 'store_errors': self.records_with_errors,
             # 'json_errors': len(self.json_errors),
             # 'index_errors': len(self.index_errors),
-            'content_hash_matches': self.records_already_stored,
+            # 'content_hash_matches': self.records_already_stored,
             'records_stored': self.records_stored,
             # 'errors': {
             #

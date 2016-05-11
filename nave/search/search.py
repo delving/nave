@@ -15,7 +15,7 @@ from django.core.paginator import Paginator, Page
 from django.http import QueryDict
 from elasticsearch_dsl import Search
 from elasticsearch_dsl.result import Result
-from elasticutils import S, F
+from elasticutils import S, F, Q
 from geojson import Point, Feature, FeatureCollection
 # noinspection PyMethodMayBeStatic
 from rest_framework.request import Request
@@ -147,6 +147,21 @@ class GeoS(S):
         return bounding_box
 
 
+    @staticmethod
+    def get_solr_style_bounding_box(distance, point):
+        """The hub2 equivalent filter for a bounding box."""
+        # lonLat conform geojson
+        lat, lon = point.split(',')
+        point = "{},{}".format(lon, lat)
+        bb_filter = {
+            "geo_distance": {
+                "distance": "{}km".format(distance),
+                "point": point
+            }
+        }
+        return bb_filter
+
+
 class NaveESQuery(object):
     """
     This class builds ElasticSearch queries from default settings and HTTP request as provided by Django
@@ -176,7 +191,7 @@ class NaveESQuery(object):
         self.page = 1
         self.converter = converter
         self.non_legacy_keys = ['delving_deepZoomUrl', 'delving_geohash', 'delving_year', 'delving_thumbnail',
-                                'delving_fullTextObjectUrl', 'delving_fullText', 'delving_geohash']
+                                'delving_fullTextObjectUrl', 'delving_fullText', 'delving_geohash', 'delving_spec']
 
     @staticmethod
     def _as_list(param):
@@ -232,6 +247,9 @@ class NaveESQuery(object):
                 if key.startswith('delving_') and key not in self.non_legacy_keys:
                     key = "legacy.{}".format(key)
                 filter_dict[key].add(":".join(value))
+            else:
+                # add support for query based filters
+                filter_dict['query'].add(filt)
         return filter_dict
 
     @staticmethod
@@ -295,6 +313,28 @@ class NaveESQuery(object):
             query = query.doctypes(*self._as_list(self.doc_types))
         return query
 
+    def _create_query_string(self, query_string):
+        if self._is_fielded_query(query_string):
+            query_string = self._created_fielded_query(query_string)
+            query = {
+                "query_string": {
+                    "default_field": "_all",
+                    "query": query_string,
+                    "auto_generate_phrase_queries": True,
+                }
+            }
+        else:
+            query = {
+                "query_string": {
+                    "default_field": "_all",
+                    "query": query_string,
+                    "auto_generate_phrase_queries": True,
+                    # "default_operator": "AND",
+                    "minimum_should_match": "2<50%"
+                }
+            }
+        return query
+
     @staticmethod
     def _is_fielded_query(query_string):
         matcher = re.compile(r"[_a-zA-Z0-9\.]+:[\S]|\sNOT\s|\sAND\s|\sOR\s")
@@ -317,7 +357,9 @@ class NaveESQuery(object):
         query_string = multiple_replace(mapping_dict, query_string)
         # default fielded query is to .value
         query_string = re.sub("([\w]+)_([\w]+):", r"\1_\2.value:", query_string)
-        if "delving_" in query_string:
+        if "delving_spec.value" in query_string:
+            query_string = query_string.replace("delving_spec.value", "system.spec.raw")
+        elif "delving_" in query_string:
             exclude = "(delving_{}[a-zA-Z]+).value:".format(
                 "".join(["(?!{})".format(key) for key in self.non_legacy_keys]))
             query_string = re.sub(exclude, "legacy.\\1.value:", query_string)
@@ -367,7 +409,7 @@ class NaveESQuery(object):
         value_list = param[1]
         return [(key, value) for value in value_list]
 
-    def build_query_from_request(self, request):
+    def build_query_from_request(self, request, raw_query_string=None):
 
         @contextmanager
         def robust(key):
@@ -382,8 +424,11 @@ class NaveESQuery(object):
                 raise
 
         query = self.query
+        query_string = raw_query_string if raw_query_string else request._request.META['QUERY_STRING']
         if self.converter is not None:
-            query_dict = self.apply_converter_rules(request._request.META['QUERY_STRING'], self.converter)
+            query_dict = self.apply_converter_rules(query_string, self.converter)
+        elif raw_query_string:
+            query_dict = QueryDict(query_string=query_string)
         else:
             query_dict = request.query_params if isinstance(request, Request) else request.GET
 
@@ -396,7 +441,7 @@ class NaveESQuery(object):
         # remove non filter keys
         for key, value in list(facet_params.items()):
             if key in ['start', 'page', 'rows', 'format', 'diw-version', 'lang', 'callback',
-                       'facetBoolType']:
+                       'facetBoolType', 'facet.limit']:
                 del facet_params[key]
             if not value and key in facet_params:
                 del facet_params[key]
@@ -425,26 +470,28 @@ class NaveESQuery(object):
         # update key
         if 'query' in params and 'q' not in params:
             params['q'] = params.get('query')
+        # add hidden filters:
+        exclude_filter_list = params.getlist("pop.filterkey")
+        hidden_filter_dict = self._filters_as_dict(
+            self.hidden_filters,
+            exclude=exclude_filter_list
+        ) if self.hidden_filters else defaultdict(set)
+        hidden_queries = hidden_filter_dict.pop("query", [])
         if self.param_is_valid('q', params) and not params.get('q') in ['*:*']:
             query_string = params.get('q')
 
             if "&quot;" in query_string:
                 query_string = query_string.replace('&quot;', '"')
-            if self._is_fielded_query(query_string):
-                query = query.query_raw({
-                    "query_string": {
-                        "default_field": "_all",
-                        "query": self._created_fielded_query(query_string)
-                    }
-                })
-            else:
-                query = query.query(_all__match=query_string)
+            for hq in hidden_queries:
+                query_string = "{} {}".format(query_string, hq)
+            query = query.query_raw(self._create_query_string(query_string))
         # add lod_filtering support
         elif "lod_id" in params:
             lod_uri = params.get("lod_id")
             query = query.query(
                     **{'rdf.object.id': lod_uri, "must": True}).filter(~F(**{'system.about_uri': lod_uri}))
-
+        elif hidden_queries:
+            query = query.query_raw(self._create_query_string(" ".join(hidden_queries)))
         else:
             query = query.query()
 
@@ -453,12 +500,6 @@ class NaveESQuery(object):
         if 'qf' in params:
             with robust('qf'):
                 self._filters_as_dict(params.getlist('qf'), filter_dict)
-        # add hidden filters:
-        exclude_filter_list = params.getlist("pop.filterkey")
-        hidden_filter_dict = self._filters_as_dict(
-                self.hidden_filters,
-                exclude=exclude_filter_list
-        ) if self.hidden_filters else defaultdict(set)
 
         if 'hqf' in params:
             with robust('hqf'):
@@ -469,23 +510,49 @@ class NaveESQuery(object):
                         exclude=exclude_filter_list
                 )
                 facet_params.pop('hqf')
-
-        # combine all filters
+        facet_bool_type_and = False
+        if "facetBoolType" in params:
+            facet_bool_type_and = params.get("facetBoolType").lower() in ["and"]
+        # Important: hidden query filters need to be additional query and not filters.
+        if hidden_filter_dict:
+            for key, values in hidden_filter_dict.items():
+                query_list = []
+                for value in values:
+                    if key.startswith('-'):
+                        query_list.append("(NOT {})".format(value))
+                    else:
+                        query_list.append("{}".format(value))
+                if facet_bool_type_and:
+                    query_string = " AND ".join(query_list)
+                else:
+                    query_string = " OR ".join(query_list)
+                query = query.filter(F(**{self.query_to_facet_key(key): query_string}))
         filter_dict.update(hidden_filter_dict)
         self.applied_filters = filter_dict
         applied_facet_fields = []
+
         if filter_dict:
             for key, values in list(filter_dict.items()):
                 applied_facet_fields.append(key.lstrip('-+').replace('.raw', ''))
                 f = F()
                 for value in values:
+                    clean_value = value.strip("\"")
                     if key.startswith('-'):
-                        f |= ~F(**{self.query_to_facet_key(key): value})
+                        f |= ~F(**{self.query_to_facet_key(key): clean_value})
+                    elif facet_bool_type_and:
+                        f &= F(**{self.query_to_facet_key(key): clean_value})
                     else:
-                        f |= F(**{self.query_to_facet_key(key): value})
+                        f |= F(**{self.query_to_facet_key(key): clean_value})
 
                 query = query.filter(f)
-
+                # old solr style bounding box query
+        bbox_filter = None
+        if {'pt', 'd'}.issubset(list(params.keys())):
+            point = params.get('pt')
+            if point:
+                bbox_filter = GeoS.get_solr_style_bounding_box(params.get('d', '10'), point)
+                query = query.filter_raw(bbox_filter)
+                # todo: test this with the monument data
         # add facets
         facet_list = self._as_list(self.default_facets) if self.default_facets else []
         if 'facet' in params:
@@ -502,10 +569,29 @@ class NaveESQuery(object):
                     self.facet_size = int(params.get('facet.size'))
                 # add .raw if not already there
                 # facet_list = ["{}.raw".format(facet.rstrip('.raw')) for facet in facet_list]
+                facet_filt_dict = {"{}.raw".format(k.split('.')[0]): list(v) for k, v in filter_dict.items()}
                 for facet in facet_list:
-                    filtered = facet.replace('.raw', '') not in applied_facet_fields
-                    query = query.facet(facet, filtered=filtered, size=self.facet_size)
-
+                    # remove current facet from filter dict
+                    if not facet_bool_type_and:
+                        facet_filter = {k: v for k, v in facet_filt_dict.items() if k != facet}
+                    else:
+                        facet_filter = facet_filt_dict
+                    # implement facet raw queries
+                    formatted_facet_filter = {
+                        facet:
+                        {
+                            'terms': {'field': facet, 'size': self.facet_size}
+                        }
+                    }
+                    and_face_filter_list = [{"terms": {k: v}} for k, v in facet_filter.items()]
+                    if bbox_filter:
+                        and_face_filter_list.append(bbox_filter)
+                    if and_face_filter_list:
+                        formatted_facet_filter[facet]['facet_filter'] = {
+                            #'terms': facet_filter
+                            "and": and_face_filter_list
+                        }
+                    query = query.facet_raw(**formatted_facet_filter)
         # add bounding box
         bounding_box_param_keys = GeoS.BOUNDING_BOX_PARAM_KEYS
         if set(bounding_box_param_keys).issubset(list(params.keys())):
@@ -543,7 +629,9 @@ class NaveESQuery(object):
         return query
 
     def query_to_facet_key(self, facet_key):
-        if facet_key.startswith('delving_') and facet_key not in self.non_legacy_keys:
+        if facet_key.startswith('delving_spec'):
+            facet_key = "system.spec.raw"
+        elif facet_key.startswith('delving_') and facet_key not in self.non_legacy_keys:
             facet_key = 'legacy.{}'.format(facet_key)
         if "." not in facet_key:
             facet_key = "{}.raw".format(facet_key)
@@ -572,8 +660,9 @@ class FacetCountLink(object):
         self._query = query
         self._filter_query = "{}:{}".format(self._get_clean_name, self._value)
         self._facet_params = self._query.facet_params.copy()
-        self._is_selected = self._is_selected()
+        self._is_selected = self._set_is_selected()
         self._link = None
+        self._full_link = None
 
     @property
     def _get_clean_name(self):
@@ -585,9 +674,11 @@ class FacetCountLink(object):
                     as_query_dict=False,
                     reverse=False
                 )
+            else:
+                self._clean_name = self._name
         return self._clean_name
 
-    def _is_selected(self):
+    def _set_is_selected(self):
         filter_query = self._filter_query
         filter_params = self._facet_params.getlist('qf')
         return filter_query in filter_params
@@ -601,23 +692,37 @@ class FacetCountLink(object):
         return self._count
 
     @property
+    def full_link(self):
+        if not self._full_link:
+            query = self._query.base_params.get('q', "")
+            self._full_link = "?q={}&{}".format(query, self.link.lstrip('&?'))
+        return self._full_link
+
+    @property
     def link(self):
         if not self._link:
             facet_params = self._facet_params.copy()
             for key, value in list(facet_params.items()):
-                if key in ['start', 'page', 'rows', 'format', 'diw-version', 'lang', 'callback', 'query', 'q']:
+                if key in ['start', 'page', 'rows', 'format', 'diw-version', 'lang', 'callback', 'query', 'q',
+                           'facet.limit', 'facetBoolType']:
                     del facet_params[key]
                 if not value and key in facet_params:
                     del facet_params[key]
             selected_facets = self._facet_params.getlist('qf')
+            # todo: later replace the replace statements with urlencode() as well for query filters
             if facet_params:
-                link = "{}&qf={}".format(facet_params.urlencode(), self._filter_query.replace(":", "%3A"))
+                link = "{}&qf={}".format(
+                    facet_params.urlencode(),
+                    self._filter_query.replace(":", "%3A").replace("&", "%26")
+                )
             else:
-                link = "qf={}".format(self._filter_query.replace(":", "%3A"))
+                link = "qf={}".format(
+                    self._filter_query.replace(":", "%3A").replace("&", "%26")
+                )
             if self.is_selected:
                 selected_facets = [facet for facet in selected_facets if facet != self._filter_query]
-                self._facet_params.setlist('qf', selected_facets)
-                link = "{}".format(self._facet_params.urlencode())
+                facet_params.setlist('qf', selected_facets)
+                link = "{}".format(facet_params.urlencode())
             if not link:
                 return ""
             if self._query.converter:
@@ -724,7 +829,7 @@ class FacetLink(object):
     @property
     def is_facet_selected(self):
         if not self._is_selected:
-            facet_name = self._name
+            facet_name = self._get_clean_name
             applied_filter_keys = self._query.applied_filters.keys()
             self._is_selected = facet_name in list(applied_filter_keys)
         return self._is_selected
@@ -744,13 +849,21 @@ class FacetLink(object):
 
 class NaveFacets(object):
     def __init__(self, nave_query, facets):
-        self._facets = facets
+        self._facets = NaveFacets._respect_facet_config_ordering(facets)
         self._nave_query = nave_query
         self._facet_querylinks = self._create_facet_query_links()
 
+    @staticmethod
+    def _respect_facet_config_ordering(facets):
+        facet_order = settings.FACET_CONFIG
+        ordered_dict = collections.OrderedDict()
+        for facet in facet_order:
+            ordered_dict[facet.es_field] = facets.get(facet.es_field)
+        return ordered_dict
+
     def _create_facet_query_links(self):
-        facet_query_links = {}
-        for key, facet in list(self._facets.items()):
+        facet_query_links = collections.OrderedDict()
+        for key, facet in self._facets.items():
             if key in ['places.raw']:
                 continue
             clean_name = key.replace('.raw', '')
@@ -1274,7 +1387,11 @@ class NaveQueryResponse(object):
 
     @property
     def layout(self):
-        if not self._converter:
+        converter = self._converter
+        if not converter and settings.DEFAULT_V1_CONVERTER is not None:
+                from void import REGISTERED_CONVERTERS
+                converter = REGISTERED_CONVERTERS.get(settings.DEFAULT_V1_CONVERTER, None)
+        if not converter:
             return {}
-        layout_fields = self._converter().get_layout_fields()
+        layout_fields = converter().get_layout_fields()
         return {"layout": layout_fields}

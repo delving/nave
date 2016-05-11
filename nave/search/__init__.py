@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 """
 Here the search app is initialised and the settings verified
 
@@ -67,6 +67,7 @@ mappings = {
                 "_all": {
                     "enabled": True
                 },
+                "date_detection": False,
                 'properties': {
                     'id': {'type': 'integer'},
                     'absolute_url': {'type': 'string'},
@@ -76,10 +77,54 @@ mappings = {
                     "delving_geohash": {
                         "type": "geo_point"
                     },
+                    "system": {
+                        'properties': {'about_uri': {'fields': {'raw': {
+                            'index': 'not_analyzed',
+                            'type': 'string'}},
+                            'type': 'string'},
+                            'caption': {'fields': {'raw': {
+                                'index': 'not_analyzed',
+                                'type': 'string'}},
+                                'type': 'string'},
+                            'created_at': {'format': 'dateOptionalTime', 'type': 'date'},
+                            'graph_name': {'fields': {'raw': {
+                                'index': 'not_analyzed',
+                                'type': 'string'}},
+                                'type': 'string'},
+                            'modified_at': {'format': 'dateOptionalTime', 'type': 'date'},
+                            'preview': {'fields': {'raw': {
+                                'index': 'not_analyzed',
+                                'type': 'string'}},
+                                'type': 'string'},
+                            'slug': {'fields': {'raw': {
+                                'index': 'not_analyzed',
+                                'type': 'string'}},
+                                'type': 'string'},
+                            'source_graph': {'index': 'no', 'type': 'string'},
+                            'source_uri': {'fields': {'raw': {
+                                'index': 'not_analyzed',
+                                'type': 'string'}},
+                                'type': 'string'},
+                            'spec': {'fields': {'raw': {
+                                'index': 'not_analyzed',
+                                'type': 'string'}},
+                                'type': 'string'},
+                            'thumbnail': {'fields': {'raw': {
+                                'index': 'not_analyzed',
+                                'type': 'string'}},
+                                'type': 'string'},
+                        }
+                    }
                 },
                 "dynamic_templates": [
-                    {"system": {
-                        "path_match": "system.*",
+                    {"dates": {
+                        "match": "*_at",
+                        "mapping": {
+                            "type": "date",
+                        }
+                    }},
+                    {"legacy": {
+                        "path_match": "legacy.*",
                         # "match_mapping_type": "string",
                         "mapping": {
                             "type": "string",
@@ -95,8 +140,8 @@ mappings = {
                             }
                         }
                     }},
-                    {"legacy": {
-                        "path_match": "legacy.*",
+                    {"rdf": {
+                        "path_match": "rdf.*",
                         # "match_mapping_type": "string",
                         "mapping": {
                             "type": "string",
@@ -157,6 +202,13 @@ mappings = {
                             "index": "not_analyzed"
                         }
                     }},
+                    {"graphs": {
+                        "match": "*_graph",
+                        "mapping": {
+                            "type": "string",
+                            "index": "no"
+                        }
+                    }},
                     {"inline": {
                         "match": "inline",
                         "mapping": {
@@ -172,15 +224,14 @@ mappings = {
                                 "raw": {
                                     "type": "string",
                                     "index": "not_analyzed",
-                                    "ignore_above": 256
+                                    "ignore_above": 1024
                                 }
                             }
                         }
-                    }},
-                ],
+                    }}
+                ]
             }
-    }
-}
+    }}
 
 
 def create_index(index_name, aliases=None, mapping=None, force_create=False):
@@ -204,6 +255,8 @@ def create_index(index_name, aliases=None, mapping=None, force_create=False):
     if not es.indices.exists(index_name):
         es.indices.create(index=index_name, body=local_mapping)
         created = True
+    #else:
+    #    es.indices.put_mapping(index=index_name, body=local_mapping, doc_type="void_edmrecord")
     index_aliases = es.indices.get_alias(index_name)
     logger.info("Index {} is now available with the following aliases: {}".format(index_name, index_aliases))
     return created

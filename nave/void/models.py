@@ -30,16 +30,16 @@ from django.utils import timezone
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 from django_extensions.db.fields import AutoSlugField
-from django_extensions.db.models import TimeStampedModel
+from django_extensions.db.models import TimeStampedModel, TitleDescriptionModel
 from elasticsearch import Elasticsearch, helpers
 from rdflib import URIRef, Graph, Literal, ConjunctiveGraph
 from rdflib.namespace import RDF, SKOS
 from taggit.managers import TaggableManager
 
-from lod import namespace_manager, get_rdf_base_url
+from lod import namespace_manager
 from lod.models import RDFModel
 from lod.utils import rdfstore
-from lod.utils.edm import RDFPredicate
+from lod.utils.resolver import RDFPredicate, RDFRecord
 from lod.utils.rdfstore import QueryType, RDFStore
 
 logger = logging.getLogger(__name__)
@@ -602,7 +602,7 @@ class DataSet(TimeStampedModel, GroupOwned):
         if language:
             label = "{}/{}".format(language, label)
         return "{}/resource/dataset/{}/{}".format(
-                get_rdf_base_url(prepend_scheme=True),
+                RDFRecord.get_rdf_base_url(prepend_scheme=True),
                 self.spec,
                 label
         )
@@ -647,14 +647,12 @@ class DataSet(TimeStampedModel, GroupOwned):
     def delete_from_index(self, index='{}'.format(settings.SITE_NAME)):
         """Delete all dataset records from the Search Index. """
         # TODO: use nested query for this to delete by spec and not only for the unfielded spec name
-        response = es.delete_by_query(index=index, q="legacy.delving_spec.raw:\"{}\"".format(self.spec))
+        response = es.delete_by_query(index=index, q="system.spec.raw:\"{}\"".format(self.spec))
         logger.info("Deleted {} from Search index with message: {}".format(self.spec, response))
         return response
 
-    def _delete_dataset_records_in_rdfstore(self, store):
-        """Only delete all records in the rdf store linked to this Dataset."""
-        delete_records = """
-        PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+    def _sparql_delete_all_query(self):
+        delete_records = """DROP SILENT GRAPH <{graph_uri}>;
           DELETE {{
              GRAPH ?g {{
                 ?s ?p ?o .
@@ -662,14 +660,19 @@ class DataSet(TimeStampedModel, GroupOwned):
           }}
           WHERE {{
              GRAPH ?g {{
-                ?foafDoc foaf:PrimaryTopic ?record .
+                ?foafDoc <http://xmlns.com/foaf/0.1/primaryTopic> ?record .
                 ?foafDoc <http://schemas.delving.eu/narthex/terms/belongsTo>  <{dataset_uri}> .
                 ?record a <http://schemas.delving.eu/narthex/terms/Record> .
              }}
              GRAPH ?g {{
                 ?s ?p ?o .
              }}
-          }};""".format(dataset_uri=self.document_uri)
+          }};""".format(dataset_uri=self.document_uri, graph_uri=self.named_graph)
+        return delete_records
+
+    def _delete_dataset_records_in_rdfstore(self, store):
+        """Only delete all records in the rdf store linked to this Dataset."""
+        delete_records = self._sparql_delete_all_query()
         logger.info("Drop all graphs for dataset {}".format(self.spec))
         return store.update(query=delete_records)
 
@@ -1110,6 +1113,7 @@ class EDMRecord(RDFModel):
             edm_record = EDMRecord(**update_values)
         return edm_record
 
+
 # @receiver(post_save, sender=EDMRecord)
 # def update_in_index(sender, instance, **kw):
 #     from lod import tasks
@@ -1132,9 +1136,6 @@ class EDMRecord(RDFModel):
 #     from lod import tasks
 #     tasks.delete_rdf_resource.delay(instance)
 #     tasks.remove_rdf_from_index.delay(instance)
-
-
-
 #
 #
 # class EDMBaseModel(TimeStampedModel):

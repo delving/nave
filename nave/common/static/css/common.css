@@ -54,21 +54,6 @@ body:after {
   display: -ms-flexbox;
   display: flex;
 }
-/* a little help for the multicolumn cms plugins */
-.multicolumn2,
-.multicolumn3,
-.multicolumn4,
-.multicolumn5,
-.multicolumn6 {
-  margin: 0px -15px;
-}
-.multicolumn2 .column,
-.multicolumn3 .column,
-.multicolumn4 .column,
-.multicolumn5 .column,
-.multicolumn6 .column {
-  padding: 0px 15px;
-}
 /* list styles */
 .list-blocks li {
   background: #eaeaea;
@@ -92,16 +77,6 @@ body:after {
   border-bottom: 1px solid #ddd;
   list-style: none;
   padding: 2px 0;
-}
-/* a bootstrap grid addition to allow for 5 equal columns */
-.col-sm-1of5 {
-  width: 20%;
-  /* Extra Small Devices, Phones */
-}
-@media only screen and (max-width: 768px) {
-  .col-sm-1of5 {
-    width: 100%;
-  }
 }
 /*************************************************
  Key-value lists
@@ -131,7 +106,7 @@ ul.key-value-list li:after {
   clear: both;
 }
 ul.key-value-list label {
-  color: #999999;
+  color: #999;
   display: inline-block;
   font-weight: 100;
   margin: 0 4px 0 0;
@@ -149,7 +124,7 @@ ul.key-value-list span.value {
   font-size: inherit;
 }
 ul.key-value-list.lined li {
-  border-bottom: 1px solid #eeeeee;
+  border-bottom: 1px solid #eee;
   padding: 4px 0px;
 }
 ul.key-value-list.small {
@@ -169,101 +144,85 @@ ul.key-value-list.stacked li label {
 ul.key-value-list.wide label {
   min-width: 10em;
 }
-/* Twitter Bootstrap overrides */
+/*************************************************
+ Twitter Bootstrap overrides
+**************************************************/
+/* a bootstrap grid addition to allow for 5 equal columns */
+.col-sm-1of5 {
+  width: 20%;
+  /* Extra Small Devices, Phones */
+}
+@media only screen and (max-width: 768px) {
+  .col-sm-1of5 {
+    width: 100%;
+  }
+}
 .popover {
   max-width: 300px;
   word-wrap: break-word;
 }
-/* cms annoyances **************************************/
-/* CMS active overrides */
-html.cms-ready {
-  margin-top: 0px !important;
-}
-#cms_toolbar {
-  top: 0px !important;
-}
-#cms_toolbar .cms_toolbar-trigger {
-  top: 0px !important;
-}
-#cms_toolbar .cms_debug-bar {
-  display: none;
-}
-#cms_toolbar.cms_toolbar-debug div.cms_toolbar,
-#cms_toolbar.cms_toolbar-debug div.cms_toolbar-trigger {
-  top: 0px !important;
-}
-#cms_toolbar.cms_toolbar-debug div.cms_toolbar-trigger {
-  left: 0px !important;
-  border-right: 1px solid #000;
-  width: 32px;
+.modal-backdrop.in {
+  height: 200%;
+  z-index: 1040;
 }
 /* slide out side panels ****************************/
 .side-panel {
   background-color: #222;
   color: #bbb;
   height: 100%;
-  width: 280px;
+  width: 500px;
   /*********************/
   position: fixed;
   top: 0;
   z-index: 10;
   /*********************/
-  -webkit-transition: all 0.3s ease;
-  -moz-transition: all 0.3s ease;
-  transition: all 0.3s ease;
+  -webkit-transition: all 0.75s ease;
+  -moz-transition: all 0.75s ease;
+  transition: all 0.75s ease;
 }
 .side-panel.left {
-  left: -280px;
+  left: -500px;
+}
+.side-panel.left.open {
+  left: 0px;
 }
 .side-panel.right {
-  right: -280px;
+  right: -500px;
 }
-.side-panel.show-left {
-  left: 0;
-}
-.side-panel.show-right {
-  right: 0;
+.side-panel.right.open {
+  right: 0px;
 }
 .side-panel-inner {
-  padding: 10px;
+  padding: 20px;
 }
-#show-side-panel-right {
+.side-panel-tab {
   background: #222;
   color: #888;
   font-size: 1.2em;
   height: 32px;
-  margin-right: 100%;
   padding: 6px 10px 7px 10px;
-  width: 32px;
-  /*********************/
   position: absolute;
-  top: 300px;
+  top: 100px;
+  width: 32px;
+  -webkit-transition: all 0.75s ease;
+  -moz-transition: all 0.75s ease;
+  transition: all 0.75s ease;
+}
+.right .side-panel-tab {
+  margin-right: 100%;
   right: 0;
-  /*********************/
-  -webkit-transition: all 0.3s ease;
-  -moz-transition: all 0.3s ease;
-  transition: all 0.3s ease;
 }
-/* lifted corners box shadow ***********/
-/* cms-plugin STATISTIC BLOCK ***********/
-.statistics-block {
-  padding: 30px 10px;
-  text-align: center;
+.left .side-panel-tab {
+  margin-left: 100%;
+  left: 0px;
 }
-.statistics-block .text {
-  color: #999999;
-  font-family: Arial, "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-weight: normal;
-}
-.statistics-block .count {
-  color: #333333;
-  font-family: Georgia, "Times New Roman", Times, serif;
-  font-size: 1.25em;
+.side-panel-tab:hover {
+  cursor: pointer;
 }
 /* image placeholder **************/
 /* placeholder no image */
 .no-image-placeholder {
-  background: #ffffff;
+  background: #fff;
   background-position: 50% 50%;
   height: 165px;
   position: relative;
@@ -278,13 +237,13 @@ html.cms-ready {
 .no-image-placeholder span {
   position: absolute;
   top: 40%;
-  color: #333333;
+  color: #333;
   display: block;
   text-align: center;
   width: 100%;
 }
 .no-image-placeholder .overlay {
-  background-color: #ffffff;
+  background-color: #fff;
   background-color: rgba(255, 255, 255, 0.75);
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#bfffffff, endColorstr=#bfffffff);
   -ms-filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#bfffffff, endColorstr=#bfffffff);

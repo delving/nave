@@ -24,9 +24,9 @@ from lxml import etree as ET
 from rdflib import URIRef, Literal
 
 from lod import namespace_manager
-from lod.models import RDFSubjectLookUp
-from lod.utils.edm import GraphBindings
+from lod.utils.resolver import GraphBindings
 from lod.utils.rdfstore import get_rdfstore, UnknownGraph
+from lod.utils.resolver import RDFRecord
 
 logger = logging.getLogger(__name__)
 
@@ -184,9 +184,9 @@ class BaseConverter(object):
         graph = None
         try:
             if settings.RDF_USE_LOCAL_GRAPH:
-                record = RDFSubjectLookUp.objects.filter(subject_uri=link)
+                record = RDFRecord(source_uri=link)
                 if record.exists():
-                    graph = record.first().content_object.get_graph()
+                    graph = record.get_graph()
                 else:
                     raise UnknownGraph("unable to find {}".format(link))
             else:
@@ -325,7 +325,8 @@ class DefaultAPIV2Converter(BaseConverter):
             index_doc = self.bindings().to_flat_index_doc()
         else:
             raise ValueError("Unable to convert due to missing bindings or es_fields")
-        del index_doc['rdf']
+        if 'rdf' in index_doc:
+            del index_doc['rdf']
         output_doc = copy.deepcopy(index_doc)
         for k, value_list in index_doc.items():
             if k.startswith("narthex_"):

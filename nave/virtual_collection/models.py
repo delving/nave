@@ -2,8 +2,11 @@
 """
 
 """
+from django.core.urlresolvers import reverse
 from django.db import models
+from django.http import QueryDict
 from django.utils.encoding import python_2_unicode_compatible
+from django_extensions.db.fields import AutoSlugField
 from django_extensions.db.models import TimeStampedModel
 from filer.fields.image import FilerImageField
 from django.utils.translation import ugettext_lazy as _
@@ -11,7 +14,6 @@ from django.utils.translation import ugettext_lazy as _
 from void.models import GroupOwned, OaiPmhPublished, EDMRecord
 
 
-@python_2_unicode_compatible
 class VirtualCollection(TimeStampedModel, GroupOwned):
     """
     The models holds the information for the Virtual collections
@@ -20,8 +22,9 @@ class VirtualCollection(TimeStampedModel, GroupOwned):
         _("title"),
         max_length=512
     )
-    description = models.TextField(
-        _("description"),
+    slug = AutoSlugField(populate_from='title')
+    body = models.TextField(
+        _("body"),
         blank=True,
         null=True
     )
@@ -31,26 +34,15 @@ class VirtualCollection(TimeStampedModel, GroupOwned):
         null=True,
         help_text=_("The full query as used on the search page or search API.")
     )
-    oai_pmh = models.IntegerField(
-        choices=OaiPmhPublished(),
-        verbose_name=_("OAI-PMH"),
-        default=OaiPmhPublished.none,
-        help_text=_("OAI-PMH harvestable"),
-    )
-    # description = RichText
-    published = models.BooleanField(
+    oai_pmh = models.BooleanField(
         _("published"),
         default=True,
         help_text=_("Is this collection publicly available.")
     )
-    automatic_refresh = models.BooleanField(
-        _("automatic refresh"),
-        default=False,
-        help_text=_("Rerun the query periodically.")
-    )
-    records = models.ManyToManyField(
-        EDMRecord,
-        through="virtual_collection.models.CollectionMembership"
+    published = models.BooleanField(
+        _("published"),
+        default=True,
+        help_text=_("Is this collection publicly available.")
     )
     owner = models.CharField(
         _("owner key"),
@@ -66,13 +58,13 @@ class VirtualCollection(TimeStampedModel, GroupOwned):
         null=True,
         help_text=_("name or institution")
     )
-    tags = TaggableManager()
-    image = FilerImageField(
-        _("image"),
-        blank=True,
-        null=True,
-        help_text=_("The image for the virtual collection.")
-    )
+    #tags = TaggableManager()
+    # image = FilerImageField(
+    #     _("image"),
+    #     blank=True,
+    #     null=True,
+    #     help_text=_("The image for the virtual collection.")
+    # )
 
     class Meta(object):
         verbose_name = _("Virtual Collection")
@@ -81,11 +73,18 @@ class VirtualCollection(TimeStampedModel, GroupOwned):
     def __str__(self):
         return self.title
 
+    def get_absolute_url(self):
+        return reverse('virtual_collection_detail', kwargs={'slug': self.slug})
 
-class CollectionMembership(TimeStampedModel):
-    """
-    This is the link model to link EDM records to Virtual collections
-    """
-    collection = models.ForeignKey(VirtualCollection)
-    record = models.ForeignKey(EDMRecord)
-    # todo add orderable
+    def save(self, *args, **kwargs):
+        allowed_filters = ["qf=", 'hfq=', "q=", "hqf[]=", "qf[]="]
+        if any(key in self.query for key in allowed_filters):
+            # create the proper format string
+            filter_list = []
+            query_dict = QueryDict(query_string=self.query.split("?", maxsplit=1)[-1])
+            for k, v in query_dict.items():
+                if any([key.startswith(k) for key in allowed_filters]) and v:
+                    applied_filter = query_dict.getlist(k)
+                    filter_list.extend(applied_filter)
+            self.query = ";;;".join(["\"{}\"".format(k) for k in filter_list])
+        super(VirtualCollection, self).save(*args, **kwargs)

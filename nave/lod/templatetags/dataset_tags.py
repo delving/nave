@@ -1,11 +1,11 @@
 import logging
+from collections import namedtuple
 from urllib.parse import urlparse
 
 from django import template
 from django.conf import settings
 
-from lod import get_rdf_base_url
-from lod.utils.lod import get_cache_url
+from lod.utils.resolver import RDFRecord, get_cache_url
 
 register = template.Library()
 
@@ -16,13 +16,14 @@ logger = logging.getLogger(__name__)
 def get_binding(value, arg):
     return value[arg]
 
+
 @register.simple_tag(takes_context=True)
 def get_resolved_uri(context, uri):
     """Returns resolved uri, or Cached URI."""
     request = context['request']
     request_base = urlparse(request.build_absolute_uri()).netloc
     rdf_base = urlparse(uri).netloc
-    if request_base in settings.RDF_ROUTED_ENTRY_POINTS and rdf_base in get_rdf_base_url():
+    if request_base in settings.RDF_ROUTED_ENTRY_POINTS and rdf_base in RDFRecord.get_rdf_base_url():
         resolved_uri = uri.replace(rdf_base, request_base)
     elif rdf_base not in request_base:
         resolved_uri = get_cache_url(uri)
@@ -46,8 +47,11 @@ def field_exists(context, fieldname):
 
 # ######### result detail predicate and field value display ############################
 
-@register.inclusion_tag('rdf/_search-detail-media-preview.html', takes_context=True)
-def detail_media_preview(context, fieldname, alt="", fullscreen=False, thumbnail_nav=False):
+MockRDFObject = namedtuple('MockRDFObject', ["value"])
+
+
+@register.inclusion_tag('rdf/tags/_search-detail-media-preview.html', takes_context=True)
+def detail_media_preview(context, fieldname, alt="", fullscreen=False, indicators=False, thumbnail_nav=False):
     """
     :param context: page context
     :param fieldname: DataSet.MetadataRecord field name
@@ -55,17 +59,47 @@ def detail_media_preview(context, fieldname, alt="", fullscreen=False, thumbnail
     """
     bindings = context['resources']
     values = bindings.get_list(fieldname)
+    if not values:
+        values = [MockRDFObject(bindings.get_about_thumbnail)]
     alt = bindings[alt].value if bindings[alt] else []
-
-
 
     fullscreen = fullscreen
     thumbnail_nav = thumbnail_nav
+    indicators = indicators
     # values = ['http://www.dcn-images.nl/img/BDM/BDM_09809.jpg', 'http://www.dcn-images.nl/img/BDM/BDM_00807.jpg', 'http://www.dcn-images.nl/img/BDM/BDM_01999.jpg']
-    return {'values': values, 'alt': alt, 'fullscreen': fullscreen, 'thumbnail_nav': thumbnail_nav}
+    # values = ['http://igem.adlibsoft.com/wwwopacx/wwwopac.ashx?command=getcontent&server=images&value=bergh\\001305.jpg',
+    #     'http://igem.adlibsoft.com/wwwopacx/wwwopac.ashx?command=getcontent&server=images&value=bergh\\0217_44r_1.jpg',
+    #     'http://igem.adlibsoft.com/wwwopacx/wwwopac.ashx?command=getcontent&server=images&value=bergh\\0217_205r_1.jpg',
+    #     'http://igem.adlibsoft.com/wwwopacx/wwwopac.ashx?command=getcontent&server=images&value=bergh\\0217_44r_2.jpg',
+    #     'http://igem.adlibsoft.com/wwwopacx/wwwopac.ashx?command=getcontent&server=images&value=bergh\\0217_223v_1.jpg',
+    #     'http://igem.adlibsoft.com/wwwopacx/wwwopac.ashx?command=getcontent&server=images&value=bergh\\0217_249v_1.jpg',
+    #     'http://igem.adlibsoft.com/wwwopacx/wwwopac.ashx?command=getcontent&server=images&value=bergh\\0217_35r_1.jpg',
+    #     'http://igem.adlibsoft.com/wwwopacx/wwwopac.ashx?command=getcontent&server=images&value=bergh\\001313.jpg',
+    #     'http://igem.adlibsoft.com/wwwopacx/wwwopac.ashx?command=getcontent&server=images&value=bergh\\0217_66r_1.jpg',
+    #     'http://igem.adlibsoft.com/wwwopacx/wwwopac.ashx?command=getcontent&server=images&value=bergh\\001303.jpg',
+    #     'http://igem.adlibsoft.com/wwwopacx/wwwopac.ashx?command=getcontent&server=images&value=bergh\\0217_249v-250r.jpg',
+    #     'http://igem.adlibsoft.com/wwwopacx/wwwopac.ashx?command=getcontent&server=images&value=bergh\\0217_200r_1.jpg',
+    #     'http://igem.adlibsoft.com/wwwopacx/wwwopac.ashx?command=getcontent&server=images&value=bergh\\0217_202v-203r.jpg',
+    #     'http://igem.adlibsoft.com/wwwopacx/wwwopac.ashx?command=getcontent&server=images&value=bergh\\0217_172r_1.jpg',
+    #     'http://igem.adlibsoft.com/wwwopacx/wwwopac.ashx?command=getcontent&server=images&value=bergh\\0217_223v-224r.jpg',
+    #     'http://igem.adlibsoft.com/wwwopacx/wwwopac.ashx?command=getcontent&server=images&value=bergh\\0217_76v-77r.jpg',
+    #     'http://igem.adlibsoft.com/wwwopacx/wwwopac.ashx?command=getcontent&server=images&value=bergh\\0217_285v_2.jpg',
+    #     'http://igem.adlibsoft.com/wwwopacx/wwwopac.ashx?command=getcontent&server=images&value=bergh\\001302.jpg',
+    #     'http://igem.adlibsoft.com/wwwopacx/wwwopac.ashx?command=getcontent&server=images&value=bergh\\0217_82r_1.jpg',
+    #     'http://igem.adlibsoft.com/wwwopacx/wwwopac.ashx?command=getcontent&server=images&value=bergh\\001307.jpg',
+    #     'http://igem.adlibsoft.com/wwwopacx/wwwopac.ashx?command=getcontent&server=images&value=bergh\\001306.jpg',
+    #     'http://igem.adlibsoft.com/wwwopacx/wwwopac.ashx?command=getcontent&server=images&value=bergh\\0217_285v_3.jpg',
+    #     'http://igem.adlibsoft.com/wwwopacx/wwwopac.ashx?command=getcontent&server=images&value=bergh\\0217_203r_1.jpg',
+    #     'http://igem.adlibsoft.com/wwwopacx/wwwopac.ashx?command=getcontent&server=images&value=bergh\\0217_271v_2.jpg',
+    #     'http://igem.adlibsoft.com/wwwopacx/wwwopac.ashx?command=getcontent&server=images&value=bergh\\0217_249v_2.jpg',
+    #     'http://igem.adlibsoft.com/wwwopacx/wwwopac.ashx?command=getcontent&server=images&value=bergh\\0217_85r_1.jpg',
+    #     'http://igem.adlibsoft.com/wwwopacx/wwwopac.ashx?command=getcontent&server=images&value=bergh\\0217_148.jpg',
+    #     'http://igem.adlibsoft.com/wwwopacx/wwwopac.ashx?command=getcontent&server=images&value=bergh\\0217_164v_1.jpg']
+
+    return {'values': values, 'alt': alt, 'fullscreen': fullscreen, 'indicators': indicators, 'thumbnail_nav': thumbnail_nav}
 
 
-@register.inclusion_tag('rdf/_rdf_properties.html', takes_context=True)
+@register.inclusion_tag('rdf/tags/_rdf_properties.html', takes_context=True)
 def render_properties(context, resources, obj=None, items=None, predicate=None, level=1):
     if not items:
         if not obj:
@@ -92,7 +126,7 @@ def render_properties(context, resources, obj=None, items=None, predicate=None, 
 
 ########## result detail return field value only  for media item ######################
 
-@register.inclusion_tag('rdf/_search-detail-field.html', takes_context=True)
+@register.inclusion_tag('rdf/tags/_search-detail-field.html', takes_context=True)
 def detail_field(
         context,
         fieldname,

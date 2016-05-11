@@ -36,7 +36,7 @@ def delete_dataset_records(self, request, queryset):
     self.message_user(request,
                       "Records for {} dataset(s) scheduled for removal from Narthex and Nave.".format(len(queryset)))
 
-purge_dataset.short_description = "Remove Dataset Records."
+purge_dataset.short_description = "Remove Dataset Records"
 
 
 @takes_instance_or_queryset
@@ -51,6 +51,20 @@ def reindex_dataset(self, request, queryset):
 
 
 reindex_dataset.short_description = "Reindex dataset in production"
+
+
+@takes_instance_or_queryset
+def disable_dataset_in_index(self, request, queryset):
+    records_processed = 0
+    ds_processed = 0
+    for ds in queryset:
+        tasks.disable_dataset_in_index.delay(ds)
+        ds_processed += 1
+        records_processed += ds.valid
+    self.message_user(request, "{} dataset(s) disabled with {} records".format(ds_processed, records_processed))
+
+
+disable_dataset_in_index.short_description = "Disable dataset in production index"
 
 
 @takes_instance_or_queryset
@@ -139,7 +153,7 @@ class ProxyResourceInline(admin.TabularInline):
 class DataSetAdmin(reversion.admin.VersionAdmin):
     inlines = [ProxyResourceFieldInline]
 
-    actions = [reindex_dataset, reindex_dataset_acceptance, reset_dataset_content_hashes,
+    actions = [disable_dataset_in_index, reindex_dataset, reindex_dataset_acceptance, reset_dataset_content_hashes,
                reset_dataset_content_hashes_acceptance, save_narthex_file_production, save_narthex_file_acceptance,
                purge_dataset]
     search_fields = ['name', 'spec', 'data_owner']

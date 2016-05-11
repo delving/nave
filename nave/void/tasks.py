@@ -45,11 +45,14 @@ def process_bulk_api_request(self, request_payload):
         processor = BulkApiProcessor(request_payload)
         return processor.process()
     except URLError as ue:
-        self.retry(ue)
+        logger.error("Got url error for {}, but will retry again".format(ue))
+        self.retry()
     except socket.timeout as to:
-        self.retry(to)
+        logger.error("Got socket timeout for {}, but will retry again".format(to))
+        self.retry()
     except socket.error as err:
-        self.retry(err)
+        logger.error("Got socket error for {}, but will retry again".format(err))
+        self.retry()
 
 
 # ########################### Datasets #############################
@@ -145,6 +148,11 @@ def purge_deleted_datasets(store):
         ds.delete()
     logger.info("Purged {} datasets from Nave and Narthex: {}".format(nr_deleted, datasets_uris))
     return nr_deleted
+
+
+@shared_task()
+def disable_dataset_in_index(ds, acceptance=False):
+    return ds.delete_from_index()
 
 
 @shared_task()

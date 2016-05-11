@@ -114,6 +114,12 @@ extend ' .clearfix' has no matches
 .results-grid-item .no-image-placeholder {
   height: 200px;
 }
+.results-list .media .media-left {
+  width: 200px;
+}
+.results-list .media .media-left img {
+  max-width: 200px;
+}
 .results-grid {
   margin-left: -10px;
   margin-right: -10px;

@@ -3,14 +3,15 @@ from urllib.parse import quote
 
 import lod
 from lod.templatetags.dataset_tags import get_resolved_uri
+from lod.utils.resolver import RDFRecord
 
 
 def test__get_rdf_base_url__return_base_url_from_settings(settings):
     settings.RDF_BASE_URL = "http://testserver"
-    base_url = lod.get_rdf_base_url()
+    base_url = RDFRecord.get_rdf_base_url()
     assert base_url
     assert base_url == "testserver"
-    base_url = lod.get_rdf_base_url(prepend_scheme=True, scheme="https")
+    base_url = RDFRecord.get_rdf_base_url(prepend_scheme=True, scheme="https")
     assert base_url
     assert base_url == "https://testserver"
 
