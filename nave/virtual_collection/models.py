@@ -83,7 +83,7 @@ class VirtualCollection(TimeStampedModel, GroupOwned):
             filter_list = []
             query_dict = QueryDict(query_string=self.query.split("?", maxsplit=1)[-1])
             for k, v in query_dict.items():
-                if any([key.startswith(k) for key in allowed_filters]):
+                if any([key.startswith(k) for key in allowed_filters]) and v:
                     applied_filter = query_dict.getlist(k)
                     filter_list.extend(applied_filter)
             self.query = ";;;".join(["\"{}\"".format(k) for k in filter_list])
