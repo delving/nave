@@ -43,7 +43,10 @@ def toggle_proxy_field(request):
         try:
             content = request.data.copy()
             delete_string = content.pop("delete", 'false')
-            delete = True if delete_string.lower() in ['true'] else False
+            if not isinstance(delete_string, bool):
+                delete = True if delete_string.lower() in ['true'] else False
+            else:
+                delete = delete_string
             if not all([key in ['dataset_uri', 'property_uri'] for key in content.keys()]):
                 raise ValueError("dataset_uri or property_uri must be present in the request")
             field, created = ProxyResourceField.objects.get_or_create(**content)
@@ -68,7 +71,10 @@ def toggle_proxy_mapping(request):
         try:
             content = request.data.copy()
             delete_string = content.pop("delete", 'false')
-            delete = True if delete_string.lower() in ['true'] else False
+            if not isinstance(delete_string, bool):
+                delete = True if delete_string.lower() in ['true'] else False
+            else:
+                delete = delete_string
             if not all([key in ['user_uri', 'skos_concept_uri', 'proxy_resource_uri'] for key in content.keys()]):
                 raise ValueError("user_uri and proxy_resource_uri and skos_concept_uri must be present in the request")
             mapping, created = ProxyMapping.objects.get_or_create(**content)

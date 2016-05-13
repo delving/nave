@@ -29,6 +29,7 @@ import logging
 from urllib.parse import urlparse, quote
 
 from django.conf import settings
+from django.db.models.loading import get_model
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search
 from rdflib import Graph, URIRef, BNode, Literal
@@ -949,8 +950,33 @@ class RDFRecord:
     def get_graph(self, **kwargs):
         return self._graph
 
-    def get_context_graph(self, store, named_graph):
-        return Graph(), 0
+    def get_context_graph(self, with_mappings=False, include_mapping_target=False, acceptance=False, target_uri=None):
+        """Get Graph instance with linked ProxyResources.
+
+        :param target_uri: target_uri if you want a sub-selection of the whole graph
+        :param acceptance: if the acceptance data should be listed
+        :param include_mapping_target: Boolean also include the mapping target triples in graph
+        :param with_mappings: Boolean integrate the ProxyMapping into the graph
+        """
+        graph = self.get_graph()
+        if with_mappings:
+            ds_model = get_model(app_label="void", model_name="DataSet")
+            proxy_resource_model = get_model(app_label="void", model_name="ProxyResource")
+            ds = ds_model.objects.filter(spec=self.get_spec_name())
+            if len(ds) > 0:
+                ds = ds.first()
+            else:
+                return graph
+            proxy_resources, graph = proxy_resource_model.update_proxy_resource_uris(ds, graph)
+            for proxy_resource in proxy_resources:
+                graph = graph + proxy_resource.to_graph(include_mapping_target=include_mapping_target)
+        if target_uri and not target_uri.endswith("/about") and target_uri != self.source_uri:
+            g = Graph(identifier=URIRef(self.named_graph))
+            subject = URIRef(target_uri)
+            for p, o in graph.predicate_objects(subject=subject):
+                g.add((subject, p, o))
+            graph = g
+        return graph
 
     def rdf_string(self):
         if not self._rdf_string and self.get_graph():
@@ -960,6 +986,9 @@ class RDFRecord:
         return self._rdf_string
 
     def get_spec_name(self):
+        if self._spec is None:
+            uri_parts = self.source_uri.split('/')
+            self._spec = uri_parts[-2]
         return self._spec
 
     def create_sparql_update_query(self, delete=False, acceptance=False):
