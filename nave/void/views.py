@@ -41,8 +41,9 @@ def bulk_api(request):
 def toggle_proxy_field(request):
     if request.method in ['PUT', 'POST', 'DELETE']:
         try:
-            content = request.data
-            delete = bool(content.pop("delete", 'false'))
+            content = request.data.copy()
+            delete_string = content.pop("delete", 'false')
+            delete = True if delete_string.lower() in ['true'] else False
             if not all([key in ['dataset_uri', 'property_uri'] for key in content.keys()]):
                 raise ValueError("dataset_uri or property_uri must be present in the request")
             field, created = ProxyResourceField.objects.get_or_create(**content)
