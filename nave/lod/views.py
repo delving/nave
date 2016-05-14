@@ -198,7 +198,7 @@ class LoDDataView(View):
             mode = self.get_mode(request)
             if mode in ['context', 'api', 'api-flat']:
                 # get_graph(with_mappings=True, include_mapping_target=True, acceptance=acceptance)
-                content = local_object.get_graph()
+                content = local_object.get_context_graph(with_mappings=True, include_mapping_target=True)
                 if mode in ['api', 'api-flat']:
                     bindings = GraphBindings(about_uri=resolved_uri, graph=content)
                     index_doc = bindings.to_index_doc() if mode == 'api' else bindings.to_flat_index_doc()
@@ -353,6 +353,8 @@ class LoDHTMLView(TemplateView):
         if expert_mode:
             # do expert mode stuff like more like this
             context['expert_mode'] = True
+            if settings.MLT_DETAIL_ENABLE and object_local_cache:
+                context['data'] = {'items': object_local_cache.get_more_like_this()}
 
         display_mode = self.request.GET.get('display')
         view_modes = {

@@ -659,6 +659,8 @@ MLT_FIELDS = [
     "edm_dataProvider.value"
 ]
 
+MLT_DETAIL_ENABLE = True
+
 #############################
 #  IMAGE CONFIGURATION      #
 #############################

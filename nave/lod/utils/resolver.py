@@ -829,12 +829,13 @@ class RDFRecord:
 
     DEFAULT_RDF_FORMAT = "nt" if not settings.RDF_DEFAULT_FORMAT else settings.RDF_DEFAULT_FORMAT
 
-    def __init__(self, hub_id=None, source_uri=None, spec=None, rdf_string=None, org_id=None):
+    def __init__(self, hub_id=None, source_uri=None, spec=None, rdf_string=None, org_id=None, doc_type=None):
         if hub_id is None and source_uri is None and rdf_string is None:
             raise ValueError("either source_uri or hub_id or rdf_string must be given at initialisation.")
         self._hub_id = hub_id
         self._spec = spec
         self._org_id = org_id if org_id is not None else settings.ORG_ID
+        self._doc_type = None
         self._source_uri = source_uri
         self._named_graph = None
         self._source_uri = None
@@ -1131,7 +1132,8 @@ class RDFRecord:
             orphan_counter += 1
         return orphan_counter
 
-
+    def get_more_like_this(self):
+        raise NotImplementedError("implement me")
 
     @staticmethod
     def get_geo_points(graph):
@@ -1162,6 +1164,7 @@ class ElasticSearchRDFRecord(RDFRecord):
         if response.hits.total != 1:
             return None
         self._query_response = response.hits.hits[0]
+        self._doc_type = self._query_response['_type']
         system_fields = self._query_response['_source']['system']
         self._rdf_string = system_fields['source_graph']
         self._named_graph = system_fields['graph_name']
@@ -1184,3 +1187,35 @@ class ElasticSearchRDFRecord(RDFRecord):
             store_name=store_name,
             as_bindings=as_bindings
         )
+
+    def get_more_like_this(self):
+        return self.es_related_items(self.hub_id, doc_type=self._doc_type, mlt_count=16)
+
+    def es_related_items(self, hub_id, doc_type=None, mlt_fields=None, store_name=None, mlt_count=5):
+        if store_name is None:
+            store_name = settings.SITE_NAME
+        if mlt_fields is None or not isinstance(mlt_fields, list):
+            mlt_fields = getattr(settings, "MLT_FIELDS", None)
+            if mlt_fields is None:
+                logger.warn("MLT_FIELDS should be defined for MLT functionality.")
+                return ""
+        s = Search(using=client, index=store_name)
+        mlt_query = s.query(
+            'more_like_this',
+            fields=mlt_fields,
+            min_term_freq=1,
+            max_query_terms=12,
+            include=False,
+            docs=[{
+                "_index": store_name,
+                "_type": doc_type,
+                "_id": hub_id
+            }]
+        )[:mlt_count]
+        hits = mlt_query.execute()
+        items = []
+        for item in hits:
+            from search.search import NaveESItemWrapper
+            nave_item = NaveESItemWrapper(item)
+            items.append(nave_item)
+        return items
