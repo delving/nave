@@ -87,21 +87,6 @@ def drf_proxy(request, url):
     return response.json()
 
 
-class HubIDRedirectView(RedirectView):
-    permanent = False
-    query_string = True
-    pattern_name = 'article-detail'
-
-    def get_redirect_url(self, *args, **kwargs):
-        hub_id = "{}_{}_{}".format(
-            settings.ORG_ID,
-            kwargs['spec'],
-            kwargs['local_id']
-        )
-        document = get_object_or_404(EDMRecord, hub_id=hub_id)
-        return document.get_absolute_uri()
-
-
 class LegacyAPIRedirectView(RedirectView):
     permanent = False
     query_string = True

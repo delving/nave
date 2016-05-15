@@ -31,7 +31,6 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from lod.utils.resolver import ElasticSearchRDFRecord
-from void.models import EDMRecord
 
 from .serializers import UserGeneratedContentSerializer
 from .models import SPARQLQuery, RDFPrefix, RDFModel, CacheResource, RDFSubjectLookUp, UserGeneratedContent

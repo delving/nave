@@ -7,7 +7,7 @@ from lod.viewsets import CacheResourceViewSet
 from search.viewsets import GroupViewSet
 from search.viewsets import UserViewSet, OauthTokenViewSet
 from .views import DetailResultView, FoldOutDetailImageView, \
-    HubIDRedirectView, LegacyAPIRedirectView, SearchListHTMLView, LodRelatedSearchHTMLView, V1SearchListApiView, \
+    LegacyAPIRedirectView, SearchListHTMLView, LodRelatedSearchHTMLView, V1SearchListApiView, \
     V2SearchListApiView, BigDownloadView, KNReiseGeoView
 
 router = routers.DefaultRouter(trailing_slash=True)
@@ -35,7 +35,6 @@ urlpatterns = [
     url(r'^detail/fold-out/(?P<slug>(.*))$', DetailResultView.as_view(), name='results_detail_foldout'),
     url(r'^detail/foldout/image/(?P<slug>(.*))$', FoldOutDetailImageView.as_view(), name='image_detail'),
     # url(r'^proxy/$', 'dataset.views.proxy', name='proxy'),
-    url(r'^{}/(?P<spec>(.*))/(?P<local_id>(.*))$'.format(settings.ORG_ID), HubIDRedirectView.as_view(), name='hub_id_redirect'),
     url(r'/?', include(search_router.urls), name='search_routers'),
     url(r'^docs/', include('rest_framework_swagger.urls')),
     url(r'^geoviewer/$', KNReiseGeoView.as_view()),

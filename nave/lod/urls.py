@@ -2,6 +2,7 @@
 """
 This module contains all the routing rules for the Linked Open Data app.
 """
+from django.conf import settings
 from django.conf.urls import patterns, url
 from django.views.generic import TemplateView
 
@@ -25,6 +26,7 @@ urlpatterns = patterns("",
                        url(r'^resolve/(?P<doc_type>(.*?))/(?P<hubId>(.*?))/$', HubIDRedirectView.as_view()),
                        url(r'^api/resolve/(?P<doc_type>(.*?))/(?P<hubId>(.*?))/$', HubIDRedirectView.as_view()),
                        url(r'^api/resolve/(?P<hubId>(.*?))/?$', HubIDRedirectView.as_view()),
+                       url(r'^{}/(?P<spec>(.*))/(?P<local_id>(.*))$'.format(settings.ORG_ID), HubIDRedirectView.as_view(), name='hub_id_redirect'),
 
                        # redirects
                        url(r'^resource/(?P<type_>(.*))/(?P<label>(.*))\.(?P<extension>({}))$'.format(
