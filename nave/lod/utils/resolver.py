@@ -146,7 +146,17 @@ class GraphBindings:
                  aggregate_edm_blank_nodes=True,
                  label_properties=(SKOS.prefLabel, RDFS.label, URIRef('http://www.w3.org/2004/02/skos/core#altLabel'),
                                    FOAF.name, URIRef('http://www.geonames.org/ontology#name'), DC.title,
-                                   URIRef('http://schemas.delving.eu/narthex/terms/proxyLiteralValue'))):
+                                   URIRef('http://schemas.delving.eu/narthex/terms/proxyLiteralValue')),
+                 thumbnail_fields = (
+                        FOAF.depiction,
+                        URIRef('http://schemas.delving.eu/nave/terms/thumbnail'),
+                        URIRef('http://schemas.delving.eu/nave/terms/thumbSmall'),
+                        URIRef('http://schemas.delving.eu/nave/terms/thumbLarge'),
+                        URIRef('http://www.europeana.eu/schemas/edm/object'),
+                        URIRef('http://www.europeana.eu/schemas/edm/isShownBy')
+                    )
+                 ):
+        self._thumbnail_fields = thumbnail_fields
         self.aggregate_edm_blank_nodes = aggregate_edm_blank_nodes
         self._label_properties = label_properties
         self._allowed_properties = allowed_properties
@@ -168,6 +178,9 @@ class GraphBindings:
         if not isinstance(uri, URIRef):
             uri = URIRef(uri)
         self._inlined_resources.append(uri)
+
+    def get_thumbnail_fields(self):
+        return self._thumbnail_fields
 
     def get_uri_from_search_label(self, search_label):
         """Convert search_label back into a URI."""
@@ -320,16 +333,9 @@ class GraphBindings:
     def get_about_thumbnail(self, uri=None):
         # todo add second layer to get image.
         label = []
-        thumbnail_fields = [
-            URIRef('http://www.europeana.eu/schemas/edm/object'),
-            FOAF.depiction,
-            URIRef('http://www.europeana.eu/schemas/edm/isShownBy'),
-            URIRef('http://schemas.delving.eu/nave/terms/thumbSmall'),
-            URIRef('http://schemas.delving.eu/nave/terms/thumbLarge'),
-            URIRef('http://schemas.delving.eu/nave/terms/thumbnail'),
-        ]
+
         thumbnail = None
-        for thumb in thumbnail_fields:
+        for thumb in self.get_thumbnail_fields():
             thumbnails = list(self._graph.objects(predicate=thumb))
             if len(thumbnails) == 0:
                 continue
@@ -727,8 +733,9 @@ class RDFObject:
     def cache_url(self):
         if self.is_uri:
             uri = str(self._rdf_object)
-            # todo: check if this works correctly
-            if not RDFRecord.get_rdf_base_url() in uri:
+            thumbnail_fields = self._bindings.get_thumbnail_fields()
+            thumbnail_fields.append(URIRef('http://schemas.delving.eu/nave/terms/deepZoomUrl'))
+            if not RDFRecord.get_rdf_base_url() in uri and self._rdf_object not in thumbnail_fields:
                 return get_cache_url(uri)
         return None
 
@@ -1189,11 +1196,9 @@ class ElasticSearchRDFRecord(RDFRecord):
         )
 
     def get_more_like_this(self):
-        return self.es_related_items(self.hub_id, doc_type=self._doc_type, mlt_count=16)
+        return self.es_related_items(self.hub_id, doc_type=self._doc_type, mlt_count=15)
 
     def es_related_items(self, hub_id, doc_type=None, mlt_fields=None, store_name=None, mlt_count=5):
-        if mlt_count and mlt_count > 0:
-            mlt_count -= 1
         if store_name is None:
             store_name = settings.SITE_NAME
         if mlt_fields is None or not isinstance(mlt_fields, list):
