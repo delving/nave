@@ -1192,6 +1192,8 @@ class ElasticSearchRDFRecord(RDFRecord):
         return self.es_related_items(self.hub_id, doc_type=self._doc_type, mlt_count=16)
 
     def es_related_items(self, hub_id, doc_type=None, mlt_fields=None, store_name=None, mlt_count=5):
+        if mlt_count and mlt_count > 0:
+            mlt_count -= 1
         if store_name is None:
             store_name = settings.SITE_NAME
         if mlt_fields is None or not isinstance(mlt_fields, list):
