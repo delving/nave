@@ -939,8 +939,15 @@ class RDFRecord:
         return self._source_uri
 
     @property
-    def absolute_uri(self):
-        pass
+    def document_uri(self):
+        return self.source_uri
+
+    @property
+    def absolute_uri(self, request=None):
+        uri = self.source_uri
+        if request:
+            uri = self.get_external_rdf_url(uri, request)
+        return uri
 
     @property
     def hub_id(self):
@@ -1152,16 +1159,6 @@ class RDFRecord:
 
 class ElasticSearchRDFRecord(RDFRecord):
     """RDF resolved using ElasticSearch as its backend."""
-
-    def get_absolute_uri(self):
-        pass
-
-    def get_named_graph(self):
-        pass
-
-    @property
-    def source_uri(self):
-        return self._source_uri
 
     def query_for_graph(self, query_type, query, store_name=None, as_bindings=False):
         if store_name is None:
