@@ -41,7 +41,8 @@
 
                     <div class="field-tools">
                         {% if field.is_uri and field.resource_has_skos_definition and not is_link  %}
-                            <a href='{% url 'results-list' %}?q=rdf.object.id:"{{ field.id }}"' class="label label-info js-lod-popover-trigger"><i class="fa fa-info"></i></a>
+{#                            <a href='{% url 'results-list' %}?q=rdf.object.id:"{{ field.id }}"' class="label label-info js-lod-popover-trigger"><i class="fa fa-info"></i></a>#}
+                            <a href='{{  field.cache_url }}"' class="label label-info js-lod-popover-trigger"><i class="fa fa-info"></i></a>
                             <div class="js-lod-popover-content hide">
                                 {% detail_field "skos_definition" rdf_object=field predicate_uri="http://www.w3.org/2004/02/skos/core#definition" label=_('Definition') %}
                             </div>

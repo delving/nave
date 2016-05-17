@@ -800,7 +800,7 @@ class RDFPrefix(TitleSlugDescriptionModel, TimeStampedModel):
     The RDF prefixes that be used to construct and save SPARQL queries
     """
     prefix = models.CharField(_("prefix"), max_length=25, unique=True)
-    uri = models.URLField(_("prefix url"))
+    uri = models.CharField(_("prefix url"), max_length=256)
 
     class Meta(object):
         verbose_name = _("RDF Prefix")
@@ -823,7 +823,12 @@ class SPARQLQuery(TitleSlugDescriptionModel, TimeStampedModel):
     """
     The SPARQL queries that are stored as examples for re-use by the Users
     """
-    prefixes = models.ManyToManyField(RDFPrefix, verbose_name=_('prefixes'))
+    prefixes = models.ManyToManyField(
+        RDFPrefix,
+        verbose_name=_('prefixes'),
+        blank=True,
+        null=True,
+    )
     query = models.TextField(_("SPARQL query"))
 
     class Meta(object):
