@@ -734,7 +734,7 @@ class RDFObject:
         if self.is_uri:
             uri = str(self._rdf_object)
             thumbnail_fields = self._bindings.get_thumbnail_fields()
-            thumbnail_fields.append(URIRef('http://schemas.delving.eu/nave/terms/deepZoomUrl'))
+            thumbnail_fields = thumbnail_fields + (URIRef('http://schemas.delving.eu/nave/terms/deepZoomUrl'))
             if not RDFRecord.get_rdf_base_url() in uri and self._rdf_object not in thumbnail_fields:
                 return get_cache_url(uri)
         return None
