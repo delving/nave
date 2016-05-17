@@ -73,15 +73,18 @@ class NarthexBulkLoader:
         processed_specs = {}
         for spec, processed_files in self.processable_files().items():
             total_lines = total_records = 0
-            for fname in processed_files:
-                lines, records = self.process_narthex_file(
-                    spec=spec,
-                    path=os.path.join(self.spec_processed_path(spec), fname),
-                    console=True
-                )
-                total_lines += lines
-                total_records += records
-            processed_specs[spec] = (total_lines, total_records)
+            try:
+                for fname in processed_files:
+                    lines, records = self.process_narthex_file(
+                        spec=spec,
+                        path=os.path.join(self.spec_processed_path(spec), fname),
+                        console=True
+                    )
+                    total_lines += lines
+                    total_records += records
+                    processed_specs[spec] = (total_lines, total_records)
+            except Exception as ex:
+                print("Problem with spec {} and file {}, with error: \n {}".format(spec, fname, ex))
         return processed_specs
 
     def process_narthex_file(self, spec, store=None, acceptance=False, path=None, console=False):
