@@ -121,7 +121,8 @@ class NarthexBulkLoader:
                     record = RDFRecord(rdf_string=triples, spec=spec)
                     try:
                         record.from_rdf_string(named_graph=named_graph, rdf_string=triples, input_format="xml")
-                        es_actions.append(record.create_es_action(doc_type="void_edmrecord", record_type="mdr"))
+                        es_actions.append(record.create_es_action(doc_type="void_edmrecord", record_type="mdr",
+                                                                  context=False))
                     except Exception as ex:
                         if console:
                             print("problem with {} for spec {} caused by {}".format(triples, spec, ex))

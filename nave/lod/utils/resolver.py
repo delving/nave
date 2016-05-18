@@ -887,7 +887,11 @@ class RDFRecord:
         self._graph = self.parse_graph_from_string(rdf_string, named_graph, input_format)
         self._named_graph = named_graph
         self._source_uri = source_uri
-        self._rdf_string = rdf_string
+        if input_format != self.DEFAULT_RDF_FORMAT:
+            self._rdf_string = None
+            self.rdf_string()
+        else:
+            self._rdf_string = rdf_string
         return self._graph
 
     @staticmethod
@@ -1045,7 +1049,7 @@ class RDFRecord:
         if not context:
             graph = self.get_graph()
         else:
-            graph, nr_levels = self.get_context_graph(store=store, named_graph=self.named_graph)
+            graph, nr_levels = self.get_context_graph()
             graph.namespace_manager = namespace_manager
 
         bindings = self.get_bindings()
