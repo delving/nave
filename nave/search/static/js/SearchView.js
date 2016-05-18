@@ -135,14 +135,14 @@ SearchView.initSearchTags = function() {
 // SearchView.checkGeoCount: hide geo tab if no geo points are found.
 // Will also hide the grid tab because it has become redundant.
 /***********************************************************************************/
-SearchView.checkGeoCount = function () {
-    // if(queryStr){
-    //     $.getJSON("/search/?format=geojson&cluster.factor=1&" + queryStr, function (data) {
-    //         if(!data.features.length) {
-    //             $('#tab-geo, #tab-grid').hide();
-    //         }
-    //     });
-    // }
+SearchView.checkGeoCount = function (queryStr) {
+    if(queryStr){
+        $.getJSON("/search/?format=geojson&cluster.factor=1&" + queryStr, function (data) {
+            if(!data.features.length) {
+                $('#tab-geo, #tab-grid').hide();
+            }
+        });
+    }
 };
 
 

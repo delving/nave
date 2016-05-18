@@ -551,7 +551,7 @@ SERIALIZATION_MODULES = {
 
 RDF_USE_LOCAL_GRAPH = True
 
-RDF_STORE_TRIPLES = True
+RDF_STORE_TRIPLES = False
 
 RDF_DYNAMIC_CACHE = True
 
@@ -658,6 +658,8 @@ MLT_FIELDS = [
     "dc_description.value",
     "edm_dataProvider.value"
 ]
+
+MLT_DETAIL_ENABLE = True
 
 #############################
 #  IMAGE CONFIGURATION      #

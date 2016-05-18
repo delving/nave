@@ -78,63 +78,69 @@ class BulkApiProcessor:
     def _process_action(self, action):
         try:
             self.spec = action['dataset']
-            record_graph_uri = action['graphUri']
-            graph_ntriples = action['graph']
             process_verb = action['action']
-            acceptance_mode = action.get('acceptanceMode', "false")
-            acceptance = True if acceptance_mode is not None and acceptance_mode.lower() in ['true'] else False
-            content_hash = action.get('contentHash', None)
-            try:
-                graph = ConjunctiveGraph(identifier=record_graph_uri)
-                rdf_format = "nt" if "<rdf:RDF" not in graph_ntriples else "xml"
-                graph.parse(data=graph_ntriples, format=rdf_format)
-            except ParseError as e:
-                self.rdf_errors.append((e, action))
-                logger.error(e, action)
-                return None
-            if self.current_dataset is None or self.current_dataset.spec is not self.spec:
-                try:
-                    self.current_dataset = DataSet.objects.get(spec=self.spec)
-                except DataSet.DoesNotExist as dne:
-                    logger.warn(dne)
-                    self.current_dataset = self.synchronise_dataset_metadata(
-                        store=self.store,
-                        dataset_graph_uri=self._create_dataset_uri(record_graph_uri)
-                    )
-            app, model = action['type'].split('_')
-            action_model = apps.get_model(app_label=app, model_name=model)
-            record = action_model.graph_to_record(graph=graph,
-                                                  bulk=True,
-                                                  ds=self.current_dataset,
-                                                  content_hash=content_hash,
-                                                  force_insert=self.force_insert,
-                                                  acceptance=acceptance
-                                                  )
-            if record is None:
-                self.records_already_stored += 1
-                return None
-            self.records_stored += 1
-            self.es_actions.append(
-                record.create_es_action(
-                    action=process_verb,
-                    store=self.store,
-                    context=False,  # todo: fix issue with context indexing later
-                    flat=True,
-                    exclude_fields=None,
-                    acceptance=acceptance
-                )
-            )
-            self.rdf_graphs.append(record.get_triples(acceptance=acceptance))
-            if settings.RDF_STORE_TRIPLES:
-                self.sparql_update_queries.append(record.create_sparql_update_query(acceptance=acceptance))
+            record = None
             if process_verb in ['clear_orphans']:
                 purge_date = action.get('modification_date')
                 if purge_date:
                     orphans_removed = RDFRecord.remove_orphans(spec=self.spec, timestamp=purge_date)
                     logger.info("Deleted {} orphans for {} before {}".format(orphans_removed, self.spec, purge_date))
-            if process_verb in ['disable_index']:
+            elif process_verb in ['disable_index']:
                 RDFRecord.delete_from_index(self.spec)
                 logger.info("Deleted dataset {} from index. ".format(self.spec))
+            elif process_verb in ['drop_dataset']:
+                RDFRecord.delete_from_index(self.spec)
+                DataSet.objects.filter(spec=self.spec).delete()
+                logger.info("Deleted dataset {} from index. ".format(self.spec))
+            else:
+                record_graph_uri = action['graphUri']
+                graph_ntriples = action['graph']
+                acceptance_mode = action.get('acceptanceMode', "false")
+                acceptance = True if acceptance_mode is not None and acceptance_mode.lower() in ['true'] else False
+                content_hash = action.get('contentHash', None)
+                try:
+                    graph = ConjunctiveGraph(identifier=record_graph_uri)
+                    rdf_format = "nt" if "<rdf:RDF" not in graph_ntriples else "xml"
+                    graph.parse(data=graph_ntriples, format=rdf_format)
+                except ParseError as e:
+                    self.rdf_errors.append((e, action))
+                    logger.error(e, action)
+                    return None
+                if self.current_dataset is None or self.current_dataset.spec is not self.spec:
+                    try:
+                        self.current_dataset = DataSet.objects.get(spec=self.spec)
+                    except DataSet.DoesNotExist as dne:
+                        logger.warn(dne)
+                        self.current_dataset = self.synchronise_dataset_metadata(
+                            store=self.store,
+                            dataset_graph_uri=self._create_dataset_uri(record_graph_uri)
+                        )
+                app, model = action['type'].split('_')
+                action_model = apps.get_model(app_label=app, model_name=model)
+                record = action_model.graph_to_record(graph=graph,
+                                                      bulk=True,
+                                                      ds=self.current_dataset,
+                                                      content_hash=content_hash,
+                                                      force_insert=self.force_insert,
+                                                      acceptance=acceptance
+                                                      )
+                if record is None:
+                    self.records_already_stored += 1
+                    return None
+                self.records_stored += 1
+                self.es_actions.append(
+                    record.create_es_action(
+                        action=process_verb,
+                        store=self.store,
+                        context=False,  # todo: fix issue with context indexing later
+                        flat=True,
+                        exclude_fields=None,
+                        acceptance=acceptance
+                    )
+                )
+                self.rdf_graphs.append(record.get_triples(acceptance=acceptance))
+                if settings.RDF_STORE_TRIPLES:
+                    self.sparql_update_queries.append(record.create_sparql_update_query(acceptance=acceptance))
             return record
             # if process_verb in ['index', 'delete']:
             #     self.es_actions.append(

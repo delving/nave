@@ -30,9 +30,8 @@ from rdflib.plugins.serializers.nquads import _nq_row
 from lod import namespace_manager, RDF_BASE_URL
 from lod.namespace import NAVE
 from lod.utils import rdfstore
-from lod.utils.resolver import GraphBindings
 from lod.utils.resolver import get_cache_url, get_remote_lod_resource, store_remote_cached_resource, get_geo_points, \
-    get_graph_statistics
+    get_graph_statistics, GraphBindings
 from lod.utils.resolver import RDFRecord
 
 fmt = '%Y-%m-%d %H:%M:%S%z'  # '%Y-%m-%d %H:%M:%S %Z%z'
@@ -801,7 +800,7 @@ class RDFPrefix(TitleSlugDescriptionModel, TimeStampedModel):
     The RDF prefixes that be used to construct and save SPARQL queries
     """
     prefix = models.CharField(_("prefix"), max_length=25, unique=True)
-    uri = models.URLField(_("prefix url"))
+    uri = models.CharField(_("prefix url"), max_length=256)
 
     class Meta(object):
         verbose_name = _("RDF Prefix")
@@ -824,7 +823,12 @@ class SPARQLQuery(TitleSlugDescriptionModel, TimeStampedModel):
     """
     The SPARQL queries that are stored as examples for re-use by the Users
     """
-    prefixes = models.ManyToManyField(RDFPrefix, verbose_name=_('prefixes'))
+    prefixes = models.ManyToManyField(
+        RDFPrefix,
+        verbose_name=_('prefixes'),
+        blank=True,
+        null=True,
+    )
     query = models.TextField(_("SPARQL query"))
 
     class Meta(object):

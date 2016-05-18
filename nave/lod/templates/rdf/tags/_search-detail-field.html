@@ -35,24 +35,14 @@
                         </span>
                     {% endif %}
                     {# display is_uri icon and add mouseover functionality to display more info #}
-                    <div class="field-tools">
-                        {# info icon: onmouseover display skos definition of this term #}
-{#                        {% if field.is_uri and not is_link and field.resource_has_skos_definition %}#}
 
+
+{#  TURN BACK ON LATER - TERMINOLOY DEFINITIONS #}
+
+                    <div class="field-tools">
                         {% if field.is_uri and field.resource_has_skos_definition and not is_link  %}
-                            <a href='{% url 'results-list' %}?q=rdf.object.id:"{{ field.id }}"' class="label label-info js-lod-popover-trigger"><i class="fa fa-info"></i></a>
-{#                            note: this was not 'consistently' working on heavy pages. Trial with dif approach LodView.initPopover() #}
-{#                            <a href='{% url 'results-list' %}?q=rdf.object.id:"{{ field.id }}"'#}
-{#                               property="{{ predicate.uri }}"#}
-{#                               data-endpoint="resources_{{ fieldname }}"#}
-{#                               class="js-lod-data-link label label-info"#}
-{#                               data-toggle="popover"#}
-{#                               data-popover="true"#}
-{#                               data-html="true"#}
-{#                               data-title="{% trans fieldname %}: {{ field.value }}"#}
-{#                               data-content='{% detail_field "skos_definition" rdf_object=field predicate_uri="http://www.w3.org/2004/02/skos/core#definition" label=_('Definition') %}'#}
-{#                               data-target="#lod-data"><i class="fa fa-info"></i>#}
-{#                            </a>#}
+{#                            <a href='{% url 'results-list' %}?q=rdf.object.id:"{{ field.id }}"' class="label label-info js-lod-popover-trigger"><i class="fa fa-info"></i></a>#}
+                            <a href='{{ field.id }}' class="label label-info js-lod-popover-trigger"><i class="fa fa-info"></i></a>
                             <div class="js-lod-popover-content hide">
                                 {% detail_field "skos_definition" rdf_object=field predicate_uri="http://www.w3.org/2004/02/skos/core#definition" label=_('Definition') %}
                             </div>
@@ -73,6 +63,7 @@
                             </a>
                         {% endif %}
                     </div>
+
                 </span>
                 {# display the seperator if passed along and not at the end #}
                 {% if separator and not forloop.last %}{{ separator }}{% endif %}

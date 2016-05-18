@@ -29,6 +29,7 @@ import logging
 from urllib.parse import urlparse, quote
 
 from django.conf import settings
+from django.db.models.loading import get_model
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search
 from rdflib import Graph, URIRef, BNode, Literal
@@ -145,7 +146,17 @@ class GraphBindings:
                  aggregate_edm_blank_nodes=True,
                  label_properties=(SKOS.prefLabel, RDFS.label, URIRef('http://www.w3.org/2004/02/skos/core#altLabel'),
                                    FOAF.name, URIRef('http://www.geonames.org/ontology#name'), DC.title,
-                                   URIRef('http://schemas.delving.eu/narthex/terms/proxyLiteralValue'))):
+                                   URIRef('http://schemas.delving.eu/narthex/terms/proxyLiteralValue')),
+                 thumbnail_fields = (
+                        FOAF.depiction,
+                        URIRef('http://schemas.delving.eu/nave/terms/thumbnail'),
+                        URIRef('http://schemas.delving.eu/nave/terms/thumbSmall'),
+                        URIRef('http://schemas.delving.eu/nave/terms/thumbLarge'),
+                        URIRef('http://www.europeana.eu/schemas/edm/object'),
+                        URIRef('http://www.europeana.eu/schemas/edm/isShownBy')
+                    )
+                 ):
+        self._thumbnail_fields = thumbnail_fields
         self.aggregate_edm_blank_nodes = aggregate_edm_blank_nodes
         self._label_properties = label_properties
         self._allowed_properties = allowed_properties
@@ -167,6 +178,9 @@ class GraphBindings:
         if not isinstance(uri, URIRef):
             uri = URIRef(uri)
         self._inlined_resources.append(uri)
+
+    def get_thumbnail_fields(self):
+        return self._thumbnail_fields
 
     def get_uri_from_search_label(self, search_label):
         """Convert search_label back into a URI."""
@@ -319,16 +333,9 @@ class GraphBindings:
     def get_about_thumbnail(self, uri=None):
         # todo add second layer to get image.
         label = []
-        thumbnail_fields = [
-            URIRef('http://www.europeana.eu/schemas/edm/object'),
-            FOAF.depiction,
-            URIRef('http://www.europeana.eu/schemas/edm/isShownBy'),
-            URIRef('http://schemas.delving.eu/nave/terms/thumbSmall'),
-            URIRef('http://schemas.delving.eu/nave/terms/thumbLarge'),
-            URIRef('http://schemas.delving.eu/nave/terms/thumbnail'),
-        ]
+
         thumbnail = None
-        for thumb in thumbnail_fields:
+        for thumb in self.get_thumbnail_fields():
             thumbnails = list(self._graph.objects(predicate=thumb))
             if len(thumbnails) == 0:
                 continue
@@ -726,8 +733,9 @@ class RDFObject:
     def cache_url(self):
         if self.is_uri:
             uri = str(self._rdf_object)
-            # todo: check if this works correctly
-            if not RDFRecord.get_rdf_base_url() in uri:
+            thumbnail_fields = self._bindings.get_thumbnail_fields()
+            thumbnail_fields = thumbnail_fields + (URIRef('http://schemas.delving.eu/nave/terms/deepZoomUrl'),)
+            if not RDFRecord.get_rdf_base_url() in uri and self._rdf_object not in thumbnail_fields:
                 return get_cache_url(uri)
         return None
 
@@ -828,12 +836,13 @@ class RDFRecord:
 
     DEFAULT_RDF_FORMAT = "nt" if not settings.RDF_DEFAULT_FORMAT else settings.RDF_DEFAULT_FORMAT
 
-    def __init__(self, hub_id=None, source_uri=None, spec=None, rdf_string=None, org_id=None):
+    def __init__(self, hub_id=None, source_uri=None, spec=None, rdf_string=None, org_id=None, doc_type=None):
         if hub_id is None and source_uri is None and rdf_string is None:
             raise ValueError("either source_uri or hub_id or rdf_string must be given at initialisation.")
         self._hub_id = hub_id
         self._spec = spec
         self._org_id = org_id if org_id is not None else settings.ORG_ID
+        self._doc_type = None
         self._source_uri = source_uri
         self._named_graph = None
         self._source_uri = None
@@ -878,7 +887,11 @@ class RDFRecord:
         self._graph = self.parse_graph_from_string(rdf_string, named_graph, input_format)
         self._named_graph = named_graph
         self._source_uri = source_uri
-        self._rdf_string = rdf_string
+        if input_format != self.DEFAULT_RDF_FORMAT:
+            self._rdf_string = None
+            self.rdf_string()
+        else:
+            self._rdf_string = rdf_string
         return self._graph
 
     @staticmethod
@@ -930,8 +943,15 @@ class RDFRecord:
         return self._source_uri
 
     @property
-    def absolute_uri(self):
-        pass
+    def document_uri(self):
+        return self.source_uri
+
+    @property
+    def absolute_uri(self, request=None):
+        uri = self.source_uri
+        if request:
+            uri = self.get_external_rdf_url(uri, request)
+        return uri
 
     @property
     def hub_id(self):
@@ -949,8 +969,33 @@ class RDFRecord:
     def get_graph(self, **kwargs):
         return self._graph
 
-    def get_context_graph(self, store, named_graph):
-        return Graph(), 0
+    def get_context_graph(self, with_mappings=False, include_mapping_target=False, acceptance=False, target_uri=None):
+        """Get Graph instance with linked ProxyResources.
+
+        :param target_uri: target_uri if you want a sub-selection of the whole graph
+        :param acceptance: if the acceptance data should be listed
+        :param include_mapping_target: Boolean also include the mapping target triples in graph
+        :param with_mappings: Boolean integrate the ProxyMapping into the graph
+        """
+        graph = self.get_graph()
+        if with_mappings:
+            ds_model = get_model(app_label="void", model_name="DataSet")
+            proxy_resource_model = get_model(app_label="void", model_name="ProxyResource")
+            ds = ds_model.objects.filter(spec=self.get_spec_name())
+            if len(ds) > 0:
+                ds = ds.first()
+            else:
+                return graph
+            proxy_resources, graph = proxy_resource_model.update_proxy_resource_uris(ds, graph)
+            for proxy_resource in proxy_resources:
+                graph = graph + proxy_resource.to_graph(include_mapping_target=include_mapping_target)
+        if target_uri and not target_uri.endswith("/about") and target_uri != self.source_uri:
+            g = Graph(identifier=URIRef(self.named_graph))
+            subject = URIRef(target_uri)
+            for p, o in graph.predicate_objects(subject=subject):
+                g.add((subject, p, o))
+            graph = g
+        return graph
 
     def rdf_string(self):
         if not self._rdf_string and self.get_graph():
@@ -960,6 +1005,9 @@ class RDFRecord:
         return self._rdf_string
 
     def get_spec_name(self):
+        if self._spec is None:
+            uri_parts = self.source_uri.split('/')
+            self._spec = uri_parts[-2]
         return self._spec
 
     def create_sparql_update_query(self, delete=False, acceptance=False):
@@ -1001,7 +1049,7 @@ class RDFRecord:
         if not context:
             graph = self.get_graph()
         else:
-            graph, nr_levels = self.get_context_graph(store=store, named_graph=self.named_graph)
+            graph, nr_levels = self.get_context_graph()
             graph.namespace_manager = namespace_manager
 
         bindings = self.get_bindings()
@@ -1102,7 +1150,8 @@ class RDFRecord:
             orphan_counter += 1
         return orphan_counter
 
-
+    def get_more_like_this(self):
+        raise NotImplementedError("implement me")
 
     @staticmethod
     def get_geo_points(graph):
@@ -1115,16 +1164,6 @@ class RDFRecord:
 class ElasticSearchRDFRecord(RDFRecord):
     """RDF resolved using ElasticSearch as its backend."""
 
-    def get_absolute_uri(self):
-        pass
-
-    def get_named_graph(self):
-        pass
-
-    @property
-    def source_uri(self):
-        return self._source_uri
-
     def query_for_graph(self, query_type, query, store_name=None, as_bindings=False):
         if store_name is None:
             store_name = settings.SITE_NAME
@@ -1133,6 +1172,7 @@ class ElasticSearchRDFRecord(RDFRecord):
         if response.hits.total != 1:
             return None
         self._query_response = response.hits.hits[0]
+        self._doc_type = self._query_response['_type']
         system_fields = self._query_response['_source']['system']
         self._rdf_string = system_fields['source_graph']
         self._named_graph = system_fields['graph_name']
@@ -1155,3 +1195,35 @@ class ElasticSearchRDFRecord(RDFRecord):
             store_name=store_name,
             as_bindings=as_bindings
         )
+
+    def get_more_like_this(self):
+        return self.es_related_items(self.hub_id, doc_type=self._doc_type, mlt_count=15)
+
+    def es_related_items(self, hub_id, doc_type=None, mlt_fields=None, store_name=None, mlt_count=5):
+        if store_name is None:
+            store_name = settings.SITE_NAME
+        if mlt_fields is None or not isinstance(mlt_fields, list):
+            mlt_fields = getattr(settings, "MLT_FIELDS", None)
+            if mlt_fields is None:
+                logger.warn("MLT_FIELDS should be defined for MLT functionality.")
+                return ""
+        s = Search(using=client, index=store_name)
+        mlt_query = s.query(
+            'more_like_this',
+            fields=mlt_fields,
+            min_term_freq=1,
+            max_query_terms=12,
+            include=False,
+            docs=[{
+                "_index": store_name,
+                "_type": doc_type,
+                "_id": hub_id
+            }]
+        )[:mlt_count]
+        hits = mlt_query.execute()
+        items = []
+        for item in hits:
+            from search.search import NaveESItemWrapper
+            nave_item = NaveESItemWrapper(item)
+            items.append(nave_item)
+        return items

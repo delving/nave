@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*- 
+import zipfile
+
+import os
+import requests
 from django.core.management.base import BaseCommand
 from rdflib import URIRef, Graph, RDF
 from rdflib.namespace import SKOS
@@ -49,15 +53,17 @@ class Command(BaseCommand):
         g = Graph()
 
         # split file
-        with open(geonames_rdf_file, 'r') as f, open(geonames_lang, 'w') as output, open(geonames_muni_county,
-                                                                                         'w') as filtered_output:
-            for line in f:
-                if country_uri in line and line.startswith('<?xml '):
-                    output.write(line)
-                    if any([feature in line for feature in features]):
-                        filtered_output.write(line)
-                        # add line to graph
-                        g.parse(data=line)
+        with zipfile.ZipFile(geonames_rdf_file, "r") as z:
+            with z.open("all-geonames-rdf.txt", 'r') as f, open(geonames_lang, 'w') as output, open(geonames_muni_county,
+                                                                                               'w') as filtered_output:
+                for line in f:
+                    if isinstance(line, bytes):
+                        line = line.decode('utf-8')
+                    if country_uri in line and line.startswith('<?xml '):
+                        output.write(line)
+                        if any([feature in line for feature in features]):
+                            filtered_output.write(line)
+                            g.parse(data=line)
 
         # skosify the entries in the graph
         for s, p, o in g:
@@ -84,6 +90,17 @@ class Command(BaseCommand):
         country_code = args[0]
         country_uri = args[1]
         rdf_file_path = args[2]
+
+        if rdf_file_path == "download":
+            download_path = "http://download.geonames.org/all-geonames-rdf.zip"
+            rdf_file_path = "/tmp/all-geonames-rdf.zip"
+            if not os.path.exists(rdf_file_path):
+                self.stdout.write("start downloading Geonames RDF dump")
+                r = requests.get(download_path)
+                with open(rdf_file_path, "wb") as code:
+                    code.write(r.content)
+
+                self.stdout.write("finish downloading Geonames RDF dump")
 
         self.stdout.write('Starting to generated skos for {} ({})'.format(country_uri, country_code))
 

@@ -73,15 +73,18 @@ class NarthexBulkLoader:
         processed_specs = {}
         for spec, processed_files in self.processable_files().items():
             total_lines = total_records = 0
-            for fname in processed_files:
-                lines, records = self.process_narthex_file(
-                    spec=spec,
-                    path=os.path.join(self.spec_processed_path(spec), fname),
-                    console=True
-                )
-                total_lines += lines
-                total_records += records
-            processed_specs[spec] = (total_lines, total_records)
+            try:
+                for fname in processed_files:
+                    lines, records = self.process_narthex_file(
+                        spec=spec,
+                        path=os.path.join(self.spec_processed_path(spec), fname),
+                        console=True
+                    )
+                    total_lines += lines
+                    total_records += records
+                    processed_specs[spec] = (total_lines, total_records)
+            except Exception as ex:
+                print("Problem with spec {} and file {}, with error: \n {}".format(spec, fname, ex))
         return processed_specs
 
     def process_narthex_file(self, spec, store=None, acceptance=False, path=None, console=False):
@@ -118,7 +121,8 @@ class NarthexBulkLoader:
                     record = RDFRecord(rdf_string=triples, spec=spec)
                     try:
                         record.from_rdf_string(named_graph=named_graph, rdf_string=triples, input_format="xml")
-                        es_actions.append(record.create_es_action(doc_type="void_edmrecord", record_type="mdr"))
+                        es_actions.append(record.create_es_action(doc_type="void_edmrecord", record_type="mdr",
+                                                                  context=False))
                     except Exception as ex:
                         if console:
                             print("problem with {} for spec {} caused by {}".format(triples, spec, ex))

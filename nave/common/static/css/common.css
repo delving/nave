@@ -55,6 +55,9 @@ body:after {
   display: flex;
 }
 /* list styles */
+li > p {
+  margin: 0 !important;
+}
 .list-blocks li {
   background: #eaeaea;
   padding: 10px;
@@ -71,7 +74,7 @@ body:after {
 }
 .list-lined {
   margin: 0;
-  padding: 0;
+  padding: 0 !important;
 }
 .list-lined li {
   border-bottom: 1px solid #ddd;
