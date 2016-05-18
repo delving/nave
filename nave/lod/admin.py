@@ -4,7 +4,7 @@ from django.contrib import admin
 from django.db.models import Q
 import reversion
 
-from .models import RDFPrefix, SPARQLQuery, SPARQLUpdateQuery, CacheResource
+from .models import RDFPrefix, SPARQLQuery, SPARQLUpdateQuery, CacheResource, UserGeneratedContent
 
 
 class GroupOwnedAdmin(admin.ModelAdmin):
@@ -76,3 +76,11 @@ class SPARQLUpdateQueryAdmin(reversion.admin.VersionAdmin):
     fields = ['title', 'prefixes', 'query', 'description']
 
 admin.site.register(SPARQLUpdateQuery, SPARQLUpdateQueryAdmin)
+
+
+class UserGeneratedContentAdmin(reversion.admin.VersionAdmin):
+    list_filter = ['content_type', 'published', 'user']
+    fields = ['name', 'content_type', 'published', 'user']
+
+admin.site.register(UserGeneratedContent, UserGeneratedContentAdmin)
+
