@@ -549,6 +549,8 @@ SERIALIZATION_MODULES = {
 # DataSet configuration #
 #########################
 
+RDF_STORE_TYPE = "Fuseki"  # Option Fuseki BlazeGraph
+
 RDF_USE_LOCAL_GRAPH = True
 
 RDF_STORE_TRIPLES = False
