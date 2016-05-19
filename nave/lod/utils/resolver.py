@@ -842,7 +842,7 @@ class RDFRecord:
         self._hub_id = hub_id
         self._spec = spec
         self._org_id = org_id if org_id is not None else settings.ORG_ID
-        self._doc_type = None
+        self._doc_type = doc_type
         self._source_uri = source_uri
         self._named_graph = None
         self._source_uri = None
@@ -850,6 +850,7 @@ class RDFRecord:
         self._graph = None
         self._rdf_string = rdf_string
         self._query_response = None
+        self._modified_at = None
         self._bindings = None
         # self._setup_rdfrecord()
 
@@ -861,6 +862,9 @@ class RDFRecord:
 
     def exists(self):
         return self._graph is not None
+
+    def last_modified(self):
+        return self._modified_at
 
     @staticmethod
     def get_rdf_base_url(prepend_scheme=False, scheme="http"):
@@ -1164,14 +1168,22 @@ class RDFRecord:
 class ElasticSearchRDFRecord(RDFRecord):
     """RDF resolved using ElasticSearch as its backend."""
 
-    def query_for_graph(self, query_type, query, store_name=None, as_bindings=False):
-        if store_name is None:
-            store_name = settings.SITE_NAME
-        s = Search(index=store_name).using(client).query(query_type, **query)
-        response = s.execute()
-        if response.hits.total != 1:
-            return None
-        self._query_response = response.hits.hits[0]
+    @staticmethod
+    def get_rdf_records_from_query(query, response=None):
+        if response is None:
+            response = query.execute()
+        record_list = []
+        for hit in response.hits.hits:
+            record = ElasticSearchRDFRecord(
+                hub_id=hit['_id'],
+                doc_type=hit['_doctype']
+            )
+            record.set_defaults_from_query_result(es_record=hit)
+            record_list.append(record)
+        return record_list
+
+    def set_defaults_from_query_result(self, es_record):
+        self._query_response = es_record
         self._doc_type = self._query_response['_type']
         system_fields = self._query_response['_source']['system']
         self._rdf_string = system_fields['source_graph']
@@ -1179,8 +1191,19 @@ class ElasticSearchRDFRecord(RDFRecord):
         self._source_uri = system_fields['source_uri']
         self._spec = system_fields.get('delving_spec')
         self._hub_id = system_fields.get('slug')
+        self._modified_at = system_fields.get('modified_at')
         g = self.parse_graph_from_string(self._rdf_string, self._named_graph)
         self._graph = g
+        return self
+
+    def query_for_graph(self, query_type, query, store_name=None, as_bindings=False):
+        if store_name is None:
+            store_name = settings.SITE_NAME
+        s = Search(index=store_name).using(client).query(query_type, **query)
+        response = s.execute()
+        if response.hits.total != 1:
+            return None
+        self.set_defaults_from_query_result(response.hits.hits[0])
         if as_bindings:
             return GraphBindings(about_uri=self._source_uri, graph=self._graph)
         return self._graph

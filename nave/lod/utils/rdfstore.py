@@ -9,6 +9,7 @@ import logging
 
 import requests
 from SPARQLWrapper import SPARQLWrapper, GET, JSON, POST
+from django.conf import settings
 from django.http import Http404
 from django.utils.log import getLogger
 from rdflib import Graph
@@ -42,18 +43,35 @@ class RDFStore:
 
     def __init__(self, db=RDF_STORE_DB, host=RDF_STORE_HOST, port=RDF_STORE_PORT, acceptance_mode=False,
                  graph_store_uri_suffix="data", sparql_query_uri_suffix="sparql",
-                 sparql_update_uri_suffix="update"
+                 sparql_update_uri_suffix="update", rdf_store_type=None, graph_store_graph_param="graph"
                  ):
+        self.rdf_store_type = rdf_store_type
         self.db = db if not acceptance_mode else "{}_acceptance".format(db)
         self.host = host
         self.port = port
         self.acceptance_mode = acceptance_mode
-        self.base_url = "{}:{}/{}".format(self.host, self.port, self.db)
         self.graph_store_uri_suffix = graph_store_uri_suffix
+        self.graph_store_graph_param = graph_store_graph_param
         self.sparql_query_uri_suffix = sparql_query_uri_suffix
         self.sparql_update_uri_suffix = sparql_update_uri_suffix
+        self.base_url = self.get_store_url
         self.namespace_manager = namespace_manager
         self.graph_store = None
+
+    @property
+    def get_store_url(self):
+        store_type = getattr(settings, "RDF_STORE_TYPE", "Fuseki")
+        if self.rdf_store_type is None and store_type:
+            self.rdf_store_type = store_type
+        if self.rdf_store_type.lower() == "blazegraph":
+            rdf_url = "{}:{}/bigdata/namespace/{}".format(self.host, self.port, self.db)
+            self.graph_store_uri_suffix = "sparql"
+            self.sparql_query_uri_suffix = "sparql"
+            self.sparql_update_uri_suffix = "sparql"
+            self.graph_store_graph_param = "context-uri"
+        else:
+            rdf_url = "{}:{}/{}".format(self.host, self.port, self.db)
+        return rdf_url
 
     @property
     def get_graph_store(self):
@@ -239,7 +257,10 @@ class GraphStore:
     def delete(self, named_graph):
         """ Delete the named graph from the RDF store
         """
-        response = requests.delete("{}?graph={}".format(self.graph_store, named_graph))
+        response = requests.delete("{graph_store_url}?{graph_param}={graph_name_uri}".format(
+            graph_store_url=self.graph_store,
+            graph_param=self.rdf_store.graph_store_graph_param,
+            graph_name_uri=named_graph))
         return True if response.status_code in [200, 202, 204] else False
 
     def get(self, named_graph, as_graph=False):
@@ -249,7 +270,12 @@ class GraphStore:
         :return: Graph
         """
         headers = {'Content-Type': 'text/n3'}
-        response = requests.get("{}?graph={}".format(self.graph_store, named_graph), headers=headers)
+        response = requests.get(
+            "{graph_store_url}?{graph_param}={graph_name_uri}".format(
+                graph_store_url=self.graph_store,
+                graph_param=self.rdf_store.graph_store_graph_param,
+                graph_name_uri=named_graph),
+            headers=headers)
         if response.status_code == 404:
             raise UnknownGraph("No such graph: <{}>".format(named_graph))
         if as_graph:
@@ -262,7 +288,13 @@ class GraphStore:
     def head(self, named_graph):
         """Testing for validity of derefencable named graphs."""
         headers = {'Content-Type': 'text/n3'}
-        response = requests.head("{}?graph={}".format(self.graph_store, named_graph), headers=headers)
+        response = requests.head(
+            "{graph_store_url}?{graph_param}={graph_name_uri}".format(
+                graph_store_url=self.graph_store,
+                graph_param=self.rdf_store.graph_store_graph_param,
+                graph_name_uri=named_graph),
+            headers=headers
+        )
         return True if response.status_code == 200 else False
 
     def post(self, named_graph, data):
@@ -270,14 +302,22 @@ class GraphStore:
         """
         headers = {'Content-Type': 'application/n-triples; charset=utf-8'}
         rdf_string = self._get_data_as_rdf_string(data)
-        r = requests.post("{}?graph={}".format(self.graph_store, named_graph),
-                          data=rdf_string,
-                          headers=headers)
+        r = requests.post(
+            "{graph_store_url}?{graph_param}={graph_name_uri}".format(
+                graph_store_url=self.graph_store,
+                graph_param=self.rdf_store.graph_store_graph_param,
+                graph_name_uri=named_graph),
+              data=rdf_string,
+              headers=headers)
         if r.status_code == 404:
             # create the graph because it does not exist
-            r = requests.put("{}?graph={}".format(self.graph_store, named_graph),
-                             data=rdf_string,
-                             headers=headers)
+            r = requests.put(
+                "{graph_store_url}?{graph_param}={graph_name_uri}".format(
+                    graph_store_url=self.graph_store,
+                    graph_param=self.rdf_store.graph_store_graph_param,
+                    graph_name_uri=named_graph),
+                 data=rdf_string,
+                 headers=headers)
         if r.status_code not in [200, 201, 204]:
             logger.error("unable to store document {} in graph {} because of:\n {}".format(
                     rdf_string,
@@ -293,9 +333,13 @@ class GraphStore:
         """PUT request to replace or create the graph with information form data"""
         headers = {'Content-Type': 'text/n3'}
         rdf_string = self._get_data_as_rdf_string(data)
-        r = requests.put("{}?graph={}".format(self.graph_store, named_graph),
-                         data=rdf_string,
-                         headers=headers)
+        r = requests.put(
+            "{graph_store_url}?{graph_param}={graph_name_uri}".format(
+                graph_store_url=self.graph_store,
+                graph_param=self.rdf_store.graph_store_graph_param,
+                graph_name_uri=named_graph),
+             data=rdf_string,
+             headers=headers)
         if r.status_code not in [200, 201, 204]:
             logger.error("unable to store document {} in graph {} because of bla:\n {}".format(
                     rdf_string,
@@ -305,7 +349,6 @@ class GraphStore:
             return False
         logger.info("Stored RDF in {}".format(named_graph))
         return True
-
 
 # test if the right database are defined
 _rdfstore_test = RDFStore(db="test")
@@ -319,9 +362,14 @@ def get_namespace_manager():
     return namespace_manager
 
 
-def get_rdfstore(acceptance_mode=False):
+def get_rdfstore(acceptance_mode=False, test_mode=False):
     """get the rdfstore in the right mode."""
-    return _rdfstore_production if not acceptance_mode else _rdfstore_acceptance
+    store = _rdfstore_production
+    if test_mode:
+        store = _rdfstore_test
+    elif acceptance_mode:
+        store = _rdfstore_acceptance
+    return store
 
 
 def get_sparql_base_url(acceptance_mode=False):
