@@ -2,12 +2,14 @@
 """
 
 """
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 from enum import Enum
 
 from dateutil import parser
 from django.conf import settings
 from django.views.generic import TemplateView
+from elasticsearch import Elasticsearch
+from elasticsearch_dsl import Search, A
 
 from lod.utils.resolver import RDFRecord
 from void import REGISTERED_CONVERTERS
@@ -80,6 +82,9 @@ class OAIProvider(TemplateView):
         self.list_size = None
         self.set = None
 
+    class Meta:
+        abstract = True
+
     def get_dataset_list(self):
         """
         The list of datasets that are publicly available.
@@ -87,20 +92,29 @@ class OAIProvider(TemplateView):
         This can be either a fixed list or a database query
         :return: Tuple list of spec and description of the datasets
         """
-        query_set = self.dataset_model.objects.filter(**self.dataset_access_filter)
-        return query_set
+        raise NotImplementedError("implement me")
+
+    def get_items(self):
+        raise NotImplementedError("implement me")
+
+    def get_list_size(self):
+        raise NotImplementedError("implement me")
 
     def items(self):
         """Return QuerySet with the filters from request applied."""
         if not self.list_size:
-            self.list_size = self.record_model.objects.filter(**self.filters).count()
-        objects = self.record_model.objects.filter(**self.filters).order_by('modified')
+            self.list_size = self.get_list_size()
+        objects = self.get_items()
         if not objects:
             raise OAIException(
                 code="noRecordsMatch",
-                message="The combination of the values of the from, until, set and metadataPrefix arguments results in an empty list."
+                message="The combination of the values of the from, until, set and metadataPrefix "
+                        "arguments results in an empty list."
             )
-        return objects[self.cursor:self.get_next_cursor()]
+        return objects
+
+    def get_item(self, identifier):
+        raise NotImplementedError("implement me")
 
     def item(self):
         self.template_name = "oaipmh/get_record.xml"
@@ -110,7 +124,7 @@ class OAIProvider(TemplateView):
                 "badArgument",
                 "The request includes illegal arguments or is missing required arguments."
             )
-        items = [self.record_model.objects.get(hub_id=identifier)]
+        items = [self.get_item(identifier)]
         if not items:
             return self.error(
                 "idDoesNotExist",
@@ -127,7 +141,7 @@ class OAIProvider(TemplateView):
 
     def last_modified(self, obj):
         # datetime object was last modified
-        return obj.modified
+        raise NotImplementedError("Implement me")
 
     def oai_identifier(self, obj):
         # oai identifier for a given object
@@ -185,7 +199,6 @@ class OAIProvider(TemplateView):
 
     def list_identifiers(self):
         self.template_name = 'oaipmh/list_identifiers.xml'
-        items = list(self.items())
         identifiers = []
         for i in list(self.items()):
             item_info = {
@@ -205,7 +218,8 @@ class OAIProvider(TemplateView):
         """ List supported graph converters. """
         self.template_name = "oaipmh/list_metadataformats.xml"
         converters = REGISTERED_CONVERTERS
-        converter_list = [(converter().get_converter_key(), converter().get_namespace()) for key, converter in converters.items() if key not in ['raw']]
+        converter_list = [(converter().get_converter_key(), converter().get_namespace()) for key, converter in
+                          converters.items() if key not in ['raw']]
         converter_list.append(('oai_dc', "http://www.openarchives.org/OAI/2.0/oai_dc/"))
         return self.render_to_response({
             "items": converter_list
@@ -223,7 +237,7 @@ class OAIProvider(TemplateView):
         else:
             record = converter.convert(add_delving_fields=False, output_format='xml')
             if isinstance(record, bytes):
-                record = record.decode("utf-8")
+                record = record.decode()
             record = record.replace('<?xml version="1.0" encoding="UTF-8"?>\n', '')
             namespaces = converter.get_namespaces(as_ns_declaration=True)
         item_info = {
@@ -356,3 +370,80 @@ class OAIProvider(TemplateView):
             else:
                 error_msg = 'The verb "{}" is illegal'.format(self.oai_verb)
             return self.error('badVerb', error_msg)
+
+
+class ElasticSearchOAIProvider(OAIProvider):
+    client = Elasticsearch()
+    ESDataSet = namedtuple("DataSet", ['spec', 'description', 'name', 'valid', 'data_owner'])
+    _es_response = None
+
+    def get_query_result(self):
+        if not self._es_response:
+            s = self.convert_filters_to_query(self.filters)
+            self._es_response = s.execute()
+        return self._es_response
+
+    def get_list_size(self):
+        return self.get_query_result().hits.total
+
+    def get_items(self):
+        if self.get_list_size() == 0:
+            return None
+        # todo return a list of RDFRecords
+        return self.get_query_result().hits.hits
+
+    def get_item(self, identifier):
+        s = Search()
+        s = s.query("match", {"_id": identifier})
+        response = s.execute()
+        if response.hits.total != 1:
+            return None
+        item = response.hits.hits[0]['_source']
+        return item
+
+    def convert_filters_to_query(self, filters):
+        s = Search(using=self.client)
+        spec = filters.get("dataset__spec", None)
+        modified_from = filters.get('modified__gt', None)
+        modified_until = filters.get('modified__lt', None)
+        if spec:
+            s = s.query("match", **{'system.spec.raw': spec})
+        if modified_from:
+            s = s.filter("range", **{"system.modified_at": {"gte": modified_from}})
+        if modified_until:
+            s = s.filter("range", **{"system.modified_at": {"lte": modified_until}})
+        s = s.sort({"system.modified_at": {"order": "asc"}} )
+        return s[self.cursor: self.get_next_cursor()]
+
+    def get_dataset_list(self):
+        s = Search(using=self.client)
+        datasets = A("terms", field="delving_spec.raw")
+        s.aggs.bucket("dataset-list", datasets)
+        response = s.execute()
+        specs = response.aggregations['dataset-list'].buckets
+        return [self.ESDataSet(spec.key, None, None, spec.doc_count, None) for spec in specs]
+
+    def last_modified(self, obj):
+        return obj['system']['modified_at']
+
+
+class DjangoOAIProvider(OAIProvider):
+
+    def get_list_size(self):
+        return self.record_model.objects.filter(**self.filters).count()
+
+    def get_items(self):
+        objects = self.record_model.objects.filter(**self.filters).order_by('modified')
+        if not objects:
+            return None
+        return objects[self.cursor:self.get_next_cursor()]
+
+    def get_item(self, identifier):
+        return self.record_model.objects.get(hub_id=identifier)
+
+    def get_dataset_list(self):
+        query_set = self.dataset_model.objects.filter(**self.dataset_access_filter)
+        return query_set
+
+    def last_modified(self, obj):
+        return obj.modified
