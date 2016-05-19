@@ -574,6 +574,8 @@ SERIALIZATION_MODULES = {
 # DataSet configuration #
 #########################
 
+RDF_STORE_TYPE = "Fuseki"  # Option Fuseki BlazeGraph
+
 RDF_USE_LOCAL_GRAPH = True
 
 RESOLVE_WEBRESOURCES_VIA_RDF = False

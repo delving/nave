@@ -410,11 +410,15 @@ def proxy(request, test_mode):
     else:
         return HttpResponseNotAllowed("Permitted methods are POST and GET")
     params = request.dict()
+    # clean up requests
+    if 'csrfmiddlewaretoken' in params:
+        del params["csrfmiddlewaretoken"]
+    accept = "application/json"
     try:
         url = rdfstore.get_sparql_query_url(test_mode)
     except KeyError:
         return HttpResponseBadRequest("URL must be defined")
-    response = r(url, params=params)
+    response = r(url, params=params, headers={"Accept": accept})
     return HttpResponse(response.text, status=int(response.status_code), content_type=response.headers['content-type'])
 
 
