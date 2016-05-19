@@ -11,7 +11,7 @@ from django.views.generic import TemplateView
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search, A
 
-from lod.utils.resolver import RDFRecord
+from lod.utils.resolver import RDFRecord, ElasticSearchRDFRecord
 from void import REGISTERED_CONVERTERS
 from void.models import DataSet, OaiPmhPublished, EDMRecord
 
@@ -390,7 +390,10 @@ class ElasticSearchOAIProvider(OAIProvider):
         if self.get_list_size() == 0:
             return None
         # todo return a list of RDFRecords
-        return self.get_query_result().hits.hits
+        return ElasticSearchRDFRecord.get_rdf_records_from_query(
+            query=self.convert_filters_to_query(self.filters),
+            response=self.get_query_result()
+        )
 
     def get_item(self, identifier):
         s = Search()
