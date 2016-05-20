@@ -219,7 +219,7 @@ class TestNarthexSynchronisation(TestCase):
                        BROKER_BACKEND='memory',
                        CELERY_RESULT_BACKEND='database')
     def test_synchronise_dataset(self):
-        client = Elasticsearch()
+        client = Elasticsearch(settings.ES_URLS)
         s = Search(client).index(self.index_name)
         del_response = client.delete_by_query(index=self.index_name, q="*:*")
         es_response = s.execute()

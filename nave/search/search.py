@@ -23,7 +23,6 @@ import six
 
 
 from .utils import gis
-from void import get_es
 from void.convertors import BaseConverter
 
 logger = logging.getLogger(__name__)
@@ -306,7 +305,7 @@ class NaveESQuery(object):
         return self.index_name
 
     def _create_query(self):
-        query = GeoS()
+        query = GeoS().es(urls=settings.ES_URLS)
         if self.get_index_name:
             query = query.indexes(*self._as_list(self.get_index_name))
         if self.doc_types:

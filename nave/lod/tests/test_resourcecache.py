@@ -4,6 +4,7 @@
 import time
 from urllib.parse import quote
 
+from django.conf import settings
 from django.db import models
 from django.test import TestCase, override_settings
 from elasticsearch import Elasticsearch
@@ -109,7 +110,7 @@ class TestResourceCache(TestCase):
         CELERY_ALWAYS_EAGER=True,
         BROKER_BACKEND='memory')
     def test_save_cached_resource(self):
-        client = Elasticsearch()
+        client = Elasticsearch(settings.ES_URLS)
         s = Search(client).index("test")
         del_response = client.delete_by_query(index='test', q="*:*")
         es_response = s.execute()

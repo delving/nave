@@ -39,7 +39,7 @@ from lod import namespace_manager
 from lod.utils import rdfstore
 
 logger = logging.getLogger(__file__)
-client = Elasticsearch()
+client = Elasticsearch(settings.ES_URLS)
 
 
 Predicate = namedtuple('Predicate', ['uri', 'label', 'ns', 'prefix'])
