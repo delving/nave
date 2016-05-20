@@ -243,7 +243,7 @@ class OAIProvider(TemplateView):
         item_info = {
             'identifier': self.oai_identifier(item),
             'last_modified': self.last_modified(item),
-            'sets': [self.sets(item)],
+            'sets': [],  # [self.sets(item)], todo implement later
             'fields': converted_fields,
             'record': record,
             'ns': namespaces
@@ -427,7 +427,7 @@ class ElasticSearchOAIProvider(OAIProvider):
         return [self.ESDataSet(spec.key, None, None, spec.doc_count, None) for spec in specs]
 
     def last_modified(self, obj):
-        return obj['system']['modified_at']
+        return obj.last_modified()
 
 
 class DjangoOAIProvider(OAIProvider):

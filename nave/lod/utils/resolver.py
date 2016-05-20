@@ -1176,7 +1176,7 @@ class ElasticSearchRDFRecord(RDFRecord):
         for hit in response.hits.hits:
             record = ElasticSearchRDFRecord(
                 hub_id=hit['_id'],
-                doc_type=hit['_doctype']
+                doc_type=hit['_type']
             )
             record.set_defaults_from_query_result(es_record=hit)
             record_list.append(record)
