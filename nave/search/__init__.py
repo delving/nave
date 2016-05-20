@@ -15,8 +15,8 @@ import logging
 from collections import namedtuple
 
 from django.conf import settings
+from elasticsearch import Elasticsearch
 from elasticutils import FACET_TYPES
-from elasticutils import get_es
 
 FACET_TYPES.append('geohash')
 
@@ -53,7 +53,7 @@ ES_TIMEOUT = get_settings('ES_TIMEOUT', 5)
 ORG_ID = get_settings("ORG_ID", settings.SITE_NAME.lower())
 
 # check if all the indexes are created and if not create with the right mappings
-es = get_es(ES_URLS)
+es = Elasticsearch(hosts=settings.ES_URLS)
 
 
 def get_es():
