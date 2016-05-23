@@ -305,7 +305,7 @@ class NaveESQuery(object):
         return self.index_name
 
     def _create_query(self):
-        query = GeoS().es(urls=settings.ES_URLS)
+        query = GeoS().es(urls=settings.ES_URLS, timeout=settings.ES_TIMEOUT)
         if self.get_index_name:
             query = query.indexes(*self._as_list(self.get_index_name))
         if self.doc_types:
