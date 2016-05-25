@@ -234,7 +234,7 @@ ROSETTA_AUTO_COMPILE = True
 
 ROSETTA_WSGI_AUTO_RELOAD = True
 
-ROSETTA_EXCLUDED_APPLICATIONS = ('filer','rest_framework', 'django_extensions', 'taggit')
+ROSETTA_EXCLUDED_APPLICATIONS = ('filer', 'rest_framework', 'django_extensions', 'taggit', 'mptt', 'reversion')
 
 # Every cache key will get prefixed with this value - here we set it to
 # the name of the directory the project is in to try and use something
