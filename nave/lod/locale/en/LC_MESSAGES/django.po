@@ -1,0 +1,518 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2016-05-25 13:12+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: models.py:58
+msgid "Author"
+msgstr ""
+
+#: models.py:59
+msgid "The first creator of the object"
+msgstr ""
+
+#: models.py:66
+msgid "Group"
+msgstr ""
+
+#: models.py:67
+msgid "The groups that have access to this metadata record"
+msgstr ""
+
+#: models.py:92
+msgid "title"
+msgstr ""
+
+#: models.py:93
+msgid "description"
+msgstr ""
+
+#: models.py:109 models.py:110
+msgid "RDF Subject LookUp"
+msgstr ""
+
+#: models.py:140
+msgid "hub id"
+msgstr ""
+
+#: models.py:143
+msgid "legacy culture hubId for documents"
+msgstr ""
+
+#: models.py:146
+msgid "slug"
+msgstr ""
+
+#: models.py:151
+msgid "document_uri"
+msgstr ""
+
+#: models.py:153
+msgid "The document uri or cache uri "
+msgstr ""
+
+#: models.py:156
+msgid "named_graph"
+msgstr ""
+
+#: models.py:157
+msgid "The named graph that this record belongs to"
+msgstr ""
+
+#: models.py:160
+msgid "local identifier"
+msgstr ""
+
+#: models.py:162
+msgid "The local identifier supplied by the provider"
+msgstr ""
+
+#: models.py:165
+msgid "uuid"
+msgstr ""
+
+#: models.py:166
+msgid "The unique uuid created on first save"
+msgstr ""
+
+#: models.py:169
+msgid "source uri"
+msgstr ""
+
+#: models.py:172
+msgid ""
+"If the item is cached this is the original uri where this object is found. "
+"It is also saved in the graph as owl:sameAs"
+msgstr ""
+
+#: models.py:176
+msgid "acceptance rdf"
+msgstr ""
+
+#: models.py:178 models.py:198
+msgid "The rdf stored in the ntriples (nt) format. "
+msgstr ""
+
+#: models.py:181
+msgid "acceptance hash"
+msgstr ""
+
+#: models.py:186 models.py:206
+msgid "The sha1 content has of the stored ntriples."
+msgstr ""
+
+#: models.py:189
+msgid "acceptance update date"
+msgstr ""
+
+#: models.py:193
+msgid "The date the acceptance source was updated"
+msgstr ""
+
+#: models.py:196
+msgid "production rdf"
+msgstr ""
+
+#: models.py:201
+msgid "source hash"
+msgstr ""
+
+#: models.py:209
+msgid "production update date"
+msgstr ""
+
+#: models.py:213
+msgid "The date the source was updated"
+msgstr ""
+
+#: models.py:216
+msgid "has store error"
+msgstr ""
+
+#: models.py:218
+msgid "If post save actions have thrown an error."
+msgstr ""
+
+#: models.py:221
+msgid "error message"
+msgstr ""
+
+#: models.py:746
+msgid "RDF source URI"
+msgstr ""
+
+#: models.py:749
+msgid "External link"
+msgstr ""
+
+#: models.py:752 models.py:880
+msgid "name"
+msgstr ""
+
+#: models.py:758
+msgid "short description"
+msgstr ""
+
+#: models.py:764
+msgid "content_type"
+msgstr ""
+
+#: models.py:768
+msgid "The content type of the link, e.g. wikipedia or youtube."
+msgstr ""
+
+#: models.py:771
+msgid "html summary"
+msgstr ""
+
+#: models.py:774
+msgid "Contains the unfurled HTML from the saved link"
+msgstr ""
+
+#: models.py:777
+msgid "published"
+msgstr ""
+
+#: models.py:779
+msgid "Should the UGC be published to unauthorised users."
+msgstr ""
+
+#: models.py:784 models.py:785
+msgid "User Generated Content"
+msgstr ""
+
+#: models.py:802
+msgid "prefix"
+msgstr ""
+
+#: models.py:803
+msgid "prefix url"
+msgstr ""
+
+#: models.py:806
+msgid "RDF Prefix"
+msgstr ""
+
+#: models.py:807
+msgid "RDF Prefixes"
+msgstr ""
+
+#: models.py:828 models.py:851
+msgid "prefixes"
+msgstr ""
+
+#: models.py:832 models.py:852
+msgid "SPARQL query"
+msgstr ""
+
+#: models.py:835
+msgid "SPARQL Query"
+msgstr ""
+
+#: models.py:836
+msgid "SPARQL Queries"
+msgstr ""
+
+#: models.py:853
+msgid "active"
+msgstr ""
+
+#: models.py:853
+msgid "If the SPARQL update query is scheduled for periodic execution."
+msgstr ""
+
+#: models.py:857
+msgid "SPARQL Update Query"
+msgstr ""
+
+#: models.py:858
+msgid "SPARQL Update Queries"
+msgstr ""
+
+#: models.py:882
+msgid "The name of the remote resource"
+msgstr ""
+
+#: models.py:885
+msgid "base_url"
+msgstr ""
+
+#: models.py:887
+msgid "The base url of the LoD target"
+msgstr ""
+
+#: models.py:890
+msgid "sparql endpoint"
+msgstr ""
+
+#: models.py:893
+msgid "The sparql endpoint"
+msgstr ""
+
+#: models.py:896
+msgid "ontology url"
+msgstr ""
+
+#: models.py:899
+msgid "The link to an RDF version of the Ontology"
+msgstr ""
+
+#: models.py:929
+msgid "stored"
+msgstr ""
+
+#: templates/rdf/content_detail/gn_feature.html:5
+#: templates/rdf/content_foldout/gn_feature.html:4
+#: templates/rdf/include/enrichment_link_form.html:18
+#: templates/rdf/include/enrichment_link_form.html:19
+msgid "Name"
+msgstr ""
+
+#: templates/rdf/content_detail/gn_feature.html:6
+msgid "Country Code"
+msgstr ""
+
+#: templates/rdf/content_detail/ore_aggregation.html:5
+#: templates/rdf/lod_detail.html:213
+msgid "dc_title"
+msgstr ""
+
+#: templates/rdf/content_detail/ore_aggregation.html:6
+#: templates/rdf/content_foldout/lod-detail-foldout.html:33
+#: templates/rdf/lod_detail.html:217
+msgid "dc_creator"
+msgstr ""
+
+#: templates/rdf/content_detail/ore_aggregation.html:7
+#: templates/rdf/content_detail/ore_aggregation.html:19
+#: templates/rdf/content_foldout/lod-detail-foldout.html:34
+msgid "dc_date"
+msgstr ""
+
+#: templates/rdf/content_detail/ore_aggregation.html:8
+#: templates/rdf/content_foldout/lod-detail-foldout.html:42
+msgid "nave_material"
+msgstr ""
+
+#: templates/rdf/content_detail/ore_aggregation.html:9
+#: templates/rdf/content_foldout/lod-detail-foldout.html:43
+msgid "nave_technique"
+msgstr ""
+
+#: templates/rdf/content_detail/ore_aggregation.html:10
+msgid "dc_format"
+msgstr ""
+
+#: templates/rdf/content_detail/ore_aggregation.html:11
+#: templates/rdf/content_foldout/lod-detail-foldout.html:36
+#: templates/rdf/lod_detail.html:72
+msgid "dc_description"
+msgstr ""
+
+#: templates/rdf/content_detail/ore_aggregation.html:12
+#: templates/rdf/content_foldout/lod-detail-foldout.html:35
+msgid "dc_subject"
+msgstr ""
+
+#: templates/rdf/content_detail/ore_aggregation.html:13
+#: templates/rdf/content_foldout/lod-detail-foldout.html:40
+msgid "dc_type"
+msgstr ""
+
+#: templates/rdf/content_detail/ore_aggregation.html:14
+#: templates/rdf/content_foldout/lod-detail-foldout.html:37
+msgid "dc_identifier"
+msgstr ""
+
+#: templates/rdf/content_detail/ore_aggregation.html:15
+msgid "dc_relation"
+msgstr ""
+
+#: templates/rdf/content_detail/ore_aggregation.html:16
+msgid "dc_provenance"
+msgstr ""
+
+#: templates/rdf/content_detail/ore_aggregation.html:17
+msgid "nave_collection"
+msgstr ""
+
+#: templates/rdf/content_detail/ore_aggregation.html:18
+msgid "nave_collectionPart"
+msgstr ""
+
+#: templates/rdf/content_detail/ore_aggregation.html:20
+#: templates/rdf/content_foldout/lod-detail-foldout.html:41
+msgid "edm_dataProvider"
+msgstr ""
+
+#: templates/rdf/content_detail/ore_aggregation.html:21
+msgid "dc_contributor"
+msgstr ""
+
+#: templates/rdf/content_detail/ore_aggregation.html:22
+msgid "dc_source"
+msgstr ""
+
+#: templates/rdf/content_detail/ore_aggregation.html:23
+msgid "nave_province"
+msgstr ""
+
+#: templates/rdf/content_detail/ore_aggregation.html:24
+msgid "nave_musipMuseumUri"
+msgstr ""
+
+#: templates/rdf/content_detail/ore_aggregation.html:25
+msgid "edm_isShownAt"
+msgstr ""
+
+#: templates/rdf/content_detail/ore_aggregation.html:26
+#: templates/rdf/content_foldout/lod-detail-foldout.html:45
+#: templates/rdf/lod_detail.html:221
+msgid "dc_rights"
+msgstr ""
+
+#: templates/rdf/content_detail/ore_aggregation.html:27
+#: templates/rdf/content_foldout/lod-detail-foldout.html:46
+msgid "edm_rights"
+msgstr ""
+
+#: templates/rdf/content_detail/ore_aggregation.html:28
+msgid "coordinate"
+msgstr ""
+
+#: templates/rdf/content_foldout/lod-detail-foldout.html:44
+msgid "dcterms_isReferencedBy"
+msgstr ""
+
+#: templates/rdf/content_foldout/lod-detail-foldout.html:50
+msgid "View details"
+msgstr ""
+
+#: templates/rdf/include/enrichment_link_form.html:14
+#: templates/rdf/include/enrichment_link_form.html:15
+msgid "Type"
+msgstr ""
+
+#: templates/rdf/include/enrichment_link_form.html:22
+#: templates/rdf/include/enrichment_link_form.html:23
+msgid "Short description"
+msgstr ""
+
+#: templates/rdf/include/enrichment_link_form.html:26
+msgid "URL/Link"
+msgstr ""
+
+#: templates/rdf/include/enrichment_link_form.html:27
+msgid "Link"
+msgstr ""
+
+#: templates/rdf/include/enrichment_link_form.html:30
+msgid "Published"
+msgstr ""
+
+#: templates/rdf/include/enrichment_link_form.html:34
+msgid "Save"
+msgstr ""
+
+#: templates/rdf/lod_detail.html:24
+msgid "Home"
+msgstr ""
+
+#: templates/rdf/lod_detail.html:29 templates/rdf/lod_detail.html.py:32
+msgid "Search"
+msgstr ""
+
+#: templates/rdf/lod_detail.html:52
+msgid "Return to results"
+msgstr ""
+
+#: templates/rdf/lod_detail.html:58
+msgid "Return to previous object"
+msgstr ""
+
+#: templates/rdf/lod_detail.html:81
+msgid "Content"
+msgstr ""
+
+#: templates/rdf/lod_detail.html:85 templates/rdf/lod_detail.html.py:115
+msgid "Properties"
+msgstr ""
+
+#: templates/rdf/lod_detail.html:89
+msgid "Statistics"
+msgstr ""
+
+#: templates/rdf/lod_detail.html:93
+msgid "Media"
+msgstr ""
+
+#: templates/rdf/lod_detail.html:96
+msgid "Map"
+msgstr ""
+
+#: templates/rdf/lod_detail.html:99
+msgid "Related"
+msgstr ""
+
+#: templates/rdf/lod_detail.html:118
+msgid "Display predicate uris"
+msgstr ""
+
+#: templates/rdf/lod_detail.html:263
+msgid "Add enrichment link"
+msgstr ""
+
+#: templates/rdf/lod_detail.html:266
+msgid "Add/Edit enrichment link"
+msgstr ""
+
+#: templates/rdf/tags/_rdf_properties.html:21
+#: templates/rdf/tags/_search-detail-field.html:51
+msgid "Opens in new window"
+msgstr ""
+
+#: templates/rdf/tags/_rdf_properties.html:38
+#: templates/rdf/tags/_rdf_properties.html:39
+#: templates/rdf/tags/_rdf_properties.html:53
+#: templates/rdf/tags/_rdf_properties.html:54
+msgid "Show more"
+msgstr ""
+
+#: templates/rdf/tags/_rdf_properties.html:38
+#: templates/rdf/tags/_rdf_properties.html:53
+msgid "Show less"
+msgstr ""
+
+#: templates/rdf/tags/_search-detail-field.html:47
+msgid "Definition"
+msgstr ""
+
+#: templates/rdf/tags/_search-detail-field.html:61
+msgid "Free text"
+msgstr ""
+
+#: templates/rdf/tags/_search-detail-media-preview.html:15
+msgid "no preview available"
+msgstr ""
+
+#: templates/rdf/tags/_search-detail-media-preview.html:70
+msgid "No preview available"
+msgstr ""
+
+#: templates/snorql/properties.html:70
+msgid "More properties"
+msgstr ""
