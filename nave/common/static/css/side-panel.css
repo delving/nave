@@ -1,0 +1,54 @@
+/* slide out side panels ****************************/
+.side-panel {
+  background-color: #222;
+  color: #bbb;
+  height: 100%;
+  width: 500px;
+  /*********************/
+  position: fixed;
+  top: 0;
+  z-index: 10;
+  /*********************/
+  -webkit-transition: all 0.75s ease;
+  -moz-transition: all 0.75s ease;
+  transition: all 0.75s ease;
+}
+.side-panel.left {
+  left: -500px;
+}
+.side-panel.left.open {
+  left: 0px;
+}
+.side-panel.right {
+  right: -500px;
+}
+.side-panel.right.open {
+  right: 0px;
+}
+.side-panel-inner {
+  padding: 20px;
+}
+.side-panel-tab {
+  background: #222;
+  color: #888;
+  font-size: 1.2em;
+  height: 32px;
+  padding: 6px 10px 7px 10px;
+  position: absolute;
+  top: 100px;
+  width: 32px;
+  -webkit-transition: all 0.75s ease;
+  -moz-transition: all 0.75s ease;
+  transition: all 0.75s ease;
+}
+.right .side-panel-tab {
+  margin-right: 100%;
+  right: 0;
+}
+.left .side-panel-tab {
+  margin-left: 100%;
+  left: 0px;
+}
+.side-panel-tab:hover {
+  cursor: pointer;
+}
