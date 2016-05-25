@@ -341,7 +341,8 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
         mlt = True if request.query_params.get('mlt', 'false') == "true" else False
         mlt_count = int(request.query_params.get('mlt.count', 5))
         response = NaveItemResponse(query, self, index=self.get_index_name, mlt=mlt, mlt_count=mlt_count)
-        record = self.get_record_from_doctype(response.item.doc_type, response.item.doc_id)
+        record = ElasticSearchRDFRecord(hub_id=pk)
+        record.get_graph_by_id(hub_id=pk)
         renderer_format = request.accepted_renderer.format
         if renderer_format in list(EXTENSION_TO_MIME_TYPE.keys()) and renderer_format not in ['xml', 'json']:
             graph = record.get_graph()

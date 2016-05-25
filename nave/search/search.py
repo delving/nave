@@ -1247,6 +1247,7 @@ class NaveItemResponse(object):
             # todo: implement the elasticsearch-dsl version of MLT
             doc_type = self.item.doc_type
             doc_id = self.item.doc_id
+            from . import get_es
             s = Search(using=get_es(), index=self._index)
             mlt_query = s.query(
                     'more_like_this',
