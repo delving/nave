@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% load i18n cstaticfiles %}
+{% load i18n staticfiles %}
 
 {% block breadcrumbs %}
     <ul class="breadcrumb">
@@ -18,64 +18,71 @@
 
     <h1>Statistics</h1>
 
+    Datasets: {{ counts.total_specs.count }} <br/>
+    Total Indexed Records: {{ counts.total_records.count }}
+
     <div role="tabpanel">
         <ul class="nav nav-pills" role="tablist">
             <li role="presentation" class="active">
-                <a href="#stats1" role="tab" data-toggle="tab">Stats 1</a>
+                <a href="#stats1" role="tab" data-toggle="tab">Correct Datasets: {{ counts.correct_datasets.count }}</a>
             </li>
             <li role="presentation">
-                <a href="#stats2" role="tab" data-toggle="tab">Stats 2</a>
+                <a href="#stats2" role="tab" data-toggle="tab">Not Indexed: {{ counts.not_indexed.count }}</a>
             </li>
             <li role="presentation">
-                <a href="#stats3" role="tab" data-toggle="tab">Stats 3</a>
+                <a href="#stats3" role="tab" data-toggle="tab">Wrong Index Count: {{ counts.wrong_index_count.count }}</a>
             </li>
             <li role="presentation">
-                <a href="#stats4" role="tab" data-toggle="tab">Stats 4</a>
+                <a href="#stats4" role="tab" data-toggle="tab">Deleted Datasets: {{ counts.deleted.count }}</a>
             </li>
         </ul>
 
         <div class="tab-content">
             <div role="tab-panel" class="tab-pane active" id="stats1">
-                <h3>Stats 1</h3>
+                <h3>Correct Datasets</h3>
                 <table class="table table-striped">
                     <thead>
                     <tr>
-                        <th>Field One</th>
-                        <th>Field Two</th>
-                        <th>Field Three</th>
-                        <th>Field Four</th>
+                        <th>Spec</th>
+                        <th>total records</th>
+                        <th>Invalid</th>
+                        <th>Valid</th>
+                        <th>Indexed</th>
                     </tr>
                     </thead>
                     <tbody>
-                    {% for i in "123456789" %}
+                    {% for i in counts.correct_datasets.values %}
                         <tr>
-                            <td>Row {{ i }} Value 1</td>
-                            <td>Row {{ i }} Value 2</td>
-                            <td>Row {{ i }} Value 3</td>
-                            <td>Row {{ i }} Value 5</td>
+                            <td>{{ i.spec }}</td>
+                            <td>{{ i.record_count }}</td>
+                            <td>{{ i.invalid }}</td>
+                            <td>{{ i.valid }}</td>
+                            <td>{{ i.es_count }}</td>
                         </tr>
                     {% endfor %}
                     </tbody>
                 </table>
             </div>
             <div role="tab-panel" class="tab-pane" id="stats2">
-                <h3>Stats 2</h3>
+                <h3>Not Indexed</h3>
                 <table class="table table-striped">
                     <thead>
                     <tr>
-                        <th>Field One</th>
-                        <th>Field Two</th>
-                        <th>Field Three</th>
-                        <th>Field Four</th>
+                        <th>Spec</th>
+                        <th>total records</th>
+                        <th>Invalid</th>
+                        <th>Valid</th>
+                        <th>Indexed</th>
                     </tr>
                     </thead>
                     <tbody>
-                    {% for i in "123456789" %}
+                    {% for i in counts.not_indexed.values %}
                         <tr>
-                            <td>Row {{ i }} Value 1</td>
-                            <td>Row {{ i }} Value 2</td>
-                            <td>Row {{ i }} Value 3</td>
-                            <td>Row {{ i }} Value 5</td>
+                            <td>{{ i.spec }}</td>
+                            <td>{{ i.record_count }}</td>
+                            <td>{{ i.invalid }}</td>
+                            <td>{{ i.valid }}</td>
+                            <td>{{ i.es_count }}</td>
                         </tr>
                     {% endfor %}
                     </tbody>
@@ -86,42 +93,46 @@
                 <table class="table table-striped">
                     <thead>
                     <tr>
-                        <th>Field One</th>
-                        <th>Field Two</th>
-                        <th>Field Three</th>
-                        <th>Field Four</th>
+                        <th>Spec</th>
+                        <th>total records</th>
+                        <th>Invalid</th>
+                        <th>Valid</th>
+                        <th>Indexed</th>
                     </tr>
                     </thead>
                     <tbody>
-                    {% for i in "123456789" %}
+                    {% for i in counts.wrong_index_count.values %}
                         <tr>
-                            <td>Row {{ i }} Value 1</td>
-                            <td>Row {{ i }} Value 2</td>
-                            <td>Row {{ i }} Value 3</td>
-                            <td>Row {{ i }} Value 5</td>
+                            <td>{{ i.spec }}</td>
+                            <td>{{ i.record_count }}</td>
+                            <td>{{ i.invalid }}</td>
+                            <td>{{ i.valid }}</td>
+                            <td>{{ i.es_count }}</td>
                         </tr>
                     {% endfor %}
                     </tbody>
                 </table>
             </div>
             <div role="tab-panel" class="tab-pane" id="stats4">
-                <h3>Stats 4</h3>
+                <h3>Deleted Datasets</h3>
                 <table class="table table-striped">
                     <thead>
                     <tr>
-                        <th>Field One</th>
-                        <th>Field Two</th>
-                        <th>Field Three</th>
-                        <th>Field Four</th>
+                        <th>Spec</th>
+                        <th>total records</th>
+                        <th>Invalid</th>
+                        <th>Valid</th>
+                        <th>Indexed</th>
                     </tr>
                     </thead>
                     <tbody>
-                    {% for i in "123456789" %}
+                    {% for i in counts.deleted.values %}
                         <tr>
-                            <td>Row {{ i }} Value 1</td>
-                            <td>Row {{ i }} Value 2</td>
-                            <td>Row {{ i }} Value 3</td>
-                            <td>Row {{ i }} Value 5</td>
+                            <td>{{ i.spec }}</td>
+                            <td>{{ i.record_count }}</td>
+                            <td>{{ i.invalid }}</td>
+                            <td>{{ i.valid }}</td>
+                            <td>{{ i.es_count }}</td>
                         </tr>
                     {% endfor %}
                     </tbody>
