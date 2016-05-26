@@ -152,8 +152,9 @@ class DataSetStatisticsView(TemplateView):
             spec_name = spec.key
             dataset = spec_list.get(spec_name)
             if dataset is None:
-                print("Spec {} missing in Narthex".format(spec.key))
-            spec_list[spec_name] = dataset._replace(es_count=spec.doc_count)
+                logger.info("Spec {} missing in Narthex".format(spec.key))
+            else:
+                spec_list[spec_name] = dataset._replace(es_count=spec.doc_count)
         return spec_list
 
     def get_context_data(self, **kwargs):
@@ -193,7 +194,7 @@ class VoidListView(ListView):
     pass
 
 
-class ImageResolveRedirectView(RedirectView):
+class ImageRedirectView(RedirectView):
     """
     The Redirect view redirects Digital Object Uris that have been encoded
     as RDF valid uris in the sip-creator.
