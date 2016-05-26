@@ -535,7 +535,9 @@ class NaveESQuery(object):
                 applied_facet_fields.append(key.lstrip('-+').replace('.raw', ''))
                 f = F()
                 for value in values:
-                    clean_value = value.strip("\"")
+                    clean_value = value
+                    if clean_value.startswith('"') and clean_value.endswith('"'):
+                        clean_value = clean_value.strip('"')
                     if key.startswith('-'):
                         f |= ~F(**{self.query_to_facet_key(key): clean_value})
                     elif facet_bool_type_and:
