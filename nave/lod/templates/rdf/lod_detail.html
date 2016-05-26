@@ -328,6 +328,16 @@
                 $('input[name=literal_property]').val($(this).attr('data-current-fieldname'));
                 $('input[name=literal_value]').val($(this).attr('data-current-literal'));
             });
+            {#############################################################}
+            {# update thumnail nav item active class                     #}
+            {#############################################################}
+            $('#media-carousel').on('slid.bs.carousel', function (e) {
+                var id = $('.item.active').data('slide-number');
+                id = parseInt(id);
+                console.log(id);
+                $('[id^=carousel-selector-]').removeClass('active');
+                $('[id=carousel-selector-'+id+']').addClass('active');
+            });
         });
     </script>
 

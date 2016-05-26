@@ -185,7 +185,7 @@ span.predicate-uri-label {
 }
 .carousel-control.left,
 .carousel-control.right {
-  color: @black;
+  color: @gray-light;
 }
 .carousel-nav {
   top: 37%;
@@ -202,7 +202,21 @@ span.predicate-uri-label {
 }
 .carousel-thumbnails {
   background: @silver;
-  border-top: 20px solid @white;
+  ul {
+    margin: 0;
+    padding: 20px 10px;
+  }
+  li {
+    padding: 0;
+    border: 4px solid transparent;
+  }
+  li.active {
+    border: 4px solid @brand-info;
+  }
+  li img {
+    height: 65px;
+    width: auto;
+  }
 }
 .carousel-indicators {
   margin: 0 0 0 0;

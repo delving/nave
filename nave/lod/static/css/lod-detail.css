@@ -194,7 +194,7 @@ span.predicate-uri-label {
 }
 .carousel-control.left,
 .carousel-control.right {
-  color: #000;
+  color: #999;
 }
 .carousel-nav {
   top: 37%;
@@ -212,7 +212,21 @@ span.predicate-uri-label {
 }
 .carousel-thumbnails {
   background: #e9e9e9;
-  border-top: 20px solid #fff;
+}
+.carousel-thumbnails ul {
+  margin: 0;
+  padding: 20px 10px;
+}
+.carousel-thumbnails li {
+  padding: 0;
+  border: 4px solid transparent;
+}
+.carousel-thumbnails li.active {
+  border: 4px solid #59afe1;
+}
+.carousel-thumbnails li img {
+  height: 65px;
+  width: auto;
 }
 .carousel-indicators {
   margin: 0 0 0 0;
