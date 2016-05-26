@@ -30,7 +30,7 @@ from colorific.palette import extract_colors
 from PIL import Image
 import requests
 import webcolors
-
+from django.conf import settings
 
 logger = logging.getLogger(__file__)
 
@@ -335,12 +335,18 @@ class WebResource:
     @property
     def get_deepzoom_uri(self):
         """Get fully qualified deepzoom URI for redirection to the WebServer."""
-        return os.path.join(
+        # todo enable later again when nginx works properly
+        # return os.path.join(
+        #     self.domain,
+        #     "webresource",
+        #     self.get_relative_spec_dir,
+        #     "{}.tif.dzi".format(self.get_derivative_base_path(kind=DEEPZOOM_DIR))
+        # )
+        return "{}/fcgi-bin/iipsrv.fcgi?DeepZoom={}/{}/{}.tif.dzi".format(
             self.domain,
-            "webresource",
+            settings.WEB_RESOURCE_BASE.rstrip('/'),
             self.get_relative_spec_dir,
-            "{}.tif.dzi".format(self.get_derivative_base_path(kind=DEEPZOOM_DIR))
-        )
+            self.get_derivative_base_path(kind=DEEPZOOM_DIR))
 
     @property
     def get_source_uri(self):
