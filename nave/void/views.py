@@ -2,7 +2,7 @@ import logging
 from urllib.parse import unquote
 
 from django.conf import settings
-from django.core.urlresolvers import resolve, reverse
+from django.core.urlresolvers import reverse
 from django.views.generic import ListView, RedirectView, TemplateView
 from rest_framework import status
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication, TokenAuthentication
