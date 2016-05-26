@@ -153,6 +153,8 @@ class WebResource:
             for folder in WEB_RESOURCE_DIRS:
                 full_path = os.path.join(self.get_spec_dir, folder)
                 os.makedirs(full_path, exist_ok=True, mode=0o777)
+            return True
+        return False
 
     def create_deepzoom(self):
         """Create an IIPimage server compliant tiled deepzoom pyramid tiff.
@@ -175,6 +177,8 @@ class WebResource:
 
     def create_thumbnail(self, width, height):
         """Create the thumbnail derivative of the source digital object."""
+        if width > 1000 or height > 1000:
+            width = height = 1000
         start = time.time()
         infile = self.get_source_path
         outfile = self.get_thumbnail_path(width, height)
