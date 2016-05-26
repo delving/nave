@@ -95,7 +95,6 @@ def toggle_proxy_mapping(request):
 class DataSetStatisticsView(TemplateView):
     template_name = "statistics.html"
     total_records = 0
-    context_object_name = 'sjoerd'
 
     from collections import namedtuple
     NarthexDataSet = namedtuple('NarthexDataSet', ['spec', 'record_count', 'invalid', 'valid', 'es_count', 'deleted'])
