@@ -6,7 +6,6 @@
     <ul class="breadcrumb">
         <li>
             <a href="/">{% trans 'home' %}</a>
-            <span class="separator">»</span>
         </li>
         <li>
             <span class="active">{% trans 'statistics' %}</span>
@@ -14,12 +13,22 @@
     </ul>
 {% endblock breadcrumbs%}
 
+{% block content_above_wrapper %}{% endblock %}
+
 {% block content %}
 
-    <h1>Statistics</h1>
+    <h2>Statistics</h2>
 
-    Datasets: {{ counts.total_specs.count }} <br/>
-    Total Indexed Records: {{ counts.total_records.count }}
+    <ul class="list-group" style="max-width: 320px;">
+        <li class="list-group-item">
+            <span class="badge">{{ counts.total_specs.count }}</span>
+            Datasets:
+        </li>
+        <li class="list-group-item">
+            <span class="badge">{{ counts.total_records.count }}</span>
+            Total Indexed Records:
+        </li>
+    </ul>
 
     <div role="tabpanel">
         <ul class="nav nav-pills" role="tablist">
