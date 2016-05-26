@@ -326,6 +326,7 @@ LOCAL_APPS = (
     'lod',
     'void',
     'search',
+    'webresource',
     'virtual_collection',
 )
 
@@ -701,6 +702,15 @@ CELERY_ACKS_LATE = True
 
 # store schedule in the DB:
 CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
+
+
+CELERYBEAT_SCHEDULE = {
+    'add-every-60-seconds': {
+        'task': 'webresource.tasks.create_webresource_dirs',
+        'schedule': timedelta(seconds=60),
+        'args': None
+    },
+}
 
 
 class FacetConfig(object):
