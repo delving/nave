@@ -59,10 +59,11 @@
             <h2>{% trans 'Preview' %}</h2>
 
             <div id="widget-code-source">
-
+                {{ request.get_host }}<br/>
+                {{  request.META.SERVER_NAME }}
                 {% spaceless %}
                     {% get_current_language as language %}
-                    <form method="get" target="_blank" action="{% block search_widget_action %}http://{{ request.get_host }}{% endblock %}/{{ language }}/search/" class="search-widget-form">
+                    <form method="get" target="_blank" action="{% block search_widget_action %}http://{{  request.META.SERVER_NAME }}{% endblock %}/{{ language }}/search/" class="search-widget-form">
                         <div class="search-widget-branding">
                             {% block search_widget_branding %}Delving Nave{% endblock %}
                         </div>
