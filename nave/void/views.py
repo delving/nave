@@ -92,8 +92,11 @@ def toggle_proxy_mapping(request):
             return Response({'status': "not ok", 'error': e.args}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class DataSetStatisticsView(TemplateView):
-    template_name = "statistics.html"
+class DataSetStatistics:
+
+    def __init__(self, sparql_endpoint):
+        self._endpoint = sparql_endpoint
+
     total_records = 0
 
     from collections import namedtuple
@@ -101,9 +104,8 @@ class DataSetStatisticsView(TemplateView):
 
     def get_narthex_datasets(self):
         from SPARQLWrapper import SPARQLWrapper, JSON
-        endpoint = self.request.build_absolute_uri(reverse('proxy'))
 
-        sparql = SPARQLWrapper(endpoint)
+        sparql = SPARQLWrapper(self._endpoint)
         # sparql.setCredentials('fuseki_user', 'XXX')
         sparql.setQuery("""
            SELECT * WHERE {
@@ -134,7 +136,7 @@ class DataSetStatisticsView(TemplateView):
         self.total_records = response.hits.total
         return response.aggregations.delving_spec.buckets
 
-    def get_spec_list(self):
+    def get_spec_list(self, include_deleted=True):
         spec_list = {}
         results = self.get_narthex_datasets()
         for spec in results['results']['bindings']:
@@ -155,11 +157,19 @@ class DataSetStatisticsView(TemplateView):
                 logger.info("Spec {} missing in Narthex".format(spec.key))
             else:
                 spec_list[spec_name] = dataset._replace(es_count=spec.doc_count)
+        if not include_deleted:
+            spec_list = {k: v for k, v in spec_list.items() if v.deleted == "false"}
         return spec_list
+
+
+class DataSetStatisticsView(TemplateView):
+    template_name = "statistics.html"
 
     def get_context_data(self, **kwargs):
         context = super(DataSetStatisticsView, self).get_context_data(**kwargs)
-        spec_list = self.get_spec_list()
+        endpoint = self.request.build_absolute_uri(reverse('proxy'))
+        stats = DataSetStatistics(endpoint)
+        spec_list = stats.get_spec_list()
         # remove deleted
         deleted_specs = []
         for k, v in spec_list.copy().items():
@@ -171,7 +181,7 @@ class DataSetStatisticsView(TemplateView):
         not_indexed = [ds for ds in spec_list.values() if ds.es_count == 0 and int(ds.valid) > 0]
         wrong_index_count = [ds for ds in spec_list.values() if ds.es_count != int(ds.valid) and ds.es_count > 0]
         context['counts'] = {
-            'total_records': {'count': self.total_records, 'values': None},
+            'total_records': {'count': stats.total_records, 'values': None},
             'total_specs': {'count': len(specs), 'values': specs},
             'correct_datasets': {'count': len(correct_datasets), 'values': correct_datasets},
             'not_indexed': {'count': len(not_indexed), 'values': not_indexed},
