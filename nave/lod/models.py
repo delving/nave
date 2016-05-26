@@ -827,7 +827,6 @@ class SPARQLQuery(TitleSlugDescriptionModel, TimeStampedModel):
         RDFPrefix,
         verbose_name=_('prefixes'),
         blank=True,
-        null=True,
     )
     query = models.TextField(_("SPARQL query"))
 
