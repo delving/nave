@@ -9,14 +9,15 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-05-25 14:12+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"PO-Revision-Date: 2016-05-25 14:48+0020\n"
+"Last-Translator: b'  <>'\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Language: \n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Translated-Using: django-rosetta 0.7.8\n"
 
 #: templates/search/_search-results-linked.html:19
 msgid "no image available"
@@ -44,7 +45,7 @@ msgstr ""
 #: templates/search/include/pagination.html:20
 #: templates/search/include/pagination.html:24
 msgid "Next"
-msgstr ""
+msgstr "neste"
 
 #: templates/search/include/select-rows.html:2
 msgid "Number of results per page:"

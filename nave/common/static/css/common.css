@@ -166,7 +166,7 @@ ul.key-value-list.wide label {
 }
 .modal-backdrop.in {
   height: 200%;
-  z-index: 1040;
+  z-index: 1001;
 }
 /* slide out side panels ****************************/
 .side-panel {

@@ -26,6 +26,7 @@ Ugc.initForm = function () {
 };
 
 Ugc.sendForm = function (ugcObj, authToken) {
+    console.log(ugcObj);
     $.ajax({
         type: 'POST',
         url: '/api/enrich/ugc/',
@@ -36,10 +37,12 @@ Ugc.sendForm = function (ugcObj, authToken) {
         },
         success: function () {
             console.log('form sent!');
+
         },
         error: function (XMLHttpRequest, textStatus, errorThrown) {
             //todo get the serializer or view to return json error response
             console.log(XMLHttpRequest);
+            return false;
         }
     });
 };

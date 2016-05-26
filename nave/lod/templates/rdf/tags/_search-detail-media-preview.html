@@ -27,7 +27,7 @@
             {% endif %}
             <div class="carousel-inner" role="listbox">
                 {% for value in values %}
-                    <div class="item {% if forloop.first %}active{% endif %}">
+                    <div class="item {% if forloop.first %}active{% endif %}" data-slide-number="{{ forloop.counter0 }}">
                         {# TODO: check for deepzoom, video audio and render html accordingly #}
                         {#  deepzoom info in nave_deepZoomUrl #}
                         {% if fullscreen %}
@@ -53,9 +53,10 @@
 
         {% if thumbnail_nav %}
             <div class="carousel-thumbnails">
-                <ul class="list-inline">
+                <ul class="list-inline thumbnail-nav">
                     {% for value in values %}
-                        <li data-target="#media-carousel" data-slide-to="{{ forloop.counter0 }}" class="{% if forloop.first %}active{% endif %}">
+                        <li data-target="#media-carousel" data-slide-to="{{ forloop.counter0 }}" class="{% if forloop.first %}active{% endif %}"
+                            id="carousel-selector-{{ forloop.counter0 }}">
                             <img src="{{ value.value }}" alt="{% for a in alt %}{{ a }}{% endfor %}" height="100" width="100"/>
                         </li>
                     {% endfor %}
