@@ -103,11 +103,11 @@
         {#############################################################}
         {# CONTENT - CORE METADATA                                   #}
         {#############################################################}
-
-        {% if content_template %}
-            {% include content_template %}
-        {% endif %}
-
+        <div role="tabpanel" class="tab-pane" id="tab-content">
+            {% if content_template %}
+                {% include content_template %}
+            {% endif %}
+        </div>
         {#############################################################}
         {# PROPERTIES WITH INLINES                                   #}
         {#############################################################}
@@ -115,29 +115,20 @@
             <h4 class="detail-header">
                 {% trans 'Properties' %}
                 <div class="tools">
-                    <label><input type="checkbox"
-                                  id="display-predicate-uri-label">&#160;&#160;{% trans 'Display predicate uris' %}
-                    </label>
-                    {#                        <label><input type="checkbox" id="display-link-context">&#160;&#160;{% trans 'Display link context' %}</label>#}
-                    <a class="btn btn-xs btn-primary" href="{{ about }}.n3" target="_blank"><i
-                            class="fa fa-download fa-fw"></i> ntriples</a>
-                    <a class="btn btn-xs btn-primary" href="{{ about }}.ttl" target="_blank"><i
-                            class="fa fa-download fa-fw"></i> turtle</a>
-                    <a class="btn btn-xs btn-primary" href="{{ about }}.rdf" target="_blank"><i
-                            class="fa fa-download fa-fw"></i> rdf/xml</a>
-                    <a class="btn btn-xs btn-primary" href="{{ about }}.json-ld" target="_blank"><i
-                            class="fa fa-download fa-fw"></i> json-ld</a>
+                    <label><input type="checkbox" id="display-predicate-uri-label">&#160;&#160;{% trans 'Display predicate uris' %}</label>
+                    {# <label><input type="checkbox" id="display-link-context">&#160;&#160;{% trans 'Display link context' %}</label>#}
+                    <a class="btn btn-xs btn-primary" href="{{ about }}.n3" target="_blank"><i class="fa fa-download fa-fw"></i> ntriples</a>
+                    <a class="btn btn-xs btn-primary" href="{{ about }}.ttl" target="_blank"><i class="fa fa-download fa-fw"></i> turtle</a>
+                    <a class="btn btn-xs btn-primary" href="{{ about }}.rdf" target="_blank"><i class="fa fa-download fa-fw"></i> rdf/xml</a>
+                    <a class="btn btn-xs btn-primary" href="{{ about }}.json-ld" target="_blank"><i class="fa fa-download fa-fw"></i> json-ld</a>
                 </div>
             </h4>
             <div class="row" id="properties">
                 <div class="col-sm-12">
                     {% render_properties items=items resources=resources %}
                 </div>
-
             </div>
-
         </div>
-
         {#############################################################}
         {# STATISTICS                                                #}
         {#############################################################}
@@ -276,7 +267,9 @@
 
 {% block extra_js %}
     <script type="text/javascript" src="{% static 'js/jquery.fullsizable.2.0.2.min.js' %}"></script>
+
     <script type="text/javascript" src="{% static 'js/swfobject.js' %}"></script>
+    <script type="text/javascript" src="{% static 'bower_components/openseadragon/built-openseadragon/openseadragon/openseadragon.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/imageLiquid.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/LodView.js' %}"></script>
     <script src="{% static 'js/parsley.min.js' %}"></script>
@@ -339,8 +332,26 @@
                 $('[id^=carousel-selector-]').removeClass('active');
                 $('[id=carousel-selector-'+id+']').addClass('active');
             });
-            {% if deepzoom %}
-                LodView.loadDeepZoom("zoom-viewer", "{{ deepzoom  }}");
+            {#############################################################}
+            {# if deepzoom_count then activate zoom viewer               #}
+            {#############################################################}
+            {% if deepzoom_count %}
+                var count = {{ deepzoom_count }};
+                var zoom_src = '';
+                if(count == 1) {
+                    zoom_src = "{{ deepzoom_urls }}"
+                }
+                else {
+                    zoom_list = "{{ deepzoom_urls|join:"," }}";
+                    zoom_src = [zoom_list.split(",")];
+                }
+                var viewer = OpenSeadragon({
+                    id: "zoom-viewer",
+                    prefixUrl: "{% static 'bower_components/openseadragon/built-openseadragon/openseadragon/images/' %}",
+                    tileSources: zoom_src,
+                    sequenceMode: {% if deepzoom_count > 1%}true{% else %}false{% endif %},
+                    showReferenceStrip: true
+                });
             {% endif %}
         });
     </script>

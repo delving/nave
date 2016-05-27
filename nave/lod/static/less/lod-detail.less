@@ -209,6 +209,9 @@ span.predicate-uri-label {
   li {
     padding: 0;
     border: 4px solid transparent;
+    &:hover {
+      cursor: pointer;
+    }
   }
   li.active {
     border: 4px solid @brand-info;
@@ -341,4 +344,15 @@ ul.field-tools {
   i {
 
   }
+}
+
+/* deepzoom viewer ***********/
+
+#zoom-viewer {
+  position: absolute;
+  top: 0px;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
+  min-height: 500px;
 }
