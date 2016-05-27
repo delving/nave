@@ -3,9 +3,6 @@
 <div class="media-viewer">
 
     {% if values and values|length_is:"1" %}
-
-        {% if not use_zoom %}
-
             {% for value in values %}
                 {# TODO: check for deepzoom, video audio and render html accordingly #}
                 {% if value.value %}
@@ -19,13 +16,7 @@
                     </div>
                 {% endif %}
             {% endfor %}
-
-         {% elif use_zoom and deepzoom_url %}
-            <div id="zoom-viewer"></div>
-         {% endif %}
-
     {% elif values %}
-
         <div id="media-carousel" class="carousel slide" data-ride="carousel">
             {% if indicators %}
                 <ol class="carousel-indicators">

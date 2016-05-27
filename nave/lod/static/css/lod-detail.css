@@ -221,6 +221,9 @@ span.predicate-uri-label {
   padding: 0;
   border: 4px solid transparent;
 }
+.carousel-thumbnails li:hover {
+  cursor: pointer;
+}
 .carousel-thumbnails li.active {
   border: 4px solid #59afe1;
 }
@@ -313,4 +316,13 @@ ul.field-tools a {
   background: #888;
   color: #fff;
   padding: 4px;
+}
+/* deepzoom viewer ***********/
+#zoom-viewer {
+  position: absolute;
+  top: 0px;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
+  min-height: 500px;
 }

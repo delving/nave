@@ -1,5 +1,7 @@
+{###################################################################################}
+{# include template for detail page to show metadata field values and media object #}
+{###################################################################################}
 {% load dataset_tags %}
-<div role="tabpanel" class="tab-pane" id="tab-content">
     <div class="row">
         <div class="col-sm-7">
 
@@ -30,12 +32,13 @@
 
         </div>
         <div class="col-sm-5" id="media">
+            {% if not deepzoom_count %}
             <div class="media-viewer">
-
-                    {% detail_media_preview 'nave_thumbLarge' alt="dc_title" fullscreen=True indicators=False thumbnail_nav=True use_zoom=True %}
-
-
+                {% detail_media_preview 'nave_thumbLarge' alt="dc_title" fullscreen=True indicators=False thumbnail_nav=True %}
             </div>
+            {% else %}
+                <div id="zoom-viewer"></div>
+            {% endif %}
             {% if ugc %}
                 {%  for item in ugc %}
                     {% if not user.is_superuser %}
@@ -59,4 +62,4 @@
             {% endif %}
         </div>
     </div>
-</div>
+
