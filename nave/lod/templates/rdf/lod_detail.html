@@ -103,6 +103,7 @@
         {#############################################################}
         {# CONTENT - CORE METADATA                                   #}
         {#############################################################}
+
         {% if content_template %}
             {% include content_template %}
         {% endif %}
@@ -338,6 +339,9 @@
                 $('[id^=carousel-selector-]').removeClass('active');
                 $('[id=carousel-selector-'+id+']').addClass('active');
             });
+            {% if deepzoom %}
+                LodView.loadDeepZoom("zoom-viewer", "{{ deepzoom  }}");
+            {% endif %}
         });
     </script>
 

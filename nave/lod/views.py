@@ -333,6 +333,7 @@ class LoDHTMLView(TemplateView):
 
         if context['about'].endswith('/'):
             context['about'] = context['about'].rstrip('/')
+
         context['graph'] = graph
         context['nr_levels'] = nr_levels
         context['namespaces'] = [(prefix, uri) for prefix, uri in graph.namespaces()]
@@ -347,6 +348,7 @@ class LoDHTMLView(TemplateView):
         context['graph_stats'] = RDFModel.get_graph_statistics(graph)
         context['alt'] = ""
         context['points'] = RDFModel.get_geo_points(graph)
+        context['deepzoom'] = graph_bindings['nave_deepZoomUrl'].value if graph_bindings['nave_deepZoomUrl'] else False
 
         expert_mode = self.request.COOKIES.get('NAVE_DETAIL_EXPERT_MODE', False)
         if expert_mode:

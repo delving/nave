@@ -51,7 +51,7 @@ MockRDFObject = namedtuple('MockRDFObject', ["value"])
 
 
 @register.inclusion_tag('rdf/tags/_search-detail-media-preview.html', takes_context=True)
-def detail_media_preview(context, fieldname, alt="", fullscreen=False, indicators=False, thumbnail_nav=False):
+def detail_media_preview(context, fieldname, alt="", fullscreen=False, indicators=False, thumbnail_nav=False, use_zoom=False):
     """
     :param context: page context
     :param fieldname: DataSet.MetadataRecord field name
@@ -62,10 +62,13 @@ def detail_media_preview(context, fieldname, alt="", fullscreen=False, indicator
     if not values:
         values = [MockRDFObject(bindings.get_about_thumbnail)]
     alt = bindings[alt].value if bindings[alt] else []
+    use_zoom = use_zoom
+    deepzoom_url = bindings['nave_deepZoomUrl'].value if bindings['nave_deepZoomUrl'] else False
 
     fullscreen = fullscreen
     thumbnail_nav = thumbnail_nav
     indicators = indicators
+
     # values = ['http://www.dcn-images.nl/img/BDM/BDM_09809.jpg', 'http://www.dcn-images.nl/img/BDM/BDM_00807.jpg', 'http://www.dcn-images.nl/img/BDM/BDM_01999.jpg']
     # values = ['http://igem.adlibsoft.com/wwwopacx/wwwopac.ashx?command=getcontent&server=images&value=bergh\\001305.jpg',
     #     'http://igem.adlibsoft.com/wwwopacx/wwwopac.ashx?command=getcontent&server=images&value=bergh\\0217_44r_1.jpg',
@@ -96,7 +99,7 @@ def detail_media_preview(context, fieldname, alt="", fullscreen=False, indicator
     #     'http://igem.adlibsoft.com/wwwopacx/wwwopac.ashx?command=getcontent&server=images&value=bergh\\0217_148.jpg',
     #     'http://igem.adlibsoft.com/wwwopacx/wwwopac.ashx?command=getcontent&server=images&value=bergh\\0217_164v_1.jpg']
 
-    return {'values': values, 'alt': alt, 'fullscreen': fullscreen, 'indicators': indicators, 'thumbnail_nav': thumbnail_nav}
+    return {'values': values, 'alt': alt, 'fullscreen': fullscreen, 'indicators': indicators, 'thumbnail_nav': thumbnail_nav, 'use_zoom': use_zoom, 'deepzoom_url': deepzoom_url}
 
 
 @register.inclusion_tag('rdf/tags/_rdf_properties.html', takes_context=True)

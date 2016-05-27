@@ -2,6 +2,7 @@
 <div role="tabpanel" class="tab-pane" id="tab-content">
     <div class="row">
         <div class="col-sm-7">
+
             {% detail_field 'dc_title' multiple=True label=_('dc_title') %}
             {% detail_field 'dc_creator' multiple=True label=_('dc_creator') %}
             {% detail_field 'dc_date' multiple=True label=_('dc_date') %} {# todo: make it possible to ask for multiple source fields and return an appended list #}
@@ -26,10 +27,14 @@
             {% detail_field 'dc_rights' multiple=True label=_('dc_rights') %}
             {% detail_field 'edm_rights' multiple=True label=_('edm_rights') is_link=True %}
             {% detail_field 'nave_latLong' multiple=True label=_('coordinate') is_link=True %}
+
         </div>
         <div class="col-sm-5" id="media">
             <div class="media-viewer">
-                {% detail_media_preview 'nave_thumbLarge' alt="dc_title" fullscreen=True indicators=False thumbnail_nav=True %}
+
+                    {% detail_media_preview 'nave_thumbLarge' alt="dc_title" fullscreen=True indicators=False thumbnail_nav=True use_zoom=True %}
+
+
             </div>
             {% if ugc %}
                 {%  for item in ugc %}
