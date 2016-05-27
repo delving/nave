@@ -1001,7 +1001,7 @@ class CacheResource(RDFModel):
         return "/page/cache/{}".format(self.source_uri)
 
 
-@receiver(post_save)
+# @receiver(post_save)
 def create_rdf_lookup_links(sender, instance, **kw):
     if issubclass(instance.__class__, RDFModel):
         instance.update_linked_subjects()
