@@ -3,7 +3,41 @@
 {###################################################################################}
 {% load dataset_tags %}
     <div class="row">
-        <div class="col-sm-7">
+        <div class="col-md-5 pull-right" id="media">
+            {% if not deepzoom_count %}
+                <div class="media-viewer">
+                    {% detail_media_preview 'nave_thumbLarge' alt="dc_title" fullscreen=True indicators=False thumbnail_nav=True %}
+                </div>
+            {% else %}
+                <div class="zoom-viewer">
+                    <div id="zoom_navigation" class="toolbar"></div>
+                    <div id="zoom_viewer" class="viewer"></div>
+                </div>
+            {% endif %}
+            {% if ugc %}
+                {%  for item in ugc %}
+                    {% if not user.is_superuser %}
+                        {% if item.published %}
+                            {# add unplished ones as well but only for logged in user #}
+                            name: {{ item.name }}<br/>
+                            type: {{ item.content_type }}<br/>
+                            description:{{ item.short_description }}<br/>
+                            link: {{ item.link }}<br/><hr/>
+                        {% endif %}
+                    {% else %}
+                        name: {{ item.name }}<br/>
+                        type: {{ item.content_type }}<br/>
+                        description:{{ item.short_description }}<br/>
+                        link: {{ item.link }}<br/>
+                        <button id="su_edit_ugc" class="btn btn-info"><i class="fa fa-edit"></i></button>
+                        <button id="su_remove_ugc" class="btn btn-danger"><i class="fa fa-trash-o"></i></button>
+                        <hr/>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <div class="col-md-7">
 
             {% detail_field 'dc_title' multiple=True label=_('dc_title') %}
             {% detail_field 'dc_creator' multiple=True label=_('dc_creator') %}
@@ -31,35 +65,6 @@
             {% detail_field 'nave_latLong' multiple=True label=_('coordinate') is_link=True %}
 
         </div>
-        <div class="col-sm-5" id="media">
-            {% if not deepzoom_count %}
-            <div class="media-viewer">
-                {% detail_media_preview 'nave_thumbLarge' alt="dc_title" fullscreen=True indicators=False thumbnail_nav=True %}
-            </div>
-            {% else %}
-                <div id="zoom-viewer"></div>
-            {% endif %}
-            {% if ugc %}
-                {%  for item in ugc %}
-                    {% if not user.is_superuser %}
-                        {% if item.published %}
-                            {# add unplished ones as well but only for logged in user #}
-                            name: {{ item.name }}<br/>
-                            type: {{ item.content_type }}<br/>
-                            description:{{ item.short_description }}<br/>
-                            link: {{ item.link }}<br/><hr/>
-                        {% endif %}
-                    {% else %}
-                        name: {{ item.name }}<br/>
-                        type: {{ item.content_type }}<br/>
-                        description:{{ item.short_description }}<br/>
-                        link: {{ item.link }}<br/>
-                        <button id="su_edit_ugc" class="btn btn-info"><i class="fa fa-edit"></i></button>
-                        <button id="su_remove_ugc" class="btn btn-danger"><i class="fa fa-trash-o"></i></button>
-                        <hr/>
-                    {% endif %}
-                {% endfor %}
-            {% endif %}
-        </div>
+
     </div>
 

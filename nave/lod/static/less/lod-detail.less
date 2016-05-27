@@ -149,6 +149,12 @@ span.predicate-uri-label {
   margin-bottom: 10px;
 }
 
+/* media/img viewer ***********/
+
+#media {
+  position: relative;
+}
+
 .media-viewer {
   background: @gray-light;
   margin-bottom: 20px;
@@ -161,11 +167,33 @@ span.predicate-uri-label {
   }
 }
 
-#deep-zoom-viewer,
-.deepzoom-viewer{
-  background: @black;
-  width: 100%;
-  height: 400px;
+/* deepzoom viewer ***********/
+
+#media {
+  .clearfix();
+}
+
+.zoom-viewer {
+  min-height: 400px;
+  position: relative;
+  .toolbar {
+    background-color: transparent;
+    height: 50px;
+    width: 100%;
+    padding: 0;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+  }
+  .viewer {
+    background: @black;
+    width: 100%;
+    min-height: 500px;
+    position: absolute;
+    top: 50px;
+    bottom:0px;
+    padding: 10px;
+  }
 }
 
 .carousel {
@@ -346,13 +374,3 @@ ul.field-tools {
   }
 }
 
-/* deepzoom viewer ***********/
-
-#zoom-viewer {
-  position: absolute;
-  top: 0px;
-  bottom: 0px;
-  left: 0px;
-  right: 0px;
-  min-height: 500px;
-}

@@ -346,11 +346,16 @@
                     zoom_src = [zoom_list.split(",")];
                 }
                 var viewer = OpenSeadragon({
-                    id: "zoom-viewer",
-                    prefixUrl: "{% static 'bower_components/openseadragon/built-openseadragon/openseadragon/images/' %}",
+                    id: "zoom_viewer",
+                    prefixUrl: "{% static 'img/openseadragon/' %}",
                     tileSources: zoom_src,
                     sequenceMode: {% if deepzoom_count > 1%}true{% else %}false{% endif %},
-                    showReferenceStrip: true
+                    toolbar:       "zoom_navigation",
+                    showNavigator: true,
+                    navigatorPosition:   "TOP_LEFT",
+                    showReferenceStrip: true,
+                    visibilityRatio: 1.0,
+                    constrainDuringPan: true,
                 });
             {% endif %}
         });
