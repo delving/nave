@@ -61,7 +61,7 @@ msgstr ""
 
 #: templates/search/search-results.html:32
 msgid "results"
-msgstr ""
+msgstr "resultater"
 
 #: views.py:442
 msgid "Collection"
