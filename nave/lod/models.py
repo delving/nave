@@ -1002,9 +1002,9 @@ class CacheResource(RDFModel):
 
 
 # @receiver(post_save)
-def create_rdf_lookup_links(sender, instance, **kw):
-    if issubclass(instance.__class__, RDFModel):
-        instance.update_linked_subjects()
+# def create_rdf_lookup_links(sender, instance, **kw):
+#     if issubclass(instance.__class__, RDFModel):
+#         instance.update_linked_subjects()
 
 
 @receiver(post_save, sender=CacheResource)
