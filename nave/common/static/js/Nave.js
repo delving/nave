@@ -87,11 +87,15 @@ Nave.initMapSearchModal = function () {
 /***********************************************************************************/
 // Nave.initSidePanel depends on jquery to be loaded. Toggles side panel
 /***********************************************************************************/
-Nave.initSidePanel = function () {
+Nave.toggleSidePanel = function () {
     $(".side-panel-tab").click(function(e){
         e.preventDefault();
         $(this).parent().toggleClass("open");
     });
+};
+
+Nave.initSidePanel = function () {
+    Nave.toggleSidePanel ();
     // close on escape key
     $(document).keyup(function(e) {
         if (e.keyCode == 27) {
@@ -99,3 +103,4 @@ Nave.initSidePanel = function () {
         }
     });
 };
+
