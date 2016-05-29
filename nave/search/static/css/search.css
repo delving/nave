@@ -250,30 +250,6 @@ a.result-item-link:hover {
   border-bottom: 1px solid #ddd;
   color: #666;
 }
-.ds-field {
-  display: block;
-  margin-bottom: 0px;
-  -ms-word-break: break-all;
-  /* Be VERY careful with this, breaks normal words wh_erever */
-  word-break: break-all;
-  /* Non standard for webkit */
-  word-break: break-word;
-  -webkit-hyphens: auto;
-  -moz-hyphens: auto;
-  hyphens: auto;
-}
-.ds-field label {
-  display: block;
-  color: #888;
-  margin: 0 0 0 0;
-}
-.ds-field label.inline {
-  display: inline-block;
-}
-.ds-field-value {
-  display: block;
-  margin-left: 10px;
-}
 .field-tools {
   display: inline-block;
   vertical-align: middle;

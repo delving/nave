@@ -25,40 +25,7 @@
   */
 /* GRID GENERATOR */
 /* SECTION ROWS **************************/
-#core-metadata,
-#properties,
-#related {
-  margin-bottom: 40px;
-}
 /* CORE METADATA *************************/
-.ds-field-title {
-  color: #555;
-  font-size: 2em;
-  font-weight: bold;
-}
-.ds-field-label {
-  display: block;
-  clear: both;
-  color: #999;
-  margin: 0;
-  font-size: 1em;
-  font-weight: bold;
-}
-.ds-field-value {
-  font-size: 1em;
-  display: inline-block;
-}
-.js-lod-data-link {
-  text-decoration: underline;
-}
-.field-html h1,
-.field-html h2,
-.field-html h3,
-.field-html h4 {
-  font-size: 1em;
-  font-weight: bold;
-  margin: 10px 0;
-}
 /* RESULT (RELATED LOD) ******************/
 #related .result {
   background: #fafafa;
@@ -159,53 +126,20 @@ span.predicate-uri-label {
   margin-bottom: 10px;
 }
 /* media/img viewer ***********/
-#media {
-  position: relative;
-}
 .media-viewer {
-  background: #999;
+  background: #000;
   margin-bottom: 20px;
-  min-height: 150px;
-  text-align: center;
-  width: 100%;
-}
-.media-viewer img {
-  max-width: 100%;
-  max-height: 100%;
 }
 /* deepzoom viewer ***********/
-#media {
-  *zoom: 1;
-}
-#media:before,
-#media:after {
-  content: "";
-  display: table;
-}
-#media:after {
-  clear: both;
-}
 .zoom-viewer {
-  min-height: 400px;
-  position: relative;
+  background-color: #000;
+  margin-bottom: 20px;
 }
 .zoom-viewer .toolbar {
   background-color: transparent;
-  height: 50px;
+  clear: both;
+  display: block;
   width: 100%;
-  padding: 0;
-  position: absolute;
-  top: 0px;
-  left: 0px;
-}
-.zoom-viewer .viewer {
-  background: #000;
-  width: 100%;
-  min-height: 500px;
-  position: absolute;
-  top: 50px;
-  bottom: 0px;
-  padding: 10px;
 }
 .carousel .item {
   text-align: center;

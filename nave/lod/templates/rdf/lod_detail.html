@@ -8,6 +8,8 @@
     {% leaflet_css %}
     <link rel="stylesheet" href="{% static "css/fullscreen.css" %}"/>
     <link rel="stylesheet" href="{% static "css/lod-detail.css" %}"/>
+    <link rel="stylesheet" href="{% static "css/detail_field.css" %}"/>
+
     <link rel="stylesheet" href="{% static "css/search.css" %}"/>
     <link rel="stylesheet" href="{% static "css/parsley.css" %}"/>
 {% endblock %}
@@ -47,35 +49,38 @@
     {#############################################################}
     {# RETURN TO RESULTS BUTTON                                  #}
     {#############################################################}
-    {% if '/search/' in request.META.HTTP_REFERER %}
-        <a class="btn btn-default" href="{{ request.META.HTTP_REFERER }}" id="btn-back">
-            <i class="fa fa-hand-o-left"></i>&#160;{% trans 'Return to results' %}
-        </a>
-        <hr/>
-    {% elif  '/page/' in request.META.HTTP_REFERER %}
-        {# use history.back() instead of the HTTP_REFERER to get rid of '/page/' in referrer #}
-        <a class="btn btn-default" id="btn-back" onclick="history.back();">
-            <i class="fa fa-hand-o-left"></i>&#160;{% trans 'Return to previous object' %}
-        </a>
-        <hr/>
-    {% endif %}
-
 
     {#############################################################}
     {# TITLE                                                     #}
     {#############################################################}
-    {% detail_field 'dc_title' show_predicate=False word_limit=25 surround="h1" %}
+{#    {% detail_field 'dc_title' show_predicate=False word_limit=25 surround="h1" %}#}
 
     {#############################################################}
     {# DESCRIPTION                                               #}
     {#############################################################}
-    {% detail_field 'dc_description' label=_('dc_description') word_limit=200 show_predicate=False surround="blockquote" allow_html=True %}
+{#    {% detail_field 'dc_description' label=_('dc_description') word_limit=200 show_predicate=False surround="blockquote" allow_html=True %}#}
 
     <div role="tabpanel" class="navigator-tabs">
     {#############################################################}
-    {# TAB/PILL BUTTONS                                          #}
+    {# RECORD SECTION NAV                                        #}
     {#############################################################}
-    <ul class="nav nav-pills" role="tablist">
+    <ul class="nav navbar-left list-inline">
+        <li>
+            {% if '/search/' in request.META.HTTP_REFERER %}
+                <a class="" href="{{ request.META.HTTP_REFERER }}" id="btn-back">
+                    <i class="fa fa-hand-o-left"></i>&#160;{% trans 'Return to results' %}
+                </a>
+            {% elif  '/page/' in request.META.HTTP_REFERER %}
+                {# use history.back() instead of the HTTP_REFERER to get rid of '/page/' in referrer #}
+                <a class="" id="btn-back" onclick="history.back();">
+                    <i class="fa fa-hand-o-left"></i>&#160;{% trans 'Return to previous object' %}
+                </a>
+            {% endif %}
+        </li>
+
+    </ul>
+    <ul class="nav nav-pills navbar-right" role="tablist">
+
         {% if content_template %}
             <li>
                 <a href="#tab-content" role="tab" data-toggle="tab">{% trans 'Content' %}</a>
@@ -99,11 +104,14 @@
             <li><a href="#tab-related" role="tab" data-toggle="tab" id="click-related">{% trans 'Related' %}</a></li>
         {% endif %}
     </ul>
+
+    <div class="clearfix"></div>
+
     <div class="tab-content">
         {#############################################################}
         {# CONTENT - CORE METADATA                                   #}
         {#############################################################}
-        <div role="tabpanel" class="tab-pane" id="tab-content">
+        <div role="tabpanel" class="tab-pane clear-fix" id="tab-content">
             {% if content_template %}
                 {% include content_template %}
             {% endif %}
@@ -117,10 +125,10 @@
                 <div class="tools">
                     <label><input type="checkbox" id="display-predicate-uri-label">&#160;&#160;{% trans 'Display predicate uris' %}</label>
                     {# <label><input type="checkbox" id="display-link-context">&#160;&#160;{% trans 'Display link context' %}</label>#}
-                    <a class="btn btn-xs btn-primary" href="{{ about }}.n3" target="_blank"><i class="fa fa-download fa-fw"></i> ntriples</a>
-                    <a class="btn btn-xs btn-primary" href="{{ about }}.ttl" target="_blank"><i class="fa fa-download fa-fw"></i> turtle</a>
-                    <a class="btn btn-xs btn-primary" href="{{ about }}.rdf" target="_blank"><i class="fa fa-download fa-fw"></i> rdf/xml</a>
-                    <a class="btn btn-xs btn-primary" href="{{ about }}.json-ld" target="_blank"><i class="fa fa-download fa-fw"></i> json-ld</a>
+                    <a class="btn btn-xs btn-default" href="{{ about }}.n3" target="_blank"><i class="fa fa-download fa-fw"></i> ntriples</a>
+                    <a class="btn btn-xs btn-default" href="{{ about }}.ttl" target="_blank"><i class="fa fa-download fa-fw"></i> turtle</a>
+                    <a class="btn btn-xs btn-default" href="{{ about }}.rdf" target="_blank"><i class="fa fa-download fa-fw"></i> rdf/xml</a>
+                    <a class="btn btn-xs btn-default" href="{{ about }}.json-ld" target="_blank"><i class="fa fa-download fa-fw"></i> json-ld</a>
                 </div>
             </h4>
             <div class="row" id="properties">
@@ -350,9 +358,9 @@
                     prefixUrl: "{% static 'img/openseadragon/' %}",
                     tileSources: zoom_src,
                     sequenceMode: {% if deepzoom_count > 1%}true{% else %}false{% endif %},
-                    toolbar:       "zoom_navigation",
-                    showNavigator: true,
-                    navigatorPosition:   "TOP_LEFT",
+{#                    toolbar:       "zoom_navigation",#}
+{#                    showNavigator: true,#}
+{#                    navigatorPosition:   "TOP_LEFT",#}
                     showReferenceStrip: true,
                     visibilityRatio: 1.0,
                     constrainDuringPan: true,
