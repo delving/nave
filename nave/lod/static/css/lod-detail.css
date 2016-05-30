@@ -268,12 +268,3 @@ ul.field-tools a {
   color: #fff;
   padding: 4px;
 }
-/* deepzoom viewer ***********/
-#zoom-viewer {
-  position: absolute;
-  top: 0px;
-  bottom: 0px;
-  left: 0px;
-  right: 0px;
-  min-height: 500px;
-}
