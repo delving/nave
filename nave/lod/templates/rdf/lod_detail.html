@@ -46,25 +46,11 @@
 
 {% block content %}
 
-    {#############################################################}
-    {# RETURN TO RESULTS BUTTON                                  #}
-    {#############################################################}
-
-    {#############################################################}
-    {# TITLE                                                     #}
-    {#############################################################}
-{#    {% detail_field 'dc_title' show_predicate=False word_limit=25 surround="h1" %}#}
-
-    {#############################################################}
-    {# DESCRIPTION                                               #}
-    {#############################################################}
-{#    {% detail_field 'dc_description' label=_('dc_description') word_limit=200 show_predicate=False surround="blockquote" allow_html=True %}#}
-
     <div role="tabpanel" class="navigator-tabs">
     {#############################################################}
     {# RECORD SECTION NAV                                        #}
     {#############################################################}
-    <ul class="nav navbar-left list-inline">
+    <ul class="nav pull-left list-inline">
         <li>
             {% if '/search/' in request.META.HTTP_REFERER %}
                 <a class="" href="{{ request.META.HTTP_REFERER }}" id="btn-back">
@@ -79,7 +65,7 @@
         </li>
 
     </ul>
-    <ul class="nav nav-pills navbar-right" role="tablist">
+    <ul class="nav nav-pills pull-right" role="tablist">
 
         {% if content_template %}
             <li>
