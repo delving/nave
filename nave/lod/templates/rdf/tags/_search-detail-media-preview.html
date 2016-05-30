@@ -1,16 +1,14 @@
 {% load i18n static %}
 {# todo: pass along metadata record values for: creator, title, date and collection to display in alt tag for image, perhaps custom image size (highres) for fullscreen viewing #}
-<div class="media-viewer">
+
 
     {% if values and values|length_is:"1" %}
-
-        {% if not use_zoom %}
 
             {% for value in values %}
                 {# TODO: check for deepzoom, video audio and render html accordingly #}
                 {% if value.value %}
                     {% if fullscreen %}<a href="{{ value.value }}" class="fullscreen">{% endif %}
-                        <img src="{{ value.value }}" alt="{% for a in alt %}{{ a }}{% endfor %}"/>
+                        <img src="{{ value.value }}" alt="{% for a in alt %}{{ a }}{% endfor %}" />
                     {% if fullscreen %}</a>{% endif %}
                 {% else %}
                     <div class="no-image-placeholder">
@@ -20,12 +18,7 @@
                 {% endif %}
             {% endfor %}
 
-         {% elif use_zoom and deepzoom_url %}
-            <div id="zoom-viewer"></div>
-         {% endif %}
-
     {% elif values %}
-
         <div id="media-carousel" class="carousel slide" data-ride="carousel">
             {% if indicators %}
                 <ol class="carousel-indicators">
@@ -79,4 +72,4 @@
             <span>{% trans 'No preview available' %}</span>
         </div>
     {% endif %}
-</div>
+

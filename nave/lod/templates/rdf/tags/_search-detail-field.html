@@ -12,12 +12,13 @@
                     {% endif %} 
                 </label>
             {% endif %}
+            <div class="ds-field-value">
             {% for field in fields %}
                 {# surround with an html element if passed #}
                 {% if surround %}
                     <{{ surround }}>
                 {% endif %}
-                <span class="ds-field-value" property="{{ predicate.prefix }}:{{ predicate.label }}" {% if field.language %}xml:lang="{{ field.language }}"{% endif %} {% if field.datatype %}datatype="{{ field.datatype }}"{% endif %}>
+                <span class="ds-field-value-item" property="{{ predicate.prefix }}:{{ predicate.label }}" {% if field.language %}xml:lang="{{ field.language }}"{% endif %} {% if field.datatype %}datatype="{{ field.datatype }}"{% endif %}>
                     {# display the value #}
                     {% if not allow_html %}
                         {% if not word_limit %}
@@ -72,6 +73,7 @@
                     </{{ surround }}>
                 {% endif %}
             {% endfor %}
+        </div>
         </div>
     {% else %}
         {% for field in fields %}
