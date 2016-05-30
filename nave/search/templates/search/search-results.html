@@ -45,7 +45,6 @@
 {% block extra_css %}
     <link rel="stylesheet" href="{% static "css/fullscreen.css" %}" />
     <link rel="stylesheet" href="{% static "css/search.css" %}" />
-    <link rel="stylesheet" href="{% static "css/lod-detail.css" %}" />
     <link rel="stylesheet" href="{% static "css/detail_field.css" %}" />
     <link rel="stylesheet" href="{% static "css/bootstrap-tagsinput.css" %}" />
     {% leaflet_css %}
@@ -75,6 +74,9 @@
         {% if num_cols %}
             grid_cols = {{ num_cols  }};
         {% endif %}
+        if(isMobile.any || $( window ).width() < '992'){
+            grid_cols = 1;
+        }
         $(function(){
             SearchView.initSearchTags();
             {% if view == 'geo' %}

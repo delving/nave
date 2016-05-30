@@ -1,72 +1,6 @@
 @import "../../../common/static/less/variables";
 @import "../../../common/static/less/mixins";
 
-
-/* SECTION ROWS **************************/
-//
-//.lod-detail {
-//  .make-row();
-//}
-//
-//.media-container {
-//  .make-sm-column(5);
-//  float: right;
-//}
-//
-//.metadata-container {
-//  .make-sm-column(7);
-//  float: left;
-//}
-
-//#core-metadata,
-//#properties,
-//#related {
-//  margin-bottom: 40px;
-//}
-
-/* CORE METADATA *************************/
-
-//.ds-field-title {
-//  color: @gray;
-//  font-size: 2em;
-//  font-weight: bold;
-//}
-//.ds-field-label {
-//  display: block;
-//  clear: both;
-//  color: @gray-light;
-//  margin: 0;
-//  font-size: 1em;
-//  font-weight: normal;
-//}
-//
-//.ds-field-value {
-//  font-size: 1em;
-//  display: inline-block;
-////  margin-bottom: 10px;
-//}
-//
-//.js-lod-data-link {
-//  text-decoration: underline;
-//}
-//
-//.field-html {
-//  h1, h2, h3, h4 {
-//    font-size: 1em;
-//    font-weight: bold;
-//    margin: 10px 0;
-//  }
-//}
-
-//.ds-field {
-//  display: table-row;
-//}
-//.ds-field-label,
-//.ds-field-value {
-//  display: table-cell;
-//}
-
-
 /* RESULT (RELATED LOD) ******************/
 
 #related .result {
@@ -94,21 +28,6 @@
   left: 50%;
   margin: -19px 0 0 -15px;
   z-index: 1000;
-}
-
-.result-item-foldout {
-  min-height: 350px;
-  margin-bottom: 20px;
-  .result-item-detail {
-    background: @white;
-    border: 1px solid @silver;
-    //.border-radius(4px);
-    min-height: 350px;
-    padding: 20px;
-  }
-  .media {
-    text-align: center;
-  }
 }
 
 /* DETAIL *****************************/
@@ -288,32 +207,10 @@ span.predicate-uri-label {
     }
   }
 }
-//.carousel-indicators {
-//  position: static;
-//  width: 100%;
-//  margin-left: 0;
-//  padding-left: 0;
-//  li {
-//    display: inline-block;
-//    width: auto;
-//    height: 100px;
-//    margin: 1px;
-//    text-indent: 0;
-//    border: none;
-//    .border-radius(0px);
-//    cursor: pointer;
-//    background-color: #000 \9;
-//    background-color: rgba(0, 0, 0, 0);
-//    &.active {
-//      border: 2px solid @brand-primary;
-//    }
-//  }
-//}
 
 /* placeholder no image */
 .no-image-placeholder {
-  background: @ash-gray;
-  // background-image: url(../img/kaarten_home_header_bg.jpg);
+  background-color: @ash-gray;
   background-position: 50% 50%;
   height: 165px;
   position: relative;
@@ -346,9 +243,6 @@ span.predicate-uri-label {
 
 .tab-pane {
   padding: 20px 0px;
-  //h1, h2, h3, h4, h5, h6 {
-    //margin-top: 0px;
-  //}
 }
 
 /* inlines *******************/
