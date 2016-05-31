@@ -5,11 +5,14 @@
 from collections import defaultdict, namedtuple
 from enum import Enum
 
+import os
+import requests
 from dateutil import parser
 from django.conf import settings
 from django.views.generic import TemplateView
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search, A
+from lxml import etree as ET
 
 from lod.utils.resolver import RDFRecord, ElasticSearchRDFRecord
 from void import REGISTERED_CONVERTERS
@@ -450,3 +453,87 @@ class DjangoOAIProvider(OAIProvider):
 
     def last_modified(self, obj):
         return obj.modified
+
+
+HarvestStep = namedtuple('HarvestStep', ['records_returned', 'total_records', 'resumption_token', 'records'])
+HarvestRequest = namedtuple('HarvestRequest', ['base_url', 'set_spec', 'metadata_prefix', 'verb'])
+
+
+class OAIHarvester:
+
+    def __init__(self, base_url):
+        self.base_url = base_url
+
+    @staticmethod
+    def get_next_oai_pmh_uri(harvest_request, harvest_step):
+        uri = ""
+        if harvest_step.total_records is 0:
+            uri = "{0}?verb={1}".format(harvest_request.base_url, harvest_request.verb)
+            if harvest_request.set_spec is not "":
+                uri += "&set={}".format(harvest_request.set_spec)
+            if harvest_request.metadata_prefix is not "":
+                uri += "&metadataPrefix={}".format(harvest_request.metadata_prefix)
+        else:
+            uri = "{}?verb={}&resumptionToken={}".format(
+                harvest_request.base_url,
+                harvest_request.verb,
+                harvest_step.resumption_token
+            )
+        return uri
+
+    @staticmethod
+    def clean_bad_namespaces(tn):
+        from io import StringIO
+        lines = tn.splitlines(True) # keep \n
+        o = StringIO()
+        for line in lines:
+            if '<openskos:status>approved</openskos:status>' in line:
+                line = line.replace('<openskos:status>approved</openskos:status>', '')
+            o.write(line)
+        return o
+
+    @staticmethod
+    def clean_response(response):
+        clean_response = response.replace('<openskos:status>approved</openskos:status>', '')
+        clean_response = clean_response.replace('<?xml version="1.0" encoding="UTF-8"?>', '')
+        return clean_response
+
+    def parse_oai_pmh_response(self, harvest_request, harvest_step):
+        records_processed = 0
+        uri = self.get_next_oai_pmh_uri(harvest_request, harvest_step)
+        response = requests.get(uri)
+        print("'{}'".format(uri))
+        resumption_token = None
+        record_tree = ET.fromstring(self.clean_response(response.text))
+        record_sep = '{http://www.openarchives.org/OAI/2.0/}record' if harvest_request.verb == "ListRecords" \
+            else '{http://www.openarchives.org/OAI/2.0/}header'
+        for record in record_tree.iter(record_sep):
+            harvest_step.records.append(record)
+            records_processed += 1
+        token =  next(record_tree.iter('{http://www.openarchives.org/OAI/2.0/}resumptionToken'), None)
+        if token.text is not None:
+            resumption_token = token.text.strip()
+            cursor = token.attrib.get('cursor')
+            list_size = token.attrib.get('completeListSize')
+        if records_processed == 0:
+            with open('/tmp/test_output.xml', 'w') as f:
+                f.write(response.text)
+        print("token: {}/{}".format(resumption_token, records_processed))
+        return HarvestStep(
+            records_processed,
+            harvest_step.total_records + records_processed,
+            resumption_token,
+            harvest_step.records
+        )
+
+    def get_records_from_oai_pmh(self, set_spec, metadata_prefix, verb="ListRecords"):
+        harvest_step = HarvestStep(50, 0, "fake_token", ET.Element("delving-records"))
+        harvest_request = HarvestRequest(self.base_url.rstrip("?"), set_spec, metadata_prefix, verb)
+        print(harvest_request)
+        while harvest_step.resumption_token is not None:
+            harvest_step = self.parse_oai_pmh_response(harvest_request, harvest_step)
+        tree = ET.ElementTree(harvest_step.records)
+        output_file = os.path.join('/tmp', 'oai_records_{}_{}.xml'.format(set_spec, metadata_prefix))
+        tree.write(output_file, encoding="utf-8", xml_declaration=True, pretty_print=True)
+        print("processed {} records".format(harvest_step.total_records))
+        return output_file
