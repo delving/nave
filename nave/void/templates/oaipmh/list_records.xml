@@ -28,6 +28,5 @@
         {% endfor %}
         <resumptionToken completeListSize="{{ list_size }}"
                          cursor="{{ cursor }}">{% if  resumption_token %}{{ resumption_token }}{% endif %}</resumptionToken>
-        <resumptionToken/>
     </ListRecords>
 {% endblock %}
