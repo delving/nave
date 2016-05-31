@@ -2,14 +2,19 @@
 """
 
 """
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 from enum import Enum
 
+import os
+import requests
 from dateutil import parser
 from django.conf import settings
 from django.views.generic import TemplateView
+from elasticsearch import Elasticsearch
+from elasticsearch_dsl import Search, A, Q
+from lxml import etree as ET
 
-from lod.utils.resolver import RDFRecord
+from lod.utils.resolver import RDFRecord, ElasticSearchRDFRecord
 from void import REGISTERED_CONVERTERS
 from void.models import DataSet, OaiPmhPublished, EDMRecord
 
@@ -80,6 +85,9 @@ class OAIProvider(TemplateView):
         self.list_size = None
         self.set = None
 
+    class Meta:
+        abstract = True
+
     def get_dataset_list(self):
         """
         The list of datasets that are publicly available.
@@ -87,20 +95,29 @@ class OAIProvider(TemplateView):
         This can be either a fixed list or a database query
         :return: Tuple list of spec and description of the datasets
         """
-        query_set = self.dataset_model.objects.filter(**self.dataset_access_filter)
-        return query_set
+        raise NotImplementedError("implement me")
+
+    def get_items(self):
+        raise NotImplementedError("implement me")
+
+    def get_list_size(self):
+        raise NotImplementedError("implement me")
 
     def items(self):
         """Return QuerySet with the filters from request applied."""
         if not self.list_size:
-            self.list_size = self.record_model.objects.filter(**self.filters).count()
-        objects = self.record_model.objects.filter(**self.filters).order_by('modified')
+            self.list_size = self.get_list_size()
+        objects = self.get_items()
         if not objects:
             raise OAIException(
                 code="noRecordsMatch",
-                message="The combination of the values of the from, until, set and metadataPrefix arguments results in an empty list."
+                message="The combination of the values of the from, until, set and metadataPrefix "
+                        "arguments results in an empty list."
             )
-        return objects[self.cursor:self.get_next_cursor()]
+        return objects
+
+    def get_item(self, identifier):
+        raise NotImplementedError("implement me")
 
     def item(self):
         self.template_name = "oaipmh/get_record.xml"
@@ -110,7 +127,7 @@ class OAIProvider(TemplateView):
                 "badArgument",
                 "The request includes illegal arguments or is missing required arguments."
             )
-        items = [self.record_model.objects.get(hub_id=identifier)]
+        items = [self.get_item(identifier)]
         if not items:
             return self.error(
                 "idDoesNotExist",
@@ -127,7 +144,7 @@ class OAIProvider(TemplateView):
 
     def last_modified(self, obj):
         # datetime object was last modified
-        return obj.modified
+        raise NotImplementedError("Implement me")
 
     def oai_identifier(self, obj):
         # oai identifier for a given object
@@ -185,13 +202,12 @@ class OAIProvider(TemplateView):
 
     def list_identifiers(self):
         self.template_name = 'oaipmh/list_identifiers.xml'
-        items = list(self.items())
         identifiers = []
         for i in list(self.items()):
             item_info = {
                 'identifier': self.oai_identifier(i),
                 'last_modified': self.last_modified(i),
-                'sets': [self.sets(i)]
+                'sets': None  # todo: implement sets later [self.sets(i)]
             }
             identifiers.append(item_info)
         return self.render_to_response({
@@ -205,7 +221,8 @@ class OAIProvider(TemplateView):
         """ List supported graph converters. """
         self.template_name = "oaipmh/list_metadataformats.xml"
         converters = REGISTERED_CONVERTERS
-        converter_list = [(converter().get_converter_key(), converter().get_namespace()) for key, converter in converters.items() if key not in ['raw']]
+        converter_list = [(converter().get_converter_key(), converter().get_namespace()) for key, converter in
+                          converters.items() if key not in ['raw']]
         converter_list.append(('oai_dc', "http://www.openarchives.org/OAI/2.0/oai_dc/"))
         return self.render_to_response({
             "items": converter_list
@@ -223,13 +240,13 @@ class OAIProvider(TemplateView):
         else:
             record = converter.convert(add_delving_fields=False, output_format='xml')
             if isinstance(record, bytes):
-                record = record.decode("utf-8")
+                record = record.decode()
             record = record.replace('<?xml version="1.0" encoding="UTF-8"?>\n', '')
             namespaces = converter.get_namespaces(as_ns_declaration=True)
         item_info = {
             'identifier': self.oai_identifier(item),
             'last_modified': self.last_modified(item),
-            'sets': [self.sets(item)],
+            'sets': [],  # [self.sets(item)], todo implement later
             'fields': converted_fields,
             'record': record,
             'ns': namespaces
@@ -356,3 +373,167 @@ class OAIProvider(TemplateView):
             else:
                 error_msg = 'The verb "{}" is illegal'.format(self.oai_verb)
             return self.error('badVerb', error_msg)
+
+
+class ElasticSearchOAIProvider(OAIProvider):
+    client = Elasticsearch()
+    ESDataSet = namedtuple("DataSet", ['spec', 'description', 'name', 'valid', 'data_owner'])
+    _es_response = None
+
+    def get_query_result(self):
+        if not self._es_response:
+            s = self.convert_filters_to_query(self.filters)
+            self._es_response = s.execute()
+        return self._es_response
+
+    def get_list_size(self):
+        return self.get_query_result().hits.total
+
+    def get_items(self):
+        if self.get_list_size() == 0:
+            return None
+        return ElasticSearchRDFRecord.get_rdf_records_from_query(
+            query=self.convert_filters_to_query(self.filters),
+            response=self.get_query_result()
+        )
+
+    def get_item(self, identifier):
+        s = Search(using=self.client)
+        s = s.query("match", **{"_id": identifier})
+        response = s.execute()
+        if response.hits.total != 1:
+            return None
+        return ElasticSearchRDFRecord.get_rdf_records_from_query(
+            query=s,
+            response=response)[0]
+
+    def convert_filters_to_query(self, filters):
+        s = Search(using=self.client)
+        spec = filters.get("dataset__spec", None)
+        modified_from = filters.get('modified__gt', None)
+        modified_until = filters.get('modified__lt', None)
+        if spec:
+            s = s.query("match", **{'system.spec.raw': spec})
+        if modified_from:
+            s = s.filter("range", **{"system.modified_at": {"gte": modified_from}})
+        if modified_until:
+            s = s.filter("range", **{"system.modified_at": {"lte": modified_until}})
+        s = s.sort({"system.modified_at": {"order": "asc"}} )
+        return s[self.cursor: self.get_next_cursor()]
+
+    def get_dataset_list(self):
+        s = Search(using=self.client)
+        datasets = A("terms", field="delving_spec.raw")
+        s.aggs.bucket("dataset-list", datasets)
+        response = s.execute()
+        specs = response.aggregations['dataset-list'].buckets
+        return [self.ESDataSet(spec.key, None, None, spec.doc_count, None) for spec in specs]
+
+    def last_modified(self, obj):
+        return obj.last_modified()
+
+
+class DjangoOAIProvider(OAIProvider):
+
+    def get_list_size(self):
+        return self.record_model.objects.filter(**self.filters).count()
+
+    def get_items(self):
+        objects = self.record_model.objects.filter(**self.filters).order_by('modified')
+        if not objects:
+            return None
+        return objects[self.cursor:self.get_next_cursor()]
+
+    def get_item(self, identifier):
+        return self.record_model.objects.get(hub_id=identifier)
+
+    def get_dataset_list(self):
+        query_set = self.dataset_model.objects.filter(**self.dataset_access_filter)
+        return query_set
+
+    def last_modified(self, obj):
+        return obj.modified
+
+
+HarvestStep = namedtuple('HarvestStep', ['records_returned', 'total_records', 'resumption_token', 'records'])
+HarvestRequest = namedtuple('HarvestRequest', ['base_url', 'set_spec', 'metadata_prefix', 'verb'])
+
+
+class OAIHarvester:
+
+    def __init__(self, base_url):
+        self.base_url = base_url
+
+    @staticmethod
+    def get_next_oai_pmh_uri(harvest_request, harvest_step):
+        uri = ""
+        if harvest_step.total_records is 0:
+            uri = "{0}?verb={1}".format(harvest_request.base_url, harvest_request.verb)
+            if harvest_request.set_spec is not "":
+                uri += "&set={}".format(harvest_request.set_spec)
+            if harvest_request.metadata_prefix is not "":
+                uri += "&metadataPrefix={}".format(harvest_request.metadata_prefix)
+        else:
+            uri = "{}?verb={}&resumptionToken={}".format(
+                harvest_request.base_url,
+                harvest_request.verb,
+                harvest_step.resumption_token
+            )
+        return uri
+
+    @staticmethod
+    def clean_bad_namespaces(tn):
+        from io import StringIO
+        lines = tn.splitlines(True) # keep \n
+        o = StringIO()
+        for line in lines:
+            if '<openskos:status>approved</openskos:status>' in line:
+                line = line.replace('<openskos:status>approved</openskos:status>', '')
+            o.write(line)
+        return o
+
+    @staticmethod
+    def clean_response(response):
+        clean_response = response.replace('<openskos:status>approved</openskos:status>', '')
+        clean_response = clean_response.replace('<?xml version="1.0" encoding="UTF-8"?>', '')
+        return clean_response
+
+    def parse_oai_pmh_response(self, harvest_request, harvest_step):
+        records_processed = 0
+        uri = self.get_next_oai_pmh_uri(harvest_request, harvest_step)
+        response = requests.get(uri)
+        print("'{}'".format(uri))
+        resumption_token = None
+        record_tree = ET.fromstring(self.clean_response(response.text))
+        record_sep = '{http://www.openarchives.org/OAI/2.0/}record' if harvest_request.verb == "ListRecords" \
+            else '{http://www.openarchives.org/OAI/2.0/}header'
+        for record in record_tree.iter(record_sep):
+            harvest_step.records.append(record)
+            records_processed += 1
+        token =  next(record_tree.iter('{http://www.openarchives.org/OAI/2.0/}resumptionToken'), None)
+        if token.text is not None:
+            resumption_token = token.text.strip()
+            cursor = token.attrib.get('cursor')
+            list_size = token.attrib.get('completeListSize')
+        if records_processed == 0:
+            with open('/tmp/test_output.xml', 'w') as f:
+                f.write(response.text)
+        print("token: {}/{}".format(resumption_token, records_processed))
+        return HarvestStep(
+            records_processed,
+            harvest_step.total_records + records_processed,
+            resumption_token,
+            harvest_step.records
+        )
+
+    def get_records_from_oai_pmh(self, set_spec, metadata_prefix, verb="ListRecords"):
+        harvest_step = HarvestStep(50, 0, "fake_token", ET.Element("delving-records"))
+        harvest_request = HarvestRequest(self.base_url.rstrip("?"), set_spec, metadata_prefix, verb)
+        print(harvest_request)
+        while harvest_step.resumption_token is not None:
+            harvest_step = self.parse_oai_pmh_response(harvest_request, harvest_step)
+        tree = ET.ElementTree(harvest_step.records)
+        output_file = os.path.join('/tmp', 'oai_records_{}_{}.xml'.format(set_spec, metadata_prefix))
+        tree.write(output_file, encoding="utf-8", xml_declaration=True, pretty_print=True)
+        print("processed {} records".format(harvest_step.total_records))
+        return output_file

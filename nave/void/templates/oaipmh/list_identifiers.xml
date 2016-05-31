@@ -5,7 +5,7 @@
     {% for i in items %}
     <header>
         <identifier>{{ i.identifier }}</identifier>
-        <datestamp>{{ i.last_modified|date:'c' }}</datestamp>
+        <datestamp>{{ i.last_modified }}</datestamp>
         {% for set in i.sets %}
         <setSpec>{{ set }}</setSpec>
         {% endfor %}
