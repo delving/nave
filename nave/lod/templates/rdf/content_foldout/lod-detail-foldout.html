@@ -14,8 +14,8 @@
             {% leaflet_js %}
             <script type="text/javascript" src="{% static 'js/leaflet/leaflet.label-src.js' %}"></script>
             <script>
-                var tiles = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png',{maxZoom:16});
-                var foldoutMap = L.map('foldout-map',  {layers: [tiles] });
+                var tiles = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {maxZoom: 16});
+                var foldoutMap = L.map('foldout-map', {layers: [tiles]});
                 foldoutMap.invalidateSize(false);
                 foldoutMap.setView([{{ points.0.0 }}, {{ points.0.1 }}], 5);
                 // add markers
@@ -23,30 +23,27 @@
             </script>
         {% endif %}
     </div>
-    <div class="col-sm-8">
+    <div class="col-xs-12 col-md-8">
+
         <button type="button" class="close" id="search-foldout-close" aria-label="Close">
             <span aria-hidden="true">&times;</span>
         </button>
+
         <header class="title">{% detail_field 'dc_title' value_only=True word_limit=55 %}</header>
-        <div class="row">
-            <div class="col-sm-6">
-                {% detail_field 'dc_creator' label=_("dc_creator")  %}
-                {% detail_field 'dc_date' label=_("dc_date")  %}
-                {% detail_field 'dc_subject' multiple=True word_limit=55 label=_("dc_subject")  separator="" %}
-                {% detail_field 'dc_description' label=_("dc_description") word_limit=55 allow_html=True %}
-                {% detail_field 'dc_identifier' label=_("dc_identifier")  %}
-            </div>
-            <div class="col-sm-6">
-                {% detail_field 'dc_type'  multiple=True label=_('dc_type') %}
-                {% detail_field 'edm_dataProvider' label=_("edm_dataProvider") %}
-                {% detail_field 'nave_material' label=_("nave_material") %}
-                {% detail_field 'nave_technique' label=_("nave_technique") %}
-                {% detail_field 'dcterms_isReferencedBy' multiple=True label=_('dcterms_isReferencedBy') %}
-                {% detail_field 'dc_rights' label=_("dc_rights") %}
-                {% detail_field 'edm_rights' multiple=True label=_('edm_rights') is_link=True %}
-            </div>
-        </div>
-        <br/>
-        <a href="{{ absolute_uri }}{% if acceptance %}?mode=acceptance{% endif %}" class="btn btn-default" id="btn-to-a">{% trans 'View details' %}</a>
+
+        {% detail_field 'dc_creator' label=_("dc_creator") %}
+        {% detail_field 'dc_date' label=_("dc_date") %}
+        {% detail_field 'dc_subject' multiple=True word_limit=55 label=_("dc_subject") separator="" %}
+        {% detail_field 'dc_description' label=_("dc_description") word_limit=55 allow_html=True %}
+        {% detail_field 'dc_identifier' label=_("dc_identifier") %}
+        {% detail_field 'dc_type' multiple=True label=_('dc_type') %}
+        {% detail_field 'edm_dataProvider' label=_("edm_dataProvider") %}
+        {% detail_field 'nave_material' label=_("nave_material") %}
+        {% detail_field 'nave_technique' label=_("nave_technique") %}
+        {% detail_field 'dcterms_isReferencedBy' multiple=True label=_('dcterms_isReferencedBy') %}
+        {% detail_field 'dc_rights' label=_("dc_rights") %}
+        {% detail_field 'edm_rights' multiple=True label=_('edm_rights') is_link=True %}
+
+        <a href="{{ absolute_uri }}{% if acceptance %}?mode=acceptance{% endif %}" class="btn btn-default btn-to-detail">{% trans 'View details' %}</a>
     </div>
 </div>

@@ -348,8 +348,15 @@ class LoDHTMLView(TemplateView):
         context['graph_stats'] = RDFModel.get_graph_statistics(graph)
         context['alt'] = ""
         context['points'] = RDFModel.get_geo_points(graph)
-        context['deepzoom'] = graph_bindings['nave_deepZoomUrl'].value if graph_bindings['nave_deepZoomUrl'] else False
-
+        # DEEPZOOM VALUE(S)
+        zooms = graph_bindings.get_list('nave_deepZoomUrl')
+        if zooms:
+            context['deepzoom_count'] = len(zooms)
+            if len(zooms) is 1:
+                context['deepzoom_urls'] = zooms[0].value
+            else:
+                context['deepzoom_urls'] = [zoom.value for zoom in zooms]
+        # EXPERT MODE
         expert_mode = self.request.COOKIES.get('NAVE_DETAIL_EXPERT_MODE', False)
         if expert_mode:
             # do expert mode stuff like more like this

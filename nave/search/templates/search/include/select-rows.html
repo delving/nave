@@ -1,5 +1,5 @@
 {% load i18n urls_tags %}
-<span class="rows-select">{% trans 'Number of results per page:' %} </span>
+<span class="rows-select">{% trans 'Number of results per page' %}: </span>
 <a href="{% add_params request.get_full_path rows='25' %}" class="{% if rows == '25' %}selected{% endif %}">25</a> /
 <a href="{% add_params request.get_full_path rows='50' %}" class="{% if rows == '50' %}selected{% endif %}">50</a> /
 <a href="{% add_params request.get_full_path rows='100' %}" class="{% if rows == '100' %}selected{% endif %}">100</a>

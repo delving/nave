@@ -1,0 +1,41 @@
+@import "../../../common/static/less/variables";
+@import "../../../common/static/less/mixins";
+@grid-float-breakpoint:     768px;
+
+.ds-field {
+  display: table-row;
+}
+
+.ds-field-label {
+  display: table-cell;
+  color: @gray-light;
+  font-size: 1em;
+  font-weight: bold;
+  margin-bottom: 0px;
+  width: 180px;
+  padding-right: 10px;
+  @media (max-width: @screen-xs) {
+    display: block;
+    width: 100%;
+    clear: both;
+  }
+}
+
+.ds-field-value {
+  display: table-cell;
+  margin-bottom: 5px;
+  width: auto;
+  @media (max-width: @screen-xs) {
+    display: block;
+    width: 100%;
+    clear: both;
+  }
+}
+
+//.result-item-detail {
+//  .ds-field-label, .ds-field-value {
+//      display: block;
+//      width: 100%;
+//      clear: both;
+//  }
+//}
