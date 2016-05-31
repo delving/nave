@@ -11,7 +11,7 @@ from dateutil import parser
 from django.conf import settings
 from django.views.generic import TemplateView
 from elasticsearch import Elasticsearch
-from elasticsearch_dsl import Search, A
+from elasticsearch_dsl import Search, A, Q
 from lxml import etree as ET
 
 from lod.utils.resolver import RDFRecord, ElasticSearchRDFRecord
@@ -207,7 +207,7 @@ class OAIProvider(TemplateView):
             item_info = {
                 'identifier': self.oai_identifier(i),
                 'last_modified': self.last_modified(i),
-                'sets': [self.sets(i)]
+                'sets': None  # todo: implement sets later [self.sets(i)]
             }
             identifiers.append(item_info)
         return self.render_to_response({
@@ -392,20 +392,20 @@ class ElasticSearchOAIProvider(OAIProvider):
     def get_items(self):
         if self.get_list_size() == 0:
             return None
-        # todo return a list of RDFRecords
         return ElasticSearchRDFRecord.get_rdf_records_from_query(
             query=self.convert_filters_to_query(self.filters),
             response=self.get_query_result()
         )
 
     def get_item(self, identifier):
-        s = Search()
-        s = s.query("match", {"_id": identifier})
+        s = Search(using=self.client)
+        s = s.query("match", **{"_id": identifier})
         response = s.execute()
         if response.hits.total != 1:
             return None
-        item = response.hits.hits[0]['_source']
-        return item
+        return ElasticSearchRDFRecord.get_rdf_records_from_query(
+            query=s,
+            response=response)[0]
 
     def convert_filters_to_query(self, filters):
         s = Search(using=self.client)
