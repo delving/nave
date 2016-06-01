@@ -293,9 +293,10 @@ class WebResource:
                                 self.get_derivative_base_path(kind=CACHE_DIR))
         else:
             path = os.path.join(self.get_spec_dir, SOURCE_DIR, self.clean_uri)
-        if path and not self._source_path:
-            self._source_path = path
-        return path
+        webresource_path = self.get_from_source_path(path)
+        if webresource_path and not self._source_path:
+            self._source_path = webresource_path
+        return webresource_path
 
     def get_derivative_base_path(self, uri=None, kind=THUMBNAIL_DIR):
         """Create base path for the derivatives.
@@ -318,11 +319,45 @@ class WebResource:
             "{}.tif".format(self.get_derivative_base_path(kind=DEEPZOOM_DIR)),
         )
 
+    NON_DEFAULT_EXTENSIONS = {
+        "jpeg": "jpg",
+        "tiff": "tif"
+    }
+
+    def sort_extensions(self, wr_list):
+        """Sort a list of webresources by extension."""
+        from collections import defaultdict
+        wr_dict = defaultdict(list)
+        for wr in sorted(wr_list):
+            path, ext = os.path.splitext(wr)
+            clean_ext = ext.lower().lstrip('.')
+            if clean_ext in self.NON_DEFAULT_EXTENSIONS:
+                clean_ext = self.NON_DEFAULT_EXTENSIONS[clean_ext]
+            wr_dict[clean_ext].append(wr)
+        return wr_dict
+
+    def get_source_path_matches(self, webresource_path):
+        """Return all matches to the w"""
+        # strip extension
+        path = os.path.splitext(webresource_path)[0]
+        # find the path
+        full_path = os.path.join(self, path)
+        return glob("{}*".format(full_path))
+
+    def get_from_source_path(self, webresource_path):
+        matches = self.get_source_path_matches(webresource_path)
+        if len(matches) > 1:
+            wr_dict = self.sort_extensions(matches)
+            for ext in ['tif', 'jp2', 'jpg']:
+                if ext in wr_dict:
+                    return wr_dict[ext][0]
+        return matches[0]
+
     @property
     def get_source_path(self):
         """Get the fully qualified path to the source digital object."""
         if not self._source_path:
-            self.uri_to_path
+            return self.uri_to_path
         return self._source_path
 
     def get_thumbnail_path(self, width, height):
@@ -339,18 +374,18 @@ class WebResource:
     @property
     def get_deepzoom_uri(self):
         """Get fully qualified deepzoom URI for redirection to the WebServer."""
-        # todo enable later again when nginx works properly
-        # return os.path.join(
+        # todo remove later when nginx works properly
+        # return "{}/fcgi-bin/iipsrv.fcgi?DeepZoom={}/{}/{}.tif.dzi".format(
         #     self.domain,
-        #     "webresource",
+        #     settings.WEB_RESOURCE_BASE.rstrip('/'),
         #     self.get_relative_spec_dir,
-        #     "{}.tif.dzi".format(self.get_derivative_base_path(kind=DEEPZOOM_DIR))
-        # )
-        return "{}/fcgi-bin/iipsrv.fcgi?DeepZoom={}/{}/{}.tif.dzi".format(
+        #     self.get_derivative_base_path(kind=DEEPZOOM_DIR))
+        return os.path.join(
             self.domain,
-            settings.WEB_RESOURCE_BASE.rstrip('/'),
+            "webresource",
             self.get_relative_spec_dir,
-            self.get_derivative_base_path(kind=DEEPZOOM_DIR))
+            "{}.tif.dzi".format(self.get_derivative_base_path(kind=DEEPZOOM_DIR))
+        )
 
     @property
     def get_source_uri(self):

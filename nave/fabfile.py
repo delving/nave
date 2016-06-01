@@ -485,7 +485,7 @@ def install():
             #run("exit")
     apt('software-properties-common')
     sudo("add-apt-repository ppa:webupd8team/java -y")
-    # sudo("add-apt-repository ppa:fkrull/deadsnakes -y")
+    sudo("add-apt-repository ppa:nginx/stable -y")
     sudo("apt-get update -y -q")
     sudo("apt-get install -y python-software-properties debconf-utils")
     sudo('echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 select true" | sudo debconf-set-selections')
