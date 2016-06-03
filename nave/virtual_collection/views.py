@@ -39,6 +39,18 @@ class VirtualCollectionSearchView(SearchListAPIView):
         virtual_collection = get_object_or_404(VirtualCollection, slug=slug)
 
         self.set_hidden_query_filters(virtual_collection.query.split(";;;"))
+        if virtual_collection.facets.all():
+            facet_config = []
+            for facet in virtual_collection.facets.all():
+                from nave.base_settings import FacetConfig
+                facet_config.append(
+                    FacetConfig(
+                        es_field=facet.name,
+                        label=facet.label,
+                        size=facet.facet_size
+                    )
+                )
+            self.set_facets(facet_config)
         return super().get(request, *args, **kwargs)
 
 

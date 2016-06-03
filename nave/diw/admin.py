@@ -5,6 +5,7 @@ from .models import DiwInstance, DiwFacet, DiwResultField, DiwDetailField
 TODO: field names should be retrieved dynamically from a schema or model and selected by the user from a dropwdown
 """
 
+
 class FacetInline(admin.TabularInline):
     model = DiwFacet
     fields = ['name', 'label', 'position']
