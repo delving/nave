@@ -139,6 +139,7 @@ def get_graph_statistics(graph):
     }
     return stats
 
+
 class GraphBindings:
     def __init__(self, about_uri, graph,
                  excluded_rdf_types=None, allowed_rdf_types=None,

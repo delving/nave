@@ -11,6 +11,8 @@ from search.renderers import XMLRenderer
 
 from search.views import SearchListAPIView
 
+from nave.search.search import NaveESQuery
+from nave.void.oaipmh import ElasticSearchOAIProvider
 from .models import VirtualCollection
 
 logger = logging.getLogger(__name__)
@@ -42,6 +44,22 @@ class VirtualCollectionSearchView(SearchListAPIView):
 
 class V1SearchListApiView(SearchListAPIView):
     default_converter = settings.DEFAULT_V1_CONVERTER
-    doc_types = ["void_edmrecord"]
+    doc_types = []
+
+
+class VirtualCollectionPmhProvider(ElasticSearchOAIProvider):
+
+    def get(self, request, *args, **kwargs):
+        slug = kwargs.get('slug', None)
+        virtual_collection = get_object_or_404(VirtualCollection, slug=slug)
+        hidden_query_filters = [hqf.strip('"') for hqf in virtual_collection.split(";;;")]
+        query = NaveESQuery(
+            index_name=settings.SITE_NAME,
+            doc_types=[],
+            hidden_filters=hidden_query_filters
+        )
+        self.query = query.build_query_from_request(request=request)
+        super(VirtualCollectionPmhProvider, self).get(request, *args, **kwargs)
+
 
 
