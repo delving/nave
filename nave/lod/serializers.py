@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*- 
-"""This module does
-
-"""
 from rest_framework import serializers
 
 from .models import CacheResource, UserGeneratedContent

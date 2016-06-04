@@ -38,7 +38,7 @@ from void.models import EDMRecord
 
 from .renderers import N3Renderer, JSONLDRenderer, TURTLERenderer, NTRIPLESRenderer, RDFRenderer, GeoJsonRenderer, \
     XMLRenderer
-from .search import NaveESQuery, NaveQueryResponse, NaveQueryResponseWrapper, NaveItemResponse
+from .search import NaveESQuery, NaveQueryResponse, NaveQueryResponseWrapper, NaveItemResponse, NaveESItemList
 from .serializers import NaveQueryResponseWrapperSerializer, NaveESItemSerializer
 
 logger = logging.getLogger(__file__)
@@ -266,6 +266,55 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
             acceptance = self.request.COOKIES.get('NAVE_ACCEPTANCE_MODE', False)
         return acceptance
 
+    def stream_search_results(self, request):
+        import uuid
+        from elasticsearch.helpers import scan
+        from . import get_es
+        from django.http.response import Http404
+
+        # check if authenticated
+        if not request.user.is_authenticated():
+            logger.warn("Only logged in users can create a download request.")
+            raise Http404()
+        user = request.user
+        response_format=self.request.GET.get('format', 'json')
+        file_name = "{}_{}.{}".format(user.username, uuid.uuid1(), response_format)
+        query = self.get_query(
+            request=self.request,
+            index_name=self.get_index_name,
+            doc_types=self.doc_types,
+            facet_list=self.facet_list,
+            filters=self.filters,
+            hidden_filters=self.hidden_filters,
+            demote=self.demote,
+            cluster_geo=False,
+            converter=self.get_converter()
+        )
+        downloader = scan(
+            client=get_es(),
+            query=query,
+            index=self.get_index_name,
+        )
+        # todo add serializer for response format
+        generator = (NaveESItemList(results=results, converter=self.get_converter()).items for results in downloader)
+        ##
+        # async_task_id = download_all_search_results.delay(
+        #     query_dict=query.query.build_search(),
+        #     response_format=self.request.GET.get('format', 'json'),
+        #     converter=self.get_converter(),
+        #     index_name=self.get_index_name,
+        #     doc_types=self.doc_types
+        # )
+        from django.http import StreamingHttpResponse
+        response = StreamingHttpResponse(
+            generator,
+            content_type="text/plain"  # todo later replace with response_format
+        )
+        # todo add streaming gzip of search results later
+        response['Content-Disposition'] = 'attachment; filename="{}"'.format(file_name)
+        return response
+
+
     def list(self, request, format=None, *args, **kwargs):
         acceptance = self.acceptance_mode
         if request.accepted_renderer.format == 'geojson':
@@ -285,26 +334,9 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
             return redirect("{}?{}".format(request._request.path, params.urlencode()))
         result_as_zip = request.query_params.get('download', 'false')
         # todo use the DRF user in this check and not request.user.is_authenticated()
-        if result_as_zip in ['zipped']:
-            query = self.get_query(
-                request=self.request,
-                index_name=self.get_index_name,
-                doc_types=self.doc_types,
-                facet_list=self.facet_list,
-                filters=self.filters,
-                hidden_filters=self.hidden_filters,
-                demote=self.demote,
-                cluster_geo=False,
-                converter=self.get_converter()
-            )
-            async_task_id = download_all_search_results.delay(
-                query_dict=query.query.build_search(),
-                response_format=self.request.GET.get('format', 'json'),
-                converter=self.get_converter(),
-                index_name=self.get_index_name,
-                doc_types=self.doc_types
-            )
-            return redirect('big_download', id=async_task_id)
+        if result_as_zip:
+            return self.stream_search_results(request=request)
+
         queryset = self.get_queryset()
         # HTML VIEW ##############################################################
         mode = self.request.REQUEST.get('mode', 'default')

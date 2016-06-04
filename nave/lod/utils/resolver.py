@@ -837,7 +837,8 @@ class RDFRecord:
 
     DEFAULT_RDF_FORMAT = "nt" if not settings.RDF_DEFAULT_FORMAT else settings.RDF_DEFAULT_FORMAT
 
-    def __init__(self, hub_id=None, source_uri=None, spec=None, rdf_string=None, org_id=None, doc_type=None):
+    def __init__(self, hub_id=None, source_uri=None, spec=None, rdf_string=None, org_id=None, doc_type=None,
+                 named_graph_uri=None):
         if hub_id is None and source_uri is None and rdf_string is None:
             raise ValueError("either source_uri or hub_id or rdf_string must be given at initialisation.")
         self._hub_id = hub_id
@@ -845,7 +846,7 @@ class RDFRecord:
         self._org_id = org_id if org_id is not None else settings.ORG_ID
         self._doc_type = doc_type
         self._source_uri = source_uri
-        self._named_graph = None
+        self._named_graph = named_graph_uri
         self._source_uri = None
         self._absolute_uri = None
         self._graph = None
@@ -877,10 +878,10 @@ class RDFRecord:
             base_url = "{}://{}".format(scheme, base_url)
         return base_url
 
-    def source_uri_as_hub_id(self, source_uri=None):
+    def uri_to_hub_id(self, source_uri=None):
         if not self._hub_id:
             if source_uri is None:
-                source_uri = self._source_uri
+                source_uri = self.source_uri
             uri_parts = source_uri.split('/')
             if self._spec is None:
                 self._spec = uri_parts[-2]
@@ -898,6 +899,9 @@ class RDFRecord:
         else:
             self._rdf_string = rdf_string
         return self._graph
+
+    def get_triples(self, acceptance=False):
+        return self.rdf_string, self.named_graph
 
     @staticmethod
     def parse_graph_from_string(rdf_string, graph_identifier=None, input_format=DEFAULT_RDF_FORMAT):
@@ -960,8 +964,8 @@ class RDFRecord:
 
     @property
     def hub_id(self):
-        if not self._hub_id and self.source_uri:
-            self._hub_id = self.source_uri_as_hub_id()
+        if not self._hub_id and self.source_uri or self.named_graph:
+            self._hub_id = self.uri_to_hub_id()
         return self._hub_id
 
     def get_bindings(self):
@@ -972,6 +976,9 @@ class RDFRecord:
         return self._bindings
 
     def get_graph(self, **kwargs):
+        if not self._graph() and self._rdf_string:
+            self.parse_graph_from_string()
+
         return self._graph
 
     def get_context_graph(self, with_mappings=False, include_mapping_target=False, acceptance=False, target_uri=None):
@@ -1030,7 +1037,7 @@ class RDFRecord:
         return sparql_update
 
     def create_es_action(self, doc_type, record_type, action="index", index=settings.SITE_NAME, store=None,
-                         context=True, flat=True, exclude_fields=None, acceptance=False):
+                         context=True, flat=True, exclude_fields=None, acceptance=False, content_hash=None):
 
         if not store:
             store = rdfstore.get_rdfstore()
@@ -1091,6 +1098,7 @@ class RDFRecord:
             'source_graph': self.rdf_string(),
             'proxy_resource_graph': None,
             'web_resource_graph': None,
+            'content_hash': content_hash,
             # 'about_type': [rdf_type.qname for rdf_type in bindings.get_about_resource().get_types()]
             # 'collections': None, todo find a way to add collections via link
         }
@@ -1208,6 +1216,12 @@ class ElasticSearchRDFRecord(RDFRecord):
         if as_bindings:
             return GraphBindings(about_uri=self._source_uri, graph=self._graph)
         return self._graph
+
+    def is_indexed_content_identical(self, content_hash, hub_id=None, store_name=None):
+        if hub_id is None:
+            hub_id = self.hub_id
+        exists = self.query_for_graph("match", {"_id": hub_id, 'system.content_hash': content_hash}, store_name)
+        return True if exists is not None else False
 
     def get_graph_by_id(self, hub_id, store_name=None, as_bindings=False):
         return self.query_for_graph("match", {"_id": hub_id}, store_name, as_bindings)

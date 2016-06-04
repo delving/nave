@@ -98,34 +98,24 @@ class BulkApiProcessor:
                 acceptance_mode = action.get('acceptanceMode', "false")
                 acceptance = True if acceptance_mode is not None and acceptance_mode.lower() in ['true'] else False
                 content_hash = action.get('contentHash', None)
+                from nave.lod.utils.resolver import ElasticSearchRDFRecord
+                record = ElasticSearchRDFRecord(
+                    spec=self.spec,
+
+                )
+                if record.is_indexed_content_identical(content_hash=content_hash):
+                    self.records_already_stored += 1
+                    return None
                 try:
-                    graph = ConjunctiveGraph(identifier=record_graph_uri)
-                    rdf_format = "nt" if "<rdf:RDF" not in graph_ntriples else "xml"
-                    graph.parse(data=graph_ntriples, format=rdf_format)
+                    rdf_format = record.DEFAULT_RDF_FORMAT if "<rdf:RDF" not in graph_ntriples else "xml"
+                    record.from_rdf_string(
+                        rdf_string=graph_ntriples,
+                        named_graph=record_graph_uri,
+                        input_format=rdf_format
+                    )
                 except ParseError as e:
                     self.rdf_errors.append((e, action))
                     logger.error(e, action)
-                    return None
-                if self.current_dataset is None or self.current_dataset.spec is not self.spec:
-                    try:
-                        self.current_dataset = DataSet.objects.get(spec=self.spec)
-                    except DataSet.DoesNotExist as dne:
-                        logger.warn(dne)
-                        self.current_dataset = self.synchronise_dataset_metadata(
-                            store=self.store,
-                            dataset_graph_uri=self._create_dataset_uri(record_graph_uri)
-                        )
-                app, model = action['type'].split('_')
-                action_model = apps.get_model(app_label=app, model_name=model)
-                record = action_model.graph_to_record(graph=graph,
-                                                      bulk=True,
-                                                      ds=self.current_dataset,
-                                                      content_hash=content_hash,
-                                                      force_insert=self.force_insert,
-                                                      acceptance=acceptance
-                                                      )
-                if record is None:
-                    self.records_already_stored += 1
                     return None
                 self.records_stored += 1
                 self.es_actions.append(
@@ -135,28 +125,15 @@ class BulkApiProcessor:
                         context=False,  # todo: fix issue with context indexing later
                         flat=True,
                         exclude_fields=None,
-                        acceptance=acceptance
-                    )
+                        acceptance=acceptance,
+                        doc_type="void_edmrecord",
+                        record_type="mdr"
+                        )
                 )
                 self.rdf_graphs.append(record.get_triples(acceptance=acceptance))
                 if settings.RDF_STORE_TRIPLES:
                     self.sparql_update_queries.append(record.create_sparql_update_query(acceptance=acceptance))
             return record
-            # if process_verb in ['index', 'delete']:
-            #     self.es_actions.append(
-            #         record.create_es_action(
-            #             action=process_verb,
-            #             store=self.store,
-            #             context=False,  # todo: fix issue with context indexing later
-            #             flat=True,
-            #             exclude_fields=None
-            #         )
-            #     )
-            # if not settings.RDF_USE_LOCAL_GRAPH:
-            #     if process_verb in ['store', 'index', 'delete']:
-            #         deleted = process_verb == 'delete'
-            #         self.sparql_update_queries.append(record.create_sparql_update_query(delete=deleted))
-
         except KeyError as ke:
             self.json_errors.append((ke, action))
             self.records_with_errors += 1
