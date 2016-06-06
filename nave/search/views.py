@@ -177,8 +177,8 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
         return converter
 
     @property
-    def facet_list(self):
-        return [facet.es_field for facet in self.facets]
+    def get_facet_config(self):
+        return self.facets
 
     @staticmethod
     def _clean_callback(request):
@@ -202,7 +202,7 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
         record = model.objects.get(hub_id=doc_id)
         return record
 
-    def get_query(self, request, index_name, doc_types, facet_list, filters, demote, hidden_filters=None,
+    def get_query(self, request, index_name, doc_types, facet_config_list, filters, demote, hidden_filters=None,
                   cluster_geo=False, converter=None, acceptance=False, *args, **kwargs):
 
         if hidden_filters is None:
@@ -219,7 +219,7 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
         query = NaveESQuery(
             index_name=index_name,
             doc_types=doc_types,
-            default_facets=facet_list,
+            default_facets=facet_config_list,
             default_filters=filters,
             hidden_filters=hidden_filters,
             cluster_geo=cluster_geo,
@@ -247,7 +247,7 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
             request=self.request,
             index_name=self.get_index_name,
             doc_types=self.doc_types,
-            facet_list=self.facet_list,
+            facet_config_list=self.facets,
             filters=self.filters,
             demote=self.demote,
             cluster_geo=cluster_geo,
@@ -277,13 +277,13 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
             logger.warn("Only logged in users can create a download request.")
             raise Http404()
         user = request.user
-        response_format=self.request.GET.get('format', 'json')
+        response_format = self.request.GET.get('format', 'json')
         file_name = "{}_{}.{}".format(user.username, uuid.uuid1(), response_format)
         query = self.get_query(
             request=self.request,
             index_name=self.get_index_name,
             doc_types=self.doc_types,
-            facet_list=self.facet_list,
+            facet_config_list=self.facets,
             filters=self.filters,
             hidden_filters=self.hidden_filters,
             demote=self.demote,
@@ -366,7 +366,7 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
         query = NaveESQuery(
             index_name=self.get_index_name,
             doc_types=self.doc_types,
-            default_facets=self.facet_list,
+            default_facets=self.facets,
             cluster_geo=False,
             size=1,
             converter=self.get_converter()
