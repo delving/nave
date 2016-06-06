@@ -173,7 +173,7 @@ class NaveESQuery(object):
         self.acceptance = acceptance
         self.index_name = index_name
         self.doc_types = doc_types
-        self.default_facets = default_facets.copy()
+        self.default_facets = default_facets.copy() if default_facets is not None else default_facets
         self.size = size
         self.default_filters = default_filters
         self.hidden_filters = hidden_filters
@@ -280,6 +280,8 @@ class NaveESQuery(object):
 
     @property
     def facet_list(self):
+        if self.default_facets is None:
+            return []
         return [facet.es_field for facet in self.default_facets]
 
     @staticmethod
@@ -427,7 +429,9 @@ class NaveESQuery(object):
                 raise
 
         query = self.query
-        query_string = raw_query_string if raw_query_string else request._request.META['QUERY_STRING']
+        if isinstance(request, Request):
+            request = request._request
+        query_string = raw_query_string if raw_query_string else request.META['QUERY_STRING']
         if self.converter is not None:
             query_dict = self.apply_converter_rules(query_string, self.converter)
         elif raw_query_string:
@@ -544,8 +548,6 @@ class NaveESQuery(object):
                 # else:
                 #     query_string = " OR ".join(query_list)
                 # query = query.filter(F(**{self.query_to_facet_key(key): "({})".format(query_string)}))
-        filter_dict.update(hidden_filter_dict)
-        self.applied_filters = filter_dict
         applied_facet_fields = []
 
         if filter_dict:
@@ -564,7 +566,9 @@ class NaveESQuery(object):
                         f |= F(**{self.query_to_facet_key(key): clean_value})
 
                 query = query.filter(f)
-                # old solr style bounding box query
+        filter_dict.update(hidden_filter_dict)
+        self.applied_filters = filter_dict
+        # old solr style bounding box query
         bbox_filter = None
         if {'pt', 'd'}.issubset(list(params.keys())):
             point = params.get('pt')

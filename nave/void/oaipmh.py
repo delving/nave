@@ -420,7 +420,7 @@ class ElasticSearchOAIProvider(OAIProvider):
         if self.spec:
             spec = self.spec
         if self.query:
-            s = s.query(self.query)
+            s = s.query(self.query.get('filter'))
         elif spec:
             s = s.query("match", **{'system.spec.raw': spec})
         if modified_from:
@@ -434,7 +434,7 @@ class ElasticSearchOAIProvider(OAIProvider):
         s = Search(using=self.client)
         datasets = A("terms", field="delving_spec.raw")
         if self.query:
-            s = self.query(self.query)
+            s = s.filter(self.query.get('filter'))
         elif self.spec:
             s = s.query("match", **{'system.spec.raw': self.spec})
         s.aggs.bucket("dataset-list", datasets)
