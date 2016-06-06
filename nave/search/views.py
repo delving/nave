@@ -332,7 +332,7 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
             query.extend(params.pop('qr'))
             params['q'] = " ".join(query)
             return redirect("{}?{}".format(request._request.path, params.urlencode()))
-        result_as_zip = request.query_params.get('download', 'false')
+        result_as_zip = True if request.query_params.get('download', 'false').lower() == "true" else False
         # todo use the DRF user in this check and not request.user.is_authenticated()
         if result_as_zip:
             return self.stream_search_results(request=request)

@@ -98,7 +98,7 @@ class BulkApiProcessor:
                 acceptance_mode = action.get('acceptanceMode', "false")
                 acceptance = True if acceptance_mode is not None and acceptance_mode.lower() in ['true'] else False
                 content_hash = action.get('contentHash', None)
-                from nave.lod.utils.resolver import ElasticSearchRDFRecord
+                from lod.utils.resolver import ElasticSearchRDFRecord
                 record = ElasticSearchRDFRecord(
                     spec=self.spec,
 

@@ -11,8 +11,8 @@ from search.renderers import XMLRenderer
 
 from search.views import SearchListAPIView
 
-from nave.search.search import NaveESQuery
-from nave.void.oaipmh import ElasticSearchOAIProvider
+from search.search import NaveESQuery
+from void.oaipmh import ElasticSearchOAIProvider
 from .models import VirtualCollection
 
 logger = logging.getLogger(__name__)
@@ -42,7 +42,7 @@ class VirtualCollectionSearchView(SearchListAPIView):
         if virtual_collection.facets.all():
             facet_config = []
             for facet in virtual_collection.facets.all():
-                from nave.base_settings import FacetConfig
+                from base_settings import FacetConfig
                 facet_config.append(
                     FacetConfig(
                         es_field=facet.name,

@@ -976,8 +976,8 @@ class RDFRecord:
         return self._bindings
 
     def get_graph(self, **kwargs):
-        if not self._graph() and self._rdf_string:
-            self.parse_graph_from_string()
+        if not self._graph and self._rdf_string:
+            self.parse_graph_from_string(self._rdf_string)
 
         return self._graph
 
