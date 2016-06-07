@@ -548,21 +548,6 @@ class NaveESQuery(object):
                 # else:
                 #     query_string = " OR ".join(query_list)
                 # query = query.filter(F(**{self.query_to_facet_key(key): "({})".format(query_string)}))
-                        f |= F(**{self.query_to_facet_key(key): clean_value})
-
-                query = query.filter(f)
-                # todo: remove old solution later
-                # query_list = []
-                # for value in values:
-                #     if key.startswith('-'):
-                #         query_list.append("(NOT {})".format(value))
-                #     else:
-                #         query_list.append("{}".format(value))
-                # if facet_bool_type_and:
-                #     query_string = " AND ".join(query_list)
-                # else:
-                #     query_string = " OR ".join(query_list)
-                # query = query.filter(F(**{self.query_to_facet_key(key): "({})".format(query_string)}))
         filter_dict.update(hidden_filter_dict)
         self.applied_filters = filter_dict
         applied_facet_fields = []
