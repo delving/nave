@@ -898,7 +898,7 @@ class RDFRecord:
             self.rdf_string()
         else:
             self._rdf_string = rdf_string
-        return self._graph
+        return self.get_graph()
 
     def get_triples(self, acceptance=False):
         return self.rdf_string, self.named_graph
@@ -1201,9 +1201,14 @@ class ElasticSearchRDFRecord(RDFRecord):
         self._spec = system_fields.get('delving_spec')
         self._hub_id = system_fields.get('slug')
         self._modified_at = system_fields.get('modified_at')
-        # g = self.parse_graph_from_string(self._rdf_string, self._named_graph)
-        # self._graph = g
         return self
+
+    @property
+    def get_graph(self):
+        if not self._graph:
+            g = self.parse_graph_from_string(self._rdf_string, self._named_graph)
+            self._graph = g
+        return self._graph
 
     def query_for_graph(self, query_type=None, query=None, store_name=None, as_bindings=False, raw_query=None):
         if store_name is None:
@@ -1218,8 +1223,8 @@ class ElasticSearchRDFRecord(RDFRecord):
             return None
         self.set_defaults_from_query_result(response.hits.hits[0])
         if as_bindings:
-            return GraphBindings(about_uri=self._source_uri, graph=self._graph)
-        return self._graph
+            return GraphBindings(about_uri=self._source_uri, graph=self.get_graph)
+        return self.get_graph
 
     def is_indexed_content_identical(self, content_hash, hub_id=None, store_name=None):
         if hub_id is None:
