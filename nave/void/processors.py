@@ -99,13 +99,10 @@ class BulkApiProcessor:
                 acceptance = True if acceptance_mode is not None and acceptance_mode.lower() in ['true'] else False
                 content_hash = action.get('contentHash', None)
                 from lod.utils.resolver import ElasticSearchRDFRecord
-                record = ElasticSearchRDFRecord(
-                    spec=self.spec,
-
-                )
-                if record.is_indexed_content_identical(content_hash=content_hash):
-                    self.records_already_stored += 1
-                    return None
+                record = ElasticSearchRDFRecord(spec=self.spec, named_graph_uri=record_graph_uri)
+                # if record.is_indexed_content_identical(content_hash=content_hash):
+                #     self.records_already_stored += 1
+                #     return None
                 try:
                     rdf_format = record.DEFAULT_RDF_FORMAT if "<rdf:RDF" not in graph_ntriples else "xml"
                     record.from_rdf_string(
@@ -127,7 +124,8 @@ class BulkApiProcessor:
                         exclude_fields=None,
                         acceptance=acceptance,
                         doc_type="void_edmrecord",
-                        record_type="mdr"
+                        record_type="mdr",
+                        content_hash=content_hash
                         )
                 )
                 self.rdf_graphs.append(record.get_triples(acceptance=acceptance))

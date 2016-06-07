@@ -31,7 +31,7 @@ from urllib.parse import urlparse, quote
 from django.conf import settings
 from django.db.models.loading import get_model
 from elasticsearch import Elasticsearch
-from elasticsearch_dsl import Search
+from elasticsearch_dsl import Search, Q
 from rdflib import Graph, URIRef, BNode, Literal
 from rdflib.namespace import RDF, SKOS, RDFS, DC, FOAF
 
@@ -839,7 +839,7 @@ class RDFRecord:
 
     def __init__(self, hub_id=None, source_uri=None, spec=None, rdf_string=None, org_id=None, doc_type=None,
                  named_graph_uri=None):
-        if hub_id is None and source_uri is None and rdf_string is None:
+        if hub_id is None and source_uri is None and rdf_string is None and named_graph_uri is None:
             raise ValueError("either source_uri or hub_id or rdf_string must be given at initialisation.")
         self._hub_id = hub_id
         self._spec = spec
@@ -1201,14 +1201,18 @@ class ElasticSearchRDFRecord(RDFRecord):
         self._spec = system_fields.get('delving_spec')
         self._hub_id = system_fields.get('slug')
         self._modified_at = system_fields.get('modified_at')
-        g = self.parse_graph_from_string(self._rdf_string, self._named_graph)
-        self._graph = g
+        # g = self.parse_graph_from_string(self._rdf_string, self._named_graph)
+        # self._graph = g
         return self
 
-    def query_for_graph(self, query_type, query, store_name=None, as_bindings=False):
+    def query_for_graph(self, query_type=None, query=None, store_name=None, as_bindings=False, raw_query=None):
         if store_name is None:
             store_name = settings.SITE_NAME
-        s = Search(index=store_name).using(client).query(query_type, **query)
+        if raw_query:
+            s = Search(index=store_name).using(client).query(raw_query)
+        else:
+            s = Search(index=store_name).using(client).query(query_type, **query)
+        # s = s[:1] # todo use terminate after later
         response = s.execute()
         if response.hits.total != 1:
             return None
@@ -1220,7 +1224,8 @@ class ElasticSearchRDFRecord(RDFRecord):
     def is_indexed_content_identical(self, content_hash, hub_id=None, store_name=None):
         if hub_id is None:
             hub_id = self.hub_id
-        exists = self.query_for_graph("match", {"_id": hub_id, 'system.content_hash': content_hash}, store_name)
+        query = Q("match", **{"_id": hub_id}) & Q("match", **{'system.content_hash': content_hash})
+        exists = self.query_for_graph(raw_query=query, store_name=store_name)
         return True if exists is not None else False
 
     def get_graph_by_id(self, hub_id, store_name=None, as_bindings=False):
