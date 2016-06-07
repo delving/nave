@@ -38,7 +38,8 @@ from void.models import EDMRecord
 
 from .renderers import N3Renderer, JSONLDRenderer, TURTLERenderer, NTRIPLESRenderer, RDFRenderer, GeoJsonRenderer, \
     XMLRenderer
-from .search import NaveESQuery, NaveQueryResponse, NaveQueryResponseWrapper, NaveItemResponse, NaveESItemList
+from .search import NaveESQuery, NaveQueryResponse, NaveQueryResponseWrapper, NaveItemResponse, NaveESItemList, \
+    NaveESItem
 from .serializers import NaveQueryResponseWrapperSerializer, NaveESItemSerializer
 
 logger = logging.getLogger(__file__)
@@ -292,11 +293,18 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
         )
         downloader = scan(
             client=get_es(),
-            query=query,
+            query=query.query.build_search(),
             index=self.get_index_name,
         )
+
         # todo add serializer for response format
-        generator = (NaveESItemList(results=results, converter=self.get_converter()).items for results in downloader)
+        def streaming_generator():
+            yield "["
+            for result in downloader:
+                yield self.serialize_stream(es_item=result, format="json")
+            yield "]"
+
+        generator = streaming_generator()
         ##
         # async_task_id = download_all_search_results.delay(
         #     query_dict=query.query.build_search(),
@@ -314,6 +322,11 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
         response['Content-Disposition'] = 'attachment; filename="{}"'.format(file_name)
         return response
 
+    def serialize_stream(self, es_item, format="json"):
+        from elasticsearch_dsl.result import Result
+        item = NaveESItem(es_item=Result(es_item), converter=self.get_converter())
+        serialized_item = NaveESItemSerializer(item)
+        return "{},".format(JSONRenderer().render(serialized_item.data).decode(encoding="utf-8"))
 
     def list(self, request, format=None, *args, **kwargs):
         acceptance = self.acceptance_mode
