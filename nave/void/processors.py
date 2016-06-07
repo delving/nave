@@ -15,6 +15,8 @@ from lod.utils.resolver import RDFRecord
 from void import get_es
 from void.models import DataSet
 
+from lod import tasks
+
 logger = logging.getLogger(__name__)
 
 
@@ -27,12 +29,11 @@ class BulkApiProcessor:
         self.index_errors = []
         self.store_errors = []
         self.json_errors = []
-        self.es_actions = []
+        self.es_actions = {}
         self.records_stored = 0
         self.records_already_stored = 0
         self.records_with_errors = 0
-        self.sparql_update_queries = []
-        self.rdf_graphs = []
+        self.sparql_update_queries = {}
         self.force_insert = force_insert
         self.api_requests = self._get_json_entries_from_payload()
         self.current_dataset = None
@@ -41,25 +42,36 @@ class BulkApiProcessor:
     def set_force_insert(self, force_insert):
         self.force_insert = force_insert
 
+    def diff_by_content_hash(self):
+        ids = [{"_id": key[0]} for key in self.es_actions.keys()]
+        mget_ids = get_es().mget(body={"docs": ids}, index=settings.SITE_NAME, _source_include=['system.content_hash'])
+        index_sets = {(doc.get('_id'), doc['_source'].get('system', {'content_hash': None}).get('content_hash')) for doc in mget_ids.get('docs') if doc['found']}
+        new_records = set(self.es_actions.keys()).difference(index_sets)
+        self.records_stored = len(new_records)
+        self.records_already_stored = len(ids) - self.records_stored
+        es_actions = [es_action for k, es_action in self.es_actions.items() if k in new_records]
+        sparql_updates = [sparql_update for k, sparql_update in self.sparql_update_queries.items() if k in new_records]
+        return es_actions, sparql_updates
+
     def process(self):
         for i, action in enumerate(self.api_requests):
             self._process_action(action)
         if self.es_actions:
-            self.bulk_index()
-        # todo: hand off the rdf syncing to other celery async task
-        if self.sparql_update_queries and settings.RDF_STORE_TRIPLES:
-            # tasks.store_graphs.starmap(self.rdf_graphs).apply_async(
-            #     routing_key=settings.RECORD_QUEUE,
-            #     queue=settings.RECORD_QUEUE
-            # )
-            self.store.update("\n".join(self.sparql_update_queries))
+            es_actions, sparql_updates = self.diff_by_content_hash()
+            self.bulk_index(es_actions)
+            if sparql_updates and settings.RDF_STORE_TRIPLES:
+                tasks.process_sparql_updates.apply_async(
+                    (sparql_updates, None),
+                    routing_key=settings.RECORD_QUEUE,
+                    queue=settings.RECORD_QUEUE
+                )
 
         logger.info("Done Processing with {} graphs from {}.".format(self.records_stored, len(self.api_requests)))
         return self._processing_statistics()
 
-    def bulk_index(self):
+    def bulk_index(self, es_actions):
         logger.debug(self.es_actions)
-        nr, errors = helpers.bulk(get_es(), self.es_actions)
+        nr, errors = helpers.bulk(get_es(), es_actions)
         if nr > 0 and not errors:
             logger.info("Indexed records: {}".format(nr))
             return True
@@ -98,65 +110,34 @@ class BulkApiProcessor:
                 acceptance_mode = action.get('acceptanceMode', "false")
                 acceptance = True if acceptance_mode is not None and acceptance_mode.lower() in ['true'] else False
                 content_hash = action.get('contentHash', None)
+                from lod.utils.resolver import ElasticSearchRDFRecord
+                record = ElasticSearchRDFRecord(spec=self.spec, named_graph_uri=record_graph_uri)
                 try:
-                    graph = ConjunctiveGraph(identifier=record_graph_uri)
-                    rdf_format = "nt" if "<rdf:RDF" not in graph_ntriples else "xml"
-                    graph.parse(data=graph_ntriples, format=rdf_format)
+                    rdf_format = record.DEFAULT_RDF_FORMAT if "<rdf:RDF" not in graph_ntriples else "xml"
+                    record.from_rdf_string(
+                        rdf_string=graph_ntriples,
+                        named_graph=record_graph_uri,
+                        input_format=rdf_format
+                    )
                 except ParseError as e:
                     self.rdf_errors.append((e, action))
                     logger.error(e, action)
                     return None
-                if self.current_dataset is None or self.current_dataset.spec is not self.spec:
-                    try:
-                        self.current_dataset = DataSet.objects.get(spec=self.spec)
-                    except DataSet.DoesNotExist as dne:
-                        logger.warn(dne)
-                        self.current_dataset = self.synchronise_dataset_metadata(
-                            store=self.store,
-                            dataset_graph_uri=self._create_dataset_uri(record_graph_uri)
-                        )
-                app, model = action['type'].split('_')
-                action_model = apps.get_model(app_label=app, model_name=model)
-                record = action_model.graph_to_record(graph=graph,
-                                                      bulk=True,
-                                                      ds=self.current_dataset,
-                                                      content_hash=content_hash,
-                                                      force_insert=self.force_insert,
-                                                      acceptance=acceptance
-                                                      )
-                if record is None:
-                    self.records_already_stored += 1
-                    return None
                 self.records_stored += 1
-                self.es_actions.append(
-                    record.create_es_action(
+                self.es_actions[(record.hub_id, content_hash)] = record.create_es_action(
                         action=process_verb,
                         store=self.store,
                         context=False,  # todo: fix issue with context indexing later
                         flat=True,
                         exclude_fields=None,
-                        acceptance=acceptance
-                    )
-                )
-                self.rdf_graphs.append(record.get_triples(acceptance=acceptance))
+                        acceptance=acceptance,
+                        doc_type="void_edmrecord",
+                        record_type="mdr",
+                        content_hash=content_hash
+                        )
                 if settings.RDF_STORE_TRIPLES:
-                    self.sparql_update_queries.append(record.create_sparql_update_query(acceptance=acceptance))
+                    self.sparql_update_queries[(record.hub_id, content_hash)] = record.create_sparql_update_query(acceptance=acceptance)
             return record
-            # if process_verb in ['index', 'delete']:
-            #     self.es_actions.append(
-            #         record.create_es_action(
-            #             action=process_verb,
-            #             store=self.store,
-            #             context=False,  # todo: fix issue with context indexing later
-            #             flat=True,
-            #             exclude_fields=None
-            #         )
-            #     )
-            # if not settings.RDF_USE_LOCAL_GRAPH:
-            #     if process_verb in ['store', 'index', 'delete']:
-            #         deleted = process_verb == 'delete'
-            #         self.sparql_update_queries.append(record.create_sparql_update_query(delete=deleted))
-
         except KeyError as ke:
             self.json_errors.append((ke, action))
             self.records_with_errors += 1
@@ -193,7 +174,7 @@ class BulkApiProcessor:
             # 'store_errors': self.records_with_errors,
             # 'json_errors': len(self.json_errors),
             # 'index_errors': len(self.index_errors),
-            # 'content_hash_matches': self.records_already_stored,
+            'content_hash_matches': self.records_already_stored,
             'records_stored': self.records_stored,
             # 'errors': {
             #

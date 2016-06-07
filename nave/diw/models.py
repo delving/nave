@@ -157,7 +157,3 @@ class DiwDetailField(models.Model):
         verbose_name = _("Item field")
         verbose_name_plural = _("Item fields")
         ordering = ['position']
-
-
-
-

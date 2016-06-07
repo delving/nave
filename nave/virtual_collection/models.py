@@ -88,3 +88,41 @@ class VirtualCollection(TimeStampedModel, GroupOwned):
                     filter_list.extend(applied_filter)
             self.query = ";;;".join(["\"{}\"".format(k) for k in filter_list])
         super(VirtualCollection, self).save(*args, **kwargs)
+
+
+class VirtualCollectionFacet(models.Model):
+    """
+    Facets to be retrieved and displayed
+    """
+    diw = models.ForeignKey(
+        VirtualCollection,
+        related_name="facets"
+    )
+
+    name = models.CharField(
+        max_length=55,
+        blank=False,
+        help_text=_("The desired field to retrieve ie: dc_creator_facet, dc_subject_facet"),
+        verbose_name=_("Facet field")
+    )
+
+    label = models.CharField(
+        max_length=55,
+        blank=False,
+        help_text=_("The label to appear above the list of retrieved facets"),
+        verbose_name=_("Facet header")
+    )
+
+    position = models.PositiveSmallIntegerField(
+        "Position",
+        default=0
+    )
+    facet_size = models.PositiveSmallIntegerField(
+        "Facet-size",
+        default=50
+    )
+
+    class Meta:
+        verbose_name = _("Facet")
+        verbose_name_plural = _("Facets")
+        ordering = ['position']

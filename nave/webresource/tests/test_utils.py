@@ -1,4 +1,4 @@
-from nave.webresource import utils
+from webresource import utils
 
 
 def test__create_dataset_folders__success():
