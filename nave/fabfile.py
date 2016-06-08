@@ -902,7 +902,6 @@ def deploy():
                 run("git checkout master")
                 run("git pull origin master")
         manage("collectstatic -v 0 --noinput")
-        manage("syncdb --noinput")
         manage("migrate --noinput")
     restart()
     return True
