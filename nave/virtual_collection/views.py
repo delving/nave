@@ -61,6 +61,9 @@ class V1SearchListApiView(SearchListAPIView):
 
 class VirtualCollectionPmhProvider(ElasticSearchOAIProvider):
 
+    def get_dataset_list(self):
+        return []
+
     def get(self, request, *args, **kwargs):
         slug = kwargs.get('slug', None)
         virtual_collection = get_object_or_404(VirtualCollection, slug=slug)

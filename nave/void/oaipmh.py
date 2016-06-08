@@ -311,7 +311,7 @@ class OAIProvider(TemplateView):
             if self.oai_verb.startswith('List'):
                 filters = self.params.copy()
                 # rename set to spec
-                if self.oai_verb not in ["ListSets", "ListMetadataFormats"]:
+                if self.oai_verb not in ["ListSets", "ListMetadataFormats"] and 'set' in filters:
                     filters[self.dataset_search_key] = filters.pop('set')
                 if 'from' in filters:
                     filters["modified__gt"] = parser.parse(timestr=filters.pop('from'))
@@ -419,10 +419,12 @@ class ElasticSearchOAIProvider(OAIProvider):
         modified_until = filters.get('modified__lt', None)
         if self.spec:
             spec = self.spec
-        if self.query:
-            s = s.query(self.query.get('filter'))
-        elif spec:
             s = s.query("match", **{'system.spec.raw': spec})
+        if self.query:
+            if 'query' in self.query:
+                s = s.query(self.query.get('query'))
+            if 'filter' in self.query:
+                s = s.query(self.query.get('filter'))
         if modified_from:
             s = s.filter("range", **{"system.modified_at": {"gte": modified_from}})
         if modified_until:
