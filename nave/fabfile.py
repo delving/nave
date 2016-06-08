@@ -96,6 +96,7 @@ OS_DEPENDENCIES = [
     'libpq-dev',
     'libmagic1',
     'libxml2-dev',
+    'libgeos-dev',
     'zlib1g-dev',
     'libxslt1-dev',
     'memcached',

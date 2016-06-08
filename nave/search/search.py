@@ -168,7 +168,7 @@ class NaveESQuery(object):
     """
 
     def __init__(self, index_name=None, doc_types=None, default_facets=None, size=16,
-                 default_filters=None, hidden_filters=None, cluster_geo=False, robust_params=True, facet_size=50,
+                 default_filters=None, hidden_filters=None, cluster_geo=False, geo_query=False, robust_params=True, facet_size=50,
                  converter=None, acceptance=False):
         self.acceptance = acceptance
         self.index_name = index_name
@@ -181,6 +181,7 @@ class NaveESQuery(object):
         self.robust_params = robust_params
         self.facet_size = facet_size
         self.cluster_geo = cluster_geo
+        self.geo_query = geo_query
         self.cluster_factor = 0.6
         self.error_messages = []
         self.query = self._create_query()
@@ -640,6 +641,8 @@ class NaveESQuery(object):
                     query = query.facet_geocluster(factor=factor, filtered=filtered)
                 else:
                     query = query.facet_geocluster(filtered=filtered)
+        if self.geo_query:
+            query = query.query_raw({"match": {"delving_hasGeoHash.raw": True}})
         self.query = query
         self.facet_params = facet_params
         self.base_params = params

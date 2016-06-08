@@ -37,7 +37,7 @@ from void import REGISTERED_CONVERTERS
 from void.models import EDMRecord
 
 from .renderers import N3Renderer, JSONLDRenderer, TURTLERenderer, NTRIPLESRenderer, RDFRenderer, GeoJsonRenderer, \
-    XMLRenderer
+    XMLRenderer, KMLRenderer
 from .search import NaveESQuery, NaveQueryResponse, NaveQueryResponseWrapper, NaveItemResponse, NaveESItemList, \
     NaveESItem
 from .serializers import NaveQueryResponseWrapperSerializer, NaveESItemSerializer
@@ -143,7 +143,7 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
     permission_classes = (IsAuthenticatedOrReadOnly,)
     serializer_class = NaveQueryResponseWrapperSerializer
     renderer_classes = (BrowsableAPIRenderer, TemplateHTMLRenderer, JSONRenderer, JSONPRenderer, XMLRenderer,
-                        GeoJsonRenderer,
+                        GeoJsonRenderer, KMLRenderer,
                         # rdf renders
                         N3Renderer, JSONLDRenderer, RDFRenderer, NTRIPLESRenderer, TURTLERenderer)
     registered_converters = REGISTERED_CONVERTERS
@@ -204,7 +204,7 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
         return record
 
     def get_query(self, request, index_name, doc_types, facet_config_list, filters, demote, hidden_filters=None,
-                  cluster_geo=False, converter=None, acceptance=False, *args, **kwargs):
+                  cluster_geo=False, geo_query=False, converter=None, acceptance=False, *args, **kwargs):
 
         if hidden_filters is None:
             hidden_filters = self.hidden_filters
@@ -224,6 +224,7 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
             default_filters=filters,
             hidden_filters=hidden_filters,
             cluster_geo=cluster_geo,
+            geo_query=geo_query,
             size=rows,
             converter=converter,
             facet_size=self.facet_size,
@@ -243,7 +244,7 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
             query.query = query.query.order_by(*sort_fields)
         return query
 
-    def get_queryset(self, cluster_geo=False, acceptance=False, *args, **kwargs):
+    def get_queryset(self, cluster_geo=False, geo_query=False, acceptance=False, *args, **kwargs):
         query = self.get_query(
             request=self.request,
             index_name=self.get_index_name,
@@ -252,6 +253,7 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
             filters=self.filters,
             demote=self.demote,
             cluster_geo=cluster_geo,
+            geo_query=geo_query,
             converter=self.get_converter(),
             acceptance=acceptance
         )
@@ -330,9 +332,6 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
 
     def list(self, request, format=None, *args, **kwargs):
         acceptance = self.acceptance_mode
-        if request.accepted_renderer.format == 'geojson':
-            # todo replace with normal geojson output as feature collection
-            return Response(self.get_clustered_geojson(request))
         # if has id redirect to detail view
         if 'id' in request.query_params:
             params = request.query_params.copy()
@@ -346,11 +345,13 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
             params['q'] = " ".join(query)
             return redirect("{}?{}".format(request._request.path, params.urlencode()))
         result_as_zip = True if request.query_params.get('download', 'false').lower() == "true" else False
-        # todo use the DRF user in this check and not request.user.is_authenticated()
         if result_as_zip:
             return self.stream_search_results(request=request)
-
-        queryset = self.get_queryset()
+        elif request.accepted_renderer.format == 'geojson-clustered':
+            # todo replace with normal geojson output as feature collection
+            return Response(self.get_clustered_geojson(request))
+        geo_query = request.accepted_renderer.format in ['geojson', 'kml']
+        queryset = self.get_queryset(geo_query=geo_query)
         # HTML VIEW ##############################################################
         mode = self.request.REQUEST.get('mode', 'default')
         if request.accepted_renderer.format == 'html':
