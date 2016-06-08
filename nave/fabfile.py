@@ -828,7 +828,9 @@ def restart_celery():
     """
     Restart celery worker processes for the project.
     """
-    sudo("supervisorctl restart %s_celery" % env.proj_name)
+    sudo("supervisorctl restart %s:celery_main" % env.proj_name)
+    sudo("supervisorctl restart %s:celery_records" % env.proj_name)
+    sudo("supervisorctl restart %s:flower" % env.proj_name)
 
 
 @task
