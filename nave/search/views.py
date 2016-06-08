@@ -452,6 +452,10 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
         geo_json = self.get_clustered_geojson(request)
         return Response(geo_json)
 
+    @list_route()
+    def _docs(self, request, format=None):
+        return HttpResponse(content="See http://culture-hub-api-documentation.readthedocs.io/en/latest/api_intro.html")
+
     def get_clustered_geojson(self, request, acceptance=False):
         query_factory = NaveESQuery(index_name=self.get_index_name)
         query = query_factory.build_geo_query(request)
