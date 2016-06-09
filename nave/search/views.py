@@ -6,6 +6,7 @@ The Django views used by the search module.
 
 """
 import inspect
+import json
 import logging
 import sys
 from collections import OrderedDict
@@ -302,7 +303,12 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
         # todo add serializer for response format
         def streaming_generator():
             yield "["
+            first = True
             for result in downloader:
+                if first:
+                    first = False
+                else:
+                    yield ","
                 yield self.serialize_stream(es_item=result, format="json")
             yield "]"
 
@@ -328,7 +334,7 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
         from elasticsearch_dsl.result import Result
         item = NaveESItem(es_item=Result(es_item), converter=self.get_converter())
         serialized_item = NaveESItemSerializer(item)
-        return "{},".format(JSONRenderer().render(serialized_item.data).decode(encoding="utf-8"))
+        return JSONRenderer().render(serialized_item.data)
 
     def list(self, request, format=None, *args, **kwargs):
         acceptance = self.acceptance_mode
