@@ -1,5 +1,6 @@
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 
+import geojson
 import six
 from django.conf import settings
 from django.utils.encoding import smart_text
@@ -9,7 +10,134 @@ from rest_framework import renderers
 from rest_framework.renderers import BaseRenderer
 from six import StringIO
 
+from fastkml import kml
+from shapely.geometry import Point, LineString, Polygon
+
+from geojson import Feature, FeatureCollection
+from geojson import Point as GeoPoint
+
 from lod.utils.rdfstore import get_namespace_manager
+
+
+class KMLRenderer(BaseRenderer):
+    """
+    Renderer which serializes to XML.
+    """
+
+    media_type = 'text/xml'
+    format = 'kml'
+    charset = 'utf-8'
+
+    def render(self, data, media_type=None, renderer_context=None):
+        k = kml.KML()
+        ns = '{http://www.opengis.net/kml/2.2}'
+
+        doc = kml.Document(ns)
+        k.append(doc)
+
+        folder = kml.Folder(ns, name=settings.ORG_ID, description="KML generated from query")
+        doc.append(folder)
+
+        def process_fields(fields):
+            elements = []
+            for key, v in fields.items():
+                for item in v:
+                    elements.append(kml.UntypedExtendedDataElement(name=key, value=str(item)))
+
+            extended_data = kml.ExtendedData(ns, elements=elements)
+            meta_dict = {
+                '_id': fields.get('delving_hubId'),
+                'point': fields.get('point'),
+                'name': fields.get('dc_title'),
+                'description': fields.get('dc_description')
+            }
+            for key, val in meta_dict.items():
+                if val and len(val) > 0:
+                    meta_dict[key] = str(val[0])
+                else:
+                    meta_dict[key] = None
+            p = kml.Placemark(
+                ns,
+                meta_dict.get('_id'),
+                meta_dict.get('name'),
+                meta_dict.get('description'),
+                extended_data=extended_data)
+            point = meta_dict.get('point')
+            if point:
+                lat, lon = point.split(',')
+                p.geometry = Point(lon.strip(), lat.strip())
+            folder.append(p)
+            return p
+
+        if 'item' in data['result']:
+            fields = data['result']['item']['fields']
+            process_fields(fields)
+        elif 'items' in data['result']:
+            for item in data['result']['items']:
+                fields = item['item']['fields']
+                process_fields(fields)
+        elif 'item' in data:
+            fields = data['item']['fields']
+            place_mark = process_fields(fields)
+            return place_mark.to_string()
+        return k.to_string()
+
+
+class GeoJsonRenderer(renderers.BaseRenderer):
+    media_type = 'application/json'
+    format = 'geojson'
+
+    def process_fields(self, _id, fields, features, doc_type=None):
+        elements = []
+        properties = fields
+        if doc_type:
+            properties['doc_type'] = doc_type
+        # for key, v in fields.items():
+        #     for item in v:
+        #         elements.append(kml.UntypedExtendedDataElement(name=key, value=str(item)))
+
+        meta_dict = {
+            'point': fields.get('point'),
+            'name': fields.get('dc_title'),
+            'description': fields.get('dc_description')
+        }
+        for key, val in meta_dict.items():
+            if val and len(val) > 0:
+                meta_dict[key] = str(val[0])
+            else:
+                meta_dict[key] = None
+        point = meta_dict.get('point')
+        if point:
+            lat, lon = point.split(',')
+            center_point = GeoPoint((lon.strip(), lat.strip()))
+            feature = Feature(geometry=center_point, id=_id, properties=properties)
+            features.append(feature)
+            return feature
+        return None
+
+    def render(self, data, media_type=None, renderer_context=None):
+        features = []
+
+        if 'item' in data['result']:
+            item = data['result']['item']
+            doc_id = item["doc_id"]
+            doc_type = item["doc_type"]
+            fields = item['fields']
+            self.process_fields(doc_id, fields, features, doc_type=doc_type)
+        elif 'items' in data['result']:
+            for item in data['result']['items']:
+                doc_id = item['item']["doc_id"]
+                doc_type = item['item']["doc_type"]
+                fields = item['item']['fields']
+                self.process_fields(doc_id, fields, features, doc_type=doc_type)
+        # elif 'item' in data:
+        #     fields = data['item']['fields']
+        #     place_mark = process_fields(fields)
+        #     return place_mark.to_string()
+
+        # convert to GeoJson
+        feature_collection = FeatureCollection(features=features)
+        return geojson.dumps(feature_collection)
 
 
 class XMLRenderer(BaseRenderer):
@@ -148,14 +276,6 @@ class XMLRenderer(BaseRenderer):
 
         else:
             xml.characters(smart_text(data))
-
-
-class GeoJsonRenderer(renderers.BaseRenderer):
-    media_type = 'application/json'
-    format = 'geojson'
-
-    def render(self, data, media_type=None, renderer_context=None):
-        return smart_text(data)
 
 
 class RDFBaseRenderer(renderers.BaseRenderer):

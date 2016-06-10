@@ -96,6 +96,7 @@ OS_DEPENDENCIES = [
     'libpq-dev',
     'libmagic1',
     'libxml2-dev',
+    'libgeos-dev',
     'zlib1g-dev',
     'libxslt1-dev',
     'memcached',
@@ -828,7 +829,9 @@ def restart_celery():
     """
     Restart celery worker processes for the project.
     """
-    sudo("supervisorctl restart %s_celery" % env.proj_name)
+    sudo("supervisorctl restart %s:celery_main" % env.proj_name)
+    sudo("supervisorctl restart %s:celery_records" % env.proj_name)
+    sudo("supervisorctl restart %s:flower" % env.proj_name)
 
 
 @task
@@ -900,7 +903,6 @@ def deploy():
                 run("git checkout master")
                 run("git pull origin master")
         manage("collectstatic -v 0 --noinput")
-        manage("syncdb --noinput")
         manage("migrate --noinput")
     restart()
     return True

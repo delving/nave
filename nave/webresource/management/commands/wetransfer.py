@@ -1,7 +1,8 @@
+from urllib.parse import parse_qs, urlparse
+
 import io
 import json
 import re
-from urlparse import parse_qs, urlparse
 from celery import chain
 from django.conf import settings
 
@@ -64,7 +65,7 @@ class Command(BaseCommand):
 
         sys.stdout.write('\r100% {0}/{1}\n'.format(file_size, file_size))
         output_file.close()
-        print "Finished! {0}".format(file_name)
+        print("Finished! {0}".format(file_name))
 
     def extract_params(self, url):
         """

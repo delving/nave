@@ -311,7 +311,7 @@ class OAIProvider(TemplateView):
             if self.oai_verb.startswith('List'):
                 filters = self.params.copy()
                 # rename set to spec
-                if self.oai_verb not in ["ListSets", "ListMetadataFormats"]:
+                if self.oai_verb not in ["ListSets", "ListMetadataFormats"] and 'set' in filters:
                     filters[self.dataset_search_key] = filters.pop('set')
                 if 'from' in filters:
                     filters["modified__gt"] = parser.parse(timestr=filters.pop('from'))
@@ -380,6 +380,11 @@ class ElasticSearchOAIProvider(OAIProvider):
     ESDataSet = namedtuple("DataSet", ['spec', 'description', 'name', 'valid', 'data_owner'])
     _es_response = None
 
+    def __init__(self, spec=None, query=None, **kwargs):
+        super(ElasticSearchOAIProvider, self).__init__(**kwargs)
+        self.query = query
+        self.spec = spec
+
     def get_query_result(self):
         if not self._es_response:
             s = self.convert_filters_to_query(self.filters)
@@ -412,18 +417,28 @@ class ElasticSearchOAIProvider(OAIProvider):
         spec = filters.get("dataset__spec", None)
         modified_from = filters.get('modified__gt', None)
         modified_until = filters.get('modified__lt', None)
-        if spec:
+        if self.spec:
+            spec = self.spec
             s = s.query("match", **{'system.spec.raw': spec})
+        if self.query:
+            if 'query' in self.query:
+                s = s.query(self.query.get('query'))
+            if 'filter' in self.query:
+                s = s.query(self.query.get('filter'))
         if modified_from:
             s = s.filter("range", **{"system.modified_at": {"gte": modified_from}})
         if modified_until:
             s = s.filter("range", **{"system.modified_at": {"lte": modified_until}})
-        s = s.sort({"system.modified_at": {"order": "asc"}} )
+        s = s.sort({"system.modified_at": {"order": "asc"}})
         return s[self.cursor: self.get_next_cursor()]
 
     def get_dataset_list(self):
         s = Search(using=self.client)
         datasets = A("terms", field="delving_spec.raw")
+        if self.query:
+            s = s.filter(self.query.get('filter'))
+        elif self.spec:
+            s = s.query("match", **{'system.spec.raw': self.spec})
         s.aggs.bucket("dataset-list", datasets)
         response = s.execute()
         specs = response.aggregations['dataset-list'].buckets

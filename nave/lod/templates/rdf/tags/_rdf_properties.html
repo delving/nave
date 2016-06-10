@@ -14,7 +14,9 @@
                     {# LINK DISPLAY                                                                                   #}
                     {##################################################################################################}
                     <a
-                        href="{% if obj.cache_url %}{{ obj.cache_url }}{% else %}{{ obj.id }}{% endif %}"
+                        href="{{ obj.id }}"
+{#                        todo: turn on cache urls later again #}
+{#                        href="{% if obj.cache_url %}{{ obj.cache_url }}{% else %}{{ obj.id }}{% endif %}"#}
                         property="{{ predicate.uri }}"
                         {% if not request.META.HTTP_HOST in obj.value %}
                         target="_blank"

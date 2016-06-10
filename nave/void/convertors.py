@@ -497,6 +497,7 @@ class EDMStrictConverter(BaseConverter):
 
 
 class EDMConverter(BaseConverter):
+
     @staticmethod
     def query_key_replace_dict(reverse=False):
         replace_dict = {

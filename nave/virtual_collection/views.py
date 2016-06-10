@@ -11,6 +11,8 @@ from search.renderers import XMLRenderer
 
 from search.views import SearchListAPIView
 
+from search.search import NaveESQuery
+from void.oaipmh import ElasticSearchOAIProvider
 from .models import VirtualCollection
 
 logger = logging.getLogger(__name__)
@@ -37,11 +39,42 @@ class VirtualCollectionSearchView(SearchListAPIView):
         virtual_collection = get_object_or_404(VirtualCollection, slug=slug)
 
         self.set_hidden_query_filters(virtual_collection.query.split(";;;"))
+        if virtual_collection.facets.all():
+            facet_config = []
+            for facet in virtual_collection.facets.all():
+                from base_settings import FacetConfig
+                facet_config.append(
+                    FacetConfig(
+                        es_field=facet.name,
+                        label=facet.label,
+                        size=facet.facet_size
+                    )
+                )
+            self.set_facets(facet_config)
         return super().get(request, *args, **kwargs)
 
 
 class V1SearchListApiView(SearchListAPIView):
     default_converter = settings.DEFAULT_V1_CONVERTER
-    doc_types = ["void_edmrecord"]
+    doc_types = []
+
+
+class VirtualCollectionPmhProvider(ElasticSearchOAIProvider):
+
+    def get_dataset_list(self):
+        return []
+
+    def get(self, request, *args, **kwargs):
+        slug = kwargs.get('slug', None)
+        virtual_collection = get_object_or_404(VirtualCollection, slug=slug)
+        hidden_query_filters = [hqf.strip('"') for hqf in virtual_collection.query.split(";;;")]
+        query = NaveESQuery(
+            index_name=settings.SITE_NAME,
+            doc_types=[],
+            hidden_filters=hidden_query_filters
+        )
+        self.query = query.build_query_from_request(request=request).build_search()
+        return super(VirtualCollectionPmhProvider, self).get(request, *args, **kwargs)
+
 
 

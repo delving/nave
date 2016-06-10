@@ -161,7 +161,7 @@ class DataSetAdmin(reversion.admin.VersionAdmin):
     list_display = ['name', 'spec', 'data_owner', 'valid', 'invalid', 'total_records']
     list_filter = ('data_owner', 'published', 'created', 'modified')
 
-admin.site.register(DataSet, DataSetAdmin)
+# admin.site.register(DataSet, DataSetAdmin)
 
 
 class ProxyResourceFieldAdmin(reversion.admin.VersionAdmin):
@@ -225,4 +225,4 @@ class EDMRecordAdmin(reversion.admin.VersionAdmin):
     list_filter = ['dataset__spec', 'dataset__data_owner', 'modified']
     show_full_result_count = False
 
-admin.site.register(EDMRecord, EDMRecordAdmin)
+# admin.site.register(EDMRecord, EDMRecordAdmin)
