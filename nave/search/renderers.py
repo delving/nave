@@ -47,7 +47,7 @@ class KMLRenderer(BaseRenderer):
             extended_data = kml.ExtendedData(ns, elements=elements)
             meta_dict = {
                 '_id': fields.get('delving_hubId'),
-                'point': fields.get('delving_geoHash'),
+                'point': fields.get('point'),
                 'name': fields.get('dc_title'),
                 'description': fields.get('dc_description')
             }
@@ -97,7 +97,7 @@ class GeoJsonRenderer(renderers.BaseRenderer):
         #         elements.append(kml.UntypedExtendedDataElement(name=key, value=str(item)))
 
         meta_dict = {
-            'point': fields.get('delving_geoHash'),
+            'point': fields.get('point'),
             'name': fields.get('dc_title'),
             'description': fields.get('dc_description')
         }
