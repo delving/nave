@@ -1,7 +1,7 @@
 {###################################################################################}
 {# include template for detail page to show metadata field values and media object #}
 {###################################################################################}
-{% load dataset_tags %}
+{% load dataset_tags deepzoom_tags %}
 
 {% if not deepzoom_count %}
     <div class="media-viewer">
@@ -9,11 +9,7 @@
     </div>
 {% else %}
     <div class="zoom-viewer">
-        <div id="zoom_navigation" class="toolbar"></div>
-        <!-- 16:9 aspect ratio -->
-        <div class="embed-responsive embed-responsive-16by9">
-            <div class="embed-responsive-item" id="zoom_viewer"></div>
-        </div>
+        {% deepzoom_viewer %}
     </div>
 {% endif %}
 

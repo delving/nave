@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% load staticfiles i18n dataset_tags leaflet_tags %}
+{% load staticfiles i18n dataset_tags leaflet_tags deepzoom_tags %}
 
 {% block body_class %}body-offcanvas{% endblock %}
 
@@ -329,32 +329,11 @@
             {#############################################################}
             {# if deepzoom_count then activate zoom viewer               #}
             {#############################################################}
-            {% if deepzoom_count %}
-                var zoom_src = '';
-                var count = {{ deepzoom_count }};
-                var zooms = {{ deepzoom_urls|safe }};
-                if(count == 1 ) {
-                    zoom_src = zooms[0]
-                }
-                else {
-                     zoom_src = zooms;
-                }
-                var viewer = OpenSeadragon({
-                    id: "zoom_viewer",
-                    prefixUrl: "{% static 'img/openseadragon/' %}",
-                    tileSources: zoom_src,
-                    sequenceMode: {% if deepzoom_count > 1%}true{% else %}false{% endif %},
-                    toolbar:       "zoom_navigation",
-                    showNavigator: true,
-                    navigatorPosition:   "TOP_LEFT",
-                    showReferenceStrip: true,
-                    visibilityRatio: 1.0,
-                    constrainDuringPan: true,
-                });
-
-            {% endif %}
         });
     </script>
+    {% if deepzoom_count %}
+        {% deepzoom_js deepzoom_count=deepzoom_count deepzoom_urls=deepzoom_urls|safe show_navigator=False %}
+    {% endif %}
 
     {% if points %}
         <!-- leaflet -->
