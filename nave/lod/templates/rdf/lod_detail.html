@@ -326,15 +326,17 @@
                 $('[id^=carousel-selector-]').removeClass('active');
                 $('[id=carousel-selector-'+id+']').addClass('active');
             });
-            {#############################################################}
-            {# if deepzoom_count then activate zoom viewer               #}
-            {#############################################################}
         });
     </script>
+    {#############################################################}
+    {# if deepzoom_count then activate zoom viewer               #}
+    {#############################################################}
     {% if deepzoom_count %}
         {% deepzoom_js deepzoom_count=deepzoom_count deepzoom_urls=deepzoom_urls|safe show_navigator=False %}
     {% endif %}
-
+    {#############################################################}
+    {# if points then activate map view                          #}
+    {#############################################################}
     {% if points %}
         <!-- leaflet -->
         {% leaflet_js %}
