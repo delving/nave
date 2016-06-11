@@ -1,5 +1,5 @@
 {% load static %}
-
+<script type="text/javascript" src="{% static 'bower_components/openseadragon/built-openseadragon/openseadragon/openseadragon.js' %}"></script>
 <script>
 {#############################################################}
 {# if deepzoom_count then activate zoom viewer               #}
@@ -18,11 +18,13 @@
         prefixUrl: "{% static 'img/openseadragon/' %}",
         tileSources: zoom_src,
         sequenceMode: {% if deepzoom_count > 1%}true{% else %}false{% endif %},
-        toolbar:       "zoom_navigation",
-    {% if show_navigator %}
+        {% if toolbar_id %}
+        toolbar: "{{ toolbar_id }}",
+        {% endif %}
+        {% if show_navigator %}
         showNavigator: true,
-    {% endif %}
-        navigatorPosition:   "TOP_LEFT",
+        {% endif %}
+        navigatorPosition: "{{ navigator_position }}",
         showReferenceStrip: true,
         visibilityRatio: 1.0,
         constrainDuringPan: true,

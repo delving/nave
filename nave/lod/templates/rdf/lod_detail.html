@@ -263,7 +263,6 @@
     <script type="text/javascript" src="{% static 'js/jquery.fullsizable.2.0.2.min.js' %}"></script>
 
     <script type="text/javascript" src="{% static 'js/swfobject.js' %}"></script>
-    <script type="text/javascript" src="{% static 'bower_components/openseadragon/built-openseadragon/openseadragon/openseadragon.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/imageLiquid.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/LodView.js' %}"></script>
     <script src="{% static 'js/parsley.min.js' %}"></script>
@@ -332,7 +331,7 @@
     {# if deepzoom_count then activate zoom viewer               #}
     {#############################################################}
     {% if deepzoom_count %}
-        {% deepzoom_js deepzoom_count=deepzoom_count deepzoom_urls=deepzoom_urls|safe show_navigator=False %}
+        {% deepzoom_js deepzoom_count=deepzoom_count deepzoom_urls=deepzoom_urls|safe show_navigator=True navigator_position="BOTTOM_RIGHT" %}
     {% endif %}
     {#############################################################}
     {# if points then activate map view                          #}

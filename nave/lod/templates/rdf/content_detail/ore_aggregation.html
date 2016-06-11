@@ -9,7 +9,11 @@
     </div>
 {% else %}
     <div class="zoom-viewer">
-        {% deepzoom_viewer %}
+        <div id="zoom_navigation" class="toolbar"></div>
+        {#<!-- 16:9 aspect ratio -->#}
+        <div class="embed-responsive embed-responsive-16by9">
+            {% deepzoom_viewer viewer_class="embed-responsive-item" %}
+        </div>
     </div>
 {% endif %}
 

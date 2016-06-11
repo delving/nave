@@ -110,21 +110,19 @@ span.predicate-uri-label {
   padding: 10px 0 10px 0px;
   margin-bottom: 10px;
 }
-/* media/img viewer ***********/
-.media-viewer {
-  background: #000;
-  margin-bottom: 20px;
-}
-/* deepzoom viewer ***********/
+/* media/zoom viewer ***********/
+.media-viewer,
 .zoom-viewer {
-  background-color: #000;
+  background: #000;
   margin-bottom: 20px;
 }
 .zoom-viewer .toolbar {
   background-color: transparent;
   clear: both;
   display: block;
+  text-align: right;
   width: 100%;
+  height: 50px;
 }
 .carousel .item {
   text-align: center;
