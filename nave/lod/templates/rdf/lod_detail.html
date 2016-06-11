@@ -327,20 +327,19 @@
             });
         });
     </script>
-    {#############################################################}
-    {# if deepzoom_count then activate zoom viewer               #}
-    {#############################################################}
+    {###############################################################}
+    {# if deepzoom_count then activate zoom viewer - openseadragon #}
+    {###############################################################}
     {% if deepzoom_count %}
         {% deepzoom_js deepzoom_count=deepzoom_count deepzoom_urls=deepzoom_urls|safe show_navigator=True navigator_position="BOTTOM_RIGHT" %}
     {% endif %}
     {#############################################################}
-    {# if points then activate map view                          #}
+    {# if points then activate map view - leaflet                #}
     {#############################################################}
     {% if points %}
         <!-- leaflet -->
         {% leaflet_js %}
         <script type="text/javascript" src="{% static 'js/leaflet/leaflet.label-src.js' %}"></script>
-
         <script>
             var tiles = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {maxZoom: 16});
             var map = L.map('navigator-map', {layers: [tiles]});
@@ -352,6 +351,5 @@
                 {% endfor %}
             ];
         </script>
-
     {% endif %}
 {% endblock %}
