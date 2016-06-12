@@ -1,4 +1,5 @@
 from collections import OrderedDict, defaultdict
+from datetime import datetime
 
 import geojson
 import six
@@ -45,11 +46,13 @@ class KMLRenderer(BaseRenderer):
                     elements.append(kml.UntypedExtendedDataElement(name=key, value=str(item)))
 
             extended_data = kml.ExtendedData(ns, elements=elements)
+
+            point_field = "delving_geohash" if "delving_geohash" in fields else "point"
             meta_dict = {
-                '_id': fields.get('delving_hubId'),
-                'point': fields.get('point'),
-                'name': fields.get('dc_title'),
-                'description': fields.get('dc_description')
+                    '_id': fields.get('delving_hubId'),
+                    'point': fields.get(point_field),
+                    'name': fields.get('dc_title'),
+                    'description': fields.get('dc_description')
             }
             for key, val in meta_dict.items():
                 if val and len(val) > 0:
@@ -65,7 +68,7 @@ class KMLRenderer(BaseRenderer):
             point = meta_dict.get('point')
             if point:
                 lat, lon = point.split(',')
-                p.geometry = Point(lon.strip(), lat.strip())
+                p.geometry = Point(float(lon.strip()), float(lat.strip()))
             folder.append(p)
             return p
 
@@ -88,16 +91,22 @@ class GeoJsonRenderer(renderers.BaseRenderer):
     format = 'geojson'
 
     def process_fields(self, _id, fields, features, doc_type=None):
-        elements = []
-        properties = fields
+        properties = defaultdict(list)
+        for key, values in fields.items():
+            if any(isinstance(val, datetime) for val in values):
+                clean_values = []
+                for val in values:
+                    if isinstance(val, datetime):
+                        clean_values.append(val.isoformat())
+                    else:
+                        clean_values.append(val)
+            else:
+                properties[key] = values
         if doc_type:
             properties['doc_type'] = doc_type
-        # for key, v in fields.items():
-        #     for item in v:
-        #         elements.append(kml.UntypedExtendedDataElement(name=key, value=str(item)))
-
+        point_field = "delving_geohash" if "delving_geohash" in fields else "point"
         meta_dict = {
-            'point': fields.get('point'),
+            'point': fields.get(point_field),
             'name': fields.get('dc_title'),
             'description': fields.get('dc_description')
         }
@@ -109,7 +118,7 @@ class GeoJsonRenderer(renderers.BaseRenderer):
         point = meta_dict.get('point')
         if point:
             lat, lon = point.split(',')
-            center_point = GeoPoint((lon.strip(), lat.strip()))
+            center_point = GeoPoint((float(lon.strip()), float(lat.strip())))
             feature = Feature(geometry=center_point, id=_id, properties=properties)
             features.append(feature)
             return feature

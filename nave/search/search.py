@@ -642,7 +642,7 @@ class NaveESQuery(object):
                 else:
                     query = query.facet_geocluster(filtered=filtered)
         if self.geo_query:
-            query = query.query_raw({"match": {"delving_hasGeoHash.raw": True}})
+            query = query.query_raw({"match": {"delving_hasGeoHash": True}})
         self.query = query
         self.facet_params = facet_params
         self.base_params = params

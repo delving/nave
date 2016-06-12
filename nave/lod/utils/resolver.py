@@ -1102,6 +1102,10 @@ class RDFRecord:
             'proxy_resource_graph': None,
             'web_resource_graph': None,
             'content_hash': content_hash,
+            'hasGeoHash': "true" if bindings.has_geo() else "false",
+            'hasDigitalObject': "true" if thumbnail else "false",
+            'hasLandingePage': "true" if 'edm_isShownAt' in index_doc else "false",
+            'hasDeepZoom': "true" if 'nave_deepZoom' in index_doc else "false",
             # 'about_type': [rdf_type.qname for rdf_type in bindings.get_about_resource().get_types()]
             # 'collections': None, todo find a way to add collections via link
         }
