@@ -38,7 +38,7 @@ from void import REGISTERED_CONVERTERS
 from void.models import EDMRecord
 
 from .renderers import N3Renderer, JSONLDRenderer, TURTLERenderer, NTRIPLESRenderer, RDFRenderer, GeoJsonRenderer, \
-    XMLRenderer, KMLRenderer
+    XMLRenderer, KMLRenderer, GeoBufRenderer
 from .search import NaveESQuery, NaveQueryResponse, NaveQueryResponseWrapper, NaveItemResponse, NaveESItemList, \
     NaveESItem
 from .serializers import NaveQueryResponseWrapperSerializer, NaveESItemSerializer
@@ -144,7 +144,7 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
     permission_classes = (IsAuthenticatedOrReadOnly,)
     serializer_class = NaveQueryResponseWrapperSerializer
     renderer_classes = (BrowsableAPIRenderer, TemplateHTMLRenderer, JSONRenderer, JSONPRenderer, XMLRenderer,
-                        GeoJsonRenderer, KMLRenderer,
+                        GeoJsonRenderer, KMLRenderer, GeoBufRenderer,
                         # rdf renders
                         N3Renderer, JSONLDRenderer, RDFRenderer, NTRIPLESRenderer, TURTLERenderer)
     registered_converters = REGISTERED_CONVERTERS

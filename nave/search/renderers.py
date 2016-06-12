@@ -1,3 +1,4 @@
+import geobuf as geobuf
 from collections import OrderedDict, defaultdict
 from datetime import datetime
 
@@ -124,7 +125,7 @@ class GeoJsonRenderer(renderers.BaseRenderer):
             return feature
         return None
 
-    def render(self, data, media_type=None, renderer_context=None):
+    def get_features(self, data):
         features = []
 
         if 'item' in data['result']:
@@ -139,14 +140,28 @@ class GeoJsonRenderer(renderers.BaseRenderer):
                 doc_type = item['item']["doc_type"]
                 fields = item['item']['fields']
                 self.process_fields(doc_id, fields, features, doc_type=doc_type)
-        # elif 'item' in data:
-        #     fields = data['item']['fields']
-        #     place_mark = process_fields(fields)
-        #     return place_mark.to_string()
+                # elif 'item' in data:
+                #     fields = data['item']['fieilds']
+                #     place_mark = process_fields(fields)
+                #     return place_mark.to_string()
+        return features
 
-        # convert to GeoJson
+    def render(self, data, media_type=None, renderer_context=None):
+        features = self.get_features(data=data)
         feature_collection = FeatureCollection(features=features)
         return geojson.dumps(feature_collection)
+
+
+class GeoBufRenderer(GeoJsonRenderer):
+
+    media_type = 'application/octet-stream'
+    format = 'geobuf'
+
+    def render(self, data, media_type=None, renderer_context=None):
+        features = super(GeoBufRenderer, self).get_features(data)
+        feature_collection = FeatureCollection(features=features)
+        geojson_output = geojson.dumps(feature_collection)
+        return geobuf.encode(feature_collection)  # GeoJSON or TopoJSON -> Geobuf string
 
 
 class XMLRenderer(BaseRenderer):
