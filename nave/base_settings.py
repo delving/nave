@@ -65,7 +65,7 @@ TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 ADMINS = (
     ('Sjoerd Siebinga', 'sjoerd@delving.eu'),
     ('Eric van der Meulen', 'eric@delving.eu'),
-    ('Jakob Lundqvist', 'jakob@delving.eu'),
+    ('Jacob Lundqvist', 'jacob@delving.eu'),
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#managers
