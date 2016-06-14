@@ -21,6 +21,7 @@ urlpatterns = patterns("",
                        url(r'^sparql/$', remote_sparql, name='proxy'),
                        url(r'^sparql_test/$', remote_sparql_test),
                        url(r'^relfinder/$', TemplateView.as_view(template_name='relfinder.html'), name='relfinder'),
+                       url(r'^hub_version/$', TemplateView.as_view(template_name='version_number.html'), name='hum_version'),
 
                        # hubId
                        url(r'^resolve/(?P<doc_type>(.*?))/(?P<hubId>(.*?))/$', HubIDRedirectView.as_view()),
