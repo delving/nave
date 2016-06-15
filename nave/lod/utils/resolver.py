@@ -938,7 +938,7 @@ class RDFRecord:
 
     @property
     def source_uri(self):
-        if not self._source_uri:
+        if not self._source_uri and self.named_graph:
             self._source_uri = self.named_graph.replace('/graph', '')
         return self._source_uri
 
