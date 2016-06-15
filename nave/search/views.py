@@ -464,9 +464,13 @@ class NaveDocumentTemplateView(TemplateView):
         target_uri = RDFRecord.get_internal_rdf_base_uri(absolute_uri)
 
         if "detail/foldout/" in target_uri:
-            record = ElasticSearchRDFRecord(hub_id=self.kwargs.get('slug'))
+            slug = self.kwargs.get('slug')
+            record = ElasticSearchRDFRecord(hub_id=slug)
             graph = record.get_graph_by_id(self.kwargs.get('slug'))
-            target_uri = record.source_uri
+            if graph is not None:
+                target_uri = record.source_uri
+            else:
+                logger.warn("Unable to find source_uri for slug: {}".format(slug))
         else:
             target_uri = RDFRecord.get_internal_rdf_base_uri(absolute_uri)
             record = ElasticSearchRDFRecord(hub_id=self.kwargs.get('slug'))
