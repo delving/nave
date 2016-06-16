@@ -28,6 +28,7 @@ import os
 import logging
 from urllib.parse import urlparse, quote
 
+import re
 from django.conf import settings
 from django.db.models.loading import get_model
 from elasticsearch import Elasticsearch
@@ -865,6 +866,13 @@ class RDFRecord:
         elif self._source_uri:
             self.get_graph_by_source_uri(uri=self._source_uri)
 
+    @staticmethod
+    def clean_local_id(raw_id):
+        local_id = raw_id.replace("_", "-").replace(":", "-").replace(" ", "-").replace("+", "-")
+        if "--" in local_id:
+            local_id = re.sub("[-]{2,10}", "-", local_id)
+        return local_id
+
     def exists(self):
         return self._graph is not None
 
@@ -885,10 +893,14 @@ class RDFRecord:
         if not self._hub_id:
             if source_uri is None:
                 source_uri = self.source_uri
-            uri_parts = source_uri.split('/')
-            if self._spec is None:
-                self._spec = uri_parts[-2]
-            local_id = uri_parts[-1]
+            uri_parts = source_uri.split('/resource/')
+            named_parts = uri_parts[-1]
+            spec = local_id = None
+            if len(named_parts) >= 3:
+                rdf_type, spec, *local_id = named_parts.split('/')
+            if self._spec is None and spec:
+                self._spec = spec
+            local_id = self.clean_local_id("/".join(local_id))
             self._hub_id = "{}_{}_{}".format(self._org_id, self._spec, local_id)
         return self._hub_id
 
