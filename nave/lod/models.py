@@ -249,7 +249,7 @@ class RDFModel(TimeStampedModel, GroupOwned):
     def __str__(self):
         return self.document_uri
 
-    def get_absolute_uri(self):
+    def get_absolute_url(self):
         label = self.document_uri.split('resource/')[-1]
         return reverse('lod_page_detail', kwargs={'label': label})
 
@@ -375,7 +375,7 @@ class RDFModel(TimeStampedModel, GroupOwned):
                 ns = self.ns_dict.get(ns)
                 predicate = URIRef("{}/{}".format(str(ns).rstrip('/'), label))
             else:
-                raise ValueError("unknown predicate key in mapping dict: {}".format(key))
+                raise ValueError("unknown predicate key in mapping dict: {} => ".format(key, value))
             if type(value) in [str, float, int] and value:
                 if isinstance(value, str) and any([value.startswith(uri_prefix) for uri_prefix in ["http", "urn"]]):
                     value = URIRef(value)
@@ -997,7 +997,7 @@ class CacheResource(RDFModel):
     def store_remote_cached_resource(graph, graph_store, named_graph):
         return store_remote_cached_resource(graph, graph_store, named_graph)
 
-    def get_absolute_uri(self):
+    def get_absolute_url(self):
         return "/page/cache/{}".format(self.source_uri)
 
 

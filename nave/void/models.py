@@ -1012,7 +1012,7 @@ class EDMRecord(RDFModel):
     def __str__(self):
         return self.document_uri
 
-    def get_absolute_uri(self):
+    def get_absolute_url(self):
         label = self.document_uri.split('resource/')[-1]
         return reverse('lod_page_detail', kwargs={'label': label})
 
