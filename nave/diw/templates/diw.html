@@ -64,14 +64,14 @@
 
 
 {% block extra_css %}
-    <link type="text/css" rel="stylesheet" href="{% static 'css/delving-instant-core.1.1.0.css' %}">
+    <link type="text/css" rel="stylesheet" href="{% static 'css/delving-instant-core.1.3.css' %}">
     <link type="text/css" rel="stylesheet" href="{% static 'css/delving-instant-custom.css' %}">
 {% endblock %}
 
 {% block extra_js %}
-    <script type="text/javascript" src="{% static 'js/jquery-1.9.1.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/delving-instant-dependencies.1.1.0.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/delving-instant-core.1.1.0.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/delving-instant-dependencies.1.3.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/delving-instant-core.1.3.min.js' %}"></script>
     {#  The config dynamically generated from the model   #}
     <script type="text/javascript" src="{%  url 'diw_config'  diw.slug %}"></script>
 {% endblock %}
