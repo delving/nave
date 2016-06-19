@@ -129,3 +129,13 @@ Stopping it
 Erasing the environ
 
     $ vagrant destroy
+
+
+Vagrant Jetbrains IDE (PyCharm/Intellij Idea) debug Setup
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. todo add documentation how to setup the development environment. 
+
+* Set up vagrant 
+* setup remote python
+* Configure the run configuration
