@@ -710,8 +710,20 @@ def create_venv():
         with project():
             run("%s fetch" % vcs)
             run("%s checkout %s" % (vcs, env.git_branch))
-        run('echo "export DJANGO_SETTINGS_MODULE=projects.{}.settings" >> ~/.profile'.format(env.proj_name))
-        run('echo "export TERM=xterm" >> ~/.profile'.format(env.proj_name))
+        update_profile_settings()
+
+
+@task
+@log_call
+def update_profile_settings():
+        run('echo "export DJANGO_SETTINGS_MODULE=projects.{proj_name}.settings" >> ~/.profile'.format(proj_name=env.proj_name))
+        run('echo "alias sctl=\'sudo supervisorctl\'" >> ~/.profile')
+        run('echo "alias pmp=\'python manage.py\'" >> ~/.profile')
+        run('echo "alias kill_guni=\'sudo supervisorctl stop {proj_name}:gunicorn\'" >> ~/.profile'.format(proj_name=env.proj_name))
+        run('echo "alias nave=\'cd {proj_name}/project/nave\'" >> ~/.profile'.format(proj_name=env.proj_name))
+        run('echo "alias go=\'workon {proj_name} && sctl stop {proj_name}:gunicorn && cd {proj_name}/project/nave && python manage.py runserver 0.0.0.0:8000\'" >> ~/.profile'.format(proj_name=env.proj_name))
+        run('echo "alias rundev=\'pmp runserver 0.0.0.0:8000\'" >> ~/.profile')
+        run('echo "export TERM=xterm" >> ~/.profile')
 
 
 @task
