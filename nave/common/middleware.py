@@ -1,3 +1,5 @@
+import logging
+
 from io import StringIO
 
 import os
@@ -21,7 +23,9 @@ import tempfile
 import time
 import resource
 from django.conf import settings
-from django.db import connections
+from django.db import connections, connection
+
+logger = logging.getLogger(__name__)
 
 # FIXME change log base to something appropriate for the particular installation
 PROFILE_LOG_BASE = '/var/tmp/django'
@@ -60,7 +64,7 @@ _prof = None
 _profile_layer = False
 
 
-class ProfileMiddleware(object):
+class TimedProfilerMiddleware(object):
     """Displays timing or profiling for any view.
     http://yoursite.com/yourview/?time or http://yoursite.com/yourview/?prof
 
@@ -140,6 +144,7 @@ class ProfileMiddleware(object):
                     _profile_layer = False
                 else:
                     _profile_layer = True
+            response._headers['content-type'] = ('Content-Type', 'text/plain;q=0.9; charset=utf-8')
         return response
 
     # detect when we start timing a different page and auto-reset stats
@@ -169,7 +174,7 @@ class ProfileMiddleware(object):
         stats['max_rss'] = self._end_rusage.ru_maxrss
         stats['utime'] = self._elapsed_ru('ru_utime')
         stats['stime'] = self._elapsed_ru('ru_stime')
-        queries = connections['DATABASE_CONNECTION'].queries
+        queries = connection.queries
         stats['query_time'] = sum([float(query['time']) for query in queries])
         stats['query_count'] = len(queries)
         return stats
@@ -251,7 +256,7 @@ class ProfileMiddleware(object):
             response.content = "<pre>%s\n\noptions: &log (write data to file) &strip (remove directories) &limit=LIMIT (lines or fraction)\n         &sort=KEY (e.g., cumulative (default), time, calls, pcalls, etc.)\n\n%s</pre>" % (
             request.build_absolute_uri(), stats_str)
             if 'strip' not in request.GET:
-                response.content += self._summary_for_files(stats_str)
+                response.content += self._summary_for_files(stats_str).encode()
 
     def _get_group(self, file_name):
         for g in group_prefix_re:
@@ -334,19 +339,45 @@ def stdev(x):
 
 class SimpleProfilerMiddleware(object):
     def process_view(self, request, callback, callback_args, callback_kwargs):
-        if settings.DEBUG and 'prof' in request.GET:
+        if settings.DEBUG and 'simple_prof' in request.GET:
             self.profiler = cProfile.Profile()
             args = (request,) + callback_args
             return self.profiler.runcall(callback, *args, **callback_kwargs)
 
     def process_response(self, request, response):
-        if settings.DEBUG and 'prof' in request.GET:
+        if settings.DEBUG and 'simple_prof' in request.GET:
             self.profiler.create_stats()
             out = StringIO()
             old_stdout, sys.stdout = sys.stdout, out
             self.profiler.print_stats(1)
             sys.stdout = old_stdout
             response.content = '<pre>%s</pre>' % out.getvalue()
+            response._headers['content-type'] = ('Content-Type', 'text/plain;q=0.9; charset=utf-8')
+        return response
+
+
+class EventStoreLoggingMiddleware(object):
+
+    def process_request(self, request):
+        self.start_time = time.time()
+
+    def process_response(self, request, response):
+        try:
+            remote_addr = request.META.get('REMOTE_ADDR')
+            if remote_addr in getattr(settings, 'INTERNAL_IPS', []):
+                remote_addr = request.META.get('HTTP_X_FORWARDED_FOR') or remote_addr
+            user_email = "-"
+            extra_log = ""
+            if hasattr(request,'user'):
+                user_email = getattr(request.user, 'email', '-')
+            req_time = time.time() - self.start_time
+            content_len = len(response.content)
+            if settings.DEBUG:
+                sql_time = sum(float(q['time']) for q in connection.queries) * 1000
+                extra_log += " (%s SQL queries, %s ms)" % (len(connection.queries), sql_time)
+            logger.info("%s %s %s %s %s %s (%.02f seconds)%s" % (remote_addr, user_email, request.method, request.get_full_path(), response.status_code, content_len, req_time, extra_log))
+        except Exception as e:
+            logger.error("LoggingMiddleware Error: %s" % e)
         return response
 
 
