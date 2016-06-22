@@ -135,7 +135,7 @@ class TimedProfilerMiddleware(object):
                     self._display_time(request, response)
                     _middleware_start_time = None
                     _current_stats = None
-
+                response._headers['content-type'] = ('Content-Type', 'text/plain;q=0.9; charset=utf-8')
             elif 'prof' in request.GET:
                 if _profile_layer:
                     self._profile(request, response)
@@ -144,7 +144,7 @@ class TimedProfilerMiddleware(object):
                     _profile_layer = False
                 else:
                     _profile_layer = True
-            response._headers['content-type'] = ('Content-Type', 'text/plain;q=0.9; charset=utf-8')
+                response._headers['content-type'] = ('Content-Type', 'text/plain;q=0.9; charset=utf-8')
         return response
 
     # detect when we start timing a different page and auto-reset stats
