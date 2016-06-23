@@ -1,9 +1,9 @@
 {% load staticfiles i18n thumbnail dataset_tags  leaflet_tags %}
 <div class="row row-eq-height">
     <div class="col-sm-4 hidden-xs">
-
-        {% detail_media_preview 'nave_thumbnail' alt="dc_title" fullscreen=True thumbnail_nav=False %}
-
+        <div class="media-viewer">
+            {% detail_media_preview 'nave_thumbnail' alt="dc_title" fullscreen=True thumbnail_nav=False %}
+        </div>
         {#############################################################}
         {# MAP GEO                                                   #}
         {#############################################################}
