@@ -13,16 +13,17 @@
             <span><a href="{% url 'results-list' %}">{% trans 'Search' %}</a></span>
         </li>
         {% if data.user_query.breadcrumbs %}
-
-        {% for breadcrumb in data.user_query.breadcrumbs %}
-            <li>
-                {% if not breadcrumb.is_last %}
-                    <a href="?{{ breadcrumb.href }}"><span>{{ breadcrumb.value }}</span></a>
-                {% else %}
-                    <span class="active">{{ breadcrumb.value }}</span>
+            {% for breadcrumb in data.user_query.breadcrumbs %}
+                {% if breadcrumb.value|length > 0 %}
+                    <li>
+                        {% if not breadcrumb.is_last %}
+                            <a href="?{{ breadcrumb.href }}"><span>{{ breadcrumb.value }}</span></a>
+                        {% else %}
+                            <span class="active">{{ breadcrumb.value }}</span>
+                        {% endif %}
+                    </li>
                 {% endif %}
-            </li>
-        {% endfor %}
+            {% endfor %}
         {% endif %}
     </ul>
 {% endblock %}
