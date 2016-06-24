@@ -314,7 +314,6 @@ THIRD_PARTY_APPS = (
     'geojson',
     'djgeojson',
     'leaflet',
-    'elasticutils.contrib.django',
     'taggit',
     'taggit_autosuggest',
     'django_object_actions',
