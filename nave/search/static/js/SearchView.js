@@ -63,12 +63,31 @@ SearchView.initFacets = function () {
     });
     // facet fixing
     $(".facet-link").each(function(){
+
         var link = $(this),
+            checked = link.data('checked'),
             href = link.attr('href'),
             newHref = '';
         if (href.indexOf(' & ') > 0){
             newHref = href.replace(' & ', '%20%26%20');
             link.attr('href', newHref);
+        }
+        // needs work! get proper scroll distance
+        // if (checked == true) {
+        //     console.log($(this).offset().top  - 150);
+        //     $(this).closest('.facet-body').animate({
+        //         'scrollTop':  $(this).offset().top  - 400
+        //     }, 1000);
+        //     return;
+        // }
+    });
+    $(".facet-container .inner").each(function (i) {
+        // scroll up to the first checked facet for clarity's sake
+        $checked = $(this).find("input:checked");
+        if ($checked.length) {
+            $(this).animate({
+                scrollTop: $checked.offset().top - $(this).offset().top - 50
+            }, 1);
         }
     });
 };
@@ -83,8 +102,7 @@ SearchView.initSearchTags = function() {
     //var $input = $form.find('input#q');
     var $input = $('div#qtags');
     var $btnClear = $('#btn-clear-simple-search');
-
-
+    //var tagSize = 'small';
     $input.tagsinput({
         itemText:'text',
         itemValue:'value',
@@ -92,7 +110,6 @@ SearchView.initSearchTags = function() {
             var classStr = 'label label-default';
             //console.log($items.length);
             //var tagSize = item.length > 4 ? 'big' : 'small';
-            //var tagSize = 'small';
             switch (item.name) {
                 case 'q':
                     classStr = 'label label-query ';
@@ -104,15 +121,31 @@ SearchView.initSearchTags = function() {
         }
     });
 
+    function addTagsInput(element, index, array){
+
+    }
+
     $queryForm.find('input:hidden').each(function() {
         var $param = $(this);
+        var $qTerms = [];
         // if this is a query (q) element, then split it up if it contains
         // more than a singe term
-        if ($param.attr('name') == 'q' ) {
-
+        // if ($param.attr('name') == 'q' ) {
+        //     qTerms = $param.attr('value').split(' ');
+        //     qTerms.forEach(function(element){
+        //         $input.tagsinput('add', {'text': element, 'value': element, 'name': $param.attr('name')});
+        //     });
+        // }
+        // else {
+        //     $input.tagsinput('add', {'text': $param.attr('data-text'), 'value': $param.attr('value'), 'name': $param.attr('name')});
+        // }
+        if($param.attr('value')){
+            $input.tagsinput('add', {'text': $param.attr('data-text'), 'value': $param.attr('value'), 'name': $param.attr('name')});
         }
-        $input.tagsinput('add', {'text': $param.attr('data-text'), 'value': $param.attr('value'), 'name': $param.attr('name')});
+
     });
+
+
 
     $btnClear.removeClass('hidden');
     // clean all queries and start fresh
