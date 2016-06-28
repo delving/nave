@@ -88,7 +88,8 @@ Nave.initMapSearchModal = function () {
 // Nave.initSidePanel depends on jquery to be loaded. Toggles side panel
 /***********************************************************************************/
 Nave.toggleSidePanel = function () {
-    $(".side-panel-tab").click(function(e){
+    // unbind click since function can be initiated multiple times
+    $(".side-panel-tab").unbind('click').click(function(e){
         e.preventDefault();
         $(this).parent().toggleClass("open");
     });
