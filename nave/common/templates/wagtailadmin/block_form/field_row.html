@@ -1,0 +1,16 @@
+<div class="{{ classname }}">
+    {% if help_text %}
+        <div class="object-help help">{{ help_text }}</div>
+    {% endif %}
+
+    <div class="fields list-inline">
+        {% for child in children.values %}
+            <div class="col6">
+                {% if child.block.label %}
+                    <label class="col4" {% if child.id_for_label %} for="{{ child.id_for_label }}"{% endif %}>{{ child.block.label }}</label>
+                {% endif %}
+                <div class="col8">{{ child.render_form }}</div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
