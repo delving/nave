@@ -155,18 +155,23 @@ def detail_field(
     """
     bindings = context['resources']
     request = context['request']
+    fields = None
+    predicate = None
 
     try:
         if not predicate_uri and not rdf_object:
             if not multiple:
-                fields = [bindings[fieldname]]
+                field = bindings[fieldname]
+                if field:
+                    fields = [field]
             else:
                 fields = bindings.get_list(fieldname)
         else:
             fields = rdf_object.get_resource_field_value(field_name_uri=predicate_uri)
-        predicate = fields[0].predicate
+        if fields:
+            predicate = fields[0].predicate
     except Exception as err:
-        logger.debug(err)
+        logger.debug(err, fields, predicate_uri, fieldname)
         fields = None
         predicate = None
 
