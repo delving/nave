@@ -1,0 +1,116 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2016-07-05 12:44+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: apps.py:13 models.py:71
+msgid "Virtual Collections"
+msgstr ""
+
+#: models.py:22
+msgid "title"
+msgstr ""
+
+#: models.py:27
+msgid "body"
+msgstr ""
+
+#: models.py:32
+msgid "query"
+msgstr ""
+
+#: models.py:35
+msgid "The full query as used on the search page or search API."
+msgstr ""
+
+#: models.py:38 models.py:43
+msgid "published"
+msgstr ""
+
+#: models.py:40 models.py:45
+msgid "Is this collection publicly available."
+msgstr ""
+
+#: models.py:48
+msgid "owner key"
+msgstr ""
+
+#: models.py:52
+msgid "profile ID, user key, etc"
+msgstr ""
+
+#: models.py:55
+msgid "creator"
+msgstr ""
+
+#: models.py:59
+msgid "name or institution"
+msgstr ""
+
+#: models.py:70 templates/virtual_collection/search_page.html:13
+msgid "Virtual Collection"
+msgstr ""
+
+#: models.py:105
+msgid "The desired field to retrieve ie: dc_creator_facet, dc_subject_facet"
+msgstr ""
+
+#: models.py:106
+msgid "Facet field"
+msgstr ""
+
+#: models.py:112
+msgid "The label to appear above the list of retrieved facets"
+msgstr ""
+
+#: models.py:113
+msgid "Facet header"
+msgstr ""
+
+#: models.py:126
+msgid "Facet"
+msgstr ""
+
+#: models.py:127
+msgid "Facets"
+msgstr ""
+
+#: templates/virtual_collection/landing_page.html:17
+msgid "Search in the virtual collection"
+msgstr "Zoek binnen de virtuele collectie"
+
+#: templates/virtual_collection/landing_page.html:21
+#: templates/virtual_collection/search_page.html:16
+msgid "Search"
+msgstr "Zoeken"
+
+#: templates/virtual_collection/search_page.html:10
+msgid "Home"
+msgstr "Voorpagina"
+
+#: templates/virtual_collection/search_page.html:34
+msgid "results"
+msgstr "resultaten"
+
+#: templates/virtual_collection/search_page.html:46
+msgid "Enter search term(s) for Virtual collection here"
+msgstr "Voer hier uw zoekterm in"
+
+#: templates/virtual_collection/search_page.html:48
+msgid "Search inside Virtual Collection"
+msgstr "Zoek binnen de virtuele collectie"

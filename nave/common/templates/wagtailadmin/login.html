@@ -1,3 +1,6 @@
 {% overextends "wagtailadmin/login.html" %}
 
-{% block branding_login %}Sign in: HUB3 CMS{% endblock %}
+
+{% block branding_login %}
+    {% if site_name != 'example.com' %}Sign in: {{ site_name }}{% else %}HUB3{% endif %}
+{% endblock %}
