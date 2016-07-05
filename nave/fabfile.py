@@ -543,7 +543,7 @@ def install_fuseki():
 
 @task
 @log_call
-def install_elasticsearch(version="1.7.4"):
+def install_elasticsearch(version="1.7.5"):
     """Install elastic search."""
     __version__ = version
     sudo("wget -q https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-{}.deb".format(__version__))
