@@ -92,25 +92,25 @@ msgstr ""
 
 #: templates/virtual_collection/landing_page.html:17
 msgid "Search in the virtual collection"
-msgstr ""
+msgstr "Zoek binnen de virtuele collectie"
 
 #: templates/virtual_collection/landing_page.html:21
 #: templates/virtual_collection/search_page.html:16
 msgid "Search"
-msgstr ""
+msgstr "Zoeken"
 
 #: templates/virtual_collection/search_page.html:10
 msgid "Home"
-msgstr ""
+msgstr "Voorpagina"
 
 #: templates/virtual_collection/search_page.html:34
 msgid "results"
-msgstr ""
+msgstr "resultaten"
 
 #: templates/virtual_collection/search_page.html:46
 msgid "Enter search term(s) for Virtual collection here"
-msgstr ""
+msgstr "Voer hier uw zoekterm in"
 
 #: templates/virtual_collection/search_page.html:48
 msgid "Search inside Virtual Collection"
-msgstr ""
+msgstr "Zoek binnen de virtuele collectie"
