@@ -16,9 +16,6 @@ from collections import namedtuple
 
 from django.conf import settings
 from elasticsearch import Elasticsearch
-from elasticutils import FACET_TYPES
-
-FACET_TYPES.append('geohash')
 
 logger = logging.getLogger(__name__)
 

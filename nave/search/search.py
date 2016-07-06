@@ -15,7 +15,7 @@ from django.core.paginator import Paginator, Page
 from django.http import QueryDict
 from elasticsearch_dsl import Search
 from elasticsearch_dsl.result import Result
-from elasticutils import S, F, Q
+from .elasticutils import S, F, Q
 from geojson import Point, Feature, FeatureCollection
 # noinspection PyMethodMayBeStatic
 from rest_framework.request import Request
