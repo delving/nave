@@ -39,8 +39,10 @@ from rdflib.namespace import RDF, SKOS, RDFS, DC, FOAF
 from lod import namespace_manager
 from lod.utils import rdfstore
 
+from search import get_es_client
+
 logger = logging.getLogger(__file__)
-client = Elasticsearch(settings.ES_URLS)
+client = get_es_client()
 
 
 Predicate = namedtuple('Predicate', ['uri', 'label', 'ns', 'prefix'])

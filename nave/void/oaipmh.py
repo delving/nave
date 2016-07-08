@@ -10,13 +10,14 @@ import requests
 from dateutil import parser
 from django.conf import settings
 from django.views.generic import TemplateView
-from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search, A, Q
 from lxml import etree as ET
 
 from lod.utils.resolver import RDFRecord, ElasticSearchRDFRecord
 from void import REGISTERED_CONVERTERS
 from void.models import DataSet, OaiPmhPublished, EDMRecord
+
+from search import get_es_client
 
 
 class OaiVerb(Enum):
@@ -376,7 +377,7 @@ class OAIProvider(TemplateView):
 
 
 class ElasticSearchOAIProvider(OAIProvider):
-    client = Elasticsearch()
+    client = get_es_client()
     ESDataSet = namedtuple("DataSet", ['spec', 'description', 'name', 'valid', 'data_owner'])
     _es_response = None
 

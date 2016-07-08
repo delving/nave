@@ -126,9 +126,9 @@ class DataSetStatistics:
         return results
 
     def get_indexed_datasets(self):
-        from elasticsearch import Elasticsearch
         from elasticsearch_dsl import Search, A
-        client = Elasticsearch(hosts=settings.ES_URLS)
+        from search import get_es_client
+        client = get_es_client()
         s = Search(using=client)
         a = A('terms', field='delving_spec.raw', size=500)
         s.aggs.bucket('delving_spec', a)

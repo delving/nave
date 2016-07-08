@@ -7,7 +7,7 @@ from unittest import TestCase
 import time
 
 from django.conf import settings
-from elasticsearch import Elasticsearch, helpers
+from elasticsearch import helpers
 from elasticsearch_dsl import Search
 
 
@@ -200,7 +200,8 @@ class TestGraphIndexing(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.client = Elasticsearch(settings.ES_URLS)
+        from search import get_es_client
+        cls.client = get_es_client()
         cls.index = "nested_test"
         if cls.client.indices.exists(cls.index):
             cls.client.indices.delete(cls.index)

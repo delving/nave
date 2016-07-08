@@ -273,7 +273,7 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
     def stream_search_results(self, request):
         import uuid
         from elasticsearch.helpers import scan
-        from . import get_es
+        from . import get_es_client
         from django.http.response import Http404
 
         # check if authenticated
@@ -295,7 +295,7 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
             converter=self.get_converter()
         )
         downloader = scan(
-            client=get_es(),
+            client=get_es_client(),
             query=query.query.build_search(),
             index=self.get_index_name,
         )

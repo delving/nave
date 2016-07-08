@@ -368,7 +368,7 @@ class EventStoreLoggingMiddleware(object):
                 remote_addr = request.META.get('HTTP_X_FORWARDED_FOR') or remote_addr
             user_email = "-"
             extra_log = ""
-            if hasattr(request,'user'):
+            if hasattr(request, 'user'):
                 user_email = getattr(request.user, 'email', '-')
             req_time = time.time() - self.start_time
             content_len = len(response.content)
