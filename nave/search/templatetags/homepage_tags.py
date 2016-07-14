@@ -3,7 +3,7 @@ import logging
 from django import template
 from django.conf import settings
 
-from . import get_es_client
+from search import get_es_client
 from void.models import DataSet
 
 register = template.Library()
