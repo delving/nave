@@ -54,6 +54,7 @@ SearchView.processImages = function () {
 /***********************************************************************************/
 SearchView.initFacets = function () {
     // facet sorting
+    $facetContainer = $(".facet-container");
     $(".facet-container .sort").on('click', function (e) {
         e.preventDefault();
         var _this = $(this),
@@ -61,34 +62,29 @@ SearchView.initFacets = function () {
             type = _this.data('sort-type');
         sortFacets(_this, target, type);
     });
-    // facet fixing
-    $(".facet-link").each(function(){
-
-        var link = $(this),
-            checked = link.data('checked'),
-            href = link.attr('href'),
-            newHref = '';
-        if (href.indexOf(' & ') > 0){
-            newHref = href.replace(' & ', '%20%26%20');
-            link.attr('href', newHref);
-        }
-        // needs work! get proper scroll distance
-        // if (checked == true) {
-        //     console.log($(this).offset().top  - 150);
-        //     $(this).closest('.facet-body').animate({
-        //         'scrollTop':  $(this).offset().top  - 400
-        //     }, 1000);
-        //     return;
-        // }
-    });
-    $(".facet-container .inner").each(function (i) {
-        // scroll up to the first checked facet for clarity's sake
-        $checked = $(this).find("input:checked");
-        if ($checked.length) {
-            $(this).animate({
-                scrollTop: $checked.offset().top - $(this).offset().top - 50
-            }, 1);
-        }
+    // facet link tooling
+    $.each($('ul.list-facets'), function(){
+        var facets = $(this);
+        var links = facets.find('a.facet-link');
+        var container = facets.parent();
+        // href fixing where necessary
+        $.each(links, function(){
+            var link = $(this),
+                href = link.attr('href'),
+                newHref = '';
+            if (href.indexOf(' & ') > 0){
+                newHref = href.replace(' & ', '%20%26%20');
+                link.attr('href', newHref);
+            }
+        });
+        // check for first checked facet and scroll it into view, then break out of loop
+        $.each(links, function(){
+            var link = $(this);
+            if(link.attr('data-checked')=='true'){
+                container.animate({scrollTop: link.offset().top - container.offset().top - 40 });
+                return false;
+            }
+        });
     });
 };
 
@@ -108,8 +104,6 @@ SearchView.initSearchTags = function() {
         itemValue:'value',
         tagClass: function (item) {
             var classStr = 'label label-default';
-            //console.log($items.length);
-            //var tagSize = item.length > 4 ? 'big' : 'small';
             switch (item.name) {
                 case 'q':
                     classStr = 'label label-query ';
@@ -121,15 +115,10 @@ SearchView.initSearchTags = function() {
         }
     });
 
-    function addTagsInput(element, index, array){
-
-    }
-
     $queryForm.find('input:hidden').each(function() {
         var $param = $(this);
         var $qTerms = [];
-        // if this is a query (q) element, then split it up if it contains
-        // more than a singe term
+        // TODO: if this is a query (q) element, then split it up if it contains more than a singe term
         // if ($param.attr('name') == 'q' ) {
         //     qTerms = $param.attr('value').split(' ');
         //     qTerms.forEach(function(element){
@@ -144,8 +133,6 @@ SearchView.initSearchTags = function() {
         }
 
     });
-
-
 
     $btnClear.removeClass('hidden');
     // clean all queries and start fresh
