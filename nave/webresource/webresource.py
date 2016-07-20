@@ -177,8 +177,11 @@ class WebResource:
 
     def create_thumbnail(self, width, height):
         """Create the thumbnail derivative of the source digital object."""
-        if width > 1000 or height > 1000:
-            width = height = 1000
+        max_size = getattr(settings, 'WEB_RESOURCE_MAX_SIZE', default=1000)
+        if not isinstance(max_size, int):
+            max_size = int(max_size)
+        if width > max_size or height > max_size:
+            width = height = max_size
         start = time.time()
         infile = self.get_source_path
         outfile = self.get_thumbnail_path(width, height)
