@@ -54,7 +54,7 @@ SearchView.processImages = function () {
 /***********************************************************************************/
 SearchView.initFacets = function () {
     // facet sorting
-    $facetContainer = $(".facet-container");
+    // $facetContainer = $(".facet-container");
     $(".facet-container .sort").on('click', function (e) {
         e.preventDefault();
         var _this = $(this),
@@ -67,6 +67,10 @@ SearchView.initFacets = function () {
         var facets = $(this);
         var links = facets.find('a.facet-link');
         var container = facets.parent();
+        // hide the sorting tools if number of facet links is small
+        if(links.length <= 5 ){
+            $(container).parent().find('.facet-tools').hide();
+        }
         // href fixing where necessary
         $.each(links, function(){
             var link = $(this),
@@ -81,10 +85,16 @@ SearchView.initFacets = function () {
         $.each(links, function(){
             var link = $(this);
             if(link.attr('data-checked')=='true'){
+                $(container).addClass('in');
+                $(container).parent().find('i').toggleClass('fa-minus fa-plus');
+                $(container).parent().find('.facet-header').removeClass('collapsed');
                 container.animate({scrollTop: link.offset().top - container.offset().top - 40 });
                 return false;
             }
         });
+    });
+    $('.facet-toggle').on('click', function(){
+        $(this).find('i').toggleClass('fa-minus fa-plus');
     });
 };
 
