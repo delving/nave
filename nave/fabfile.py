@@ -195,6 +195,10 @@ templates = {
         "local_path": "../deploy/gunicorn.conf.py",
         "remote_path": "%(django_path)s/gunicorn.conf.py",
     },
+    "uwsgi": {
+        "local_path": "../deploy/uwsgi.ini",
+        "remote_path": "%(django_path)s/uwsgi.ini",
+    },
     "settings": {
         "local_path": "../deploy/live_settings.py",
         "remote_path": "%(django_path)s/projects/%(proj_name)s/local_settings.py",

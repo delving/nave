@@ -58,7 +58,7 @@ class WebResourceRedirectView(RedirectView):
         if not spec and hub_id:
             org_id, spec, local_id = hub_id.split('_')
 
-        from webresource.webresource import WebResource
+        from .webresource import WebResource
         webresource = WebResource(uri=uri, hub_id=hub_id, spec=spec, domain=domain)
         redirect_uri = None
         if doc_type == 'thumbnail':
