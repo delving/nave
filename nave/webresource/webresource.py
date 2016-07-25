@@ -177,7 +177,7 @@ class WebResource:
 
     def create_thumbnail(self, width, height):
         """Create the thumbnail derivative of the source digital object."""
-        max_size = getattr(settings, 'WEB_RESOURCE_MAX_SIZE', default=1000)
+        max_size = getattr(settings, 'WEB_RESOURCE_MAX_SIZE', 1000)
         if not isinstance(max_size, int):
             max_size = int(max_size)
         if width > max_size or height > max_size:
@@ -378,17 +378,17 @@ class WebResource:
     def get_deepzoom_uri(self):
         """Get fully qualified deepzoom URI for redirection to the WebServer."""
         # todo remove later when nginx works properly
-        # return "{}/fcgi-bin/iipsrv.fcgi?DeepZoom={}/{}/{}.tif.dzi".format(
-        #     self.domain,
-        #     settings.WEB_RESOURCE_BASE.rstrip('/'),
-        #     self.get_relative_spec_dir,
-        #     self.get_derivative_base_path(kind=DEEPZOOM_DIR))
-        return os.path.join(
+        return "{}/fcgi-bin/iipsrv.fcgi?DeepZoom={}/{}/{}.tif.dzi".format(
             self.domain,
-            "webresource",
+            settings.WEB_RESOURCE_BASE.rstrip('/'),
             self.get_relative_spec_dir,
-            "{}.tif.dzi".format(self.get_derivative_base_path(kind=DEEPZOOM_DIR))
-        )
+            self.get_derivative_base_path(kind=DEEPZOOM_DIR))
+        # return os.path.join(
+        #     self.domain,
+        #     "webresource",
+        #     self.get_relative_spec_dir,
+        #     "{}.tif.dzi".format(self.get_derivative_base_path(kind=DEEPZOOM_DIR))
+        # )
 
     @property
     def get_source_uri(self):
