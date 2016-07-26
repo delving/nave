@@ -29,7 +29,7 @@
 }
 .ds-field-label {
   display: table-cell;
-  color: #999;
+  color: #999999;
   font-size: 1em;
   font-weight: bold;
   margin-bottom: 0px;
@@ -47,12 +47,6 @@
   display: table-cell;
   margin-bottom: 5px;
   width: auto;
-  -ms-word-break: break-all;
-  word-break: break-all;
-  word-break: break-word;
-  -webkit-hyphens: auto;
-  -moz-hyphens: auto;
-  hyphens: auto;
 }
 @media (max-width: 480px) {
   .ds-field-value {
