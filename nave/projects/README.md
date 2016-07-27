@@ -4,24 +4,34 @@ The private project settings and code should be stored in a separated GIT reposi
 
 	$ git clone git@mygithost:<git-repo> <site-id>
 
-To start developing create and activating a virtual environment for the 'site-id' using python 3.4+, copy the 'local_settings.py.template to 'local_settings.py' and export the DJANGO_SETTINGS_MODULE
+At this point, you can import the project into your IDE. If you are an IntelliJ user, you probably want to add both the
+nave directory and your project directory as 'version control' root folders.
 
-	$ export DJANGO_SETTINGS_MODULE="projects.<site-id>.settings"
+After that, `cd` into your project directory.
 
-Install the requirements:
+Then, prepare the Django local settings by copying the template file inside the project-directory, and modifying it.
 
-	$ pip install -r ../requirements/base.txt
+```bash
+cp local_settings.py.template local_settings.py
+```
 
-Run the migrations:
+For development purposes, set the Debug flag inside your newly created local_settings.py to True (or all kinds of paths will yield 404s)
 
-    $ python manage.py migrate
+After that, fire up your vagrant box:
 
-Now you can start the project from the nave directory (where your manage.py file is) with:
+`vagrant up`
 
-	$ python manage.py runserver
+This will install all the required hub3-software and it will link in the nave-directory on your workstation through a
+Vagrant share.
 
-If you run into an `wsgi` related error make sure you have 'wsgi.py' file in the nave directory. You can copy it directly from the 'wsgi.py.template' file.
+If you like, you can add the following aliases to the `.profile` file on the vagrant-box:
 
-For development purposes it is recommend to use the vagrant based setup that is included in each private project. 
-See 'docs/vagrant.rst' for more information on how to set this up and use it. 
-
+```bash
+alias sctl="sudo supervisorctl"
+alias pmp="python manage.py"
+alias pmp2="python ../../manage.py"
+alias kill_guni="sudo supervisorctl stop jck:gunicorn"
+alias nave="cd jck/project/nave"
+alias go="workon jck && sctl stop jck:gunicorn && cd jck/project/nave && python manage.py runserver 0.0.0.0:8000"
+alias rundev="pmp runserver 0.0.0.0:8000"
+```
