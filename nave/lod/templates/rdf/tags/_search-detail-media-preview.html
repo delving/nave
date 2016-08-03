@@ -11,15 +11,12 @@
                         <img src="{{ value.value }}" alt="{% for a in alt %}{{ a }}{% endfor %}" />
                     {% if fullscreen %}</a>{% endif %}
                 {% else %}
-                    <div class="no-image-placeholder">
-                        <div class="overlay"></div>
-                        <span>{% trans 'no preview available' %}</span>
-                    </div>
+                    <img  src="{% static 'img/media-placeholder.svg' %}"/>
                 {% endif %}
             {% endfor %}
 
     {% elif values %}
-        <div id="media-carousel" class="carousel slide" data-ride="carousel">
+        <div id="media-carousel" class="carousel slide">
             {% if indicators %}
                 <ol class="carousel-indicators">
                     {% for value in values %}
