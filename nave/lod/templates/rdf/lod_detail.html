@@ -241,7 +241,7 @@
 
     </div><!-- end role tabpanel -->
 
-    {% if user.is_superuser %}
+    {% if user.is_staff %}
         {#############################################################}
         {# ENRICHMENT FORM - user with admin priv. only   #}
         {#############################################################}
@@ -266,7 +266,7 @@
     <script type="text/javascript" src="{% static 'js/imageLiquid.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/LodView.js' %}"></script>
     <script src="{% static 'js/parsley.min.js' %}"></script>
-    {% if user.is_superuser %}
+    {% if user.is_staff %}
         <script type="text/javascript" src="{% static 'js/LodUgcEnrichment.js' %}"></script>
     {% endif %}
 
@@ -280,7 +280,7 @@
             {#############################################################}
             {# do on document ready                                      #}
             {#############################################################}
-            {% if user.is_superuser %}
+            {% if user.is_staff %}
                 Nave.initSidePanel();
                 Ugc.initForm();
             {% endif %}
