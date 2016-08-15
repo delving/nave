@@ -998,7 +998,27 @@ class RDFRecord:
             self._graph = g
         return self._graph
 
-    def get_context_graph(self, with_mappings=False, include_mapping_target=False, acceptance=False, target_uri=None):
+    @staticmethod
+    def get_webresource_context_graph(target_uri, store=None):
+        if not store:
+            store = rdfstore.get_rdfstore()
+        query = """
+        SELECT ?s ?p ?o ?g
+        WHERE {{
+          GRAPH ?g {{
+                <{aggregation_uri}> <http://www.europeana.eu/schemas/edm/hasView> ?object
+          }}
+          GRAPH ?g {{
+            ?s ?p ?o .
+          }}
+        }}
+        """.format(aggregation_uri=target_uri)
+        response = store.query(query=query)
+        from lod.models import RDFModel
+        return RDFModel.get_graph_from_sparql_results(response, None)
+
+    def get_context_graph(self, with_mappings=False, include_mapping_target=False, acceptance=False, target_uri=None,
+                          with_webresource=False):
         """Get Graph instance with linked ProxyResources.
 
         :param target_uri: target_uri if you want a sub-selection of the whole graph
@@ -1018,6 +1038,10 @@ class RDFRecord:
             proxy_resources, graph = proxy_resource_model.update_proxy_resource_uris(ds, graph)
             for proxy_resource in proxy_resources:
                 graph = graph + proxy_resource.to_graph(include_mapping_target=include_mapping_target)
+        if with_webresource:
+            webresource_graph = RDFRecord.get_webresource_context_graph(target_uri=self.source_uri)
+            if webresource_graph:
+                graph = graph + webresource_graph
         if target_uri and not target_uri.endswith("/about") and target_uri != self.source_uri:
             g = Graph(identifier=URIRef(self.named_graph))
             subject = URIRef(target_uri)
@@ -1258,10 +1282,11 @@ class ElasticSearchRDFRecord(RDFRecord):
             as_bindings=as_bindings
         )
 
-    def get_more_like_this(self):
-        return self.es_related_items(self.hub_id, doc_type=self._doc_type, mlt_count=15)
+    def get_more_like_this(self, mlt_count=15, mlt_fields=None, filter_query=None):
+        return self.es_related_items(self.hub_id, doc_type=self._doc_type, mlt_count=mlt_count,  mlt_fields=mlt_fields,
+                                     filter_query=filter_query)
 
-    def es_related_items(self, hub_id, doc_type=None, mlt_fields=None, store_name=None, mlt_count=5):
+    def es_related_items(self, hub_id, doc_type=None, mlt_fields=None, store_name=None, mlt_count=5, filter_query=None):
         if store_name is None:
             store_name = settings.SITE_NAME
         if mlt_fields is None or not isinstance(mlt_fields, list):
@@ -1282,6 +1307,9 @@ class ElasticSearchRDFRecord(RDFRecord):
                 "_id": hub_id
             }]
         )[:mlt_count]
+        if filter_query:
+            for k, v in filter_query.items():
+                mlt_query = mlt_query.filter("term", k=v)
         hits = mlt_query.execute()
         items = []
         for item in hits:

@@ -692,6 +692,8 @@ MLT_FIELDS = [
 
 MLT_DETAIL_ENABLE = True
 
+MLT_BANNERS = {}
+
 #############################
 #  IMAGE CONFIGURATION      #
 #############################

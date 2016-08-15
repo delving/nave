@@ -360,11 +360,18 @@ class LoDHTMLView(TemplateView):
             context['expert_mode'] = True
             if settings.MLT_DETAIL_ENABLE and object_local_cache:
                 context['data'] = {'items': object_local_cache.get_more_like_this()}
-
-        display_mode = self.request.GET.get('display')
+        if settings.MLT_BANNERS and isinstance(settings.MLT_BANNERS, dict) and object_local_cache:
+            context['data'] = {"mlt_banners": {}}
+            for name, config in settings.MLT_BANNERS.items():
+                context['data']['mlt_banners'][name] = object_local_cache.get_more_like_this(
+                        mlt_count=10,
+                        mlt_fields=config.get("fields", None),
+                        filter_query=config.get("filter_query", None)
+                    )
         view_modes = {
             'properties': "rdf/_rdf_properties.html"
         }
+        display_mode = self.request.GET.get('display')
         if display_mode:
             self.template_name = view_modes.get(display_mode, self.template_name)
 
