@@ -1003,8 +1003,8 @@ class RDFRecord:
             self._graph = g
         return self._graph
     
-    def delete_webresource_graphs(self, spec, store=None):
-
+    @staticmethod
+    def delete_webresource_graphs(spec, store=None):
         if not store:
             store = rdfstore.get_rdfstore()
         query = """
