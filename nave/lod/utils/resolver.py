@@ -33,7 +33,8 @@ from django.conf import settings
 from django.db.models.loading import get_model
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search, Q
-from rdflib import Graph, URIRef, BNode, Literal
+from rdflib import ConjunctiveGraph
+from rdflib import Graph, URIRef, BNode, Literal, Namespace
 from rdflib.namespace import RDF, SKOS, RDFS, DC, FOAF
 
 from lod import namespace_manager
@@ -47,6 +48,9 @@ client = get_es_client()
 
 Predicate = namedtuple('Predicate', ['uri', 'label', 'ns', 'prefix'])
 Object = namedtuple('Object', ['value', 'is_uriref', 'is_resource', 'datatype', 'language', 'predicate'])
+
+EDM = Namespace('http://www.europeana.eu/schemas/edm/')
+NAVE = Namespace('http://schemas.delving.eu/nave/terms/')
 
 
 def get_geo_points(graph):
@@ -922,7 +926,7 @@ class RDFRecord:
 
     @staticmethod
     def parse_graph_from_string(rdf_string, graph_identifier=None, input_format=DEFAULT_RDF_FORMAT):
-        g = Graph(identifier=graph_identifier)
+        g = ConjunctiveGraph(identifier=graph_identifier)
         from lod import namespace_manager
         g.namespace_manager = namespace_manager
         g.parse(data=rdf_string, format=input_format)
@@ -985,9 +989,10 @@ class RDFRecord:
             self._hub_id = self.uri_to_hub_id()
         return self._hub_id
 
-    def get_bindings(self):
+    def get_bindings(self, graph=None):
         if not self._bindings:
-            graph = self.get_graph()
+            if graph is None:
+                graph = self.get_graph()
             if graph:
                 self._bindings = GraphBindings(self.source_uri, graph)
         return self._bindings
@@ -997,6 +1002,26 @@ class RDFRecord:
             g = self.parse_graph_from_string(self._rdf_string)
             self._graph = g
         return self._graph
+    
+    def delete_webresource_graphs(self, spec, store=None):
+
+        if not store:
+            store = rdfstore.get_rdfstore()
+        query = """
+        DELETE {{
+             GRAPH ?g {{
+                ?s ?p ?o .
+             }}
+          }}
+        WHERE {{ GRAPH ?g {{
+          ?subject a <http://www.europeana.eu/schemas/edm/WebResource>;
+              <http://schemas.delving.eu/narthex/terms/datasetSpec> "{spec}".
+          }}
+          GRAPH ?g {{
+            ?s ?p ?o. 
+          }}}}
+        """.format(spec=spec)
+        return store.update(query=query)
 
     @staticmethod
     def get_webresource_context_graph(target_uri, store=None):
@@ -1015,7 +1040,21 @@ class RDFRecord:
         """.format(aggregation_uri=target_uri)
         response = store.query(query=query)
         from lod.models import RDFModel
-        return RDFModel.get_graph_from_sparql_results(response, None)
+        return RDFModel.get_graph_from_sparql_results(response, None)[0]
+
+    def reduce_duplicates(self, graph: Graph, leave=0, predicates=None):
+        """Reduce duplicates or all entries from a predicate from a Graph."""
+        entries_removed = 0
+        if predicates is None:
+            predicates = [EDM.isShownBy, EDM.object, NAVE.thumbSmall, NAVE.thumbLarge, NAVE.thumbnail, NAVE.deepZoomUrl]
+        for predicate in predicates:
+            entries = list(graph.subject_objects(predicate=predicate))
+            if entries and len(entries) > leave:
+                remove = entries if entries == 0 else entries[leave:]
+                for s, o in remove:
+                    graph.remove((s, predicate, o))
+                    entries_removed += 1
+        return graph, entries_removed
 
     def get_context_graph(self, with_mappings=False, include_mapping_target=False, acceptance=False, target_uri=None,
                           with_webresource=False):
@@ -1025,7 +1064,10 @@ class RDFRecord:
         :param acceptance: if the acceptance data should be listed
         :param include_mapping_target: Boolean also include the mapping target triples in graph
         :param with_mappings: Boolean integrate the ProxyMapping into the graph
+        :param with_webresource: Boolean if webresources should be inserted from the triple store
         """
+        if hasattr(settings, "RESOLVE_WEBRESOURCES_VIA_RDF") and isinstance(settings.RESOLVE_WEBRESOURCES_VIA_RDF, bool):
+            with_webresource = settings.RESOLVE_WEBRESOURCES_VIA_RDF
         graph = self.get_graph()
         if with_mappings:
             ds_model = get_model(app_label="void", model_name="DataSet")
@@ -1041,7 +1083,11 @@ class RDFRecord:
         if with_webresource:
             webresource_graph = RDFRecord.get_webresource_context_graph(target_uri=self.source_uri)
             if webresource_graph:
+                graph, _ = self.reduce_duplicates(graph)
+                # clean isShownBy, object, thumbnail, thumbnailLarge, thumbnailSmall, deepZoomUrl
                 graph = graph + webresource_graph
+        # reduce edm duplicates to one each
+        graph, _ = self.reduce_duplicates(graph=graph, leave=1, predicates=[EDM.isShownBy, EDM.object, EDM.isShownAt])
         if target_uri and not target_uri.endswith("/about") and target_uri != self.source_uri:
             g = Graph(identifier=URIRef(self.named_graph))
             subject = URIRef(target_uri)
@@ -1102,10 +1148,12 @@ class RDFRecord:
         if not context:
             graph = self.get_graph()
         else:
-            graph, nr_levels = self.get_context_graph()
+            graph = self.get_context_graph()
             graph.namespace_manager = namespace_manager
+            self._graph = graph
+            self._rdf_string = None
 
-        bindings = self.get_bindings()
+        bindings = self.get_bindings(graph=graph)
         index_doc = bindings.to_flat_index_doc() if flat else bindings.to_index_doc()
         if exclude_fields:
             index_doc = {k: v for k, v in index_doc.items() if k not in exclude_fields}
