@@ -7,6 +7,7 @@ these settings
 """
 import logging
 
+import os
 import requests
 from SPARQLWrapper import SPARQLWrapper, GET, JSON, POST
 from django.conf import settings
@@ -269,7 +270,7 @@ class GraphStore:
         :param named_graph: the uri to the named graph
         :return: Graph
         """
-        headers = {'Content-Type': 'text/n3'}
+        headers = {'Content-Type': 'text/nt'}
         response = requests.get(
             "{graph_store_url}?{graph_param}={graph_name_uri}".format(
                 graph_store_url=self.graph_store,
@@ -281,13 +282,13 @@ class GraphStore:
         if as_graph:
             graph = Graph(identifier=named_graph)
             graph.namespace_manager = namespace_manager
-            graph.parse(data=response.content, format='n3')
+            graph.parse(data=response.content, format='nt')
             return graph
         return response
 
     def head(self, named_graph):
         """Testing for validity of derefencable named graphs."""
-        headers = {'Content-Type': 'text/n3'}
+        headers = {'Content-Type': 'text/nt'}
         response = requests.head(
             "{graph_store_url}?{graph_param}={graph_name_uri}".format(
                 graph_store_url=self.graph_store,
@@ -331,7 +332,7 @@ class GraphStore:
 
     def put(self, named_graph, data):
         """PUT request to replace or create the graph with information form data"""
-        headers = {'Content-Type': 'text/n3'}
+        headers = {'Content-Type': 'text/nt'}
         rdf_string = self._get_data_as_rdf_string(data)
         r = requests.put(
             "{graph_store_url}?{graph_param}={graph_name_uri}".format(
@@ -348,6 +349,23 @@ class GraphStore:
             )
             return False
         logger.info("Stored RDF in {}".format(named_graph))
+        return True
+
+    def put_file(self, file_path):
+        """PUT request to replace or create the graph with information form data"""
+        files = {'file': (os.path.basename(file_path), open(file_path, 'rb'), "application/n-quads")}
+        r = requests.post(
+            "{graph_store_url}".format(graph_store_url=self.graph_store),
+            files=files,
+        )
+        if r.status_code not in [200, 201, 204]:
+            logger.error("unable to store file {} because of bla:\n {}\n{}".format(
+                file_path,
+                r.status_code,
+                r.raise_for_status())
+            )
+            return False
+        logger.info("Stored RDF from {} in triple-store".format(file_path))
         return True
 
 # test if the right database are defined
