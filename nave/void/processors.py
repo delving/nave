@@ -127,7 +127,7 @@ class BulkApiProcessor:
                 self.es_actions[(record.hub_id, content_hash)] = record.create_es_action(
                         action=process_verb,
                         store=self.store,
-                        context=False,  # todo: fix issue with context indexing later
+                        context=True,
                         flat=True,
                         exclude_fields=None,
                         acceptance=acceptance,

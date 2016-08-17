@@ -547,6 +547,22 @@ class RDFModel(TimeStampedModel, GroupOwned):
         return RDFModel.get_graph_from_sparql_results(response, named_graph)
 
     @staticmethod
+    def get_webresource_context_graph(store, target_uri):
+        query = """
+        SELECT ?s ?p ?o
+        WHERE {{
+          GRAPH ?g {{
+                <{aggregation_uri}> <http://www.europeana.eu/schemas/edm/hasView> ?object
+          }}
+          GRAPH ?g {{
+            ?s ?p ?o .
+          }}
+        }}
+        """.format(aggregation_uri=target_uri)
+        response = store.query(query=query)
+        return RDFModel.get_graph_from_sparql_results(response, None)
+
+    @staticmethod
     def get_skos_context_graph(store, target_uri):
         query = """
         SELECT distinct *

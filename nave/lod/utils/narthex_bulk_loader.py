@@ -16,6 +16,8 @@ from lod.utils import rdfstore
 from lod.utils.rdfstore import get_rdfstore
 from lod.utils.resolver import RDFRecord, GraphBindings
 
+from lod.utils.resolver import ElasticSearchRDFRecord
+
 logger = logging.getLogger(__file__)
 
 
@@ -118,11 +120,10 @@ class NarthexBulkLoader:
                     new += 1
                     records += 1
                     triples = " ".join(rdf_record)
-                    record = RDFRecord(rdf_string=triples, spec=spec)
+                    record = ElasticSearchRDFRecord(rdf_string=triples, spec=spec)
                     try:
                         record.from_rdf_string(named_graph=named_graph, rdf_string=triples, input_format="xml")
-                        es_actions.append(record.create_es_action(doc_type="void_edmrecord", record_type="mdr",
-                                                                  context=False))
+                        es_actions.append(record.create_es_action(doc_type="void_edmrecord", record_type="mdr", context=True))
                     except Exception as ex:
                         if console:
                             print("problem with {} for spec {} caused by {}".format(triples, spec, ex))
