@@ -409,6 +409,9 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
         else:
             store = rdfstore.get_rdfstore()
             graph, _ = RDFModel.get_context_graph(store, named_graph=record.named_graph)
+        if not graph:
+            from django.http import HttpResponseNotFound
+            return HttpResponseNotFound()
         mode = get_mode(self.default_converter)
         bindings = GraphBindings(about_uri=target_uri, graph=graph)
         delving_fields = False if request.GET.get("delving_fields") == 'false' else True
