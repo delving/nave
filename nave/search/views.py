@@ -391,7 +391,12 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
             size=1,
             converter=self.get_converter()
         )
-        query = query.build_item_query(query, request.query_params, pk)
+        try:
+            query = query.build_item_query(query, request.query_params, pk)
+        except ValueError as ve:
+            logger.error("Unable to build request because: {}".format(ve))
+            # todo display error message when bad/unknown hubId is given
+            return HttpResponseBadRequest()
         mlt = True if request.query_params.get('mlt', 'false') == "true" else False
         mlt_count = int(request.query_params.get('mlt.count', 5))
         response = NaveItemResponse(query, self, index=self.get_index_name, mlt=mlt, mlt_count=mlt_count)
@@ -409,6 +414,9 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
         else:
             store = rdfstore.get_rdfstore()
             graph, _ = RDFModel.get_context_graph(store, named_graph=record.named_graph)
+        if not graph:
+            from django.http import HttpResponseNotFound
+            return HttpResponseNotFound()
         mode = get_mode(self.default_converter)
         bindings = GraphBindings(about_uri=target_uri, graph=graph)
         delving_fields = False if request.GET.get("delving_fields") == 'false' else True

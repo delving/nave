@@ -718,6 +718,8 @@ BROKER_URL = 'amqp://guest:guest@localhost:5672//'
 
 CELERY_RESULT_BACKEND = 'amqp'  # 'amqp'
 
+CELERY_CONCURRENCY = 2
+
 CELERY_IGNORE_RESULT = True
 
 CELERY_ALWAYS_EAGER = False  # production should be false

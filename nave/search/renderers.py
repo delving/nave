@@ -228,14 +228,15 @@ class XMLRenderer(BaseRenderer):
                 elif isinstance(item, tuple):
                     search_label = item[0]
                     value = item[1]
-                    prefix, ns, label = self._get_uri_from_search_label(search_label)
-                    full_uri = ns, label
-                    xml.startPrefixMapping(prefix, ns)
-                    qname = search_label.replace('_', ":")
-                    xml.startElementNS(full_uri, qname, {})
-                    self._to_xml(xml, value)
-                    xml.endElementNS(full_uri, qname)
-                    xml.endPrefixMapping(prefix)
+                    if "_" in search_label:
+                        prefix, ns, label = self._get_uri_from_search_label(search_label)
+                        full_uri = ns, label
+                        xml.startPrefixMapping(prefix, ns)
+                        qname = search_label.replace('_', ":")
+                        xml.startElementNS(full_uri, qname, {})
+                        self._to_xml(xml, value)
+                        xml.endElementNS(full_uri, qname)
+                        xml.endPrefixMapping(prefix)
                 elif tag_name in ['breadcrumb', 'link', 'facet']:
                     has_text = False
                     output = None

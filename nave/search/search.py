@@ -11,7 +11,7 @@ from contextlib import contextmanager
 
 import geojson
 from django.conf import settings
-from django.core.paginator import Paginator, Page
+from django.core.paginator import Paginator, Page, EmptyPage, PageNotAnInteger
 from django.http import QueryDict
 from elasticsearch_dsl import Search
 from elasticsearch_dsl.result import Result
@@ -1039,7 +1039,14 @@ class ESPaginator(Paginator):
 
     def page(self, number, just_source=True):
         """ Returns a Page object for the given 1-based page number. """
-        number = self.validate_number(number)
+        try:
+            number = self.validate_number(number)
+        except EmptyPage as ep:
+            logger.warn("number {} gives back empty page. Setting default to 1".format(number))
+            number = 1
+        except PageNotAnInteger as ep:
+            logger.warn("negative number {} is not allowed. Setting default to 1".format(number))
+            number = 1
         if just_source:
             # the ESPage class below extracts just the `_source` data from the hit data.
             return ESPage(self.object_list, number, self)
