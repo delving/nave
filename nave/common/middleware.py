@@ -370,12 +370,18 @@ class EventStoreLoggingMiddleware(object):
             extra_log = ""
             if hasattr(request, 'user'):
                 user_email = getattr(request.user, 'email', '-')
-            req_time = time.time() - self.start_time
+            if hasattr(self, 'start_time'):
+                req_time = time.time() - self.start_time
+            else:
+                logger.warn("No start_time found for this request: \n{}".format(request))
+                req_time = 0.0
             content_len = len(response.content)
             if settings.DEBUG:
                 sql_time = sum(float(q['time']) for q in connection.queries) * 1000
                 extra_log += " (%s SQL queries, %s ms)" % (len(connection.queries), sql_time)
-            logger.info("%s %s %s %s %s %s (%.02f seconds)%s" % (remote_addr, user_email, request.method, request.get_full_path(), response.status_code, content_len, req_time, extra_log))
+            logger.info("%s %s %s %s %s %s (%.02f seconds)%s" % (remote_addr, user_email, request.method,
+                                                                 request.get_full_path(), response.status_code,
+                                                                 content_len, req_time, extra_log))
         except Exception as e:
             logger.error("LoggingMiddleware Error: %s" % e)
         return response
