@@ -1,23 +1,22 @@
-{% load i18n static  %}
+{% load i18n static %}
 {# todo: pass along metadata record values for: creator, title, date and collection to display in alt tag for image, perhaps custom image size (highres) for fullscreen viewing #}
-<div class="media-viewer">
+
 
     {% if values and values|length_is:"1" %}
-        {% for value in values %}
-            {# TODO: check for deepzoom, video audio and render html accordingly #}
-            {% if value.value %}
-                {% if fullscreen %}<a href="{{ value.value }}" class="fullscreen">{% endif %}
-                    <img src="{{ value.value }}" alt="{% for a in alt %}{{ a }}{% endfor %}"/>
-                {% if fullscreen %}</a>{% endif %}
-            {% else %}
-                <div class="no-image-placeholder">
-                    <div class="overlay"></div>
-                    <span>{% trans 'no preview available' %}</span>
-                </div>
-            {% endif %}
-        {% endfor %}
+
+            {% for value in values %}
+                {# TODO: check for deepzoom, video audio and render html accordingly #}
+                {% if value.value %}
+                    {% if fullscreen %}<a href="{{ value.value }}" class="fullscreen">{% endif %}
+                        <img src="{{ value.value }}" alt="{% for a in alt %}{{ a }}{% endfor %}" />
+                    {% if fullscreen %}</a>{% endif %}
+                {% else %}
+                    <img  src="{% static 'img/media-placeholder.svg' %}"/>
+                {% endif %}
+            {% endfor %}
+
     {% elif values %}
-        <div id="media-carousel" class="carousel slide" data-ride="carousel">
+        <div id="media-carousel" class="carousel slide">
             {% if indicators %}
                 <ol class="carousel-indicators">
                     {% for value in values %}
@@ -27,7 +26,7 @@
             {% endif %}
             <div class="carousel-inner" role="listbox">
                 {% for value in values %}
-                    <div class="item {% if forloop.first %}active{% endif %}">
+                    <div class="item {% if forloop.first %}active{% endif %}" data-slide-number="{{ forloop.counter0 }}">
                         {# TODO: check for deepzoom, video audio and render html accordingly #}
                         {#  deepzoom info in nave_deepZoomUrl #}
                         {% if fullscreen %}
@@ -53,9 +52,10 @@
 
         {% if thumbnail_nav %}
             <div class="carousel-thumbnails">
-                <ul class="list-inline">
+                <ul class="list-inline thumbnail-nav">
                     {% for value in values %}
-                        <li data-target="#media-carousel" data-slide-to="{{ forloop.counter0 }}" class="{% if forloop.first %}active{% endif %}">
+                        <li data-target="#media-carousel" data-slide-to="{{ forloop.counter0 }}" class="{% if forloop.first %}active{% endif %}"
+                            id="carousel-selector-{{ forloop.counter0 }}">
                             <img src="{{ value.value }}" alt="{% for a in alt %}{{ a }}{% endfor %}" height="100" width="100"/>
                         </li>
                     {% endfor %}
@@ -69,4 +69,4 @@
             <span>{% trans 'No preview available' %}</span>
         </div>
     {% endif %}
-</div>
+

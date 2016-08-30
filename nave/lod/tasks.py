@@ -11,18 +11,16 @@ from urllib.error import URLError
 from celery.task import task
 from celery.utils.log import get_task_logger
 from django.conf import settings
-from elasticsearch import Elasticsearch
 from elasticsearch import helpers
 
 from lod.models import RDFModel, CacheResource
 from lod.utils import rdfstore
 from lod.utils.rdfstore import get_rdfstore
 
-es = Elasticsearch(hosts=settings.ES_URLS)
-
 
 def get_es():
-    return es
+    from search import get_es_client
+    return get_es_client()
 
 logger = get_task_logger(__name__)
 
@@ -103,7 +101,7 @@ def store_graphs(triples, named_graph, store=None):
 
 
 @task(bind=True, default_retry_delay=300, max_retries=5)
-def process_sparql_updates(self, sparql_updates, store=None):
+def process_sparql_updates(sparql_updates, store=None):
     if store is None:
         store = rdfstore.get_rdfstore()
 
@@ -111,7 +109,7 @@ def process_sparql_updates(self, sparql_updates, store=None):
         retries = 0
         while retries < 3:
             try:
-                store.update("\n".join(self.updates))
+                store.update("\n".join(sparql_updates))
                 update_queries.clear()
                 return True
             except (URLError, socket.timeout) as e:
@@ -125,8 +123,10 @@ def process_sparql_updates(self, sparql_updates, store=None):
 
     updates = []
     for i, update in enumerate(sparql_updates):
+        updates.append(update)
         if i % 25 == 0:
             store_with_updates(updates)
+            updates[:] = []
     store_with_updates(updates)
 
 

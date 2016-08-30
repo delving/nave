@@ -4,6 +4,7 @@ This module contains all the routing rules for the Linked Open Data app.
 """
 from django.conf import settings
 from django.conf.urls import patterns, url
+from django.utils import importlib
 from django.views.generic import TemplateView
 
 from . import RDF_SUPPORTED_EXTENSIONS
@@ -11,6 +12,15 @@ from .views import SnorqlTemplateView, remote_sparql, LoDRedirectView, LoDDataVi
     PropertyTemplateView, EDMHTMLMockView, HubIDRedirectView, UserGeneratedContentList, UserGeneratedContentDetail
 
 RDF_SUPPORTED_FORMATS = "|".join(RDF_SUPPORTED_EXTENSIONS)
+
+
+def get_lod_detail_view_class():
+    cls = getattr(settings, "LOD_HTML_DETAIL_VIEW", "lod.views.LoDHTMLView")
+    module_name, class_name = cls.rsplit(".", 1)
+    module = importlib.import_module(module_name)
+    return getattr(module, class_name)
+
+lod_html_detail_view = get_lod_detail_view_class()
 
 urlpatterns = patterns("",
                        url(r'^lod-detail/?$', EDMHTMLMockView.as_view()),
@@ -21,6 +31,7 @@ urlpatterns = patterns("",
                        url(r'^sparql/$', remote_sparql, name='proxy'),
                        url(r'^sparql_test/$', remote_sparql_test),
                        url(r'^relfinder/$', TemplateView.as_view(template_name='relfinder.html'), name='relfinder'),
+                       url(r'^hub_version/$', TemplateView.as_view(template_name='version_number.html'), name='hum_version'),
 
                        # hubId
                        url(r'^resolve/(?P<doc_type>(.*?))/(?P<hubId>(.*?))/$', HubIDRedirectView.as_view()),
@@ -46,15 +57,15 @@ urlpatterns = patterns("",
 
                        # edm page view  (only for direct view)
                        url(r'page/aggregation/(?P<label>(.*))$',
-                           LoDHTMLView.as_view(),
+                           lod_html_detail_view.as_view(),
                            name="edm_lod_page_detail"),
 
                        # page views
                        url(r'^page/(?P<type_>(.*))/(?P<label>(.*))$',
-                           LoDHTMLView.as_view(),
+                           lod_html_detail_view.as_view(),
                            name="typed_lod_page_detail"),
                        url(r'^page/(?P<label>(.*))$',
-                           LoDHTMLView.as_view(),
+                           lod_html_detail_view.as_view(),
                            name="lod_page_detail"),
 
 
@@ -66,7 +77,7 @@ urlpatterns = patterns("",
                            LoDDataView.as_view(),
                            name="lod_data_detail"),
                        # /schema
-                       #url(r'^schema\.(?P<extension>(.*))$', LoDHTMLView.as_view(), name="rdf_schema"),
+                       #url(r'^schema\.(?P<extension>(.*))$', lod_html_detail_view.as_view(), name="rdf_schema"),
                        #url(r'^schema)$', LoDHTMLView.as_view(), name="rdf_schema_data"),
                        # /resource/class/id
 

@@ -6,7 +6,7 @@ from unittest import skip
 import pytest
 from django.http import QueryDict
 from django.test import RequestFactory, TestCase
-from elasticutils import FacetResult
+from search.elasticutils import FacetResult
 
 from search.search import NaveESQuery, GeoS, FacetCountLink, FacetLink, UserQuery, NaveFacets, NaveQueryResponse, \
     QueryPagination

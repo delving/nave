@@ -1,0 +1,354 @@
+/*!
+ * Delving Instant Website: Core styles
+ *
+ * Copyright 2016 Delving B.V.
+ * Licensed under the Apache License v2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Brought to you by @delvingEU http://www.delving.eu
+ *
+ */
+.clearfix:before,
+.clearfix:after {
+  content: " ";
+  display: table;
+}
+.clearfix:after {
+  clear: both;
+}
+.center-block {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+.pull-right {
+  float: right !important;
+}
+.pull-left {
+  float: left !important;
+}
+.hide {
+  display: none !important;
+}
+.show {
+  display: block !important;
+}
+.invisible {
+  visibility: hidden;
+}
+.text-hide {
+  font: 0/0 a;
+  color: transparent;
+  text-shadow: none;
+  background-color: transparent;
+  border: 0;
+}
+.hidden {
+  display: none !important;
+}
+.affix {
+  position: fixed;
+}
+a img {
+  border: none;
+}
+/* Page Container ******************************/
+.container {
+  width: 960px;
+  margin: 0 auto;
+}
+/*  Search ******************************/
+#diw-search-form input[type=text].error {
+  border-color: #cc3300;
+}
+#diw-advanced-search {
+  display: none;
+}
+/* Query breadcrumbs *****************************/
+.breadcrumb {
+  padding: 0px;
+  margin-bottom: 20px;
+  list-style: none;
+}
+.breadcrumb > li {
+  display: inline-block;
+}
+.breadcrumb > li + li:before {
+  padding: 0 10px;
+  color: #ccc;
+  content: "/\00a0";
+}
+/* Pagination ***********************************/
+.pagination {
+  clear: both;
+}
+.pagination ul {
+  padding: 0;
+}
+.pagination ul li {
+  display: inline;
+  list-style: none;
+}
+.pagination ul li a {
+  display: inline-block;
+  padding: 2px 6px;
+  text-align: center;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.pagination ul li .current {
+  background: #000;
+  color: #fff;
+}
+/* Media blocks (results-list) ********************/
+.media,
+.media-body {
+  overflow: hidden;
+  *overflow: visible;
+  zoom: 1;
+}
+.media,
+.media .media {
+  margin-top: 15px;
+}
+.media:first-child {
+  margin-top: 0;
+}
+.media-object {
+  display: block;
+}
+.media .pull-left {
+  margin-right: 10px;
+  float: left;
+}
+.media .pull-right {
+  margin-left: 10px;
+  float: right;
+}
+.media-list {
+  margin-left: 0;
+  padding: 0;
+  list-style: none;
+}
+/* Layout **************************************/
+.diw-search-results .diw-title {
+  font-weight: bold;
+}
+.diw-search-results #diw-results {
+  display: block;
+  width: 73%;
+  margin-right: 2%;
+}
+.diw-search-results #diw-facets {
+  display: block;
+  float: right;
+  width: 25%;
+}
+.diw-detail #diw-search {
+  margin-bottom: 10px;
+}
+.diw-detail-modal #diw-detail-container {
+  display: block !important;
+}
+/* Facets **************************************/
+.diw-facet-container {
+  margin-bottom: 21px;
+}
+.diw-facet-container .header {
+  font-size: larger;
+  position: relative;
+}
+.diw-facet-container .toggle {
+  cursor: pointer;
+}
+.diw-facet-container .toggle i {
+  position: absolute;
+  right: 3%;
+  top: 45%;
+  width: 0;
+  height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 7px solid #000;
+  border-bottom: none;
+}
+.diw-facet-container .open i {
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-bottom: 7px solid #000;
+  border-top: none;
+}
+.diw-facet-container .inner {
+  font-size: smaller;
+  max-height: 235px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  margin: 0 0 10px 0;
+}
+.diw-facet-container .facet-tools {
+  border-bottom: 1px dashed #eaeaea;
+  padding-bottom: 4px;
+}
+.diw-facet-container .facet-tools .sort {
+  background: #eaeaea;
+  font-size: smaller;
+  margin-right: 8px;
+  padding: 2px 4px;
+}
+.diw-facet-container .diw-facet-list {
+  margin: 0 0 0 0;
+  padding: 0 0 0 0;
+}
+.diw-facet-container .diw-facet-list li {
+  list-style-type: none;
+}
+.diw-facet-container .diw-facet-facet label {
+  display: table-row;
+}
+.diw-facet-container .diw-facet-facet label input {
+  display: table-cell;
+  margin: 0 4px 0 0 !important;
+}
+.diw-facet-container .diw-facet-facet label span {
+  display: table-cell;
+}
+/** DIW ITEM IMAGE VIEWS **************************************/
+#diw-carousel {
+  text-align: center;
+}
+#diw-carousel img {
+  margin: 0 auto;
+}
+.diw-thumb-mini {
+  width: 50px;
+  margin-right: 4px;
+}
+#diw-zoom-container {
+  display: none;
+  height: 233px;
+  color: firebrick;
+  /* for error messages, etc. */
+  margin-bottom: 10px;
+}
+.flash-viewer-window {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+/* Related items *******************************/
+.related-items .header {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+ul.related-item-fields {
+  margin: 0 0 0 0;
+  padding: 0 0 0 0;
+}
+/* Grid thumbnails *******************************************/
+ul.thumbnails {
+  margin: 0;
+  padding: 0;
+}
+ul.thumbnails:before,
+ul.thumbnails:after {
+  content: " ";
+  display: table;
+}
+ul.thumbnails:after {
+  clear: both;
+}
+ul.thumbnails > li {
+  position: relative;
+  display: inline-block;
+  list-style-type: none;
+  margin-right: 4px;
+  width: 110px;
+  vertical-align: top;
+}
+ul.thumbnails > li .thumbnail {
+  margin-bottom: 10px;
+}
+ul.thumbnails > li .thumbnail .img {
+  height: 120px;
+  display: block;
+  text-align: center;
+}
+ul.thumbnails > li .thumbnail .img img {
+  max-height: 120px;
+  max-width: 100%;
+  width: auto;
+  margin: 0 auto;
+}
+ul.thumbnails li:first-of-type {
+  margin-left: 0px;
+}
+/** DIW CONFIGURATION HELP ************************/
+#diw-config-help {
+  font-size: smaller;
+  background: #e1e1e1;
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  width: 220px;
+  z-index: 100000;
+  padding: 10px;
+}
+#diw-config-help .error {
+  background: firebrick;
+  color: white;
+  margin-bottom: 1px;
+  padding: 4px;
+}
+#diw-config-help .header {
+  background: #fff;
+  cursor: move;
+  margin: 0;
+  padding: 4px;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+#diw-config-help .header small {
+  display: block;
+}
+#diw-config-help #show-help .caret {
+  float: right;
+  width: 0;
+  height: 0;
+  margin: 7px 0 0 10px;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 7px solid #000;
+  border-bottom: none;
+}
+#diw-config-help #show-help.open .caret {
+  float: right;
+  width: 0;
+  height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-bottom: 7px solid #000;
+  border-top: none;
+}
+#diw-config-help .badge {
+  background: #6699cc;
+  color: #fff;
+  display: inline-block;
+  margin-top: 10px;
+}
+#diw-config-help p {
+  margin-top: 10px;
+}
+#diw-config-help section {
+  display: none;
+}
+#diw-config-help ul {
+  margin: 0 0 0 15px;
+  padding: 0;
+}
+.admin-bar #diw-config-help {
+  top: 30px;
+}

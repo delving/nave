@@ -333,6 +333,7 @@ class LoDHTMLView(TemplateView):
 
         if context['about'].endswith('/'):
             context['about'] = context['about'].rstrip('/')
+
         context['graph'] = graph
         context['nr_levels'] = nr_levels
         context['namespaces'] = [(prefix, uri) for prefix, uri in graph.namespaces()]
@@ -347,18 +348,31 @@ class LoDHTMLView(TemplateView):
         context['graph_stats'] = RDFModel.get_graph_statistics(graph)
         context['alt'] = ""
         context['points'] = RDFModel.get_geo_points(graph)
-
+        # DEEPZOOM VALUE(S)
+        zooms = graph_bindings.get_list('nave_deepZoomUrl')
+        if zooms:
+            context['deepzoom_count'] = len(zooms)
+            context['deepzoom_urls'] = [zoom.value for zoom in zooms]
+        # EXPERT MODE
         expert_mode = self.request.COOKIES.get('NAVE_DETAIL_EXPERT_MODE', False)
         if expert_mode:
             # do expert mode stuff like more like this
             context['expert_mode'] = True
             if settings.MLT_DETAIL_ENABLE and object_local_cache:
                 context['data'] = {'items': object_local_cache.get_more_like_this()}
-
-        display_mode = self.request.GET.get('display')
+        if settings.MLT_BANNERS and isinstance(settings.MLT_BANNERS, dict) and object_local_cache:
+            from collections import OrderedDict
+            context['data'] = {"mlt_banners": OrderedDict()}
+            for name, config in settings.MLT_BANNERS.items():
+                context['data']['mlt_banners'][name] = object_local_cache.get_more_like_this(
+                        mlt_count=10,
+                        mlt_fields=config.get("fields", None),
+                        filter_query=config.get("filter_query", None)
+                    )
         view_modes = {
             'properties': "rdf/_rdf_properties.html"
         }
+        display_mode = self.request.GET.get('display')
         if display_mode:
             self.template_name = view_modes.get(display_mode, self.template_name)
 

@@ -1,36 +1,81 @@
-{% load dataset_tags %}
-<div role="tabpanel" class="tab-pane" id="tab-content">
-    <div class="row">
-        <div class="col-sm-7">
-            {% detail_field 'dc_title' multiple=True label=_('dc_title') %}
-            {% detail_field 'dc_creator' multiple=True label=_('dc_creator') %}
-            {% detail_field 'dc_date' multiple=True label=_('dc_date') %} {# todo: make it possible to ask for multiple source fields and return an appended list #}
-            {% detail_field 'nave_material'  multiple=True label=_('nave_material') %}
-            {% detail_field 'nave_technique'  multiple=True label=_('nave_technique')  %}
-            {% detail_field 'dc_format'  multiple=True label=_('dc_format') %}
-            {% detail_field 'dc_description'  multiple=True label=_('dc_description') allow_html=True separator="<br/>" %}
-            {% detail_field 'dc_subject'  multiple=True label=_('dc_subject') new_query=True new_facet_query=True %}
-            {% detail_field 'dc_type'  multiple=True label=_('dc_type') %}
-            {% detail_field 'dc_identifier' multiple=True label=_('dc_identifier') %}
-            {% detail_field 'dc_relation'  multiple=True label=_('dc_relation') %}
-            {% detail_field 'dcterms_provenance' multiple=True label=_('dc_provenance')  %}
-            {% detail_field 'nave_collection'  multiple=True label=_('nave_collection')  %}
-            {% detail_field 'nave_collectionPart'  multiple=True label=_('nave_collectionPart') %}
-            {% detail_field 'nave_collectionType'  multiple=True label=_('dc_date') %}
-            {% detail_field 'edm_dataProvider' multiple=True label=_('edm_dataProvider') %} {# todo: should return a link #}
-            {% detail_field 'dc_contributor' multiple=True label=_('dc_contributor')%}
-            {% detail_field 'dc_source' multiple=True label=_('dc_source') %}
-            {% detail_field 'nave_province' multiple=True label=_('nave_province') %}
-            {% detail_field 'nave_musipMuseumUri' multiple=True label=_('nave_musipMuseumUri') is_link=True %}
-            {% detail_field 'edm_isShownAt' multiple=True label=_('edm_isShownAt') is_link=True %}
-            {% detail_field 'dc_rights' multiple=True label=_('dc_rights') %}
-            {% detail_field 'edm_rights' multiple=True label=_('edm_rights') is_link=True %}
-            {% detail_field 'nave_latLong' multiple=True label=_('coordinate') is_link=True %}
-        </div>
-        <div class="col-sm-5" id="media">
-            <div class="media-viewer">
-                {% detail_media_preview 'nave_thumbLarge' alt="dc_title" fullscreen=True indicators=False thumbnail_nav=True %}
-            </div>
+{###################################################################################}
+{# include template for detail page to show metadata field values and media object #}
+{###################################################################################}
+{% load dataset_tags deepzoom_tags %}
+
+{% if not deepzoom_count %}
+    <div class="media-viewer">
+        {% detail_media_preview 'nave_thumbLarge' alt="dc_title" thumbnail_nav=True %}
+    </div>
+{% else %}
+    <div class="zoom-viewer">
+        <div id="zoom_navigation" class="toolbar"></div>
+        {#<!-- 16:9 aspect ratio -->#}
+        <div class="embed-responsive embed-responsive-16by9">
+            {% deepzoom_viewer viewer_class="embed-responsive-item" %}
         </div>
     </div>
+{% endif %}
+
+<div class="metadata-container row">
+    <div class="col-sm-12 col-md-6">
+        {% detail_field 'dc_title' multiple=True label=_('dc_title') %}
+        {% detail_field 'dc_creator' multiple=True label=_('dc_creator') %}
+        {% detail_field 'dc_date' multiple=True label=_('dc_date') %} {# todo: make it possible to ask for multiple source fields and return an appended list #}
+        {% detail_field 'nave_material' multiple=True label=_('nave_material') %}
+        {% detail_field 'nave_technique' multiple=True label=_('nave_technique') %}
+        {% detail_field 'dc_format' multiple=True label=_('dc_format') %}
+        {% detail_field 'dc_description' multiple=True label=_('dc_description') allow_html=True separator="<br/>" %}
+        {% detail_field 'dc_subject' multiple=True label=_('dc_subject') separator="<br/>" %}
+        {% detail_field 'dc_type' multiple=True label=_('dc_type') %}
+        {% detail_field 'dc_identifier' multiple=True label=_('dc_identifier') %}
+        {% detail_field 'dc_relation' multiple=True label=_('dc_relation') %}
+        {% detail_field 'dcterms_provenance' multiple=True label=_('dc_provenance') %}
+    </div>
+    <div class="col-sm-12 col-md-6">
+        {% detail_field 'nave_collection' multiple=True label=_('nave_collection') %}
+        {% detail_field 'nave_collectionPart' multiple=True label=_('nave_collectionPart') %}
+        {% detail_field 'nave_collectionType' multiple=True label=_('dc_date') %}
+        {% detail_field 'edm_dataProvider' multiple=True label=_('edm_dataProvider') %} {# todo: should return a link #}
+        {% detail_field 'dc_contributor' multiple=True label=_('dc_contributor') %}
+        {% detail_field 'dc_source' multiple=True label=_('dc_source') %}
+        {% detail_field 'nave_province' multiple=True label=_('nave_province') %}
+        {% detail_field 'nave_musipMuseumUri' multiple=True label=_('nave_musipMuseumUri') is_link=True %}
+        {% detail_field 'edm_isShownAt' multiple=True label=_('edm_isShownAt') %}
+        {% detail_field 'dc_rights' multiple=True label=_('dc_rights') %}
+        {% detail_field 'edm_rights' multiple=True label=_('edm_rights') is_link=True %}
+        {% detail_field 'nave_latLong' multiple=True label=_('coordinate') is_link=True %}
+    </div>
 </div>
+
+
+
+
+
+{% if ugc %}
+    <div class="ugc">
+        {% for item in ugc %}
+            {% if not user.is_staff %}
+                {% if item.published %}
+                    {# add unplished ones as well but only for logged in user #}
+                    name: {{ item.name }}<br/>
+                    type: {{ item.content_type }}<br/>
+                    description:{{ item.short_description }}<br/>
+                    link: {{ item.link }}<br/>
+                    <hr/>
+                {% endif %}
+            {% else %}
+                name: {{ item.name }}<br/>
+                type: {{ item.content_type }}<br/>
+                description:{{ item.short_description }}<br/>
+                link: {{ item.link }}<br/>
+                <button id="su_edit_ugc" class="btn btn-info"><i class="fa fa-edit"></i></button>
+                <button id="su_remove_ugc" class="btn btn-danger"><i class="fa fa-trash-o"></i></button>
+                <hr/>
+            {% endif %}
+        {% endfor %}
+    </div>
+{% endif %}
+
+
+

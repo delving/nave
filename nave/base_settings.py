@@ -65,7 +65,7 @@ TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 ADMINS = (
     ('Sjoerd Siebinga', 'sjoerd@delving.eu'),
     ('Eric van der Meulen', 'eric@delving.eu'),
-    ('Jakob Lundqvist', 'jakob@delving.eu'),
+    ('Jacob Lundqvist', 'jacob@delving.eu'),
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#managers
@@ -206,6 +206,7 @@ TEMPLATE_DIRS = (
 # these middleware classes will be applied in the order given, and in the
 # response phase the middleware will be applied in reverse order.
 MIDDLEWARE_CLASSES = (
+    'common.middleware.TimedProfilerMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -218,6 +219,9 @@ MIDDLEWARE_CLASSES = (
     'solid_i18n.middleware.SolidLocaleMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'common.middleware.SimpleProfilerMiddleware',
+    'common.middleware.TimedProfilerMiddleware',
+    'common.middleware.EventStoreLoggingMiddleware',
 )
 
 AUTHENTICATION_BACKENDS = (
@@ -233,6 +237,8 @@ ROSETTA_MESSAGES_PER_PAGE = 100
 ROSETTA_AUTO_COMPILE = True
 
 ROSETTA_WSGI_AUTO_RELOAD = True
+
+ROSETTA_EXCLUDED_APPLICATIONS = ('filer', 'rest_framework', 'django_extensions', 'taggit', 'mptt', 'reversion')
 
 # Every cache key will get prefixed with this value - here we set it to
 # the name of the directory the project is in to try and use something
@@ -308,7 +314,6 @@ THIRD_PARTY_APPS = (
     'geojson',
     'djgeojson',
     'leaflet',
-    'elasticutils.contrib.django',
     'taggit',
     'taggit_autosuggest',
     'django_object_actions',
@@ -324,6 +329,7 @@ LOCAL_APPS = (
     'lod',
     'void',
     'search',
+    'webresource',
     'virtual_collection',
 )
 
@@ -382,6 +388,7 @@ IGNORABLE_404_URLS = (
 # the site admins on every HTTP 500 error when DEBUG=False.
 # See http://docs.djangoproject.com/en/dev/topics/logging for
 # more details on how to customize your logging configuration.
+########## END LOGGING CONFIGURATION
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -396,7 +403,7 @@ LOGGING = {
     },
     'formatters': {
         'verbose': {
-            'format': '%(levelname)s %(asctime)s %(module)s '
+            'format': '%(levelname)s %(asctime)s %(name)s.%(funcName)s:%(lineno)s '
                       '%(process)d %(thread)d %(message)s'
         },
     },
@@ -455,9 +462,33 @@ LOGGING = {
             'handlers': ['console'],
             'propagate': False,
         },
+        'common': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'search': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'lod': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'void': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'virtual_collection': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
     }
 }
-########## END LOGGING CONFIGURATION
 
 ########## WSGI CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#wsgi-application
@@ -550,6 +581,8 @@ SERIALIZATION_MODULES = {
 #########################
 
 RDF_USE_LOCAL_GRAPH = True
+
+RESOLVE_WEBRESOURCES_VIA_RDF = False
 
 RDF_STORE_TRIPLES = False
 
@@ -661,6 +694,8 @@ MLT_FIELDS = [
 
 MLT_DETAIL_ENABLE = True
 
+MLT_BANNERS = {}
+
 #############################
 #  IMAGE CONFIGURATION      #
 #############################
@@ -683,6 +718,8 @@ BROKER_URL = 'amqp://guest:guest@localhost:5672//'
 
 CELERY_RESULT_BACKEND = 'amqp'  # 'amqp'
 
+CELERY_CONCURRENCY = 2
+
 CELERY_IGNORE_RESULT = True
 
 CELERY_ALWAYS_EAGER = False  # production should be false
@@ -699,6 +736,15 @@ CELERY_ACKS_LATE = True
 
 # store schedule in the DB:
 CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
+
+
+CELERYBEAT_SCHEDULE = {
+    'add-every-60-seconds': {
+        'task': 'webresource.tasks.create_webresource_dirs',
+        'schedule': timedelta(seconds=60),
+        'args': None
+    },
+}
 
 
 class FacetConfig(object):

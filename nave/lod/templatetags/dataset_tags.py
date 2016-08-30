@@ -1,4 +1,7 @@
 import logging
+import subprocess
+
+import os
 from collections import namedtuple
 from urllib.parse import urlparse
 
@@ -36,13 +39,39 @@ def get_resolved_uri(context, uri):
 def field_exists(context, fieldname):
     """
     returns if a field property is part of the graph bindings
-
     :return: Boolean
     """
     # todo finish this implementation
     bindings = context['resources']
     values = bindings.get_list(fieldname)
     return True if values else False
+
+
+@register.assignment_tag(takes_context=True)
+def has_value(context, fieldname):
+    """
+    returns true if given field contains value
+    :param context:
+    :param fieldname:
+    :return: Boolean
+    """
+    bindings = context['resources']
+    values = bindings.get_list(fieldname)
+    return True if values else False
+
+
+@register.assignment_tag(takes_context=True)
+def get_value(context, fieldname):
+    """
+    returns the value of a given fieldname
+    :param context:
+    :param fieldname:
+    :return: value
+    """
+    bindings = context['resources']
+    request = context['request']
+    value = bindings.get_first(fieldname)
+    return {'request': request, 'value': value}
 
 
 # ######### result detail predicate and field value display ############################
@@ -59,13 +88,15 @@ def detail_media_preview(context, fieldname, alt="", fullscreen=False, indicator
     """
     bindings = context['resources']
     values = bindings.get_list(fieldname)
+    rights = bindings.get_list('edm_rights')
     if not values:
         values = [MockRDFObject(bindings.get_about_thumbnail)]
     alt = bindings[alt].value if bindings[alt] else []
-
     fullscreen = fullscreen
     thumbnail_nav = thumbnail_nav
     indicators = indicators
+    rights = rights
+
     # values = ['http://www.dcn-images.nl/img/BDM/BDM_09809.jpg', 'http://www.dcn-images.nl/img/BDM/BDM_00807.jpg', 'http://www.dcn-images.nl/img/BDM/BDM_01999.jpg']
     # values = ['http://igem.adlibsoft.com/wwwopacx/wwwopac.ashx?command=getcontent&server=images&value=bergh\\001305.jpg',
     #     'http://igem.adlibsoft.com/wwwopacx/wwwopac.ashx?command=getcontent&server=images&value=bergh\\0217_44r_1.jpg',
@@ -96,7 +127,14 @@ def detail_media_preview(context, fieldname, alt="", fullscreen=False, indicator
     #     'http://igem.adlibsoft.com/wwwopacx/wwwopac.ashx?command=getcontent&server=images&value=bergh\\0217_148.jpg',
     #     'http://igem.adlibsoft.com/wwwopacx/wwwopac.ashx?command=getcontent&server=images&value=bergh\\0217_164v_1.jpg']
 
-    return {'values': values, 'alt': alt, 'fullscreen': fullscreen, 'indicators': indicators, 'thumbnail_nav': thumbnail_nav}
+    return {
+        'values': values,
+        'alt': alt,
+        'fullscreen': fullscreen,
+        'indicators': indicators,
+        'thumbnail_nav': thumbnail_nav,
+        'rights': rights
+    }
 
 
 @register.inclusion_tag('rdf/tags/_rdf_properties.html', takes_context=True)
@@ -152,18 +190,23 @@ def detail_field(
     """
     bindings = context['resources']
     request = context['request']
+    fields = None
+    predicate = None
 
     try:
         if not predicate_uri and not rdf_object:
             if not multiple:
-                fields = [bindings[fieldname]]
+                field = bindings[fieldname]
+                if field:
+                    fields = [field]
             else:
                 fields = bindings.get_list(fieldname)
         else:
             fields = rdf_object.get_resource_field_value(field_name_uri=predicate_uri)
-        predicate = fields[0].predicate
+        if fields:
+            predicate = fields[0].predicate
     except Exception as err:
-        logger.debug(err)
+        logger.debug(err, fields, predicate_uri, fieldname)
         fields = None
         predicate = None
 
@@ -187,3 +230,34 @@ def detail_field(
         'nr_levels': 4,
         'value_only': value_only,
     }
+
+
+@register.simple_tag
+def git_ver():
+    """
+    Retrieve and return the latest git commit hash ID and tag as a dict.
+    """
+
+    git_dirs = [settings.DJANGO_ROOT, settings.PROJECT_ROOT]
+
+    versions = {}
+
+    for git_dir in git_dirs:
+        try:
+            # Date and hash ID
+            head = subprocess.Popen(
+                "git -C {dir} log -1 --pretty=format:\"%h on %cd\" --date=short".format(dir=git_dir),
+                shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            version = head.stdout.readline().strip().decode('utf-8')
+
+            # Latest tag
+            head = subprocess.Popen(
+                "git -C {dir} describe --tags $(git -C {dir} rev-list --tags --max-count=1)".format(dir=git_dir),
+                shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            latest_tag = head.stdout.readline().strip().decode('utf-8')
+
+            git_string = "{v}, {t}".format(v=version, t=latest_tag)
+        except Exception as ex:
+            git_string = u'unknown'
+        versions[git_dir] = git_string
+    return versions

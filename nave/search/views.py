@@ -6,6 +6,7 @@ The Django views used by the search module.
 
 """
 import inspect
+import json
 import logging
 import sys
 from collections import OrderedDict
@@ -37,8 +38,9 @@ from void import REGISTERED_CONVERTERS
 from void.models import EDMRecord
 
 from .renderers import N3Renderer, JSONLDRenderer, TURTLERenderer, NTRIPLESRenderer, RDFRenderer, GeoJsonRenderer, \
-    XMLRenderer
-from .search import NaveESQuery, NaveQueryResponse, NaveQueryResponseWrapper, NaveItemResponse
+    XMLRenderer, KMLRenderer, GeoBufRenderer
+from .search import NaveESQuery, NaveQueryResponse, NaveQueryResponseWrapper, NaveItemResponse, NaveESItemList, \
+    NaveESItem
 from .serializers import NaveQueryResponseWrapperSerializer, NaveESItemSerializer
 
 logger = logging.getLogger(__file__)
@@ -142,7 +144,7 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
     permission_classes = (IsAuthenticatedOrReadOnly,)
     serializer_class = NaveQueryResponseWrapperSerializer
     renderer_classes = (BrowsableAPIRenderer, TemplateHTMLRenderer, JSONRenderer, JSONPRenderer, XMLRenderer,
-                        GeoJsonRenderer,
+                        GeoJsonRenderer, KMLRenderer, GeoBufRenderer,
                         # rdf renders
                         N3Renderer, JSONLDRenderer, RDFRenderer, NTRIPLESRenderer, TURTLERenderer)
     registered_converters = REGISTERED_CONVERTERS
@@ -162,8 +164,10 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
     lookup_query_object = None
 
     def set_hidden_query_filters(self, filter_list):
-        # clean list
-        self.hidden_filters = [hqf.strip('"')  for hqf in filter_list]
+        self.hidden_filters = [hqf.strip('"') for hqf in filter_list]
+
+    def set_facets(self, facet_config_list):
+        self.facets = facet_config_list
 
     def get_converter(self, converter_key=None):
         request_converter_key = self.request.GET.get("converter")
@@ -175,8 +179,8 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
         return converter
 
     @property
-    def facet_list(self):
-        return [facet.es_field for facet in self.facets]
+    def get_facet_config(self):
+        return self.facets
 
     @staticmethod
     def _clean_callback(request):
@@ -200,8 +204,8 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
         record = model.objects.get(hub_id=doc_id)
         return record
 
-    def get_query(self, request, index_name, doc_types, facet_list, filters, demote, hidden_filters=None,
-                  cluster_geo=False, converter=None, acceptance=False, *args, **kwargs):
+    def get_query(self, request, index_name, doc_types, facet_config_list, filters, demote, hidden_filters=None,
+                  cluster_geo=False, geo_query=False, converter=None, acceptance=False, *args, **kwargs):
 
         if hidden_filters is None:
             hidden_filters = self.hidden_filters
@@ -217,10 +221,11 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
         query = NaveESQuery(
             index_name=index_name,
             doc_types=doc_types,
-            default_facets=facet_list,
+            default_facets=facet_config_list,
             default_filters=filters,
             hidden_filters=hidden_filters,
             cluster_geo=cluster_geo,
+            geo_query=geo_query,
             size=rows,
             converter=converter,
             facet_size=self.facet_size,
@@ -240,15 +245,16 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
             query.query = query.query.order_by(*sort_fields)
         return query
 
-    def get_queryset(self, cluster_geo=False, acceptance=False, *args, **kwargs):
+    def get_queryset(self, cluster_geo=False, geo_query=False, acceptance=False, *args, **kwargs):
         query = self.get_query(
             request=self.request,
             index_name=self.get_index_name,
             doc_types=self.doc_types,
-            facet_list=self.facet_list,
+            facet_config_list=self.facets,
             filters=self.filters,
             demote=self.demote,
             cluster_geo=cluster_geo,
+            geo_query=geo_query,
             converter=self.get_converter(),
             acceptance=acceptance
         )
@@ -264,11 +270,74 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
             acceptance = self.request.COOKIES.get('NAVE_ACCEPTANCE_MODE', False)
         return acceptance
 
+    def stream_search_results(self, request):
+        import uuid
+        from elasticsearch.helpers import scan
+        from . import get_es_client
+        from django.http.response import Http404
+
+        # check if authenticated
+        if not request.user.is_authenticated():
+            logger.warn("Only logged in users can create a download request.")
+            raise Http404()
+        user = request.user
+        response_format = self.request.GET.get('format', 'json')
+        file_name = "{}_{}.{}".format(user.username, uuid.uuid1(), response_format)
+        query = self.get_query(
+            request=self.request,
+            index_name=self.get_index_name,
+            doc_types=self.doc_types,
+            facet_config_list=self.facets,
+            filters=self.filters,
+            hidden_filters=self.hidden_filters,
+            demote=self.demote,
+            cluster_geo=False,
+            converter=self.get_converter()
+        )
+        downloader = scan(
+            client=get_es_client(),
+            query=query.query.build_search(),
+            index=self.get_index_name,
+        )
+
+        # todo add serializer for response format
+        def streaming_generator():
+            yield "["
+            first = True
+            for result in downloader:
+                if first:
+                    first = False
+                else:
+                    yield ","
+                yield self.serialize_stream(es_item=result, format="json")
+            yield "]"
+
+        generator = streaming_generator()
+        ##
+        # async_task_id = download_all_search_results.delay(
+        #     query_dict=query.query.build_search(),
+        #     response_format=self.request.GET.get('format', 'json'),
+        #     converter=self.get_converter(),
+        #     index_name=self.get_index_name,
+        #     doc_types=self.doc_types
+        # )
+        from django.http import StreamingHttpResponse
+        response = StreamingHttpResponse(
+            generator,
+            content_type="text/plain"  # todo later replace with response_format
+        )
+        # todo add streaming gzip of search results later
+        response['Content-Disposition'] = 'attachment; filename="{}"'.format(file_name)
+        return response
+
+    def serialize_stream(self, es_item, format="json"):
+        from elasticsearch_dsl.result import Result
+        item = NaveESItem(es_item=Result(es_item), converter=self.get_converter())
+        serialized_item = NaveESItemSerializer(item)
+        return JSONRenderer().render(serialized_item.data)
+
     def list(self, request, format=None, *args, **kwargs):
         acceptance = self.acceptance_mode
-        if request.accepted_renderer.format == 'geojson':
-            # todo replace with normal geojson output as feature collection
-            return Response(self.get_clustered_geojson(request))
         # if has id redirect to detail view
         if 'id' in request.query_params:
             params = request.query_params.copy()
@@ -281,29 +350,14 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
             query.extend(params.pop('qr'))
             params['q'] = " ".join(query)
             return redirect("{}?{}".format(request._request.path, params.urlencode()))
-        result_as_zip = request.query_params.get('download', 'false')
-        # todo use the DRF user in this check and not request.user.is_authenticated()
-        if result_as_zip in ['zipped']:
-            query = self.get_query(
-                request=self.request,
-                index_name=self.get_index_name,
-                doc_types=self.doc_types,
-                facet_list=self.facet_list,
-                filters=self.filters,
-                hidden_filters=self.hidden_filters,
-                demote=self.demote,
-                cluster_geo=False,
-                converter=self.get_converter()
-            )
-            async_task_id = download_all_search_results.delay(
-                query_dict=query.query.build_search(),
-                response_format=self.request.GET.get('format', 'json'),
-                converter=self.get_converter(),
-                index_name=self.get_index_name,
-                doc_types=self.doc_types
-            )
-            return redirect('big_download', id=async_task_id)
-        queryset = self.get_queryset()
+        result_as_zip = True if request.query_params.get('download', 'false').lower() == "true" else False
+        if result_as_zip:
+            return self.stream_search_results(request=request)
+        elif request.accepted_renderer.format == 'geojson-clustered':
+            # todo replace with normal geojson output as feature collection
+            return Response(self.get_clustered_geojson(request))
+        geo_query = request.accepted_renderer.format in ['geojson', 'kml']
+        queryset = self.get_queryset(geo_query=geo_query)
         # HTML VIEW ##############################################################
         mode = self.request.REQUEST.get('mode', 'default')
         if request.accepted_renderer.format == 'html':
@@ -332,16 +386,22 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
         query = NaveESQuery(
             index_name=self.get_index_name,
             doc_types=self.doc_types,
-            default_facets=self.facet_list,
+            default_facets=self.facets,
             cluster_geo=False,
             size=1,
             converter=self.get_converter()
         )
-        query = query.build_item_query(query, request.query_params, pk)
+        try:
+            query = query.build_item_query(query, request.query_params, pk)
+        except ValueError as ve:
+            logger.error("Unable to build request because: {}".format(ve))
+            # todo display error message when bad/unknown hubId is given
+            return HttpResponseBadRequest()
         mlt = True if request.query_params.get('mlt', 'false') == "true" else False
         mlt_count = int(request.query_params.get('mlt.count', 5))
         response = NaveItemResponse(query, self, index=self.get_index_name, mlt=mlt, mlt_count=mlt_count)
-        record = self.get_record_from_doctype(response.item.doc_type, response.item.doc_id)
+        record = ElasticSearchRDFRecord(hub_id=pk)
+        record.get_graph_by_id(hub_id=pk)
         renderer_format = request.accepted_renderer.format
         if renderer_format in list(EXTENSION_TO_MIME_TYPE.keys()) and renderer_format not in ['xml', 'json']:
             graph = record.get_graph()
@@ -354,6 +414,9 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
         else:
             store = rdfstore.get_rdfstore()
             graph, _ = RDFModel.get_context_graph(store, named_graph=record.named_graph)
+        if not graph:
+            from django.http import HttpResponseNotFound
+            return HttpResponseNotFound()
         mode = get_mode(self.default_converter)
         bindings = GraphBindings(about_uri=target_uri, graph=graph)
         delving_fields = False if request.GET.get("delving_fields") == 'false' else True
@@ -403,6 +466,10 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
     def _geojson(self, request, format=None):
         geo_json = self.get_clustered_geojson(request)
         return Response(geo_json)
+
+    @list_route()
+    def _docs(self, request, format=None):
+        return HttpResponse(content="See http://culture-hub-api-documentation.readthedocs.io/en/latest/api_intro.html")
 
     def get_clustered_geojson(self, request, acceptance=False):
         query_factory = NaveESQuery(index_name=self.get_index_name)

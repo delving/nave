@@ -11,11 +11,11 @@ from contextlib import contextmanager
 
 import geojson
 from django.conf import settings
-from django.core.paginator import Paginator, Page
+from django.core.paginator import Paginator, Page, EmptyPage, PageNotAnInteger
 from django.http import QueryDict
 from elasticsearch_dsl import Search
 from elasticsearch_dsl.result import Result
-from elasticutils import S, F, Q
+from .elasticutils import S, F, Q
 from geojson import Point, Feature, FeatureCollection
 # noinspection PyMethodMayBeStatic
 from rest_framework.request import Request
@@ -23,7 +23,6 @@ import six
 
 
 from .utils import gis
-from void import get_es
 from void.convertors import BaseConverter
 
 logger = logging.getLogger(__name__)
@@ -169,12 +168,12 @@ class NaveESQuery(object):
     """
 
     def __init__(self, index_name=None, doc_types=None, default_facets=None, size=16,
-                 default_filters=None, hidden_filters=None, cluster_geo=False, robust_params=True, facet_size=50,
+                 default_filters=None, hidden_filters=None, cluster_geo=False, geo_query=False, robust_params=True, facet_size=50,
                  converter=None, acceptance=False):
         self.acceptance = acceptance
         self.index_name = index_name
         self.doc_types = doc_types
-        self.default_facets = default_facets
+        self.default_facets = default_facets.copy() if default_facets is not None else default_facets
         self.size = size
         self.default_filters = default_filters
         self.hidden_filters = hidden_filters
@@ -182,6 +181,7 @@ class NaveESQuery(object):
         self.robust_params = robust_params
         self.facet_size = facet_size
         self.cluster_geo = cluster_geo
+        self.geo_query = geo_query
         self.cluster_factor = 0.6
         self.error_messages = []
         self.query = self._create_query()
@@ -279,6 +279,12 @@ class NaveESQuery(object):
 
         return param_dict
 
+    @property
+    def facet_list(self):
+        if self.default_facets is None:
+            return []
+        return [facet.es_field for facet in self.default_facets]
+
     @staticmethod
     def apply_converter_rules(query_string, converter, as_query_dict=True, reverse=False):
         replace_dict = converter.query_key_replace_dict(reverse=reverse)
@@ -306,7 +312,7 @@ class NaveESQuery(object):
         return self.index_name
 
     def _create_query(self):
-        query = GeoS()
+        query = GeoS().es(urls=settings.ES_URLS, timeout=settings.ES_TIMEOUT)
         if self.get_index_name:
             query = query.indexes(*self._as_list(self.get_index_name))
         if self.doc_types:
@@ -380,7 +386,7 @@ class NaveESQuery(object):
 
     def build_query(self):
         if self.default_facets:
-            self.query = self.query.facet(*self._as_list(self.default_facets), size=self.facet_size)
+            self.query = self.query.facet(*self._as_list(self.facet_list), size=self.facet_size)
         if self.default_filters:
             self.query = self.query.filter(*self._as_list(self.default_filters))
         return self.query
@@ -424,7 +430,9 @@ class NaveESQuery(object):
                 raise
 
         query = self.query
-        query_string = raw_query_string if raw_query_string else request._request.META['QUERY_STRING']
+        if isinstance(request, Request):
+            request = request._request
+        query_string = raw_query_string if raw_query_string else request.META['QUERY_STRING']
         if self.converter is not None:
             query_dict = self.apply_converter_rules(query_string, self.converter)
         elif raw_query_string:
@@ -516,27 +524,11 @@ class NaveESQuery(object):
         # Important: hidden query filters need to be additional query and not filters.
         if hidden_filter_dict:
             for key, values in hidden_filter_dict.items():
-                query_list = []
-                for value in values:
-                    if key.startswith('-'):
-                        query_list.append("(NOT {})".format(value))
-                    else:
-                        query_list.append("{}".format(value))
-                if facet_bool_type_and:
-                    query_string = " AND ".join(query_list)
-                else:
-                    query_string = " OR ".join(query_list)
-                query = query.filter(F(**{self.query_to_facet_key(key): query_string}))
-        filter_dict.update(hidden_filter_dict)
-        self.applied_filters = filter_dict
-        applied_facet_fields = []
-
-        if filter_dict:
-            for key, values in list(filter_dict.items()):
-                applied_facet_fields.append(key.lstrip('-+').replace('.raw', ''))
                 f = F()
                 for value in values:
-                    clean_value = value.strip("\"")
+                    clean_value = value
+                    if clean_value.startswith('"') and clean_value.endswith('"'):
+                        clean_value = clean_value.strip('"')
                     if key.startswith('-'):
                         f |= ~F(**{self.query_to_facet_key(key): clean_value})
                     elif facet_bool_type_and:
@@ -545,7 +537,39 @@ class NaveESQuery(object):
                         f |= F(**{self.query_to_facet_key(key): clean_value})
 
                 query = query.filter(f)
-                # old solr style bounding box query
+                # todo: remove old solution later
+                # query_list = []
+                # for value in values:
+                #     if key.startswith('-'):
+                #         query_list.append("(NOT {})".format(value))
+                #     else:
+                #         query_list.append("{}".format(value))
+                # if facet_bool_type_and:
+                #     query_string = " AND ".join(query_list)
+                # else:
+                #     query_string = " OR ".join(query_list)
+                # query = query.filter(F(**{self.query_to_facet_key(key): "({})".format(query_string)}))
+        applied_facet_fields = []
+
+        if filter_dict:
+            for key, values in list(filter_dict.items()):
+                applied_facet_fields.append(key.lstrip('-+').replace('.raw', ''))
+                f = F()
+                for value in values:
+                    clean_value = value
+                    if clean_value.startswith('"') and clean_value.endswith('"'):
+                        clean_value = clean_value.strip('"')
+                    if key.startswith('-'):
+                        f |= ~F(**{self.query_to_facet_key(key): clean_value})
+                    elif facet_bool_type_and:
+                        f &= F(**{self.query_to_facet_key(key): clean_value})
+                    else:
+                        f |= F(**{self.query_to_facet_key(key): clean_value})
+
+                query = query.filter(f)
+        filter_dict.update(hidden_filter_dict)
+        self.applied_filters = filter_dict
+        # old solr style bounding box query
         bbox_filter = None
         if {'pt', 'd'}.issubset(list(params.keys())):
             point = params.get('pt')
@@ -554,7 +578,7 @@ class NaveESQuery(object):
                 query = query.filter_raw(bbox_filter)
                 # todo: test this with the monument data
         # add facets
-        facet_list = self._as_list(self.default_facets) if self.default_facets else []
+        facet_list = self._as_list(self.facet_list) if self.default_facets else []
         if 'facet' in params:
             with robust('facet'):
                 facets = params.getlist('facet')
@@ -563,6 +587,14 @@ class NaveESQuery(object):
                         facet_list.extend(facet.split(','))
                     else:
                         facet_list.append(facet)
+        # add facets to config
+        # add non default facets to the bottom intersection from keys
+        for facet in set(facet_list).difference(set(self.facet_list)):
+            from base_settings import FacetConfig
+            self.default_facets.append(FacetConfig(
+                es_field=facet,
+                label=facet
+            ))
         if facet_list:
             with robust('facet'):
                 if 'facet.size' in params:
@@ -609,6 +641,8 @@ class NaveESQuery(object):
                     query = query.facet_geocluster(factor=factor, filtered=filtered)
                 else:
                     query = query.facet_geocluster(filtered=filtered)
+        if self.geo_query:
+            query = query.query_raw({"match": {"delving_hasGeoHash": True}})
         self.query = query
         self.facet_params = facet_params
         self.base_params = params
@@ -849,13 +883,14 @@ class FacetLink(object):
 
 class NaveFacets(object):
     def __init__(self, nave_query, facets):
-        self._facets = NaveFacets._respect_facet_config_ordering(facets)
         self._nave_query = nave_query
+        self._facets = NaveFacets._respect_facet_config_ordering(facets, nave_query.default_facets)
         self._facet_querylinks = self._create_facet_query_links()
 
     @staticmethod
-    def _respect_facet_config_ordering(facets):
-        facet_order = settings.FACET_CONFIG
+    def _respect_facet_config_ordering(facets, facet_order):
+        if not facet_order:
+            facet_order = settings.FACET_CONFIG
         ordered_dict = collections.OrderedDict()
         for facet in facet_order:
             ordered_dict[facet.es_field] = facets.get(facet.es_field)
@@ -1004,7 +1039,14 @@ class ESPaginator(Paginator):
 
     def page(self, number, just_source=True):
         """ Returns a Page object for the given 1-based page number. """
-        number = self.validate_number(number)
+        try:
+            number = self.validate_number(number)
+        except EmptyPage as ep:
+            logger.warn("number {} gives back empty page. Setting default to 1".format(number))
+            number = 1
+        except PageNotAnInteger as ep:
+            logger.warn("negative number {} is not allowed. Setting default to 1".format(number))
+            number = 1
         if just_source:
             # the ESPage class below extracts just the `_source` data from the hit data.
             return ESPage(self.object_list, number, self)
@@ -1248,7 +1290,8 @@ class NaveItemResponse(object):
             # todo: implement the elasticsearch-dsl version of MLT
             doc_type = self.item.doc_type
             doc_id = self.item.doc_id
-            s = Search(using=get_es(), index=self._index)
+            from . import get_es_client
+            s = Search(using=get_es_client(), index=self._index)
             mlt_query = s.query(
                     'more_like_this',
                     fields=self._nave_query.mlt_fields,

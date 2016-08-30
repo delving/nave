@@ -1,0 +1,29 @@
+{% load enrichment_tags %}
+<article class="ugc-block ugc-block--{{ item.content_type }}">
+    {% if item.content_type == 'youtube' %}
+        <a class="ugc-block__thumb ugc-block__thumb--youtube"
+           href="{{ item.link }}"
+           target="_blank">
+            <img src="{% youtube_thumbnail item.link %}"
+                 alt="{{ item.name }}">
+        </a>
+    {% endif %}
+    {# add unplished ones as well but only for logged in user #}
+    <h2 class="ugc-block__title">
+        {# Using name field as title for now #}
+        {{ item.name }}
+    </h2>
+    {# type: {{ item.content_type }}<br/> #}
+    <p class="ugc-block__description">
+        {{ item.short_description }}
+    </p>
+    {% if item.link %}
+        <a href="{{ item.link }}"
+           class="ugc-block__more"
+           target="_blank">
+            <span>
+            Lees meer
+            </span>
+        </a>
+    {% endif %}
+</article>

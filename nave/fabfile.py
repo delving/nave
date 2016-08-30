@@ -46,7 +46,7 @@ env.venv_home = conf.get("VIRTUALENV_HOME", "/home/%s" % env.user)
 env.org_id = conf.get("ORG_ID", None)
 env.hub_node = conf.get("HUB_NODE", None)
 env.email_host = conf.get("EMAIL_HOST", None)
-env.file_watch_base_folder = conf.get("FILE_WATCH_BASE_FOLDER", "/mnt")
+env.file_watch_base_folder = conf.get("FILE_WATCH_BASE_FOLDER", "/mnt").rstrip('/').replace('/resource', '')
 env.venv_path = "%s/%s" % (env.venv_home, env.proj_name)
 env.proj_dirname = "project"
 env.django_dirname = "%s/%s" % (env.proj_dirname, 'nave')
@@ -96,6 +96,7 @@ OS_DEPENDENCIES = [
     'libpq-dev',
     'libmagic1',
     'libxml2-dev',
+    'libgeos-dev',
     'zlib1g-dev',
     'libxslt1-dev',
     'memcached',
@@ -193,6 +194,10 @@ templates = {
     "gunicorn": {
         "local_path": "../deploy/gunicorn.conf.py",
         "remote_path": "%(django_path)s/gunicorn.conf.py",
+    },
+    "uwsgi": {
+        "local_path": "../deploy/uwsgi.ini",
+        "remote_path": "%(django_path)s/uwsgi.ini",
     },
     "settings": {
         "local_path": "../deploy/live_settings.py",
@@ -485,7 +490,7 @@ def install():
             #run("exit")
     apt('software-properties-common')
     sudo("add-apt-repository ppa:webupd8team/java -y")
-    # sudo("add-apt-repository ppa:fkrull/deadsnakes -y")
+    sudo("add-apt-repository ppa:nginx/stable -y")
     sudo("apt-get update -y -q")
     sudo("apt-get install -y python-software-properties debconf-utils")
     sudo('echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 select true" | sudo debconf-set-selections')
@@ -542,7 +547,7 @@ def install_fuseki():
 
 @task
 @log_call
-def install_elasticsearch(version="1.7.4"):
+def install_elasticsearch(version="1.7.5"):
     """Install elastic search."""
     __version__ = version
     sudo("wget -q https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-{}.deb".format(__version__))
@@ -709,8 +714,20 @@ def create_venv():
         with project():
             run("%s fetch" % vcs)
             run("%s checkout %s" % (vcs, env.git_branch))
-        run('echo "export DJANGO_SETTINGS_MODULE=projects.{}.settings" >> ~/.profile'.format(env.proj_name))
-        run('echo "export TERM=xterm" >> ~/.profile'.format(env.proj_name))
+        update_profile_settings()
+
+
+@task
+@log_call
+def update_profile_settings():
+        run('echo "export DJANGO_SETTINGS_MODULE=projects.{proj_name}.settings" >> ~/.profile'.format(proj_name=env.proj_name))
+        run('echo "alias sctl=\'sudo supervisorctl\'" >> ~/.profile')
+        run('echo "alias pmp=\'python manage.py\'" >> ~/.profile')
+        run('echo "alias kill_guni=\'sudo supervisorctl stop {proj_name}:gunicorn\'" >> ~/.profile'.format(proj_name=env.proj_name))
+        run('echo "alias nave=\'cd {proj_name}/project/nave\'" >> ~/.profile'.format(proj_name=env.proj_name))
+        run('echo "alias go=\'workon {proj_name} && sctl stop {proj_name}:gunicorn && cd {proj_name}/project/nave && python manage.py runserver 0.0.0.0:8000\'" >> ~/.profile'.format(proj_name=env.proj_name))
+        run('echo "alias rundev=\'pmp runserver 0.0.0.0:8000\'" >> ~/.profile')
+        run('echo "export TERM=xterm" >> ~/.profile')
 
 
 @task
@@ -828,7 +845,9 @@ def restart_celery():
     """
     Restart celery worker processes for the project.
     """
-    sudo("supervisorctl restart %s_celery" % env.proj_name)
+    sudo("supervisorctl restart %s:celery_main" % env.proj_name)
+    sudo("supervisorctl restart %s:celery_records" % env.proj_name)
+    sudo("supervisorctl restart %s:flower" % env.proj_name)
 
 
 @task
@@ -900,7 +919,6 @@ def deploy():
                 run("git checkout master")
                 run("git pull origin master")
         manage("collectstatic -v 0 --noinput")
-        manage("syncdb --noinput")
         manage("migrate --noinput")
     restart()
     return True

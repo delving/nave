@@ -6,7 +6,7 @@
             <record>
                 <header>
                     <identifier>{{ i.identifier }}</identifier>
-                    <datestamp>{{ i.last_modified|date:'c' }}</datestamp>
+                    <datestamp>{{ i.last_modified}}</datestamp>
                     {% for set in i.sets %}
                         <setSpec>{{ set }}</setSpec>
                     {% endfor %}
@@ -28,6 +28,5 @@
         {% endfor %}
         <resumptionToken completeListSize="{{ list_size }}"
                          cursor="{{ cursor }}">{% if  resumption_token %}{{ resumption_token }}{% endif %}</resumptionToken>
-        <resumptionToken/>
     </ListRecords>
 {% endblock %}

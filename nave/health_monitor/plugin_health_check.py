@@ -32,9 +32,9 @@ class ElasticSearchHealth(BaseHealthCheckBackend):
 
     def check_status(self):
         urls = settings.ES_URLS
-        from elasticsearch import Elasticsearch
         try:
-            es = Elasticsearch(urls)
+            from search import get_es_client
+            es = get_es_client()
             return es.indices.exists(settings.SITE_NAME)
         except Exception as e:
             raise ServiceUnavailable("Connection Error")

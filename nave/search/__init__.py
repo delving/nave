@@ -15,10 +15,7 @@ import logging
 from collections import namedtuple
 
 from django.conf import settings
-from elasticutils import FACET_TYPES
-from elasticutils import get_es
-
-FACET_TYPES.append('geohash')
+from elasticsearch import Elasticsearch
 
 logger = logging.getLogger(__name__)
 
@@ -48,16 +45,23 @@ ES_INDEXES = get_settings('ES_INDEXES', {
     'acceptance': '{}_acceptance_v1'.format(settings.SITE_NAME),
 })
 
-ES_TIMEOUT = get_settings('ES_TIMEOUT', 5)
+ES_TIMEOUT = get_settings('ES_TIMEOUT', 10)
 
 ORG_ID = get_settings("ORG_ID", settings.SITE_NAME.lower())
 
 # check if all the indexes are created and if not create with the right mappings
-es = get_es(ES_URLS)
+es_client = Elasticsearch(
+    hosts=settings.ES_URLS,
+    sniff_on_start=True,
+    sniff_on_connection_fail=True,
+    sniffer_timeout=60,
+    maxsize=25,  # default value 10
+    timeout=ES_TIMEOUT,
+)
 
 
-def get_es():
-    return es
+def get_es_client():
+    return es_client
 
 
 mappings = {
@@ -250,14 +254,14 @@ def create_index(index_name, aliases=None, mapping=None, force_create=False):
                 for alias in aliases:
                     filters[alias] = {}
         local_mapping['aliases'] = filters
-    if es.indices.exists(index_name) and force_create:
-        es.indices.delete(index=index_name)
-    if not es.indices.exists(index_name):
-        es.indices.create(index=index_name, body=local_mapping)
+    if es_client.indices.exists(index_name) and force_create:
+        es_client.indices.delete(index=index_name)
+    if not es_client.indices.exists(index_name):
+        es_client.indices.create(index=index_name, body=local_mapping)
         created = True
     #else:
-    #    es.indices.put_mapping(index=index_name, body=local_mapping, doc_type="void_edmrecord")
-    index_aliases = es.indices.get_alias(index_name)
+    #    es_client.indices.put_mapping(index=index_name, body=local_mapping, doc_type="void_edmrecord")
+    index_aliases = es_client.indices.get_alias(index_name)
     logger.info("Index {} is now available with the following aliases: {}".format(index_name, index_aliases))
     return created
 

@@ -249,7 +249,7 @@ class RDFModel(TimeStampedModel, GroupOwned):
     def __str__(self):
         return self.document_uri
 
-    def get_absolute_uri(self):
+    def get_absolute_url(self):
         label = self.document_uri.split('resource/')[-1]
         return reverse('lod_page_detail', kwargs={'label': label})
 
@@ -375,7 +375,7 @@ class RDFModel(TimeStampedModel, GroupOwned):
                 ns = self.ns_dict.get(ns)
                 predicate = URIRef("{}/{}".format(str(ns).rstrip('/'), label))
             else:
-                raise ValueError("unknown predicate key in mapping dict: {}".format(key))
+                raise ValueError("unknown predicate key in mapping dict: {} => ".format(key, value))
             if type(value) in [str, float, int] and value:
                 if isinstance(value, str) and any([value.startswith(uri_prefix) for uri_prefix in ["http", "urn"]]):
                     value = URIRef(value)
@@ -545,6 +545,22 @@ class RDFModel(TimeStampedModel, GroupOwned):
         # }}
         response = store.query(query=query)
         return RDFModel.get_graph_from_sparql_results(response, named_graph)
+
+    @staticmethod
+    def get_webresource_context_graph(store, target_uri):
+        query = """
+        SELECT ?s ?p ?o
+        WHERE {{
+          GRAPH ?g {{
+                <{aggregation_uri}> <http://www.europeana.eu/schemas/edm/hasView> ?object
+          }}
+          GRAPH ?g {{
+            ?s ?p ?o .
+          }}
+        }}
+        """.format(aggregation_uri=target_uri)
+        response = store.query(query=query)
+        return RDFModel.get_graph_from_sparql_results(response, None)
 
     @staticmethod
     def get_skos_context_graph(store, target_uri):
@@ -827,7 +843,6 @@ class SPARQLQuery(TitleSlugDescriptionModel, TimeStampedModel):
         RDFPrefix,
         verbose_name=_('prefixes'),
         blank=True,
-        null=True,
     )
     query = models.TextField(_("SPARQL query"))
 
@@ -998,14 +1013,14 @@ class CacheResource(RDFModel):
     def store_remote_cached_resource(graph, graph_store, named_graph):
         return store_remote_cached_resource(graph, graph_store, named_graph)
 
-    def get_absolute_uri(self):
+    def get_absolute_url(self):
         return "/page/cache/{}".format(self.source_uri)
 
 
-@receiver(post_save)
-def create_rdf_lookup_links(sender, instance, **kw):
-    if issubclass(instance.__class__, RDFModel):
-        instance.update_linked_subjects()
+# @receiver(post_save)
+# def create_rdf_lookup_links(sender, instance, **kw):
+#     if issubclass(instance.__class__, RDFModel):
+#         instance.update_linked_subjects()
 
 
 @receiver(post_save, sender=CacheResource)

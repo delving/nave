@@ -6,11 +6,10 @@ import raven
 SECRET_KEY = "%(secret_key)s"
 
 
-@property
 def in_debug_mode():
-    return True if "%(debug_mode)s".lower in ["true"] else False
+    return True if "%(debug_mode)s".lower() in ["true"] else False
 
-DEBUG = in_debug_mode
+DEBUG = False
 
 DATABASES = {
     "default": {

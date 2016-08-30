@@ -25,10 +25,13 @@ nave/debug.log
 nave/wsgi.py
 .tox/
 *.mo
-nave/projects/*/*
+nave/projects/*
+!nave/projects/README.md
 .vagrant
 *.swp
 
 # the files stored during fab deploy
 nave/last.tar
 nave/last.commit
+*.log
+uwsgi.ini

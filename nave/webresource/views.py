@@ -2,9 +2,9 @@
 import logging
 
 from django.conf import settings
+from django.core.urlresolvers import reverse
+from django.http import Http404
 from django.views.generic import RedirectView
-
-from webresource.webresource import WebResource
 
 
 logger = logging.getLogger(__file__)
@@ -28,9 +28,21 @@ class WebResourceRedirectView(RedirectView):
         uri = self.request.GET.get('uri')
         hub_id = self.request.GET.get('hubId')
         doc_type = self.request.GET.get('docType', "thumbnail")
-        width = self.request.GET.get('width', 220)
-        height = self.request.GET.get('height', 220)
+        width = self.request.GET.get('width', None)
+        height = self.request.GET.get('height', None)
         spec = self.request.GET.get('spec')
+
+        if not spec:
+            return reverse("webresource_docs")
+        elif not uri and not hub_id:
+            return reverse("webresource_docs")
+
+        if not height and not width:
+            width = height = 220
+        elif width and not height:
+            height = width
+        elif height and not width:
+            width = height
 
         if not isinstance(width, int):
             width = int(width)
@@ -46,6 +58,7 @@ class WebResourceRedirectView(RedirectView):
         if not spec and hub_id:
             org_id, spec, local_id = hub_id.split('_')
 
+        from .webresource import WebResource
         webresource = WebResource(uri=uri, hub_id=hub_id, spec=spec, domain=domain)
         redirect_uri = None
         if doc_type == 'thumbnail':
@@ -54,3 +67,21 @@ class WebResourceRedirectView(RedirectView):
             redirect_uri = webresource.get_deepzoom_redirect()
         # TODO: possibly later add route to source for logged in or APi token users
         return redirect_uri
+
+
+def webresource_docs(request):
+    from django.http.response import HttpResponse
+    content = """
+            Acceptance parameters:
+
+            - uri = link to uri. Can be both local as urn/http or remote for caching
+            - hubId = the hubId that this image needs to be linked to. (Optional)
+            - docType = of the returned derivative. (Optional) default is thumbnail Options:
+                - thumbnail
+                - deepzoom
+            - width = the width of the thumbnail.  (Optional)
+            - height = the height of the thumbnail. (Optional) Max size is 1000.
+                - When only one of height and width is give it is squared with both.
+            - spec = the spec the image. (Required)
+            """
+    return HttpResponse(content_type='text/plain', content=content)

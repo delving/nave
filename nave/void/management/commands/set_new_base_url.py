@@ -11,10 +11,9 @@ from django.core.management.base import BaseCommand
 class Command(BaseCommand):
     args = '<old_base_url path>'
     help = """Update base_url in Narthex File Store.
-New base url is assumed to be in settings.py - RDF_BASE_URL.
-Params: <old_base_url path>
+    New base url is assumed to be in settings.py - RDF_BASE_URL.
+    Params: <old_base_url path>
     """
-    
     home = expanduser("~")
 
     @staticmethod

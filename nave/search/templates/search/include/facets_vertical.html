@@ -14,16 +14,18 @@
                                 </span>
                     </div>
                     <div class="facet-body">
+                        <div class="facet-list">
                         <ul class="list-unstyled list-facets">
                             {% for term in facet.facet_link.links %}
                                 <li data-value="{{ term.value  }}" data-count="{{ term.count }}">
-                                    <a href="{{ term.full_link }}" class="facet-link" >
+                                    <a href="{{ term.full_link }}" class="facet-link {% if term.is_selected %}selected{% endif %}" data-checked="{% if term.is_selected %}true{% endif %}" >
                                         <i class="fa fa-fw {% if not term.is_selected %}fa-square-o{% else %}fa-check-square{% endif %}"></i>
                                         {{ term.value }} ({{ term.count }})
                                     </a>
                                 </li>
                             {% endfor %}
                         </ul>
+                        </div>
                     </div>
                 </div>
             {% endif %}

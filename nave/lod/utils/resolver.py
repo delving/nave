@@ -28,22 +28,29 @@ import os
 import logging
 from urllib.parse import urlparse, quote
 
+import re
 from django.conf import settings
 from django.db.models.loading import get_model
 from elasticsearch import Elasticsearch
-from elasticsearch_dsl import Search
-from rdflib import Graph, URIRef, BNode, Literal
+from elasticsearch_dsl import Search, Q
+from rdflib import ConjunctiveGraph
+from rdflib import Graph, URIRef, BNode, Literal, Namespace
 from rdflib.namespace import RDF, SKOS, RDFS, DC, FOAF
 
 from lod import namespace_manager
 from lod.utils import rdfstore
 
+from search import get_es_client
+
 logger = logging.getLogger(__file__)
-client = Elasticsearch()
+client = get_es_client()
 
 
 Predicate = namedtuple('Predicate', ['uri', 'label', 'ns', 'prefix'])
 Object = namedtuple('Object', ['value', 'is_uriref', 'is_resource', 'datatype', 'language', 'predicate'])
+
+EDM = Namespace('http://www.europeana.eu/schemas/edm/')
+NAVE = Namespace('http://schemas.delving.eu/nave/terms/')
 
 
 def get_geo_points(graph):
@@ -139,6 +146,7 @@ def get_graph_statistics(graph):
     }
     return stats
 
+
 class GraphBindings:
     def __init__(self, about_uri, graph,
                  excluded_rdf_types=None, allowed_rdf_types=None,
@@ -153,7 +161,7 @@ class GraphBindings:
                         URIRef('http://schemas.delving.eu/nave/terms/thumbSmall'),
                         URIRef('http://schemas.delving.eu/nave/terms/thumbLarge'),
                         URIRef('http://www.europeana.eu/schemas/edm/object'),
-                        URIRef('http://www.europeana.eu/schemas/edm/isShownBy')
+                        URIRef('http://www.europeana.eu/schemas/edm/isShownBy'),
                     )
                  ):
         self._thumbnail_fields = thumbnail_fields
@@ -734,7 +742,10 @@ class RDFObject:
         if self.is_uri:
             uri = str(self._rdf_object)
             thumbnail_fields = self._bindings.get_thumbnail_fields()
-            thumbnail_fields = thumbnail_fields + (URIRef('http://schemas.delving.eu/nave/terms/deepZoomUrl'),)
+            thumbnail_fields = thumbnail_fields + (
+                URIRef('http://schemas.delving.eu/nave/terms/deepZoomUrl'),
+                URIRef('http://www.europeana.eu/schemas/edm/isShownAt'),
+            )
             if not RDFRecord.get_rdf_base_url() in uri and self._rdf_object not in thumbnail_fields:
                 return get_cache_url(uri)
         return None
@@ -836,20 +847,22 @@ class RDFRecord:
 
     DEFAULT_RDF_FORMAT = "nt" if not settings.RDF_DEFAULT_FORMAT else settings.RDF_DEFAULT_FORMAT
 
-    def __init__(self, hub_id=None, source_uri=None, spec=None, rdf_string=None, org_id=None, doc_type=None):
-        if hub_id is None and source_uri is None and rdf_string is None:
+    def __init__(self, hub_id=None, source_uri=None, spec=None, rdf_string=None, org_id=None, doc_type=None,
+                 named_graph_uri=None):
+        if hub_id is None and source_uri is None and rdf_string is None and named_graph_uri is None:
             raise ValueError("either source_uri or hub_id or rdf_string must be given at initialisation.")
         self._hub_id = hub_id
         self._spec = spec
         self._org_id = org_id if org_id is not None else settings.ORG_ID
-        self._doc_type = None
+        self._doc_type = doc_type
         self._source_uri = source_uri
-        self._named_graph = None
+        self._named_graph = named_graph_uri
         self._source_uri = None
         self._absolute_uri = None
         self._graph = None
         self._rdf_string = rdf_string
         self._query_response = None
+        self._modified_at = None
         self._bindings = None
         # self._setup_rdfrecord()
 
@@ -859,8 +872,18 @@ class RDFRecord:
         elif self._source_uri:
             self.get_graph_by_source_uri(uri=self._source_uri)
 
+    @staticmethod
+    def clean_local_id(raw_id):
+        local_id = raw_id.replace("_", "-").replace(":", "-").replace(" ", "-").replace("+", "-")
+        if "--" in local_id:
+            local_id = re.sub("[-]{2,10}", "-", local_id)
+        return local_id
+
     def exists(self):
         return self._graph is not None
+
+    def last_modified(self):
+        return self._modified_at
 
     @staticmethod
     def get_rdf_base_url(prepend_scheme=False, scheme="http"):
@@ -872,14 +895,18 @@ class RDFRecord:
             base_url = "{}://{}".format(scheme, base_url)
         return base_url
 
-    def source_uri_as_hub_id(self, source_uri=None):
+    def uri_to_hub_id(self, source_uri=None):
         if not self._hub_id:
             if source_uri is None:
-                source_uri = self._source_uri
-            uri_parts = source_uri.split('/')
-            if self._spec is None:
-                self._spec = uri_parts[-2]
-            local_id = uri_parts[-1]
+                source_uri = self.source_uri
+            uri_parts = source_uri.split('/resource/')
+            named_parts = uri_parts[-1]
+            spec = local_id = None
+            if len(named_parts) >= 3:
+                rdf_type, spec, *local_id = named_parts.split('/')
+            if self._spec is None and spec:
+                self._spec = spec
+            local_id = self.clean_local_id("/".join(local_id))
             self._hub_id = "{}_{}_{}".format(self._org_id, self._spec, local_id)
         return self._hub_id
 
@@ -892,11 +919,14 @@ class RDFRecord:
             self.rdf_string()
         else:
             self._rdf_string = rdf_string
-        return self._graph
+        return self.get_graph()
+
+    def get_triples(self, acceptance=False):
+        return self.rdf_string, self.named_graph
 
     @staticmethod
     def parse_graph_from_string(rdf_string, graph_identifier=None, input_format=DEFAULT_RDF_FORMAT):
-        g = Graph(identifier=graph_identifier)
+        g = ConjunctiveGraph(identifier=graph_identifier)
         from lod import namespace_manager
         g.namespace_manager = namespace_manager
         g.parse(data=rdf_string, format=input_format)
@@ -955,28 +985,89 @@ class RDFRecord:
 
     @property
     def hub_id(self):
-        if not self._hub_id and self.source_uri:
-            self._hub_id = self.source_uri_as_hub_id()
+        if not self._hub_id and self.source_uri or self.named_graph:
+            self._hub_id = self.uri_to_hub_id()
         return self._hub_id
 
-    def get_bindings(self):
+    def get_bindings(self, graph=None):
         if not self._bindings:
-            graph = self.get_graph()
+            if graph is None:
+                graph = self.get_graph()
             if graph:
                 self._bindings = GraphBindings(self.source_uri, graph)
         return self._bindings
 
     def get_graph(self, **kwargs):
+        if not self._graph and self._rdf_string:
+            g = self.parse_graph_from_string(self._rdf_string)
+            self._graph = g
         return self._graph
+    
+    @staticmethod
+    def delete_webresource_graphs(spec, store=None):
+        if not store:
+            store = rdfstore.get_rdfstore()
+        query = """
+        DELETE {{
+             GRAPH ?g {{
+                ?s ?p ?o .
+             }}
+          }}
+        WHERE {{ GRAPH ?g {{
+          ?subject a <http://www.europeana.eu/schemas/edm/WebResource>;
+              <http://schemas.delving.eu/narthex/terms/datasetSpec> "{spec}".
+          }}
+          GRAPH ?g {{
+            ?s ?p ?o. 
+          }}}}
+        """.format(spec=spec)
+        return store.update(query=query)
 
-    def get_context_graph(self, with_mappings=False, include_mapping_target=False, acceptance=False, target_uri=None):
+    @staticmethod
+    def get_webresource_context_graph(target_uri, store=None):
+        if not store:
+            store = rdfstore.get_rdfstore()
+        query = """
+        SELECT ?s ?p ?o ?g
+        WHERE {{
+          GRAPH ?g {{
+                <{aggregation_uri}> <http://www.europeana.eu/schemas/edm/hasView> ?object
+          }}
+          GRAPH ?g {{
+            ?s ?p ?o .
+          }}
+        }}
+        """.format(aggregation_uri=target_uri)
+        response = store.query(query=query)
+        from lod.models import RDFModel
+        return RDFModel.get_graph_from_sparql_results(response, None)[0]
+
+    def reduce_duplicates(self, graph: Graph, leave=0, predicates=None):
+        """Reduce duplicates or all entries from a predicate from a Graph."""
+        entries_removed = 0
+        if predicates is None:
+            predicates = [EDM.isShownBy, EDM.object, NAVE.thumbSmall, NAVE.thumbLarge, NAVE.thumbnail, NAVE.deepZoomUrl]
+        for predicate in predicates:
+            entries = list(graph.subject_objects(predicate=predicate))
+            if entries and len(entries) > leave:
+                remove = entries if entries == 0 else entries[leave:]
+                for s, o in remove:
+                    graph.remove((s, predicate, o))
+                    entries_removed += 1
+        return graph, entries_removed
+
+    def get_context_graph(self, with_mappings=False, include_mapping_target=False, acceptance=False, target_uri=None,
+                          with_webresource=False):
         """Get Graph instance with linked ProxyResources.
 
         :param target_uri: target_uri if you want a sub-selection of the whole graph
         :param acceptance: if the acceptance data should be listed
         :param include_mapping_target: Boolean also include the mapping target triples in graph
         :param with_mappings: Boolean integrate the ProxyMapping into the graph
+        :param with_webresource: Boolean if webresources should be inserted from the triple store
         """
+        if hasattr(settings, "RESOLVE_WEBRESOURCES_VIA_RDF") and isinstance(settings.RESOLVE_WEBRESOURCES_VIA_RDF, bool):
+            with_webresource = settings.RESOLVE_WEBRESOURCES_VIA_RDF
         graph = self.get_graph()
         if with_mappings:
             ds_model = get_model(app_label="void", model_name="DataSet")
@@ -989,6 +1080,14 @@ class RDFRecord:
             proxy_resources, graph = proxy_resource_model.update_proxy_resource_uris(ds, graph)
             for proxy_resource in proxy_resources:
                 graph = graph + proxy_resource.to_graph(include_mapping_target=include_mapping_target)
+        if with_webresource:
+            webresource_graph = RDFRecord.get_webresource_context_graph(target_uri=self.source_uri)
+            if webresource_graph:
+                graph, _ = self.reduce_duplicates(graph)
+                # clean isShownBy, object, thumbnail, thumbnailLarge, thumbnailSmall, deepZoomUrl
+                graph = graph + webresource_graph
+        # reduce edm duplicates to one each
+        graph, _ = self.reduce_duplicates(graph=graph, leave=1, predicates=[EDM.isShownBy, EDM.object, EDM.isShownAt])
         if target_uri and not target_uri.endswith("/about") and target_uri != self.source_uri:
             g = Graph(identifier=URIRef(self.named_graph))
             subject = URIRef(target_uri)
@@ -1025,7 +1124,7 @@ class RDFRecord:
         return sparql_update
 
     def create_es_action(self, doc_type, record_type, action="index", index=settings.SITE_NAME, store=None,
-                         context=True, flat=True, exclude_fields=None, acceptance=False):
+                         context=True, flat=True, exclude_fields=None, acceptance=False, content_hash=None):
 
         if not store:
             store = rdfstore.get_rdfstore()
@@ -1049,10 +1148,12 @@ class RDFRecord:
         if not context:
             graph = self.get_graph()
         else:
-            graph, nr_levels = self.get_context_graph()
+            graph = self.get_context_graph()
             graph.namespace_manager = namespace_manager
+            self._graph = graph
+            self._rdf_string = None
 
-        bindings = self.get_bindings()
+        bindings = self.get_bindings(graph=graph)
         index_doc = bindings.to_flat_index_doc() if flat else bindings.to_index_doc()
         if exclude_fields:
             index_doc = {k: v for k, v in index_doc.items() if k not in exclude_fields}
@@ -1086,6 +1187,11 @@ class RDFRecord:
             'source_graph': self.rdf_string(),
             'proxy_resource_graph': None,
             'web_resource_graph': None,
+            'content_hash': content_hash,
+            'hasGeoHash': "true" if bindings.has_geo() else "false",
+            'hasDigitalObject': "true" if thumbnail else "false",
+            'hasLandingePage': "true" if 'edm_isShownAt' in index_doc else "false",
+            'hasDeepZoom': "true" if 'nave_deepZoom' in index_doc else "false",
             # 'about_type': [rdf_type.qname for rdf_type in bindings.get_about_resource().get_types()]
             # 'collections': None, todo find a way to add collections via link
         }
@@ -1164,14 +1270,22 @@ class RDFRecord:
 class ElasticSearchRDFRecord(RDFRecord):
     """RDF resolved using ElasticSearch as its backend."""
 
-    def query_for_graph(self, query_type, query, store_name=None, as_bindings=False):
-        if store_name is None:
-            store_name = settings.SITE_NAME
-        s = Search(index=store_name).using(client).query(query_type, **query)
-        response = s.execute()
-        if response.hits.total != 1:
-            return None
-        self._query_response = response.hits.hits[0]
+    @staticmethod
+    def get_rdf_records_from_query(query, response=None):
+        if response is None:
+            response = query.execute()
+        record_list = []
+        for hit in response.hits.hits:
+            record = ElasticSearchRDFRecord(
+                hub_id=hit['_id'],
+                doc_type=hit['_type']
+            )
+            record.set_defaults_from_query_result(es_record=hit)
+            record_list.append(record)
+        return record_list
+
+    def set_defaults_from_query_result(self, es_record):
+        self._query_response = es_record
         self._doc_type = self._query_response['_type']
         system_fields = self._query_response['_source']['system']
         self._rdf_string = system_fields['source_graph']
@@ -1179,11 +1293,31 @@ class ElasticSearchRDFRecord(RDFRecord):
         self._source_uri = system_fields['source_uri']
         self._spec = system_fields.get('delving_spec')
         self._hub_id = system_fields.get('slug')
-        g = self.parse_graph_from_string(self._rdf_string, self._named_graph)
-        self._graph = g
+        self._modified_at = system_fields.get('modified_at')
+        return self
+
+    def query_for_graph(self, query_type=None, query=None, store_name=None, as_bindings=False, raw_query=None):
+        if store_name is None:
+            store_name = settings.SITE_NAME
+        if raw_query:
+            s = Search(index=store_name).using(client).query(raw_query)
+        else:
+            s = Search(index=store_name).using(client).query(query_type, **query)
+        # s = s[:1] # todo use terminate after later
+        response = s.execute()
+        if response.hits.total != 1:
+            return None
+        self.set_defaults_from_query_result(response.hits.hits[0])
         if as_bindings:
-            return GraphBindings(about_uri=self._source_uri, graph=self._graph)
-        return self._graph
+            return GraphBindings(about_uri=self._source_uri, graph=self.get_graph())
+        return self.get_graph()
+
+    def is_indexed_content_identical(self, content_hash, hub_id=None, store_name=None):
+        if hub_id is None:
+            hub_id = self.hub_id
+        query = Q("match", **{"_id": hub_id}) & Q("match", **{'system.content_hash': content_hash})
+        exists = self.query_for_graph(raw_query=query, store_name=store_name)
+        return True if exists is not None else False
 
     def get_graph_by_id(self, hub_id, store_name=None, as_bindings=False):
         return self.query_for_graph("match", {"_id": hub_id}, store_name, as_bindings)
@@ -1196,10 +1330,11 @@ class ElasticSearchRDFRecord(RDFRecord):
             as_bindings=as_bindings
         )
 
-    def get_more_like_this(self):
-        return self.es_related_items(self.hub_id, doc_type=self._doc_type, mlt_count=15)
+    def get_more_like_this(self, mlt_count=15, mlt_fields=None, filter_query=None):
+        return self.es_related_items(self.hub_id, doc_type=self._doc_type, mlt_count=mlt_count,  mlt_fields=mlt_fields,
+                                     filter_query=filter_query)
 
-    def es_related_items(self, hub_id, doc_type=None, mlt_fields=None, store_name=None, mlt_count=5):
+    def es_related_items(self, hub_id, doc_type=None, mlt_fields=None, store_name=None, mlt_count=5, filter_query=None):
         if store_name is None:
             store_name = settings.SITE_NAME
         if mlt_fields is None or not isinstance(mlt_fields, list):
@@ -1220,6 +1355,9 @@ class ElasticSearchRDFRecord(RDFRecord):
                 "_id": hub_id
             }]
         )[:mlt_count]
+        if filter_query:
+            for k, v in filter_query.items():
+                mlt_query = mlt_query.filter("term", k=v)
         hits = mlt_query.execute()
         items = []
         for item in hits:

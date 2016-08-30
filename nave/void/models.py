@@ -31,7 +31,7 @@ from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 from django_extensions.db.fields import AutoSlugField
 from django_extensions.db.models import TimeStampedModel, TitleDescriptionModel
-from elasticsearch import Elasticsearch, helpers
+from elasticsearch import helpers
 from rdflib import URIRef, Graph, Literal, ConjunctiveGraph
 from rdflib.namespace import RDF, SKOS
 from taggit.managers import TaggableManager
@@ -46,13 +46,9 @@ logger = logging.getLogger(__name__)
 
 fmt = '%Y-%m-%d %H:%M:%S%z'  # '%Y-%m-%d %H:%M:%S %Z%z'
 
-es = Elasticsearch(
-        hosts=settings.ES_URLS
-)
-
-
 def get_es():
-    return es
+    from search import get_es_client
+    return get_es_client()
 
 
 def get_user_model_name():
@@ -1012,7 +1008,7 @@ class EDMRecord(RDFModel):
     def __str__(self):
         return self.document_uri
 
-    def get_absolute_uri(self):
+    def get_absolute_url(self):
         label = self.document_uri.split('resource/')[-1]
         return reverse('lod_page_detail', kwargs={'label': label})
 

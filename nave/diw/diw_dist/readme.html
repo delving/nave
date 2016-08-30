@@ -134,23 +134,13 @@ body{font-size:16px;}
 <body>
 
 <p><img src="http://delving.eu/sites/all/themes/delving_pool/logo.png"/></p>
-<h1>DELVING INSTANT (WEB-SEARCH) v1.1.0</h1>
-<p>The <strong>Delving Instant Web-search</strong> (DIW) is a javascript powered, stand-alone interface used for remotely querying a <strong>Delving CultureHub</strong> API.  The DIW has a configurable endpoint to which the queries are made and has many more configuration options to customize the outputted results to your own web environment.</p>
-<hr>
-<p><strong><em>IMPORTANT</em></strong>: <span class="highlight">This version of the DIW is not backwards compatible with older versions</span>. Major changes are:</p>
-<ul>
-<li>Api requests are returned in JSONP to adress major change in Safari on both OSX and iOs</li>
-<li>More fine-grained control over the layout is now possible. The initial results, facets and detail views of an item no longer share the same space (html element) on the page. Each
-section now has its own target html section. See the Setup example html and the <code><a href="#layout">layout</a></code> configuration for more details.</li>
-<li>Display of searchform(s) is now optional/configurable</li>
-<li>Option to sort facets alphabetically and numerically (by number of hits)</li>
-<li>Addition of a named state class in the body tag - allows for more fine-grained css control. See the &quot;Styling with css&quot; below.</li>
-</ul>
-<hr>
-<h5>jQuery</h5>
+<h1>DIW: DELVING INSTANT WEB-SEARCH v1.3</h1>
+<p>The <strong>Delving Instant Web-search</strong> (DIW) is a javascript powered, stand-alone interface used for remotely querying a <strong>Delving Hub3</strong> v1 API.  The DIW has a configurable endpoint to which the queries are made and has many more configuration options to customize the outputted results to your own web environment.</p>
+<p><strong>NOTE</strong> This version of the DIW is not compatible with legacy hubs.</p>
+<h4>jQuery</h4>
 <p>The DIW depends on jQuery to function. Currently the DIW is written to use jQuery version v1.9.1 which is included with the distribution.</p>
 <p><strong>IMPORTANT</strong> If your web environment also uses other libraries like prototype.js, be sure to include <code>&lt;script&gt;jQuery.noConflict();&lt;/script&gt;</code> after loading the DIW javascript files.</p>
-<h5>Styling with css</h5>
+<h4>Styling with css</h4>
 <p>The DIW only needs one stylesheet to function properly: the delving-instant.core.css. Using the included bootstrap.css is optional. For the rest, the styling is completely up to you.</p>
 <p>Depending on what the DIW is doing, it will write its current state as a class name into the body tag. States are:</p>
 <ul>
@@ -159,7 +149,7 @@ section now has its own target html section. See the Setup example html and the 
 <li><strong>diw-detail</strong> - The DIW is showing the detail view on a single search result;</li>
 </ul>
 <p>You can use these body classes to gain more fine-grained control over the layout.</p>
-<h5>Deep-Zoom</h5>
+<h4>Deep-Zoom</h4>
 <p>The DIW is capable of showing DeepZoom (.dzi) image tiles. It uses the OpenZoomViewer.swf (a flash file) as the default viewer. If the user&#39;s browser is not capable of using flash, then there is a fallback to the Seadragon javascript library which is included in the delving-instant-dependencies.js. More about deep-zoom <a href="#deep-zoom">here</a>.</p>
 <h2>Setup</h2>
 <ol>
@@ -251,12 +241,12 @@ section now has its own target html section. See the Setup example html and the 
 <p>The system name of the organization under which the dataprovider is registered in the endpoint CultureHub</p>
 <pre>orgId: "delving"</pre>
 
-<h4>dataProviders (string array) (optional)</h4>
-<p>The name of the specific dataprovider to be queried. If excluded, all dataproviders are queried.</p>
+<!--####dataProviders (string array) (optional)
+The name of the specific dataprovider to be queried. If excluded, all dataproviders are queried.
 <pre>dataProvider: [
     "dataprovider1", 
     "dataprovider2"
-]</pre>
+]</pre>-->
 
 <h4>collectionSpecs (string array)</h4>
 <p>The &#39;spec&#39; (system name) of the the specific collection you want to limit the queries to. If excluded, all collections are queried.</p>
@@ -369,18 +359,20 @@ To still give you control over the maximum display length of this field, this pa
 <pre>thumbnailWidth: 200</pre>
 
 <p><a id="deep-zoom"></a></p>
-<h4>useDeepZoom (boolean - default: false)</h4>
+<h4>useDeepZoom (boolean - default: false) - set for deprecation</h4>
 <p>If the data contains deep-zoom urls (.dzi) you can set this to <code>true</code> to activate the deep-zoom functionality.<br/>
 Default: false<br/>
 <strong><em>IMPORTANT</em></strong>: Merely setting this to <code>true</code> will not make the images zoomable. The metadata must contain functioning links to the deep-zoom tiles. The actual metadata field containing the deep-zoom uri can be configured <a href="#itemImageFields">here</a>.</p>
 <pre>useDeepZoom: false</pre>
 
-<h4>useFlashZoom (boolean - default: true)</h4>
+
+<p><strong>NOTE</strong> The use of flash deepzoom will be deprecated. OpenSeadragon is more secure and offers more features.</p>
+<h4>useFlashZoom (boolean - default: true) - set for deprecation</h4>
 <p>By setting this to <code>true</code> deep-zoom images will be loaded into the OpenZoomViewer.swf included in the DIW. If the user&#39;s browser is not capable of using Flash the DIW will revert to using the Seadragon javascript deep-zoom library also included in the DIW dependencies file. For best
 results in Internet Explorer set this to <code>true</code></p>
 <pre>useFlashZoom: true|false</pre>
 
-<h4>deepZoomFlashFile (string)</h4>
+<h4>deepZoomFlashFile (string) - set for deprecation</h4>
 <p>The path to the OpenZoomViewer.swf file.</p>
 <pre>deepZoomFlashFile: "flash/OpenZoomViewer.swf"</pre>
 
@@ -452,7 +444,8 @@ Defaults to: &quot;images/seadragon/&quot;</p>
     {name:"field_name_6",label:"Label 6 text"}
 ]</pre>
 
-<p>The <code>newQuery</code> parameter will turn this field into a hyperlink which, when clicked, will launch a new query for that value.</p>
+<p>The <code>newQuery</code> parameter will turn this field into a hyperlink which, when clicked, will launch a new query for that value.
+&lt;!--</p>
 <h4>alternativeFieldLabelsPerSpec</h4>
 <p>If querying multiple collections, you may wish to use different labels for the same fields. For example: both collections A and B display the dc_creator field. However, collection A is bibliographic data and the label should be &quot;Author&quot;, while collection B is photographic data and the label should be &quot;Photographer. To accomplish this you will need to know the &quot;spec&quot; of the dataset. Once you know the dataset spec you can define the alternative labels. These alternative labels will be shown in both the initial search results defined in <code>resultFields</code> (if &quot;list&quot; is set for <code>resultsLayout</code>) and for the fields show in the item detail view defined in the <code>itemFields</code>. </p>
 <pre>alternativeFieldLabelsPerSpec: [
@@ -469,10 +462,10 @@ Defaults to: &quot;images/seadragon/&quot;</p>
 <h4>alternativeFieldLabelsPerSpecTrigger</h4>
 <p>The field which distinguishes one collection from another. In most cases you will not have to set this and the default field is used. In some cases (merged collections) the default field will be the same for the collections involved. In this case you can supply an alternative field which will be used to distinguish between the collection. Note: this field must be present and unique in all collections. Contact your CultureHub administrator if you do not know what field to use.</p>
 <pre>alternativeFieldLabelsPerSpecTrigger: "field_name"</pre>
-
-<p><a id="itemImageFields"></a></p>
-<h4>itemImageFields (object)</h4>
-<p>The fields related to the item image. This is mainly for the thumbnail, regular image, deepzoomImage, and navigation thumbs when an object contains multiple images. This is also where the link to the item in its original context is rendered. Notice the &#39;imageAlt&#39;. Here you can supply an alternative field for the large image to display as a fall-back option if the &#39;image&#39; field is not available. This is usefull if you have configured the DIW to query mulitple collections that are not identically mapped.</p>
+-->
+<a id="itemImageFields"></a>
+####itemImageFields (object)
+The fields related to the item image. This is mainly for the thumbnail, regular image, deepzoomImage, and navigation thumbs when an object contains multiple images. This is also where the link to the item in its original context is rendered. Notice the 'imageAlt'. Here you can supply an alternative field for the large image to display as a fall-back option if the 'image' field is not available. This is usefull if you have configured the DIW to query mulitple collections that are not identically mapped.
 <pre>itemImageFields: {
     thumb:"europeana_object",
     image:"europeana_isShownBy",
@@ -489,9 +482,14 @@ Defaults to: &quot;images/seadragon/&quot;</p>
 <p>The number of related items returned.</p>
 <pre>relatedItemsCount: 5</pre>
 
-<h4>dataOwner (string)</h4>
-<p>If related items are being returned from the api that are not part of the dataset you are querying, then you can set this extra filter. It takes the collection spec of the dataset you are querying. If you do not know the collections spec for the dataset you are querying then ask your Culturehub administrator.</p>
+<!--
+
+####dataOwner (string)
+If related items are being returned from the api that are not part of the dataset you are querying, then you can set this extra filter. It takes the collection spec of the dataset you are querying. If you do not know the collections spec for the dataset you are querying then ask your Culturehub administrator.
+
 <pre>dataOwner: "some-spec-here"</pre>
+
+-->
 
 <h3>Twitter Bootstrap</h3>
 <p>The DIW is &#39;bootstrapped&#39;; meaning that many of the functional html sections contain Twitter Bootstrap classes. By including a boostrap.css file you will get all the Twitter Bootstrap goodness. <strong><em>Note:</em></strong> include the bootsrap.css file AFTER the diw-core.css file to overwrite some of the bootsrap styles (particulary the image carousel) which is also defined in the delving-instant-core.css file. You can create your own custom bootstrap.css file here: 

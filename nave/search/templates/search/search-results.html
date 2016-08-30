@@ -13,16 +13,17 @@
             <span><a href="{% url 'results-list' %}">{% trans 'Search' %}</a></span>
         </li>
         {% if data.user_query.breadcrumbs %}
-
-        {% for breadcrumb in data.user_query.breadcrumbs %}
-            <li>
-                {% if not breadcrumb.is_last %}
-                    <a href="?{{ breadcrumb.href }}"><span>{{ breadcrumb.value }}</span></a>
-                {% else %}
-                    <span class="active">{{ breadcrumb.value }}</span>
+            {% for breadcrumb in data.user_query.breadcrumbs %}
+                {% if breadcrumb.value|length > 0 %}
+                    <li>
+                        {% if not breadcrumb.is_last %}
+                            <a href="?{{ breadcrumb.href }}"><span>{{ breadcrumb.value }}</span></a>
+                        {% else %}
+                            <span class="active">{{ breadcrumb.value }}</span>
+                        {% endif %}
+                    </li>
                 {% endif %}
-            </li>
-        {% endfor %}
+            {% endfor %}
         {% endif %}
     </ul>
 {% endblock %}
@@ -45,7 +46,7 @@
 {% block extra_css %}
     <link rel="stylesheet" href="{% static "css/fullscreen.css" %}" />
     <link rel="stylesheet" href="{% static "css/search.css" %}" />
-    <link rel="stylesheet" href="{% static "css/lod-detail.css" %}" />
+    <link rel="stylesheet" href="{% static "css/detail_field.css" %}" />
     <link rel="stylesheet" href="{% static "css/bootstrap-tagsinput.css" %}" />
     {% leaflet_css %}
     <link rel="stylesheet" href="{% static "css/leaflet/leaflet.label.css" %}" />
@@ -74,6 +75,9 @@
         {% if num_cols %}
             grid_cols = {{ num_cols  }};
         {% endif %}
+        if(isMobile.any || $( window ).width() < '992'){
+            grid_cols = 1;
+        }
         $(function(){
             SearchView.initSearchTags();
             {% if view == 'geo' %}

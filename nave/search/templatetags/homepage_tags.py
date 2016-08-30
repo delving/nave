@@ -3,7 +3,7 @@ import logging
 from django import template
 from django.conf import settings
 
-from void import get_es
+from search import get_es_client
 from void.models import DataSet
 
 register = template.Library()
@@ -20,7 +20,7 @@ def data_counts():
 
     try:
         dataset_count = DataSet.objects.count()
-        object_count = get_es().count(index=settings.SITE_NAME, doc_type="void_edmrecord")['count']
+        object_count = get_es_client().count(index=settings.SITE_NAME, doc_type="void_edmrecord")['count']
 
         return {'datasets': dataset_count, 'objects': object_count}
     except:

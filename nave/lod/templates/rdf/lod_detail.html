@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% load staticfiles i18n dataset_tags leaflet_tags %}
+{% load staticfiles i18n dataset_tags leaflet_tags deepzoom_tags %}
 
 {% block body_class %}body-offcanvas{% endblock %}
 
@@ -8,6 +8,8 @@
     {% leaflet_css %}
     <link rel="stylesheet" href="{% static "css/fullscreen.css" %}"/>
     <link rel="stylesheet" href="{% static "css/lod-detail.css" %}"/>
+    <link rel="stylesheet" href="{% static "css/detail_field.css" %}"/>
+
     <link rel="stylesheet" href="{% static "css/search.css" %}"/>
     <link rel="stylesheet" href="{% static "css/parsley.css" %}"/>
 {% endblock %}
@@ -44,38 +46,27 @@
 
 {% block content %}
 
-    {#############################################################}
-    {# RETURN TO RESULTS BUTTON                                  #}
-    {#############################################################}
-    {% if '/search/' in request.META.HTTP_REFERER %}
-        <a class="btn btn-default" href="{{ request.META.HTTP_REFERER }}" id="btn-back">
-            <i class="fa fa-hand-o-left"></i>&#160;{% trans 'Return to results' %}
-        </a>
-        <hr/>
-    {% elif  '/page/' in request.META.HTTP_REFERER %}
-        {# use history.back() instead of the HTTP_REFERER to get rid of '/page/' in referrer #}
-        <a class="btn btn-default" id="btn-back" onclick="history.back();">
-            <i class="fa fa-hand-o-left"></i>&#160;{% trans 'Return to previous object' %}
-        </a>
-        <hr/>
-    {% endif %}
-
-
-    {#############################################################}
-    {# TITLE                                                     #}
-    {#############################################################}
-    {% detail_field 'dc_title' show_predicate=False word_limit=25 surround="h1" %}
-
-    {#############################################################}
-    {# DESCRIPTION                                               #}
-    {#############################################################}
-    {% detail_field 'dc_description' label=_('dc_description') word_limit=200 show_predicate=False surround="blockquote" allow_html=True %}
-
     <div role="tabpanel" class="navigator-tabs">
     {#############################################################}
-    {# TAB/PILL BUTTONS                                          #}
+    {# RECORD SECTION NAV                                        #}
     {#############################################################}
-    <ul class="nav nav-pills" role="tablist">
+    <ul class="nav pull-left list-inline">
+        <li>
+            {% if '/search/' in request.META.HTTP_REFERER %}
+                <a class="" href="{{ request.META.HTTP_REFERER }}" id="btn-back">
+                    <i class="fa fa-hand-o-left"></i>&#160;{% trans 'Return to results' %}
+                </a>
+            {% elif  '/page/' in request.META.HTTP_REFERER %}
+                {# use history.back() instead of the HTTP_REFERER to get rid of '/page/' in referrer #}
+                <a class="" id="btn-back" onclick="history.back();">
+                    <i class="fa fa-hand-o-left"></i>&#160;{% trans 'Return to previous object' %}
+                </a>
+            {% endif %}
+        </li>
+
+    </ul>
+    <ul class="nav nav-pills pull-right" role="tablist">
+
         {% if content_template %}
             <li>
                 <a href="#tab-content" role="tab" data-toggle="tab">{% trans 'Content' %}</a>
@@ -99,36 +90,18 @@
             <li><a href="#tab-related" role="tab" data-toggle="tab" id="click-related">{% trans 'Related' %}</a></li>
         {% endif %}
     </ul>
+
+    <div class="clearfix"></div>
+
     <div class="tab-content">
-
-
-    {%  for item in ugc %}
-        {% if not user.is_superuser %}
-            {% if item.published %}
-            {# add unplished ones as well but only for logged in user #}
-                name: {{ item.name }}<br/>
-                type: {{ item.content_type }}<br/>
-                description:{{ item.short_description }}<br/>
-                link: {{ item.link }}<br/><hr/>
-            {% endif %}
-        {% else %}
-            name: {{ item.name }}<br/>
-            type: {{ item.content_type }}<br/>
-            description:{{ item.short_description }}<br/>
-            link: {{ item.link }}<br/>
-            <button id="su_edit_ugc" class="btn btn-info"><i class="fa fa-edit"></i></button>
-            <button id="su_remove_ugc" class="btn btn-danger"><i class="fa fa-trash-o"></i></button>
-            <hr/>
-        {% endif %}
-    {% endfor %}
-
         {#############################################################}
         {# CONTENT - CORE METADATA                                   #}
         {#############################################################}
-        {% if content_template %}
-            {% include content_template %}
-        {% endif %}
-
+        <div role="tabpanel" class="tab-pane clear-fix" id="tab-content">
+            {% if content_template %}
+                {% include content_template %}
+            {% endif %}
+        </div>
         {#############################################################}
         {# PROPERTIES WITH INLINES                                   #}
         {#############################################################}
@@ -136,29 +109,20 @@
             <h4 class="detail-header">
                 {% trans 'Properties' %}
                 <div class="tools">
-                    <label><input type="checkbox"
-                                  id="display-predicate-uri-label">&#160;&#160;{% trans 'Display predicate uris' %}
-                    </label>
-                    {#                        <label><input type="checkbox" id="display-link-context">&#160;&#160;{% trans 'Display link context' %}</label>#}
-                    <a class="btn btn-xs btn-primary" href="{{ about }}.n3" target="_blank"><i
-                            class="fa fa-download fa-fw"></i> ntriples</a>
-                    <a class="btn btn-xs btn-primary" href="{{ about }}.ttl" target="_blank"><i
-                            class="fa fa-download fa-fw"></i> turtle</a>
-                    <a class="btn btn-xs btn-primary" href="{{ about }}.rdf" target="_blank"><i
-                            class="fa fa-download fa-fw"></i> rdf/xml</a>
-                    <a class="btn btn-xs btn-primary" href="{{ about }}.json-ld" target="_blank"><i
-                            class="fa fa-download fa-fw"></i> json-ld</a>
+                    <label><input type="checkbox" id="display-predicate-uri-label">&#160;&#160;{% trans 'Display predicate uris' %}</label>
+                    {# <label><input type="checkbox" id="display-link-context">&#160;&#160;{% trans 'Display link context' %}</label>#}
+                    <a class="btn btn-xs btn-default" href="{{ about }}.n3" target="_blank"><i class="fa fa-download fa-fw"></i> ntriples</a>
+                    <a class="btn btn-xs btn-default" href="{{ about }}.ttl" target="_blank"><i class="fa fa-download fa-fw"></i> turtle</a>
+                    <a class="btn btn-xs btn-default" href="{{ about }}.rdf" target="_blank"><i class="fa fa-download fa-fw"></i> rdf/xml</a>
+                    <a class="btn btn-xs btn-default" href="{{ about }}.json-ld" target="_blank"><i class="fa fa-download fa-fw"></i> json-ld</a>
                 </div>
             </h4>
             <div class="row" id="properties">
                 <div class="col-sm-12">
                     {% render_properties items=items resources=resources %}
                 </div>
-
             </div>
-
         </div>
-
         {#############################################################}
         {# STATISTICS                                                #}
         {#############################################################}
@@ -277,7 +241,7 @@
 
     </div><!-- end role tabpanel -->
 
-    {% if user.is_superuser %}
+    {% if user.is_staff %}
         {#############################################################}
         {# ENRICHMENT FORM - user with admin priv. only   #}
         {#############################################################}
@@ -297,11 +261,12 @@
 
 {% block extra_js %}
     <script type="text/javascript" src="{% static 'js/jquery.fullsizable.2.0.2.min.js' %}"></script>
+
     <script type="text/javascript" src="{% static 'js/swfobject.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/imageLiquid.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/LodView.js' %}"></script>
     <script src="{% static 'js/parsley.min.js' %}"></script>
-    {% if user.is_superuser %}
+    {% if user.is_staff %}
         <script type="text/javascript" src="{% static 'js/LodUgcEnrichment.js' %}"></script>
     {% endif %}
 
@@ -315,7 +280,7 @@
             {#############################################################}
             {# do on document ready                                      #}
             {#############################################################}
-            {% if user.is_superuser %}
+            {% if user.is_staff %}
                 Nave.initSidePanel();
                 Ugc.initForm();
             {% endif %}
@@ -350,14 +315,31 @@
                 $('input[name=literal_property]').val($(this).attr('data-current-fieldname'));
                 $('input[name=literal_value]').val($(this).attr('data-current-literal'));
             });
+            {#############################################################}
+            {# update thumnail nav item active class                     #}
+            {#############################################################}
+            $('#media-carousel').on('slid.bs.carousel', function (e) {
+                var id = $('.item.active').data('slide-number');
+                id = parseInt(id);
+                console.log(id);
+                $('[id^=carousel-selector-]').removeClass('active');
+                $('[id=carousel-selector-'+id+']').addClass('active');
+            });
         });
     </script>
-
+    {###############################################################}
+    {# if deepzoom_count then activate zoom viewer - openseadragon #}
+    {###############################################################}
+    {% if deepzoom_count %}
+        {% deepzoom_js deepzoom_count=deepzoom_count deepzoom_urls=deepzoom_urls|safe show_navigator=True navigator_position="BOTTOM_RIGHT" %}
+    {% endif %}
+    {#############################################################}
+    {# if points then activate map view - leaflet                #}
+    {#############################################################}
     {% if points %}
         <!-- leaflet -->
         {% leaflet_js %}
         <script type="text/javascript" src="{% static 'js/leaflet/leaflet.label-src.js' %}"></script>
-
         <script>
             var tiles = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {maxZoom: 16});
             var map = L.map('navigator-map', {layers: [tiles]});
@@ -369,6 +351,5 @@
                 {% endfor %}
             ];
         </script>
-
     {% endif %}
 {% endblock %}

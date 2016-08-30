@@ -1,4 +1,3 @@
-extend ' .clearfix' has no matches
 /**
  * MARGIN SHORTCUTS
  * these are shortcuts to the margin-{side} CSS property
@@ -47,8 +46,8 @@ extend ' .clearfix' has no matches
   width: 180px;
 }
 .result-tools .form-pager .input-group-addon {
-  background: #555;
-  color: #fff;
+  background: #555555;
+  color: #ffffff;
 }
 .result-tools .form-pager input {
   border: none;
@@ -68,7 +67,7 @@ extend ' .clearfix' has no matches
 }
 .result-tools .select-rows .selected {
   font-weight: bold;
-  color: #000;
+  color: #000000;
 }
 .result-tools .select-rows a {
   color: #707070;
@@ -167,7 +166,7 @@ a.result-item-link:hover {
   padding: 4px 8px;
 }
 .meta .title {
-  color: #444;
+  color: #444444;
   font-weight: bold;
 }
 .meta .creator {
@@ -183,28 +182,23 @@ a.result-item-link:hover {
   color: #c3c3c3;
   font-size: .8em;
 }
+/* result item foldout ***********/
 .result-item-foldout {
-  min-height: 350px;
   margin-bottom: 20px;
 }
 .result-item-foldout .close {
-  color: #000;
+  color: #000000;
   font-family: Verdana;
   font-weight: 100;
   opacity: 1;
 }
 .result-item-foldout .result-item-detail {
-  background: #ddd;
-  min-height: 350px;
+  background: #ffffff;
+  border: 1px solid #e9e9e9;
   padding: 20px;
-  height: 100%;
 }
-.result-item-foldout .btn-goto-detail {
-  background: #ccc;
-  border: 1px solid #bbb;
-  display: block;
-  width: 100%;
-  height: 100%;
+.result-item-foldout .btn-to-detail {
+  margin-top: 20px;
 }
 .facet-container {
   margin-bottom: 10px;
@@ -226,16 +220,16 @@ a.result-item-link:hover {
   font-size: smaller;
   padding: 2px 4px;
 }
-.facet-body {
+.facet-list {
   font-size: .90em;
   max-height: 150px;
   overflow-y: auto;
 }
-.facet-body li a {
+.facet-list li a {
   display: table-row;
   word-break: break-all;
 }
-.facet-body li a i {
+.facet-list li a i {
   display: table-cell;
   padding-right: 4px;
 }
@@ -249,30 +243,6 @@ a.result-item-link:hover {
 .ds-sub-header {
   border-bottom: 1px solid #ddd;
   color: #666;
-}
-.ds-field {
-  display: block;
-  margin-bottom: 0px;
-  -ms-word-break: break-all;
-  /* Be VERY careful with this, breaks normal words wh_erever */
-  word-break: break-all;
-  /* Non standard for webkit */
-  word-break: break-word;
-  -webkit-hyphens: auto;
-  -moz-hyphens: auto;
-  hyphens: auto;
-}
-.ds-field label {
-  display: block;
-  color: #888;
-  margin: 0 0 0 0;
-}
-.ds-field label.inline {
-  display: inline-block;
-}
-.ds-field-value {
-  display: block;
-  margin-left: 10px;
 }
 .field-tools {
   display: inline-block;

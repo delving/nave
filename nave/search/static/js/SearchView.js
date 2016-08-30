@@ -54,6 +54,7 @@ SearchView.processImages = function () {
 /***********************************************************************************/
 SearchView.initFacets = function () {
     // facet sorting
+    // $facetContainer = $(".facet-container");
     $(".facet-container .sort").on('click', function (e) {
         e.preventDefault();
         var _this = $(this),
@@ -61,15 +62,50 @@ SearchView.initFacets = function () {
             type = _this.data('sort-type');
         sortFacets(_this, target, type);
     });
-    // facet fixing
-    $(".facet-link").each(function(){
-        var link = $(this),
-            href = link.attr('href'),
-            newHref = '';
-        if (href.indexOf(' & ') > 0){
-            newHref = href.replace(' & ', '%20%26%20');
-            link.attr('href', newHref);
+    // facet link tooling
+    $.each($('ul.list-facets'), function(){
+        var facets = $(this);
+        var links = facets.find('a.facet-link');
+        var container = facets.closest('.facet-container');
+        var facet_body = container.find('.facet-body');
+        var facet_list = container.find('.facet-list');
+        var facet_tools = container.find('.facet-tools');
+        var facet_toggle = container.find('.facet-toggle')
+
+        if(links.length <= 3 ){
+            $(facet_tools).hide();
         }
+
+        // href fixing where necessary
+        $.each(links, function(){
+            var link = $(this),
+                href = link.attr('href'),
+                newHref = '';
+            if (href.indexOf(' & ') > 0){
+                newHref = href.replace(' & ', '%20%26%20');
+                link.attr('href', newHref);
+            }
+        });
+
+        // check for first checked facet and scroll it into view, then break out of loop
+        $.each(links, function(){
+            var link = $(this);
+            if(link.attr('data-checked')=='true'){
+                // if container has a selected facet then add class 'in' to open
+                facet_body.addClass('in');
+                // set the correct icon
+                container.find('i').toggleClass('fa-minus fa-plus');
+                // scroll to the first selected facet link
+                facet_list.animate({scrollTop: link.offset().top - container.offset().top - 80 });
+                // then stop
+                return false;
+            }
+        });
+
+       facet_toggle.on('click', function(){
+           $(this).find('i').toggleClass('fa-minus fa-plus');
+       });
+
     });
 };
 
@@ -83,16 +119,12 @@ SearchView.initSearchTags = function() {
     //var $input = $form.find('input#q');
     var $input = $('div#qtags');
     var $btnClear = $('#btn-clear-simple-search');
-
-
+    //var tagSize = 'small';
     $input.tagsinput({
         itemText:'text',
         itemValue:'value',
         tagClass: function (item) {
             var classStr = 'label label-default';
-            //console.log($items.length);
-            //var tagSize = item.length > 4 ? 'big' : 'small';
-            //var tagSize = 'small';
             switch (item.name) {
                 case 'q':
                     classStr = 'label label-query ';
@@ -106,12 +138,21 @@ SearchView.initSearchTags = function() {
 
     $queryForm.find('input:hidden').each(function() {
         var $param = $(this);
-        // if this is a query (q) element, then split it up if it contains
-        // more than a singe term
-        if ($param.attr('name') == 'q' ) {
-
+        var $qTerms = [];
+        // TODO: if this is a query (q) element, then split it up if it contains more than a singe term
+        // if ($param.attr('name') == 'q' ) {
+        //     qTerms = $param.attr('value').split(' ');
+        //     qTerms.forEach(function(element){
+        //         $input.tagsinput('add', {'text': element, 'value': element, 'name': $param.attr('name')});
+        //     });
+        // }
+        // else {
+        //     $input.tagsinput('add', {'text': $param.attr('data-text'), 'value': $param.attr('value'), 'name': $param.attr('name')});
+        // }
+        if($param.attr('value')){
+            $input.tagsinput('add', {'text': $param.attr('data-text'), 'value': $param.attr('value'), 'name': $param.attr('name')});
         }
-        $input.tagsinput('add', {'text': $param.attr('data-text'), 'value': $param.attr('value'), 'name': $param.attr('name')});
+
     });
 
     $btnClear.removeClass('hidden');

@@ -87,11 +87,24 @@ Nave.initMapSearchModal = function () {
 /***********************************************************************************/
 // Nave.initSidePanel depends on jquery to be loaded. Toggles side panel
 /***********************************************************************************/
+Nave.toggleSidePanel = function (id) {
+    // click any side-panel tab to open parent panel
+    if(!id){
+        // unbind click since function can be initiated multiple times
+        $(".side-panel-tab").unbind('click').click(function(e){
+            e.preventDefault();
+            $(this).parent().toggleClass("open");
+        });
+    }
+    // If id is passed open that side-panel - handy for calling from other functions
+    else {
+        $(id).toggleClass("open");
+    }
+
+};
+
 Nave.initSidePanel = function () {
-    $(".side-panel-tab").click(function(e){
-        e.preventDefault();
-        $(this).parent().toggleClass("open");
-    });
+    Nave.toggleSidePanel ();
     // close on escape key
     $(document).keyup(function(e) {
         if (e.keyCode == 27) {
@@ -99,3 +112,4 @@ Nave.initSidePanel = function () {
         }
     });
 };
+
