@@ -1,4 +1,3 @@
-extend ' .clearfix' has no matches
 /**
  * MARGIN SHORTCUTS
  * these are shortcuts to the margin-{side} CSS property
@@ -47,8 +46,8 @@ extend ' .clearfix' has no matches
   width: 180px;
 }
 .result-tools .form-pager .input-group-addon {
-  background: #555;
-  color: #fff;
+  background: #555555;
+  color: #ffffff;
 }
 .result-tools .form-pager input {
   border: none;
@@ -68,7 +67,7 @@ extend ' .clearfix' has no matches
 }
 .result-tools .select-rows .selected {
   font-weight: bold;
-  color: #000;
+  color: #000000;
 }
 .result-tools .select-rows a {
   color: #707070;
@@ -167,7 +166,7 @@ a.result-item-link:hover {
   padding: 4px 8px;
 }
 .meta .title {
-  color: #444;
+  color: #444444;
   font-weight: bold;
 }
 .meta .creator {
@@ -188,13 +187,13 @@ a.result-item-link:hover {
   margin-bottom: 20px;
 }
 .result-item-foldout .close {
-  color: #000;
+  color: #000000;
   font-family: Verdana;
   font-weight: 100;
   opacity: 1;
 }
 .result-item-foldout .result-item-detail {
-  background: #fff;
+  background: #ffffff;
   border: 1px solid #e9e9e9;
   padding: 20px;
 }
@@ -221,16 +220,16 @@ a.result-item-link:hover {
   font-size: smaller;
   padding: 2px 4px;
 }
-.facet-body {
+.facet-list {
   font-size: .90em;
   max-height: 150px;
   overflow-y: auto;
 }
-.facet-body li a {
+.facet-list li a {
   display: table-row;
   word-break: break-all;
 }
-.facet-body li a i {
+.facet-list li a i {
   display: table-cell;
   padding-right: 4px;
 }

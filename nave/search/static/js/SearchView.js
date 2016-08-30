@@ -66,11 +66,16 @@ SearchView.initFacets = function () {
     $.each($('ul.list-facets'), function(){
         var facets = $(this);
         var links = facets.find('a.facet-link');
-        var container = facets.parent();
-        // hide the sorting tools if number of facet links is small
-        if(links.length <= 5 ){
-            $(container).parent().find('.facet-tools').hide();
+        var container = facets.closest('.facet-container');
+        var facet_body = container.find('.facet-body');
+        var facet_list = container.find('.facet-list');
+        var facet_tools = container.find('.facet-tools');
+        var facet_toggle = container.find('.facet-toggle')
+
+        if(links.length <= 3 ){
+            $(facet_tools).hide();
         }
+
         // href fixing where necessary
         $.each(links, function(){
             var link = $(this),
@@ -81,20 +86,26 @@ SearchView.initFacets = function () {
                 link.attr('href', newHref);
             }
         });
+
         // check for first checked facet and scroll it into view, then break out of loop
         $.each(links, function(){
             var link = $(this);
             if(link.attr('data-checked')=='true'){
-                $(container).addClass('in');
-                $(container).parent().find('i').toggleClass('fa-minus fa-plus');
-                $(container).parent().find('.facet-header').removeClass('collapsed');
-                container.animate({scrollTop: link.offset().top - container.offset().top - 40 });
+                // if container has a selected facet then add class 'in' to open
+                facet_body.addClass('in');
+                // set the correct icon
+                container.find('i').toggleClass('fa-minus fa-plus');
+                // scroll to the first selected facet link
+                facet_list.animate({scrollTop: link.offset().top - container.offset().top - 80 });
+                // then stop
                 return false;
             }
         });
-    });
-    $('.facet-toggle').on('click', function(){
-        $(this).find('i').toggleClass('fa-minus fa-plus');
+
+       facet_toggle.on('click', function(){
+           $(this).find('i').toggleClass('fa-minus fa-plus');
+       });
+
     });
 };
 
