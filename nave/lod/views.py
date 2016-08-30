@@ -361,7 +361,8 @@ class LoDHTMLView(TemplateView):
             if settings.MLT_DETAIL_ENABLE and object_local_cache:
                 context['data'] = {'items': object_local_cache.get_more_like_this()}
         if settings.MLT_BANNERS and isinstance(settings.MLT_BANNERS, dict) and object_local_cache:
-            context['data'] = {"mlt_banners": {}}
+            from collections import OrderedDict
+            context['data'] = {"mlt_banners": OrderedDict()}
             for name, config in settings.MLT_BANNERS.items():
                 context['data']['mlt_banners'][name] = object_local_cache.get_more_like_this(
                         mlt_count=10,
