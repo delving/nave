@@ -14,6 +14,7 @@
                                 </span>
                     </div>
                     <div class="facet-body">
+                        <div class="facet-list">
                         <ul class="list-unstyled list-facets">
                             {% for term in facet.facet_link.links %}
                                 <li data-value="{{ term.value  }}" data-count="{{ term.count }}">
@@ -24,6 +25,7 @@
                                 </li>
                             {% endfor %}
                         </ul>
+                        </div>
                     </div>
                 </div>
             {% endif %}
