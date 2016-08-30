@@ -111,7 +111,7 @@ class BulkApiProcessor:
                 acceptance = True if acceptance_mode is not None and acceptance_mode.lower() in ['true'] else False
                 content_hash = action.get('contentHash', None)
                 from lod.utils.resolver import ElasticSearchRDFRecord
-                record = ElasticSearchRDFRecord(spec=self.spec, named_graph_uri=record_graph_uri)
+                record = ElasticSearchRDFRecord(spec=self.spec, rdf_string=graph_ntriples)
                 try:
                     rdf_format = record.DEFAULT_RDF_FORMAT if "<rdf:RDF" not in graph_ntriples else "xml"
                     record.from_rdf_string(
