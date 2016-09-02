@@ -162,6 +162,11 @@ def render_properties(context, resources, obj=None, items=None, predicate=None, 
     }
 
 
+@register.simple_tag()
+def get_resolved_uri(absolute_uri):
+    return RDFRecord.get_internal_rdf_base_uri(absolute_uri)
+
+
 @register.inclusion_tag('rdf/tags/_banner-detail-field.html', takes_context=False)
 def banner_field(field_name, item, class_name, html_tag):
     exists = False
