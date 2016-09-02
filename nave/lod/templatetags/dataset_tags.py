@@ -163,7 +163,7 @@ def render_properties(context, resources, obj=None, items=None, predicate=None, 
 
 
 @register.simple_tag(takes_context=True)
-def get_resolved_uri(context, absolute_uri):
+def get_external_uri(context, absolute_uri):
     return RDFRecord.get_external_rdf_url(absolute_uri, context['request'])
 
 
