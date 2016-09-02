@@ -162,8 +162,26 @@ def render_properties(context, resources, obj=None, items=None, predicate=None, 
     }
 
 
-########## result detail return field value only  for media item ######################
+@register.inclusion_tag('rdf/tags/_banner-detail-field.html', takes_context=False)
+def banner_field(field_name, item, class_name, html_tag):
+    exists = False
+    value = None
+    if field_name in item.fields:
+        value = item.fields.get(field_name)
+        if value:
+            if len(value) > 0:
+                value = value[0].get("value")
+            if value:
+                exists = True
+    return {
+        "exists": exists,
+        "value": value,
+        "class_name": class_name,
+        "html_tag": html_tag
+    }
 
+
+#  ######### result detail return field value only  for media item ######################
 @register.inclusion_tag('rdf/tags/_search-detail-field.html', takes_context=True)
 def detail_field(
         context,
