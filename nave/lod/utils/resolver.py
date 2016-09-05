@@ -1357,7 +1357,7 @@ class ElasticSearchRDFRecord(RDFRecord):
         )[:mlt_count]
         if filter_query:
             for k, v in filter_query.items():
-                mlt_query = mlt_query.filter("term", k=v)
+                mlt_query = mlt_query.filter("term", **{k: v})
         hits = mlt_query.execute()
         items = []
         for item in hits:
