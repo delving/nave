@@ -354,7 +354,9 @@ class WebResource:
             for ext in ['tif', 'jp2', 'jpg']:
                 if ext in wr_dict:
                     return wr_dict[ext][0]
-        return matches[0]
+        elif len(matches) == 1:
+            return matches[0]
+        return None
 
     @property
     def get_source_path(self):
@@ -620,3 +622,53 @@ class WebResource:
             shutil.move(local_filename, self.get_source_path)
         except HTTPError as he:
             logger.error(he.code, he.reason)
+
+    @staticmethod
+    def get_redirect_url(absolute_uri):
+        """
+        Retrieving the WebResource derivative URIs
+        """
+        from urllib.parse import urlparse, parse_qs
+        parse_result = urlparse(absolute_uri)
+        params = parse_qs(parse_result.query)
+
+        uri = params.get('uri')
+        hub_id = params.get('hubId')
+        doc_type = params.get('docType', "thumbnail")
+        width = params.get('width', None)
+        height = params.get('height', None)
+        spec = params.get('spec')
+
+        if not spec or (not uri and not hub_id):
+            raise ValueError("Missing required query parameters. 'spec' and 'uri' or 'hub_id' must be supplied")
+
+        if not height and not width:
+            width = height = 220
+        elif width and not height:
+            height = width
+        elif height and not width:
+            width = height
+
+        if not isinstance(width, int):
+            width = int(width)
+        if not isinstance(height, int):
+            height = int(height)
+
+        domain = "{}://{}".format(parse_result.scheme, parse_result.net_loc)
+        if settings.DEBUG:
+            domain = domain.replace(':8000', '')
+
+        # media_type = params.get('mediaType')
+        # default_image = params.get('defaultImage')
+        if not spec and hub_id:
+            org_id, spec, local_id = hub_id.split('_')
+
+        from .webresource import WebResource
+        webresource = WebResource(uri=uri, hub_id=hub_id, spec=spec, domain=domain)
+        redirect_uri = None
+        if doc_type == 'thumbnail':
+            redirect_uri = webresource.get_thumbnail_redirect(width, height)
+        elif doc_type == "deepzoom":
+            redirect_uri = webresource.get_deepzoom_redirect()
+        # TODO: possibly later add route to source for logged in or APi token users
+        return redirect_uri

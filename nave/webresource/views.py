@@ -25,48 +25,11 @@ class WebResourceRedirectView(RedirectView):
         """
         Retrieving the WebResource derivative URIs
         """
-        uri = self.request.GET.get('uri')
-        hub_id = self.request.GET.get('hubId')
-        doc_type = self.request.GET.get('docType', "thumbnail")
-        width = self.request.GET.get('width', None)
-        height = self.request.GET.get('height', None)
-        spec = self.request.GET.get('spec')
-
-        if not spec:
-            return reverse("webresource_docs")
-        elif not uri and not hub_id:
-            return reverse("webresource_docs")
-
-        if not height and not width:
-            width = height = 220
-        elif width and not height:
-            height = width
-        elif height and not width:
-            width = height
-
-        if not isinstance(width, int):
-            width = int(width)
-        if not isinstance(height, int):
-            height = int(height)
-
-        domain = self.request.META['HTTP_HOST']
-        if settings.DEBUG:
-            domain = domain.replace(':8000', '')
-
-        # media_type = self.query_string.get('mediaType')
-        # default_image = self.query_string.get('defaultImage')
-        if not spec and hub_id:
-            org_id, spec, local_id = hub_id.split('_')
-
         from .webresource import WebResource
-        webresource = WebResource(uri=uri, hub_id=hub_id, spec=spec, domain=domain)
-        redirect_uri = None
-        if doc_type == 'thumbnail':
-            redirect_uri = webresource.get_thumbnail_redirect(width, height)
-        elif doc_type == "deepzoom":
-            redirect_uri = webresource.get_deepzoom_redirect()
-        # TODO: possibly later add route to source for logged in or APi token users
-        return redirect_uri
+        try:
+            return WebResource.get_redirect_url(self.request.build_absolute_uri())
+        except ValueError as ve:
+            return reverse("webresource_docs")
 
 
 def webresource_docs(request):
