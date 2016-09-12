@@ -403,6 +403,8 @@ class NaveESQuery(object):
                 query = query.query.query(_id=clean_id, _type=doc_type)
                 self._is_item_query = True
             elif self.hub_id_pattern.findall(clean_id):
+                from lod.utils.resolver import RDFRecord
+                clean_id = RDFRecord.clean_local_id(clean_id)
                 query = query.query.query(_id=clean_id)
                 self._is_item_query = True
             else:
