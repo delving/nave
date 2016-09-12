@@ -599,9 +599,7 @@ class NaveESQuery(object):
             with robust('facet'):
                 if 'facet.size' in params:
                     self.facet_size = int(params.get('facet.size'))
-                # add .raw if not already there
-                # facet_list = ["{}.raw".format(facet.rstrip('.raw')) for facet in facet_list]
-                facet_filt_dict = {"{}.raw".format(k.split('.')[0]): list(v) for k, v in filter_dict.items()}
+                facet_filt_dict = {"{}.raw".format(k.replace('.raw', '')): list(v) for k, v in filter_dict.items()}
                 for facet in facet_list:
                     # remove current facet from filter dict
                     if not facet_bool_type_and:
