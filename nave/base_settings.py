@@ -683,7 +683,10 @@ RDF_CONTENT_FOLDOUTS = {
 
 
 DEFAULT_V1_CONVERTER = "icn"
+API_DOC_TYPES_V1 = []
+
 DEFAULT_V2_CONVERTER = "v2"
+API_DOC_TYPES_V2 = []
 
 MLT_FIELDS = [
     "dc_subject.value",
