@@ -8,7 +8,7 @@ jQuery(document).ready(function($) {
         dataOwner: "",
         rows: 12,
         resultsLayout: "list",
-        defaultImg: "images/blank.png",
+        defaultImg: "images/placeholder.svg",
         language: "nl",  
         label:{
             collapse: "Minder&nbsp;[-]",
@@ -28,7 +28,9 @@ jQuery(document).ready(function($) {
             boolNot: "NIET",
             boolOr: "OF",
             relatedItems: "Soortgelijke inhoud",
-            sort: "Sorteer"
+            sort: "Sorteer",
+            sortNumeric: "0-9",
+            sortAlphabetic: "A-Z"
         },
         layout: {
             simpleSearchBlock: "#diw-search",

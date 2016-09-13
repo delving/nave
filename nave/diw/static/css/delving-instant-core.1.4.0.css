@@ -133,6 +133,7 @@ a img {
 /* Layout **************************************/
 .diw-search-results .diw-title {
   font-weight: bold;
+  font-size: 1.25em;
 }
 .diw-search-results #diw-results {
   display: block;
@@ -179,10 +180,6 @@ a img {
   border-top: none;
 }
 .diw-facet-container .inner {
-  font-size: smaller;
-  max-height: 235px;
-  overflow-x: hidden;
-  overflow-y: auto;
   margin: 0 0 10px 0;
 }
 .diw-facet-container .facet-tools {
@@ -194,6 +191,11 @@ a img {
   font-size: smaller;
   margin-right: 8px;
   padding: 2px 4px;
+}
+.diw-facet-container .facet-list-container {
+  max-height: 235px;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 .diw-facet-container .diw-facet-list {
   margin: 0 0 0 0;

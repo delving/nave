@@ -1,0 +1,17 @@
+<svg id="Placeholder_plaatje.png_Placeholder_plaatje.svg" data-name="Placeholder_plaatje.png, Placeholder_plaatje.svg" xmlns="http://www.w3.org/2000/svg" width="257.312" height="191.406" viewBox="0 0 257.312 191.406">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #e0e0e0;
+      }
+
+      .cls-2 {
+        fill: #fff;
+        fill-rule: evenodd;
+      }
+    </style>
+  </defs>
+  <rect class="cls-1" x="1" y="0.406" width="256" height="190"/>
+  <path class="cls-2" d="M127.7,666.4l0.6-.8,256,190-0.6.8Z" transform="translate(-127 -665.594)"/>
+  <path class="cls-2" d="M383.985,666.809l-0.6-.8L127.015,856.192l0.6,0.8Z" transform="translate(-127 -665.594)"/>
+</svg>
