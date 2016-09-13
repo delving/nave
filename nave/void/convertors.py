@@ -269,6 +269,7 @@ class BaseConverter(object):
 
     def get_hub_id(self):
         *rest, spec, local_id = self.about_uri.split('/')
+        local_id = RDFRecord.clean_local_id(local_id)
         return "{}_{}_{}".format(self.org_id, spec, local_id), spec
 
     def get_non_null(self, key, input_doc, output_doc):

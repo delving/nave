@@ -489,11 +489,12 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
 
 class V1SearchListApiView(SearchListAPIView):
     default_converter = settings.DEFAULT_V1_CONVERTER
-    doc_types = []
+    doc_types = settings.API_DOC_TYPES_V1
 
 
 class V2SearchListApiView(SearchListAPIView):
     default_converter = settings.DEFAULT_V2_CONVERTER
+    doc_types = settings.API_DOC_TYPES_V2
 
 
 class SearchListHTMLView(SearchListAPIView):

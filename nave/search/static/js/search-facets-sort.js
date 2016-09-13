@@ -2,6 +2,8 @@
 function sortFacets(trigger, target, type) {
     // @target is the id associated with the list
     // @type is either on 'name' or 'count
+    trigger.parent().find('a.sort').removeClass('sort-used');
+    trigger.addClass('sort-used');
     var theList = $('#' + target).find('ul');
     var theListItems = $.makeArray(theList.children("li"));
     if (!theList.hasClass('sorted')) {
@@ -9,8 +11,13 @@ function sortFacets(trigger, target, type) {
             var textA = $(a).data(type);
             var textB = $(b).data(type);
             if (type === 'value'){
-                var textA = textA.toLowerCase();
-                var textB = textB.toLowerCase();
+                try {
+                    var textA = textA.toLowerCase();
+                    var textB = textB.toLowerCase();
+                } catch(err) {
+                    var textA = textA;
+                    var textB = textB;
+                }
             }
             if (textA < textB) {
                 return -1;

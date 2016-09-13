@@ -111,7 +111,7 @@ for uri, ns in list(settings.RDF_SUPPORTED_NAMESPACES.items()):
 # test if all databases are defined
 # TOdo add  "{}_acceptance".format(RDF_STORE_DB),
 # TODO review the URL composition below:
-for db in ["{}".format(RDF_STORE_DB), "test"]:
+for db in ["{}".format(RDF_STORE_DB), ]:
     try:
         response = requests.get(
                 "http://{}:{}/{}/sparql?query=ask+where+{{%3Fs+%3Fp+%3Fo}}&output=json&stylesheet=".format(

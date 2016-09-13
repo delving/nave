@@ -874,7 +874,7 @@ class RDFRecord:
 
     @staticmethod
     def clean_local_id(raw_id):
-        local_id = raw_id.replace("_", "-").replace(":", "-").replace(" ", "-").replace("+", "-")
+        local_id = raw_id.replace("_", "-").replace(":", "-").replace(" ", "-").replace("+", "-").replace("/", "-")
         if "--" in local_id:
             local_id = re.sub("[-]{2,10}", "-", local_id)
         return local_id
@@ -987,6 +987,8 @@ class RDFRecord:
     def hub_id(self):
         if not self._hub_id and self.source_uri or self.named_graph:
             self._hub_id = self.uri_to_hub_id()
+        if ":" in self._hub_id:
+            self._hub_id = self._hub_id.replace(':', '-')
         return self._hub_id
 
     def get_bindings(self, graph=None):
