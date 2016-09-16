@@ -26,7 +26,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ViewSetMixin
 from rest_framework_jsonp.renderers import JSONPRenderer
 
-from base_settings import FacetConfig
+from nave.base_settings import FacetConfig
 from nave.lod import EXTENSION_TO_MIME_TYPE
 from nave.lod.models import RDFModel, CacheResource
 from nave.lod.utils import rdfstore

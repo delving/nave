@@ -592,7 +592,7 @@ class NaveESQuery(object):
         # add facets to config
         # add non default facets to the bottom intersection from keys
         for facet in set(facet_list).difference(set(self.facet_list)):
-            from base_settings import FacetConfig
+            from nave.base_settings import FacetConfig
             self.default_facets.append(FacetConfig(
                 es_field=facet,
                 label=facet
