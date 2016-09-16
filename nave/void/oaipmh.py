@@ -435,11 +435,12 @@ class ElasticSearchOAIProvider(OAIProvider):
 
     def get_dataset_list(self):
         s = Search(using=self.client)
-        datasets = A("terms", field="delving_spec.raw")
+        datasets = A("terms", field="delving_spec.raw", size=500, order={ "_term" : "asc" })
         if self.query:
             s = s.filter(self.query.get('filter'))
         elif self.spec:
             s = s.query("match", **{'system.spec.raw': self.spec})
+        s = s[0]
         s.aggs.bucket("dataset-list", datasets)
         response = s.execute()
         specs = response.aggregations['dataset-list'].buckets
