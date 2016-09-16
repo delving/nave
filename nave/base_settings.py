@@ -39,12 +39,6 @@ BASEDIR = dirname(abspath(__file__))
 PROJECT_ROOT = DJANGO_ROOT
 
 
-# Add our project to our pythonpath, this way we don't need to type our project
-# name in our dotted import paths:
-path.append(DJANGO_ROOT)
-########## END PATH CONFIGURATION
-
-
 ########## DEBUG CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#debug
 DEBUG = True
