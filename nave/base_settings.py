@@ -700,11 +700,6 @@ MLT_BANNERS = {}
 WEB_RESOURCE_BASE = '/tmp/webresource'
 ZIPPED_SEARCH_RESULTS_DOWNLOAD_FOLDER = '/tmp/zips'
 
-# TODO: remove these settings when the new webresource package is deployed
-FILE_WATCH_BASE_FOLDER = '/tmp'
-DEEPZOOM_BASE_DIR = os.path.join(FILE_WATCH_BASE_FOLDER, "derivatives", "deepzoom")
-THUMBNAIL_BASE_DIR = os.path.join(FILE_WATCH_BASE_FOLDER, "derivatives", "thumbnail")
-
 #############################
 ## Celery Broker settings.  #
 #############################

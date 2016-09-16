@@ -46,7 +46,6 @@ env.venv_home = conf.get("VIRTUALENV_HOME", "/home/%s" % env.user)
 env.org_id = conf.get("ORG_ID", None)
 env.hub_node = conf.get("HUB_NODE", None)
 env.email_host = conf.get("EMAIL_HOST", None)
-env.file_watch_base_folder = conf.get("FILE_WATCH_BASE_FOLDER", "/mnt").rstrip('/').replace('/resource', '')
 env.venv_path = "%s/%s" % (env.venv_home, env.proj_name)
 env.proj_dirname = "project"
 env.django_dirname = "%s/%s" % (env.proj_dirname, 'nave')

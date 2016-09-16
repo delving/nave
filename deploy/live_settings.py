@@ -53,8 +53,6 @@ CACHES = {
 
 # NARTHEX_URL = "http://localhost:%(narthex_port)s/narthex"
 
-FILE_WATCH_BASE_FOLDER = "%(file_watch_base_folder)s"
-
 RDF_STORE_HOST = "%(rdf_store_host)s"
 
 RDF_BASE_URL = "%(rdf_base_url)s"
