@@ -94,7 +94,7 @@ USE_L10N = False
 USE_TZ = True
 
 LOCALE_PATHS = [
-    normpath(join(PROJECT_ROOT, 'common', 'locale'))
+    normpath(join(PROJECT_ROOT, 'nave', 'common', 'locale'))
 ]
 
 ########## END GENERAL CONFIGURATION
@@ -174,7 +174,7 @@ TEMPLATES = [
                     'django.core.context_processors.tz',
                     'django.core.context_processors.request',
                     'django.core.context_processors.static',
-                    'common.context_processors.current_url',
+                    'nave.common.context_processors.current_url',
                 )
         }
     },
@@ -200,7 +200,7 @@ TEMPLATE_DIRS = (
 # these middleware classes will be applied in the order given, and in the
 # response phase the middleware will be applied in reverse order.
 MIDDLEWARE_CLASSES = (
-    'common.middleware.TimedProfilerMiddleware',
+    'nave.common.middleware.TimedProfilerMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -209,13 +209,13 @@ MIDDLEWARE_CLASSES = (
     'oauth2_provider.middleware.OAuth2TokenMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.contrib.admindocs.middleware.XViewMiddleware',
-    'common.middleware.FallBackLanguageMiddleware',
+    'nave.common.middleware.FallBackLanguageMiddleware',
     'solid_i18n.middleware.SolidLocaleMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'common.middleware.SimpleProfilerMiddleware',
-    'common.middleware.TimedProfilerMiddleware',
-    'common.middleware.EventStoreLoggingMiddleware',
+    'nave.common.middleware.SimpleProfilerMiddleware',
+    'nave.common.middleware.TimedProfilerMiddleware',
+    'nave.common.middleware.EventStoreLoggingMiddleware',
 )
 
 AUTHENTICATION_BACKENDS = (
@@ -247,7 +247,7 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 ########## URL CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#root-urlconf
-ROOT_URLCONF = 'urls'
+ROOT_URLCONF = 'nave.urls'
 ########## END URL CONFIGURATION
 
 
@@ -280,7 +280,7 @@ DJANGO_APPS = (
     # Admin panel and documentation:
     'django.contrib.admindocs',
     # our very own common to override and add
-    'common',
+    'nave.common',
     # django-suit to pimp the admin
     'suit',
     'suit_ckeditor',
@@ -315,16 +315,16 @@ THIRD_PARTY_APPS = (
     'rosetta',  # for translation
     'raven.contrib.django.raven_compat',
     'health_check',
-    'health_monitor',
+    'nave.health_monitor',
 )
 
 # Apps specific for this project go here.
 LOCAL_APPS = (
-    'lod',
-    'void',
-    'search',
-    'webresource',
-    'virtual_collection',
+    'nave.lod',
+    'nave.void',
+    'nave.search',
+    'nave.webresource',
+    'nave.virtual_collection',
 )
 
 
@@ -456,27 +456,27 @@ LOGGING = {
             'handlers': ['console'],
             'propagate': False,
         },
-        'common': {
+        'nave.common': {
             'handlers': ['console', 'file'],
             'level': 'DEBUG',
             'propagate': True,
         },
-        'search': {
+        'nave.search': {
             'handlers': ['console', 'file'],
             'level': 'DEBUG',
             'propagate': True,
         },
-        'lod': {
+        'nave.lod': {
             'handlers': ['console', 'file'],
             'level': 'DEBUG',
             'propagate': True,
         },
-        'void': {
+        'nave.void': {
             'handlers': ['console', 'file'],
             'level': 'DEBUG',
             'propagate': True,
         },
-        'virtual_collection': {
+        'nave.virtual_collection': {
             'handlers': ['console', 'file'],
             'level': 'DEBUG',
             'propagate': True,
@@ -486,7 +486,7 @@ LOGGING = {
 
 ########## WSGI CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#wsgi-application
-WSGI_APPLICATION = 'wsgi.application'
+WSGI_APPLICATION = 'nave.wsgi.application'
 ########## END WSGI CONFIGURATION
 
 ############# REST Framework configuration
@@ -505,7 +505,7 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.BrowsableAPIRenderer',
         'rest_framework.renderers.JSONRenderer',
-        'search.renderers.XMLRenderer',
+        'nave.search.renderers.XMLRenderer',
     ),
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
@@ -737,7 +737,7 @@ CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
 
 CELERYBEAT_SCHEDULE = {
     'add-every-60-seconds': {
-        'task': 'webresource.tasks.create_webresource_dirs',
+        'task': 'nave.webresource.tasks.create_webresource_dirs',
         'schedule': timedelta(seconds=60),
         'args': None
     },
