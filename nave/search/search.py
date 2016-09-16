@@ -23,7 +23,7 @@ import six
 
 
 from .utils import gis
-from void.convertors import BaseConverter
+from nave.void.convertors import BaseConverter
 
 logger = logging.getLogger(__name__)
 
@@ -403,7 +403,7 @@ class NaveESQuery(object):
                 query = query.query.query(_id=clean_id, _type=doc_type)
                 self._is_item_query = True
             elif self.hub_id_pattern.findall(clean_id):
-                from lod.utils.resolver import RDFRecord
+                from nave.lod.utils.resolver import RDFRecord
                 clean_id = RDFRecord.clean_local_id(clean_id)
                 query = query.query.query(_id=clean_id)
                 self._is_item_query = True
@@ -1432,7 +1432,7 @@ class NaveQueryResponse(object):
     def layout(self):
         converter = self._converter
         if not converter and settings.DEFAULT_V1_CONVERTER is not None:
-                from void import REGISTERED_CONVERTERS
+                from nave.void import REGISTERED_CONVERTERS
                 converter = REGISTERED_CONVERTERS.get(settings.DEFAULT_V1_CONVERTER, None)
         if not converter:
             return {}

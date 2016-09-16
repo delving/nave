@@ -6,11 +6,11 @@ from unittest import skip
 import pytest
 from django.http import QueryDict
 from django.test import RequestFactory, TestCase
-from search.elasticutils import FacetResult
+from nave.search.elasticutils import FacetResult
 
-from search.search import NaveESQuery, GeoS, FacetCountLink, FacetLink, UserQuery, NaveFacets, NaveQueryResponse, \
+from nave.search.search import NaveESQuery, GeoS, FacetCountLink, FacetLink, UserQuery, NaveFacets, NaveQueryResponse, \
     QueryPagination
-from search.serializers import UserQuerySerializer, FacetCountLinkSerializer, FacetLinkSerializer, NaveFacetSerializer, \
+from nave.search.serializers import UserQuerySerializer, FacetCountLinkSerializer, FacetLinkSerializer, NaveFacetSerializer, \
     NaveQueryResponseSerializer, QueryPaginationSerializer
 
 rf = RequestFactory()

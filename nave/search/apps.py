@@ -8,5 +8,5 @@ from django.apps import AppConfig
 
 
 class SearchConfig(AppConfig):
-    name = 'search'
+    name = 'nave.search'
     verbose_name = "Nave Search API"

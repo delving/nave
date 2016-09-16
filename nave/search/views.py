@@ -27,15 +27,15 @@ from rest_framework.viewsets import ViewSetMixin
 from rest_framework_jsonp.renderers import JSONPRenderer
 
 from base_settings import FacetConfig
-from lod import EXTENSION_TO_MIME_TYPE
-from lod.models import RDFModel, CacheResource
-from lod.utils import rdfstore
-from lod.utils.resolver import GraphBindings, RDFRecord
-from lod.utils.rdfstore import UnknownGraph
-from lod.utils.resolver import ElasticSearchRDFRecord
-from search.tasks import download_all_search_results
-from void import REGISTERED_CONVERTERS
-from void.models import EDMRecord
+from nave.lod import EXTENSION_TO_MIME_TYPE
+from nave.lod.models import RDFModel, CacheResource
+from nave.lod.utils import rdfstore
+from nave.lod.utils.resolver import GraphBindings, RDFRecord
+from nave.lod.utils.rdfstore import UnknownGraph
+from nave.lod.utils.resolver import ElasticSearchRDFRecord
+from nave.search.tasks import download_all_search_results
+from nave.void import REGISTERED_CONVERTERS
+from nave.void.models import EDMRecord
 
 from .renderers import N3Renderer, JSONLDRenderer, TURTLERenderer, NTRIPLESRenderer, RDFRenderer, GeoJsonRenderer, \
     XMLRenderer, KMLRenderer, GeoBufRenderer

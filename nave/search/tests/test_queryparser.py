@@ -7,7 +7,7 @@ from functools import partial
 
 from django.test import TestCase
 
-from search.search import NaveESQuery
+from nave.search.search import NaveESQuery
 
 
 class TestQueryParser(TestCase):
