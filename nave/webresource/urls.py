@@ -4,7 +4,7 @@ Note:
     Make sure this url configuration is included in your main configuration
     as follows:
 
-    url(r'^', include('webresource.urls')),
+    url(r'^', include('nave.webresource.urls')),
 """
 from django.conf.urls import *  # NOQA
 
