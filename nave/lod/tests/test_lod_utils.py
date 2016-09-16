@@ -7,7 +7,7 @@ from unittest import TestCase
 
 from rdflib import ConjunctiveGraph
 
-from lod.utils.lod import get_geo_points, get_internal_rdf_base_uri
+from nave.lod.utils.lod import get_geo_points, get_internal_rdf_base_uri
 
 
 class TestLodUtils(TestCase):

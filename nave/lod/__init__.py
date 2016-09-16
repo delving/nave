@@ -16,13 +16,13 @@ from django.conf import settings
 from rdflib import Graph
 from rdflib.namespace import NamespaceManager, Namespace
 
-from lod.utils import mimetype
-from lod.utils.mimetype import EXTENSION_TO_MIME_TYPE
+from nave.lod.utils import mimetype
+from nave.lod.utils.mimetype import EXTENSION_TO_MIME_TYPE
 
 logger = logging.getLogger(__name__)
 
 # Verbose name configuration for this app
-default_app_config = 'lod.apps.LoDConfig'
+default_app_config = 'nave.lod.apps.LoDConfig'
 
 # Default settings
 

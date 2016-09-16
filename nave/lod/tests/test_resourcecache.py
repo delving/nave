@@ -11,11 +11,11 @@ from elasticsearch_dsl import Search
 from rdflib import Graph
 from rdflib.namespace import RDF
 
-from lod import tasks
-from lod.models import ResourceCacheTarget, CacheResource
-from lod.utils import rdfstore
-from lod.utils.resolver import RDFRecord
-from void.tests.test_tasks import load_nquad_fixtures
+from nave.lod import tasks
+from nave.lod.models import ResourceCacheTarget, CacheResource
+from nave.lod.utils import rdfstore
+from nave.lod.utils.resolver import RDFRecord
+from nave.void.tests.test_tasks import load_nquad_fixtures
 
 
 class TestResourceCacheTarget(TestCase):
@@ -109,7 +109,7 @@ class TestResourceCache(TestCase):
         CELERY_ALWAYS_EAGER=True,
         BROKER_BACKEND='memory')
     def test_save_cached_resource(self):
-        from search import get_es_client
+        from nave.search import get_es_client
         client = get_es_client()
         s = Search(client).index("test")
         del_response = client.delete_by_query(index='test', q="*:*")

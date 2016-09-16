@@ -19,21 +19,21 @@ from django.views.generic import TemplateView, RedirectView, View
 from rdflib.namespace import SKOS, RDF
 
 
-from lod import RDF_SUPPORTED_MIME_TYPES, USE_EDM_BINDINGS
-from lod.tests.resources import sparqlwrapper_result
-import lod.utils
-from lod.utils import rdfstore
-from lod.utils.resolver import GraphBindings, RDFRecord
-from lod.utils.mimetype import best_match
-from lod.utils.mimetype import extension_to_mime, HTML_MIME, mime_to_extension, result_extension_to_mime
-from lod.utils.rdfstore import get_rdfstore, UnknownGraph
+from nave.lod import RDF_SUPPORTED_MIME_TYPES, USE_EDM_BINDINGS
+from nave.lod.tests.resources import sparqlwrapper_result
+import nave.lod.utils
+from nave.lod.utils import rdfstore
+from nave.lod.utils.resolver import GraphBindings, RDFRecord
+from nave.lod.utils.mimetype import best_match
+from nave.lod.utils.mimetype import extension_to_mime, HTML_MIME, mime_to_extension, result_extension_to_mime
+from nave.lod.utils.rdfstore import get_rdfstore, UnknownGraph
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
-from lod.utils.resolver import ElasticSearchRDFRecord
+from nave.lod.utils.resolver import ElasticSearchRDFRecord
 
 from .serializers import UserGeneratedContentSerializer
-from .models import SPARQLQuery, RDFPrefix, RDFModel, CacheResource, RDFSubjectLookUp, UserGeneratedContent
+from .models import SPARQLQuery, RDFPrefix, RDFModel, CacheResource, UserGeneratedContent
 from .tasks import retrieve_and_cache_remote_lod_resource
 
 logger = logging.getLogger(__name__)
@@ -80,10 +80,10 @@ class HubIDRedirectView(RedirectView):
         graph = record.get_graph_by_id(self.kwargs.get('slug'))
         if not graph:
             raise Http404()
-        routed_uri = lod.utils.lod.get_external_rdf_url(record.source_uri, self.request)
+        routed_uri = nave.lod.utils.lod.get_external_rdf_url(record.source_uri, self.request)
         logger.debug("Routed uri: {}".format(routed_uri))
         rdf_format = self.request.GET.get("format")
-        if rdf_format and rdf_format in lod.RDF_SUPPORTED_EXTENSIONS:
+        if rdf_format and rdf_format in nave.lod.RDF_SUPPORTED_EXTENSIONS:
             routed_uri = "{}.{}".format(routed_uri, rdf_format)
         return routed_uri
 

@@ -15,7 +15,7 @@ from django.http import Http404
 from django.utils.log import getLogger
 from rdflib import Graph
 
-from lod import RDF_STORE_DB, RDF_STORE_HOST, RDF_STORE_PORT, namespace_manager
+from nave.lod import RDF_STORE_DB, RDF_STORE_HOST, RDF_STORE_PORT, namespace_manager
 
 logger = getLogger(__name__)
 

@@ -37,10 +37,10 @@ from rdflib import ConjunctiveGraph
 from rdflib import Graph, URIRef, BNode, Literal, Namespace
 from rdflib.namespace import RDF, SKOS, RDFS, DC, FOAF
 
-from lod import namespace_manager
-from lod.utils import rdfstore
+from nave.lod import namespace_manager
+from nave.lod.utils import rdfstore
 
-from search import get_es_client
+from nave.search import get_es_client
 
 logger = logging.getLogger(__file__)
 client = get_es_client()
@@ -927,7 +927,7 @@ class RDFRecord:
     @staticmethod
     def parse_graph_from_string(rdf_string, graph_identifier=None, input_format=DEFAULT_RDF_FORMAT):
         g = ConjunctiveGraph(identifier=graph_identifier)
-        from lod import namespace_manager
+        from nave.lod import namespace_manager
         g.namespace_manager = namespace_manager
         g.parse(data=rdf_string, format=input_format)
         return g
@@ -1041,7 +1041,7 @@ class RDFRecord:
         }}
         """.format(aggregation_uri=target_uri)
         response = store.query(query=query)
-        from lod.models import RDFModel
+        from nave.lod.models import RDFModel
         return RDFModel.get_graph_from_sparql_results(response, None)[0]
 
     def reduce_duplicates(self, graph: Graph, leave=0, predicates=None):
@@ -1363,7 +1363,7 @@ class ElasticSearchRDFRecord(RDFRecord):
         hits = mlt_query.execute()
         items = []
         for item in hits:
-            from search.search import NaveESItemWrapper
+            from nave.search.search import NaveESItemWrapper
             nave_item = NaveESItemWrapper(item)
             items.append(nave_item)
         return items
