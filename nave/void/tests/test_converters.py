@@ -7,10 +7,10 @@ from unittest import TestCase, skip
 import pytest
 from rdflib import URIRef, ConjunctiveGraph
 
-from lod.utils import rdfstore
-from void.convertors import TIBConverter, ICNConverter, DefaultAPIV2Converter, EDMStrictConverter
-from void.tests.test_es_result_fields import es_fields
-from void.tests.test_tasks import load_nquad_fixtures
+from nave.lod.utils import rdfstore
+from nave.void.convertors import TIBConverter, ICNConverter, DefaultAPIV2Converter, EDMStrictConverter
+from nave.void.tests.test_es_result_fields import es_fields
+from nave.void.tests.test_tasks import load_nquad_fixtures
 
 legacy_output = {
     "dc_creator": ["Ton Smits"],

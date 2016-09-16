@@ -13,11 +13,11 @@ from django.views.generic import TemplateView
 from elasticsearch_dsl import Search, A, Q
 from lxml import etree as ET
 
-from lod.utils.resolver import RDFRecord, ElasticSearchRDFRecord
-from void import REGISTERED_CONVERTERS
-from void.models import DataSet, OaiPmhPublished, EDMRecord
+from nave.lod.utils.resolver import RDFRecord, ElasticSearchRDFRecord
+from nave.void import REGISTERED_CONVERTERS
+from nave.void.models import DataSet, OaiPmhPublished, EDMRecord
 
-from search import get_es_client
+from nave.search import get_es_client
 
 
 class OaiVerb(Enum):

@@ -10,12 +10,12 @@ from elasticsearch_dsl import Search
 from pytest import skip
 from rdflib import ConjunctiveGraph, URIRef, Graph
 
-from lod.models import RDFModel
-from lod.utils import rdfstore
-from lod.utils.rdfstore import UnknownGraph
-from void import tasks
-from void.models import DataSet, EDMRecord
-from void.tasks import schedule_out_of_sync_datasets
+from nave.lod.models import RDFModel
+from nave.lod.utils import rdfstore
+from nave.lod.utils.rdfstore import UnknownGraph
+from nave.void import tasks
+from nave.void.models import DataSet, EDMRecord
+from nave.void.tasks import schedule_out_of_sync_datasets
 
 
 def load_nquad_fixtures(path=None):
@@ -218,7 +218,7 @@ class TestNarthexSynchronisation(TestCase):
                        BROKER_BACKEND='memory',
                        CELERY_RESULT_BACKEND='database')
     def test_synchronise_dataset(self):
-        from search import get_es_client
+        from nave.search import get_es_client
         client = get_es_client()
         s = Search(client).index(self.index_name)
         del_response = client.delete_by_query(index=self.index_name, q="*:*")

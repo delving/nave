@@ -36,18 +36,18 @@ from rdflib import URIRef, Graph, Literal, ConjunctiveGraph
 from rdflib.namespace import RDF, SKOS
 from taggit.managers import TaggableManager
 
-from lod import namespace_manager
-from lod.models import RDFModel
-from lod.utils import rdfstore
-from lod.utils.resolver import RDFPredicate, RDFRecord
-from lod.utils.rdfstore import QueryType, RDFStore
+from nave.lod import namespace_manager
+from nave.lod.models import RDFModel
+from nave.lod.utils import rdfstore
+from nave.lod.utils.resolver import RDFPredicate, RDFRecord
+from nave.lod.utils.rdfstore import QueryType, RDFStore
 
 logger = logging.getLogger(__name__)
 
 fmt = '%Y-%m-%d %H:%M:%S%z'  # '%Y-%m-%d %H:%M:%S %Z%z'
 
 def get_es():
-    from search import get_es_client
+    from nave.search import get_es_client
     return get_es_client()
 
 
@@ -1112,7 +1112,7 @@ class EDMRecord(RDFModel):
 
 # @receiver(post_save, sender=EDMRecord)
 # def update_in_index(sender, instance, **kw):
-#     from lod import tasks
+#     from nave.lod import tasks
 #     tasks.store_graph.apply_async(
 #         [instance],
 #         routing_key=settings.RECORD_QUEUE,
@@ -1129,7 +1129,7 @@ class EDMRecord(RDFModel):
 #
 # @receiver(pre_delete, sender=EDMRecord)
 # def remove_from_index(sender, instance, **kw):
-#     from lod import tasks
+#     from nave.lod import tasks
 #     tasks.delete_rdf_resource.delay(instance)
 #     tasks.remove_rdf_from_index.delay(instance)
 #

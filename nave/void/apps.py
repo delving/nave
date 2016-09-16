@@ -8,6 +8,6 @@ from django.apps import AppConfig
 from django.utils.translation import ugettext_lazy as _
 
 
-class VirtualCollectionConfig(AppConfig):
-    name = 'void'
+class VoidConfig(AppConfig):
+    name = 'nave.void'
     verbose_name = _("Aggregated Metadata")

@@ -23,10 +23,10 @@ from django.utils.translation import ugettext as _
 from lxml import etree as ET
 from rdflib import URIRef, Literal
 
-from lod import namespace_manager
-from lod.utils.resolver import GraphBindings
-from lod.utils.rdfstore import get_rdfstore, UnknownGraph
-from lod.utils.resolver import RDFRecord
+from nave.lod import namespace_manager
+from nave.lod.utils.resolver import GraphBindings
+from nave.lod.utils.rdfstore import get_rdfstore, UnknownGraph
+from nave.lod.utils.resolver import RDFRecord
 
 logger = logging.getLogger(__name__)
 

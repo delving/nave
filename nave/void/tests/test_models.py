@@ -2,8 +2,8 @@
 import pytest
 from rdflib import Graph, URIRef, Literal
 
-import lod
-from void.models import DataSet, ProxyResourceField
+import nave.lod
+from nave.void.models import DataSet, ProxyResourceField
 
 test_graph = """
 <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:edm="http://www.europeana.eu/schemas/edm/" xmlns:nave="http://schemas.delving.eu/nave/terms/" xmlns:ore="http://www.openarchives.org/ore/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
