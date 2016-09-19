@@ -79,10 +79,10 @@ admin.site.register(SPARQLUpdateQuery, SPARQLUpdateQueryAdmin)
 
 
 class UserGeneratedContentAdmin(reversion.admin.VersionAdmin):
-    list_display = ['name', 'content_type', 'link']
-    list_filter = ['content_type', 'published']
+    list_display = ['name', 'content_type', 'link', 'modified', 'user']
+    list_filter = ['content_type', 'published', 'modified']
     fields = ['name', 'content_type', 'link',
-              'source_uri', 'short_description', 'published']
+              'source_uri', 'short_description', 'published', 'modified', 'created', 'user']
 
 admin.site.register(UserGeneratedContent, UserGeneratedContentAdmin)
 
