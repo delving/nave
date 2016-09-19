@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from django.conf import settings
-
 from nave.void.convertors import ICNConverter, ABMConverter, ESEConverter, EDMStrictConverter, EDMConverter, \
     DefaultAPIV2Converter
 
