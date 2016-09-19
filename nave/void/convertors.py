@@ -573,6 +573,8 @@ class ICNConverter(BaseConverter):
             "icn_acceptedStateChargesReason": "nave_acceptedStateChargesReason",
             "icn_expulsionYear": "nave_expulsionYear",
             "icn_expulsionMeans": "nave_expulsionMeans",
+            "icn_thumbSmall": "nave_thumbSmall",
+            "icn_thumbLarge": "nave_thumbLarge",
         }
         return mapping
 
