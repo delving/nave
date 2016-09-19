@@ -10,7 +10,7 @@ jQuery(document).ready(function($) {
         rows: 10,
         configHelp: {{diw.show_config_help|lower}},
         resultsLayout: "list",
-        defaultImg: "{% static 'img/blank.png' %}",
+        defaultImg: "{% static 'images/placeholder.svg' %}",
         language: "nl",
         label:{
             collapse: "Minder&nbsp;[-]",
@@ -30,7 +30,9 @@ jQuery(document).ready(function($) {
             boolNot: "NIET",
             boolOr: "OF",
             relatedItems: "Soortgelijke inhoud",
-            sort: "Sorteer"
+            sort: "Sorteer op:",
+            sortNumeric: "resultaat",
+            sortAlphabetic: "naam"
         },
         layout: {
             simpleSearchBlock: "#diw-search",
