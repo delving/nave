@@ -457,7 +457,7 @@ class DataSet(TimeStampedModel, GroupOwned):
     )
     file_watch_directory = models.FilePathField(
             _("file watcher directory"),
-            path=os.path.join(settings.WEB_RESOURCE_BASE, spec, "source"),
+            path=os.path.join(settings.WEB_RESOURCE_BASE, "source"),
             blank=True,
             allow_folders=True,
             allow_files=False,
