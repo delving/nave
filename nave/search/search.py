@@ -23,7 +23,7 @@ import six
 
 
 from .utils import gis
-from nave.void.convertors import BaseConverter
+from nave.void.converters import BaseConverter
 
 logger = logging.getLogger(__name__)
 

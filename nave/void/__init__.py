@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from nave.void.convertors import ICNConverter, ABMConverter, ESEConverter, EDMStrictConverter, EDMConverter, \
+from nave.void.converters import ICNConverter, ABMConverter, ESEConverter, EDMStrictConverter, EDMConverter, \
     DefaultAPIV2Converter
 
 # Verbose name configuration for this app

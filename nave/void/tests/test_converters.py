@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""This module test the graph to legacy format convertors
+"""This module test the graph to legacy format converters
 
 """
 from unittest import TestCase
@@ -7,7 +7,7 @@ from unittest import TestCase
 import pytest
 
 from nave.lod.utils import rdfstore
-from nave.void.convertors import ICNConverter, DefaultAPIV2Converter, EDMStrictConverter, ESEConverter
+from nave.void.converters import ICNConverter, DefaultAPIV2Converter, EDMStrictConverter, ESEConverter
 from nave.void.tests.test_es_result_fields import es_fields
 from nave.void.tests.test_tasks import load_nquad_fixtures
 
