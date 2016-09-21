@@ -410,7 +410,7 @@ LOGGING = {
         'file': {
             'level': 'DEBUG',
                      'class': 'logging.FileHandler',
-                              'filename': 'debug.log',
+                              'filename': '/tmp/debug.log',
         },
         'sentry': {
             'level': 'ERROR',
