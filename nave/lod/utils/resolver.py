@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 """This module implements all the bindings used by the view layers for RDF Graphs.
 
 This module deals with all the conversion of Named Graphs or SPARQL results into Python objects
@@ -1004,7 +1004,7 @@ class RDFRecord:
             g = self.parse_graph_from_string(self._rdf_string)
             self._graph = g
         return self._graph
-    
+
     @staticmethod
     def delete_webresource_graphs(spec, store=None):
         if not store:
@@ -1020,7 +1020,7 @@ class RDFRecord:
               <http://schemas.delving.eu/narthex/terms/datasetSpec> "{spec}".
           }}
           GRAPH ?g {{
-            ?s ?p ?o. 
+            ?s ?p ?o.
           }}}}
         """.format(spec=spec)
         return store.update(query=query)

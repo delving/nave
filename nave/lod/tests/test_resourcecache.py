@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 """This module contains all the tests for the Resource Cache mechanism of Nave.
 """
 import time
