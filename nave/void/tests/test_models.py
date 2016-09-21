@@ -1,12 +1,14 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 import pytest
 from rdflib import Graph, URIRef, Literal
 
-import nave.lod
+from nave import lod
 from nave.void.models import DataSet, ProxyResourceField
 
 test_graph = """
-<rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:edm="http://www.europeana.eu/schemas/edm/" xmlns:nave="http://schemas.delving.eu/nave/terms/" xmlns:ore="http://www.openarchives.org/ore/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/"
+    xmlns:edm="http://www.europeana.eu/schemas/edm/" xmlns:nave="http://schemas.delving.eu/nave/terms/"
+    xmlns:ore="http://www.openarchives.org/ore/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
     <ore:Aggregation rdf:about="http://acc.dcn.delving.org/resource/aggregation/afrikamuseum/100-1">
         <edm:aggregatedCHO rdf:resource="http://acc.dcn.delving.org/resource/document/afrikamuseum/100-1"/>
         <edm:dataProvider>Nationaal Museum van Wereldculturen</edm:dataProvider>
@@ -163,4 +165,3 @@ def test__dataset__add_proxy_resource_uris_to_graph():
     coined_uri, obj = sorted(converted_literals)[0]
     assert coined_uri.endswith('/resource/dataset/afrikamuseum/beelden')
     assert obj.value == 'beelden'
-

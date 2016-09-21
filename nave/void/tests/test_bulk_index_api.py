@@ -9,10 +9,10 @@ from rest_framework.test import APIRequestFactory, APIClient
 from nave.lod.utils import rdfstore
 from nave.void.processors import BulkApiProcessor
 
-user = User.objects.get_or_create(username='test_user')
-factory = APIRequestFactory()
-client = APIClient()
-client.force_authenticate(user=user)
+# user = User.objects.get_or_create(username='test_user')
+# factory = APIRequestFactory()
+# client = APIClient()
+# client.force_authenticate(user=user)
 
 
 @override_settings(
