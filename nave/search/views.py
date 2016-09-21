@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 """ file: search/views.py
 
 The Django views used by the search module.
@@ -668,3 +668,4 @@ class FoldOutDetailImageView(NaveDocumentTemplateView):
 class KNReiseGeoView(TemplateView):
     """The KNReise clustered geoviewer."""
     template_name = 'geoviewer/geoviewer.html'
+

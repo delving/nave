@@ -43,6 +43,7 @@ ES_DISABLED = get_settings('ES_DISABLED', False)  # useful for debugging
 ES_INDEXES = get_settings('ES_INDEXES', {
     'default': '{}_v1'.format(settings.SITE_NAME),
     'acceptance': '{}_acceptance_v1'.format(settings.SITE_NAME),
+    'test': 'test'
 })
 
 ES_TIMEOUT = get_settings('ES_TIMEOUT', 10)
