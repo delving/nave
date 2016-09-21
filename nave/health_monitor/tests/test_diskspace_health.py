@@ -1,7 +1,7 @@
 from health_check.backends.base import ServiceReturnedUnexpectedResult, ServiceUnavailable
 import pytest
 
-from health_monitor.plugin_health_check import DiskSpaceHealth
+from nave.health_monitor.plugin_health_check import DiskSpaceHealth
 
 
 def test__disk_space__enough_free_space():
