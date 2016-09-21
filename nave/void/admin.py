@@ -6,37 +6,11 @@ from django.contrib import admin
 from django.utils import importlib
 from django_object_actions import takes_instance_or_queryset
 
-from lod.utils import rdfstore
-from void import tasks
-from void.models import DataSet, EDMRecord, ProxyResourceField, ProxyMapping, ProxyResource
-from void.tasks import delete_dataset_with_all_triples
+from nave.lod.utils import rdfstore
+from nave.void import tasks
+from nave.void.models import DataSet, EDMRecord, ProxyResourceField, ProxyMapping, ProxyResource
 
 logger = logging.getLogger(__name__)
-
-
-@takes_instance_or_queryset
-def purge_dataset(self, request, queryset):
-    """Purge a dataset from Narthex and Nave."""
-    store = rdfstore.get_rdfstore()
-    for ds in queryset:
-        delete_dataset_with_all_triples.delay(ds, store)
-        ds.delete()
-    self.message_user(request, "{} dataset(s) scheduled for purging from Narthex and Nave.".format(len(queryset)))
-
-
-purge_dataset.short_description = "Purge dataset from Narthex and Nave Storage"
-
-
-@takes_instance_or_queryset
-def delete_dataset_records(self, request, queryset):
-    """Purge a dataset from Narthex and Nave."""
-    store = rdfstore.get_rdfstore()
-    for ds in queryset:
-        ds.delete_all_dataset_records(store)
-    self.message_user(request,
-                      "Records for {} dataset(s) scheduled for removal from Narthex and Nave.".format(len(queryset)))
-
-purge_dataset.short_description = "Remove Dataset Records"
 
 
 @takes_instance_or_queryset
@@ -112,7 +86,7 @@ save_narthex_file_production.short_description = "Save narthex processed dataset
 def stop_celery_task_by_id(self, request, queryset):
     """Stop a running Dataset synchronisation task in celery."""
     # find app in settings module
-    celery_app = importlib.import_module("projects.{}.celeryapp".format(settings.SITE_NAME))
+    celery_app = importlib.import_module("nave.projects.{}.celeryapp".format(settings.SITE_NAME))
     app = celery_app.app
     for ds in queryset:
         if ds.process_key:
@@ -154,8 +128,7 @@ class DataSetAdmin(reversion.admin.VersionAdmin):
     inlines = [ProxyResourceFieldInline]
 
     actions = [disable_dataset_in_index, reindex_dataset, reindex_dataset_acceptance, reset_dataset_content_hashes,
-               reset_dataset_content_hashes_acceptance, save_narthex_file_production, save_narthex_file_acceptance,
-               purge_dataset]
+               reset_dataset_content_hashes_acceptance, save_narthex_file_production, save_narthex_file_acceptance]
     search_fields = ['name', 'spec', 'data_owner']
 
     list_display = ['name', 'spec', 'data_owner', 'valid', 'invalid', 'total_records']

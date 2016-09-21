@@ -11,7 +11,7 @@ from django_extensions.db.models import TimeStampedModel
 from filer.fields.image import FilerImageField
 from django.utils.translation import ugettext_lazy as _
 
-from void.models import GroupOwned
+from nave.void.models import GroupOwned
 
 
 class VirtualCollection(TimeStampedModel, GroupOwned):

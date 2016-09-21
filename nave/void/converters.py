@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*- 
 """
-This module contains the convertors of EDM resource graphs (saved in a Named Graph) into
+This module contains the converters of EDM resource graphs (saved in a Named Graph) into
 legacy flat formats. We currently support:
 
     * ESE
@@ -23,17 +23,16 @@ from django.utils.translation import ugettext as _
 from lxml import etree as ET
 from rdflib import URIRef, Literal
 
-from lod import namespace_manager
-from lod.utils.resolver import GraphBindings
-from lod.utils.rdfstore import get_rdfstore, UnknownGraph
-from lod.utils.resolver import RDFRecord
+from nave.lod import namespace_manager
+from nave.lod.utils.resolver import GraphBindings
+from nave.lod.utils.rdfstore import get_rdfstore, UnknownGraph
+from nave.lod.utils.resolver import RDFRecord
 
 logger = logging.getLogger(__name__)
 
 
 class BaseConverter(object):
-    """
-    Convert a graph into a flat legacy format
+    """ Convert a graph into a flat legacy format
 
     Dict
     """
@@ -67,7 +66,6 @@ class BaseConverter(object):
 
     def get_namespaces(self, as_ns_declaration=False):
         if not self._used_namespaces:
-            bindings = self.bindings()
             mapping_keys = self.get_mapping_dict().keys()
             prefixes = {key.split('_')[0] for key in mapping_keys}
             self._used_namespaces = [(prefix, settings.RDF_SUPPORTED_PREFIXES[prefix]) for prefix in prefixes]
@@ -196,7 +194,7 @@ class BaseConverter(object):
                 named_graph = "{}/graph".format(link.rstrip('/'))
                 graph = store.get(named_graph=named_graph, as_graph=True)
         except UnknownGraph as ug:
-            logger.warn("Unable to find Graph for: {}".format(link))
+            logger.warn("Unable to find Graph for: {}. \n {}".format(link, ug))
             return None
         preview_fields = settings.EDM_API_INLINE_PREVIEW
         preview_predicates = [URIRef(pred) for pred in preview_fields.keys()]
@@ -339,64 +337,6 @@ class DefaultAPIV2Converter(BaseConverter):
         return collections.OrderedDict(sorted(output_doc.items()))
 
 
-class TIBConverter(BaseConverter):
-    @staticmethod
-    def query_key_replace_dict(reverse=False):
-        replace_dict = {
-            'europeana_': 'edm_',
-            'tib_': 'nave_'
-        }
-        if reverse:
-            replace_dict = {val: key for key, val in replace_dict.items()}
-        return replace_dict
-
-    def get_converter_key(self):
-        return "tib"
-
-    def get_namespace(self):
-        return "http://schemas.delving.eu/resource/ns/tib/"
-
-    def get_field_dict(self):
-        mapping = {
-            "tib_citName": "nave_citName",
-            "tib_citOldId": "nave_citOldId",
-            "tib_thumbLarge": "nave_thumbLarge",
-            "tib_thumbSmall": "nave_thumbSmall",
-            "tib_collection": "nave_collection",
-            "tib_creatorRole": "nave_creatorRole",
-            "tib_productionPeriod": "nave_productionPeriod",
-            "tib_productionStart": "nave_productionStart",
-            "tib_productionEnd": "nave_productionEnd",
-            "tib_creatorBirthYear": "nave_creatorBirthYear",
-            "tib_creatorDeathYear": "nave_creatorDeathYear",
-            "tib_formatted": "nave_formatted",
-            "tib_year": "nave_year",
-            "tib_dimension": "nave_dimension",
-            "tib_objectNumber": "nave_objectNumber",
-            "tib_objectSoort": "nave_objectSoort",
-            "tib_material": "nave_material",
-            "tib_place": "nave_place",
-            "tib_technique": "nave_technique",
-            "tib_color": "nave_color",
-            "tib_colorHex": "nave_colorHex",
-            "tib_design": "nave_design",
-            "tib_exhibition": "nave_exhibition",
-            "tib_subjectDepicted": "nave_subjectDepicted",
-            "tib_date": "nave_date",
-            "tib_collectionPart": "nave_collectionPart",
-            "tib_person": "nave_person",
-            "tib_region": "nave_region",
-            "tib_event": "nave_event",
-            "tib_theme": "nave_theme",
-            "tib_pageStart": "nave_pageStart",
-            "tib_pageEnd": "nave_pageEnd",
-            "tib_pages": "nave_pages",
-            "tib_vindplaats": "nave_vindplaats",
-            "tib_location": "nave_location",
-        }
-        return mapping
-
-
 class ESEConverter(BaseConverter):
     @staticmethod
     def query_key_replace_dict(reverse=False):
@@ -456,8 +396,13 @@ class EDMStrictConverter(BaseConverter):
     def uri_to_namespaced_tag(uri):
         elements = uri.split('/')
         label = elements[-1]
-        prefix = "/".join(elements[:-1])
-        return "{{{}/}}{}".format(prefix, label)
+        prefix = "/".join(elements[:-1]) + "/"
+        if "#" in label:
+            hash_label = label.split("#")
+            label = hash_label[-1]
+            hash_prefix = "#".join(hash_label[:-1])
+            prefix += "/{}#".format(hash_prefix)
+        return "{{{}}}{}".format(prefix, label)
 
     def make_rdf_xml_serialization_europeana_proof(self, rdf_xml_string):
         record = ET.fromstring(rdf_xml_string)

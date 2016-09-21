@@ -13,11 +13,11 @@ from django.views.generic import TemplateView
 from elasticsearch_dsl import Search, A, Q
 from lxml import etree as ET
 
-from lod.utils.resolver import RDFRecord, ElasticSearchRDFRecord
-from void import REGISTERED_CONVERTERS
-from void.models import DataSet, OaiPmhPublished, EDMRecord
+from nave.lod.utils.resolver import RDFRecord, ElasticSearchRDFRecord
+from nave.void import REGISTERED_CONVERTERS
+from nave.void.models import DataSet, OaiPmhPublished, EDMRecord
 
-from search import get_es_client
+from nave.search import get_es_client
 
 
 class OaiVerb(Enum):
@@ -435,11 +435,12 @@ class ElasticSearchOAIProvider(OAIProvider):
 
     def get_dataset_list(self):
         s = Search(using=self.client)
-        datasets = A("terms", field="delving_spec.raw")
+        datasets = A("terms", field="delving_spec.raw", size=500, order={ "_term" : "asc" })
         if self.query:
             s = s.filter(self.query.get('filter'))
         elif self.spec:
             s = s.query("match", **{'system.spec.raw': self.spec})
+        s = s[0]
         s.aggs.bucket("dataset-list", datasets)
         response = s.execute()
         specs = response.aggregations['dataset-list'].buckets

@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 """ This module provides wrappers to SPARQL query types
 
 By default it uses the settings from the settings.py, but if you instantiate SPARQL directly you can override
@@ -15,7 +15,7 @@ from django.http import Http404
 from django.utils.log import getLogger
 from rdflib import Graph
 
-from lod import RDF_STORE_DB, RDF_STORE_HOST, RDF_STORE_PORT, namespace_manager
+from nave.lod import RDF_STORE_DB, RDF_STORE_HOST, RDF_STORE_PORT, namespace_manager
 
 logger = getLogger(__name__)
 
@@ -251,6 +251,8 @@ class GraphStore:
             rdf_string = data.serialize(encoding='utf-8', format='nt')
         elif isinstance(data, str):
             rdf_string = data
+        elif isinstance(data, bytes):
+            rdf_string = data.decode("utf-8")
         else:
             raise ValueError("Unsupported data type for this operation: {}".format(type(data)))
         return rdf_string
@@ -270,7 +272,7 @@ class GraphStore:
         :param named_graph: the uri to the named graph
         :return: Graph
         """
-        headers = {'Content-Type': 'text/nt'}
+        headers = {'Content-Type': 'text/n3'}
         response = requests.get(
             "{graph_store_url}?{graph_param}={graph_name_uri}".format(
                 graph_store_url=self.graph_store,
@@ -279,16 +281,18 @@ class GraphStore:
             headers=headers)
         if response.status_code == 404:
             raise UnknownGraph("No such graph: <{}>".format(named_graph))
+        print(response.content)
+        print(response.headers)
         if as_graph:
             graph = Graph(identifier=named_graph)
             graph.namespace_manager = namespace_manager
-            graph.parse(data=response.content, format='nt')
+            graph.parse(data=response.content.decode("utf-8"), format='n3')
             return graph
         return response
 
     def head(self, named_graph):
         """Testing for validity of derefencable named graphs."""
-        headers = {'Content-Type': 'text/nt'}
+        headers = {'Content-Type': 'application/n-triples'}
         response = requests.head(
             "{graph_store_url}?{graph_param}={graph_name_uri}".format(
                 graph_store_url=self.graph_store,
@@ -332,7 +336,7 @@ class GraphStore:
 
     def put(self, named_graph, data):
         """PUT request to replace or create the graph with information form data"""
-        headers = {'Content-Type': 'text/nt'}
+        headers = {'Content-Type': 'application/n-triples; charset=utf-8'}
         rdf_string = self._get_data_as_rdf_string(data)
         r = requests.put(
             "{graph_store_url}?{graph_param}={graph_name_uri}".format(

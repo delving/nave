@@ -6,7 +6,7 @@ import dj.choices.fields
 from django.conf import settings
 import django.utils.timezone
 import django_extensions.db.fields
-import void.models
+from nave import void
 
 
 class Migration(migrations.Migration):

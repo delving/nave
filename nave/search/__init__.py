@@ -20,7 +20,7 @@ from elasticsearch import Elasticsearch
 logger = logging.getLogger(__name__)
 
 # Verbose name configuration for this app
-default_app_config = 'search.apps.SearchConfig'
+default_app_config = 'nave.search.apps.SearchConfig'
 
 
 LayoutItem = namedtuple("LayoutItem", ["name", "i18n"])
@@ -43,6 +43,7 @@ ES_DISABLED = get_settings('ES_DISABLED', False)  # useful for debugging
 ES_INDEXES = get_settings('ES_INDEXES', {
     'default': '{}_v1'.format(settings.SITE_NAME),
     'acceptance': '{}_acceptance_v1'.format(settings.SITE_NAME),
+    'test': 'test'
 })
 
 ES_TIMEOUT = get_settings('ES_TIMEOUT', 10)

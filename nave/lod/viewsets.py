@@ -3,8 +3,8 @@
 """
 
 from rest_framework import viewsets
-from lod.models import CacheResource
-from lod.serializers import CacheResourceSerializer
+from nave.lod.models import CacheResource
+from nave.lod.serializers import CacheResourceSerializer
 
 
 class CacheResourceViewSet(viewsets.ModelViewSet):

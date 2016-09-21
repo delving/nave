@@ -15,7 +15,7 @@ from django.core.paginator import Paginator, Page, EmptyPage, PageNotAnInteger
 from django.http import QueryDict
 from elasticsearch_dsl import Search
 from elasticsearch_dsl.result import Result
-from .elasticutils import S, F, Q
+from .elasticutils import S, F
 from geojson import Point, Feature, FeatureCollection
 # noinspection PyMethodMayBeStatic
 from rest_framework.request import Request
@@ -23,7 +23,7 @@ import six
 
 
 from .utils import gis
-from void.convertors import BaseConverter
+from nave.void.converters import BaseConverter
 
 logger = logging.getLogger(__name__)
 
@@ -145,7 +145,6 @@ class GeoS(S):
             bounding_box['max_y'] = max_y
         return bounding_box
 
-
     @staticmethod
     def get_solr_style_bounding_box(distance, point):
         """The hub2 equivalent filter for a bounding box."""
@@ -168,12 +167,13 @@ class NaveESQuery(object):
     """
 
     def __init__(self, index_name=None, doc_types=None, default_facets=None, size=16,
-                 default_filters=None, hidden_filters=None, cluster_geo=False, geo_query=False, robust_params=True, facet_size=50,
+                 default_filters=None, hidden_filters=None, cluster_geo=False,
+                 geo_query=False, robust_params=True, facet_size=50,
                  converter=None, acceptance=False):
         self.acceptance = acceptance
         self.index_name = index_name
         self.doc_types = doc_types
-        self.default_facets = default_facets.copy() if default_facets is not None else default_facets
+        self.default_facets = default_facets.copy() if default_facets is not None else []
         self.size = size
         self.default_filters = default_filters
         self.hidden_filters = hidden_filters
@@ -403,7 +403,7 @@ class NaveESQuery(object):
                 query = query.query.query(_id=clean_id, _type=doc_type)
                 self._is_item_query = True
             elif self.hub_id_pattern.findall(clean_id):
-                from lod.utils.resolver import RDFRecord
+                from nave.lod.utils.resolver import RDFRecord
                 clean_id = RDFRecord.clean_local_id(clean_id)
                 query = query.query.query(_id=clean_id)
                 self._is_item_query = True
@@ -426,7 +426,8 @@ class NaveESQuery(object):
             except ValueError as ve:
                 self.error_messages.append("param {}: {}".format(key, str(ve)))
                 logger.warn(
-                        "problem with param {} causing {} for request {}".format(key, ve, request.build_absolute_uri()))
+                    "problem with param {} causing {} for request {}".format(key, ve, request.build_absolute_uri())
+                )
                 # if not self.robust_params:
                 #     raise
                 raise
@@ -499,7 +500,8 @@ class NaveESQuery(object):
         elif "lod_id" in params:
             lod_uri = params.get("lod_id")
             query = query.query(
-                    **{'rdf.object.id': lod_uri, "must": True}).filter(~F(**{'system.about_uri': lod_uri}))
+                **{'rdf.object.id': lod_uri, "must": True}
+            ).filter(~F(**{'system.about_uri': lod_uri}))
         elif hidden_queries:
             query = query.query_raw(self._create_query_string(" ".join(hidden_queries)))
         else:
@@ -515,9 +517,9 @@ class NaveESQuery(object):
             with robust('hqf'):
                 hqf_list = params.getlist('hqf')
                 self._filters_as_dict(
-                        filters=hqf_list,
-                        filter_dict=hidden_filter_dict,
-                        exclude=exclude_filter_list
+                    filters=hqf_list,
+                    filter_dict=hidden_filter_dict,
+                    exclude=exclude_filter_list
                 )
                 facet_params.pop('hqf')
         facet_bool_type_and = False
@@ -592,7 +594,7 @@ class NaveESQuery(object):
         # add facets to config
         # add non default facets to the bottom intersection from keys
         for facet in set(facet_list).difference(set(self.facet_list)):
-            from base_settings import FacetConfig
+            from nave.base_settings import FacetConfig
             self.default_facets.append(FacetConfig(
                 es_field=facet,
                 label=facet
@@ -620,7 +622,7 @@ class NaveESQuery(object):
                         and_face_filter_list.append(bbox_filter)
                     if and_face_filter_list:
                         formatted_facet_filter[facet]['facet_filter'] = {
-                            #'terms': facet_filter
+                            # 'terms': facet_filter
                             "and": and_face_filter_list
                         }
                     query = query.facet_raw(**formatted_facet_filter)
@@ -761,10 +763,10 @@ class FacetCountLink(object):
                 return ""
             if self._query.converter:
                 link = self._query.apply_converter_rules(
-                        query_string=link,
-                        converter=self._query.converter,
-                        as_query_dict=False,
-                        reverse=True
+                    query_string=link,
+                    converter=self._query.converter,
+                    as_query_dict=False,
+                    reverse=True
                 )
                 self._link = link if link.startswith("&") else "&{}".format(link)
             else:
@@ -812,7 +814,7 @@ class FacetLink(object):
             count = term.get('count')
             value = term.get('term')
             facet_count_links.append(
-                    FacetCountLink(self._name, value, count, self._query)
+                FacetCountLink(self._name, value, count, self._query)
             )
         return facet_count_links
 
@@ -904,19 +906,19 @@ class NaveFacets(object):
             clean_name = key.replace('.raw', '')
             if self._nave_query.converter:
                 clean_name = self._nave_query.apply_converter_rules(
-                        query_string=clean_name,
-                        converter=self._nave_query.converter,
-                        as_query_dict=False,
-                        reverse=True
+                    query_string=clean_name,
+                    converter=self._nave_query.converter,
+                    as_query_dict=False,
+                    reverse=True
                 )
                 clean_name = "{}_facet".format(clean_name)
             facet_query_link = FacetLink(
-                    name=clean_name,
-                    total=facet.total,
-                    missing=facet.missing,
-                    other=facet.other,
-                    query=self._nave_query,
-                    facet_terms=facet
+                name=clean_name,
+                total=facet.total,
+                missing=facet.missing,
+                other=facet.other,
+                query=self._nave_query,
+                facet_terms=facet
             )
             facet_query_links[key] = facet_query_link
         return facet_query_links
@@ -954,10 +956,10 @@ class UserQuery(object):
             clean_value = value
             if self._query.converter:
                 clean_value = self._query.apply_converter_rules(
-                        query_string=clean_value,
-                        converter=self._query.converter,
-                        as_query_dict=False,
-                        reverse=True
+                    query_string=clean_value,
+                    converter=self._query.converter,
+                    as_query_dict=False,
+                    reverse=True
                 )
             expanded_params.append((key, clean_value))
         return expanded_params
@@ -970,25 +972,25 @@ class UserQuery(object):
         filter_params = [param for params in self._query.facet_params.lists() for param in self.expand_params(params) if
                          param[0] in filters]
         query = BreadCrumb(
-                href=urllib.parse.urlencode(base_params),
-                display=self.terms,
-                field="",
-                localised_field="",
-                value=self.terms,
-                is_last=False
+            href=urllib.parse.urlencode(base_params),
+            display=self.terms,
+            field="",
+            localised_field="",
+            value=self.terms,
+            is_last=False
         )
         breadcrumbs.append(query)
         for filt in filter_params:
             base_params.append(filt)
             breadcrumbs.append(
-                    BreadCrumb(
-                            href=urllib.parse.urlencode(base_params),
-                            display=filt[1],
-                            field=filt[1].split(":")[0],
-                            localised_field=BaseConverter.get_translated_field(filt[1].split(":")[0]),
-                            value=":".join(filt[1].split(":")[1:]),
-                            is_last=False
-                    )
+                BreadCrumb(
+                    href=urllib.parse.urlencode(base_params),
+                    display=filt[1],
+                    field=filt[1].split(":")[0],
+                    localised_field=BaseConverter.get_translated_field(filt[1].split(":")[0]),
+                    value=":".join(filt[1].split(":")[1:]),
+                    is_last=False
+                )
             )
         # mark last as last
         last = breadcrumbs[-1]._replace(is_last=True)
@@ -1004,10 +1006,10 @@ class UserQuery(object):
             self._query_string = self._query.base_params.get('q', "")
         if self._query.converter:
             self._query_string = self._query.apply_converter_rules(
-                    query_string=self._query_string,
-                    converter=self._query.converter,
-                    as_query_dict=False,
-                    reverse=True
+                query_string=self._query_string,
+                converter=self._query.converter,
+                as_query_dict=False,
+                reverse=True
             )
         return self._query_string
 
@@ -1041,10 +1043,10 @@ class ESPaginator(Paginator):
         """ Returns a Page object for the given 1-based page number. """
         try:
             number = self.validate_number(number)
-        except EmptyPage as ep:
+        except EmptyPage:
             logger.warn("number {} gives back empty page. Setting default to 1".format(number))
             number = 1
-        except PageNotAnInteger as ep:
+        except PageNotAnInteger:
             logger.warn("negative number {} is not allowed. Setting default to 1".format(number))
             number = 1
         if just_source:
@@ -1151,9 +1153,9 @@ class QueryPagination(object):
         for page in range(from_page, to_page):
             page_number = self._paginator.page(page)
             page_links.append(PageLink(
-                    page_number.start_index(),
-                    page is not self._page.number,
-                    page_number.number
+                page_number.start_index(),
+                page is not self._page.number,
+                page_number.number
             )
             )
         return page_links
@@ -1218,8 +1220,8 @@ class NaveESItemWrapper(object):
     def __init__(self, es_item, converter=None):
         self.converter = converter
         self._es_item = NaveESItem(
-                es_item=es_item,
-                converter=converter
+            es_item=es_item,
+            converter=converter
         )
 
     @property
@@ -1293,16 +1295,16 @@ class NaveItemResponse(object):
             from . import get_es_client
             s = Search(using=get_es_client(), index=self._index)
             mlt_query = s.query(
-                    'more_like_this',
-                    fields=self._nave_query.mlt_fields,
-                    min_term_freq=1,
-                    max_query_terms=12,
-                    include=False,
-                    docs=[{
-                        "_index": self._index,
-                        "_type": doc_type,
-                        "_id": doc_id
-                    }]
+                'more_like_this',
+                fields=self._nave_query.mlt_fields,
+                min_term_freq=1,
+                max_query_terms=12,
+                include=False,
+                docs=[{
+                    "_index": self._index,
+                    "_type": doc_type,
+                    "_id": doc_id
+                }]
             )[:self._mlt_count]
             hits = mlt_query.execute()
             items = []
@@ -1377,8 +1379,8 @@ class NaveQueryResponse(object):
     def pagination(self):
         if not self._pagination:
             self._pagination = QueryPagination(
-                    self.paginator,
-                    self._query.page
+                self.paginator,
+                self._query.page
             )
         return self._pagination
 
@@ -1389,8 +1391,8 @@ class NaveQueryResponse(object):
         """
         if not self._items:
             self._items = NaveESItemList(
-                    results=self._results.results,
-                    converter=self._converter).items
+                results=self._results.results,
+                converter=self._converter).items
         return self._items
 
     @property
@@ -1432,7 +1434,7 @@ class NaveQueryResponse(object):
     def layout(self):
         converter = self._converter
         if not converter and settings.DEFAULT_V1_CONVERTER is not None:
-                from void import REGISTERED_CONVERTERS
+                from nave.void import REGISTERED_CONVERTERS
                 converter = REGISTERED_CONVERTERS.get(settings.DEFAULT_V1_CONVERTER, None)
         if not converter:
             return {}

@@ -6,8 +6,8 @@ from django.test import TestCase
 from rdflib import ConjunctiveGraph, URIRef, Literal, Graph
 from rdflib.namespace import FOAF, RDFS, RDF, DC, SKOS
 
-from lod.models import RDFModelTest, RDFModel
-from lod.utils import rdfstore
+from nave.lod.models import RDFModelTest, RDFModel
+from nave.lod.utils import rdfstore
 
 
 class TestRDFModel(TestCase):

@@ -9,5 +9,5 @@ from django.utils.translation import ugettext_lazy as _
 
 
 class VirtualCollectionConfig(AppConfig):
-    name = 'virtual_collection'
+    name = 'nave.virtual_collection'
     verbose_name = _("Virtual Collections")

@@ -6,11 +6,11 @@ from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.generic import TemplateView
 from solid_i18n.urls import solid_i18n_patterns
-from common.views import NarthexRedirectView
+from nave.common.views import NarthexRedirectView
 
 admin.autodiscover()
 urlpatterns = patterns('',
-                       url(r'^', include('void.urls')),
+                       url(r'^', include('nave.void.urls')),
                        )
 
 if settings.USE_WAGTAIL_CMS:
@@ -24,18 +24,18 @@ urlpatterns += solid_i18n_patterns('',
                             url(r'^admin/', include(admin.site.urls)),  # NOQA
                             url(r'^api-auth', include('rest_framework.urls', namespace='rest_framework')),
                             url(r'narthex/', NarthexRedirectView.as_view()),
-                            url(r'^', include('projects.{}.urls'.format(settings.SITE_NAME))),
-                            url(r'^', include('search.urls')),
-                            url(r'^', include('virtual_collection.urls')),
-                            url(r'^', include('webresource.urls')),
+                            url(r'^', include('nave.projects.{}.urls'.format(settings.SITE_NAME))),
+                            url(r'^', include('nave.search.urls')),
+                            url(r'^', include('nave.virtual_collection.urls')),
+                            url(r'^', include('nave.webresource.urls')),
                             (r'^crossdomain.xml$', TemplateView.as_view(template_name='crossdomain.xml')),
                             (r'^robots.txt$', TemplateView.as_view(template_name='robots.txt')),
                             (r'^humans.xml$', TemplateView.as_view(template_name='humans.txt')),
-                            url(r'^hm/', include('health_monitor.urls')),
-                            url(r'^', include('lod.urls')),
-                            url(r'^', include('webresource.urls')),
-                            url(r'^', include('search_widget.urls')),
-                            # template and data from void app
+                            url(r'^hm/', include('nave.health_monitor.urls')),
+                            url(r'^', include('nave.lod.urls')),
+                            url(r'^', include('nave.webresource.urls')),
+                            url(r'^', include('nave.search_widget.urls')),
+                            # template and data from nave.void app
                             url(r'^statistics/', TemplateView.as_view(template_name="statistics.html")),
                             url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
                             )
@@ -54,7 +54,7 @@ if settings.USE_WAGTAIL_CMS:
                                        )
     if os.path.exists(os.path.join(settings.DJANGO_ROOT, "projects", settings.SITE_NAME, "wagtail_urls.py")):
         urlpatterns += patterns('',
-                                url(r'^', include('projects.{}.wagtail_urls'.format(settings.SITE_NAME))))
+                                url(r'^', include('nave.projects.{}.wagtail_urls'.format(settings.SITE_NAME))))
 
 
 staticurls = [('^%s$' % f, 'redirect_to', {'url': settings.STATIC_URL + f}) for f in

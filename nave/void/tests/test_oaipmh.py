@@ -5,7 +5,7 @@
 """
 from django.test import RequestFactory
 
-from void.oaipmh import OAIProvider
+from nave.void.oaipmh import OAIProvider
 
 rf = RequestFactory()
 

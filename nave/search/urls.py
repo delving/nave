@@ -3,9 +3,9 @@ from django.conf.urls import url, include
 from django.views.generic import TemplateView
 from rest_framework import routers
 
-from lod.viewsets import CacheResourceViewSet
-from search.viewsets import GroupViewSet
-from search.viewsets import UserViewSet, OauthTokenViewSet
+from nave.lod.viewsets import CacheResourceViewSet
+from nave.search.viewsets import GroupViewSet
+from nave.search.viewsets import UserViewSet, OauthTokenViewSet
 from .views import DetailResultView, FoldOutDetailImageView, \
     LegacyAPIRedirectView, SearchListHTMLView, LodRelatedSearchHTMLView, V1SearchListApiView, \
     V2SearchListApiView, BigDownloadView, KNReiseGeoView

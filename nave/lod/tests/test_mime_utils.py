@@ -3,8 +3,8 @@
 Testing the mimetype.py module
 """
 import pytest
-from lod import RDF_SUPPORTED_MIME_TYPES
-from lod.utils import mimetype as mimeutils
+from nave.lod import RDF_SUPPORTED_MIME_TYPES
+from nave.lod.utils import mimetype as mimeutils
 
 
 def test_mime_to_extension():

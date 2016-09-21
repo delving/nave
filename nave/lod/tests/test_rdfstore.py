@@ -1,11 +1,11 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 """
 
 """
 from unittest import TestCase
 import pytest
 
-from lod.utils.rdfstore import RDFStore, UnknownGraph
+from nave.lod.utils.rdfstore import RDFStore, UnknownGraph
 
 
 class TestRDFSTore(TestCase):

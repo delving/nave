@@ -3,10 +3,8 @@ from datetime import datetime
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from rdflib import URIRef, Graph, RDF
-from rdflib.namespace import SKOS
 
-from lod.utils.narthex_bulk_loader import NarthexBulkLoader
+from nave.lod.utils.narthex_bulk_loader import NarthexBulkLoader
 
 
 class Command(BaseCommand):

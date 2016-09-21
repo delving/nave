@@ -33,7 +33,7 @@ class ElasticSearchHealth(BaseHealthCheckBackend):
     def check_status(self):
         urls = settings.ES_URLS
         try:
-            from search import get_es_client
+            from nave.search import get_es_client
             es = get_es_client()
             return es.indices.exists(settings.SITE_NAME)
         except Exception as e:

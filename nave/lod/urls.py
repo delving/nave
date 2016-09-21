@@ -15,7 +15,7 @@ RDF_SUPPORTED_FORMATS = "|".join(RDF_SUPPORTED_EXTENSIONS)
 
 
 def get_lod_detail_view_class():
-    cls = getattr(settings, "LOD_HTML_DETAIL_VIEW", "lod.views.LoDHTMLView")
+    cls = getattr(settings, "LOD_HTML_DETAIL_VIEW", "nave.lod.views.LoDHTMLView")
     module_name, class_name = cls.rsplit(".", 1)
     module = importlib.import_module(module_name)
     return getattr(module, class_name)

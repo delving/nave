@@ -46,15 +46,13 @@ env.venv_home = conf.get("VIRTUALENV_HOME", "/home/%s" % env.user)
 env.org_id = conf.get("ORG_ID", None)
 env.hub_node = conf.get("HUB_NODE", None)
 env.email_host = conf.get("EMAIL_HOST", None)
-env.file_watch_base_folder = conf.get("FILE_WATCH_BASE_FOLDER", "/mnt").rstrip('/').replace('/resource', '')
 env.venv_path = "%s/%s" % (env.venv_home, env.proj_name)
 env.proj_dirname = "project"
 env.django_dirname = "%s/%s" % (env.proj_dirname, 'nave')
 env.proj_path = "%s/%s" % (env.venv_path, env.proj_dirname)
 env.django_path = "%s/%s/%s" % (env.venv_path, env.proj_dirname, 'nave')
 env.process_num = 1
-env.manage = "%s/bin/python %s/project/%s/manage.py" % (env.venv_path,
-                                                        env.venv_path, 'nave')
+env.manage = "%s/bin/python %s/project/manage.py" % (env.venv_path, env.venv_path, 'nave')
 
 env.live_host = conf.get("ACC_HOSTNAME", env.hosts[0] if env.hosts else None)
 env.preferred_live_host = env.live_host.split(' ')[0]
@@ -720,7 +718,7 @@ def create_venv():
 @task
 @log_call
 def update_profile_settings():
-        run('echo "export DJANGO_SETTINGS_MODULE=projects.{proj_name}.settings" >> ~/.profile'.format(proj_name=env.proj_name))
+        run('echo "export DJANGO_SETTINGS_MODULE=nave.projects.{proj_name}.settings" >> ~/.profile'.format(proj_name=env.proj_name))
         run('echo "alias sctl=\'sudo supervisorctl\'" >> ~/.profile')
         run('echo "alias pmp=\'python manage.py\'" >> ~/.profile')
         run('echo "alias kill_guni=\'sudo supervisorctl stop {proj_name}:gunicorn\'" >> ~/.profile'.format(proj_name=env.proj_name))
@@ -967,7 +965,7 @@ def local():
     env.narthex_files = "%s/%s" % (env.venv_home, "NarthexFiles")
     env.venv_path = "%s/%s" % (env.venv_home, env.proj_name)
     env.django_path = "%s/%s/%s" % (env.venv_path, env.proj_dirname, 'nave')
-    env.manage = "%s/bin/python %s/project/%s/manage.py" % (env.venv_path,
+    env.manage = "%s/bin/python %s/project/manage.py" % (env.venv_path,
                                                             env.venv_path, 'nave')
     env.proj_path = "%s/%s" % (env.venv_path, env.proj_dirname)
     env.narthex_versions_dir = "%s/%s" % (env.venv_home, "NarthexVersions")

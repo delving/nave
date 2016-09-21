@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- 
-from search.search import NaveESQuery, UserQuery
+from nave.search.search import NaveESQuery, UserQuery
 
 
 def test__createbreadcrumbs__with_unicode(rf):

@@ -12,10 +12,10 @@ from rest_framework.parsers import JSONParser
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
-from void import tasks
-from void.models import ProxyResourceField, ProxyMapping
-from void.parsers import PlainTextParser
-from void.processors import BulkApiProcessor
+from nave.void import tasks
+from nave.void.models import ProxyResourceField, ProxyMapping
+from nave.void.parsers import PlainTextParser
+from nave.void.processors import BulkApiProcessor
 
 
 logger = logging.getLogger(__name__)
@@ -127,7 +127,7 @@ class DataSetStatistics:
 
     def get_indexed_datasets(self):
         from elasticsearch_dsl import Search, A
-        from search import get_es_client
+        from nave.search import get_es_client
         client = get_es_client()
         s = Search(using=client)
         a = A('terms', field='delving_spec.raw', size=500)

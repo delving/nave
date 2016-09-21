@@ -8,5 +8,5 @@ from django.apps import AppConfig
 
 
 class LoDConfig(AppConfig):
-    name = 'lod'
+    name = 'nave.lod'
     verbose_name = "Linked Open Data"
