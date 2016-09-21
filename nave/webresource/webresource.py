@@ -296,10 +296,10 @@ class WebResource:
                                 self.get_derivative_base_path(kind=CACHE_DIR))
         else:
             path = os.path.join(self.get_spec_dir, SOURCE_DIR, self.clean_uri)
-        webresource_path = self.get_from_source_path(path)
-        if webresource_path and not self._source_path:
-            self._source_path = webresource_path
-        return webresource_path
+        # webresource_path = self.get_from_source_path(path)
+        # if webresource_path and not self._source_path:
+        #    self._source_path = webresource_path
+        return path
 
     def get_derivative_base_path(self, uri=None, kind=THUMBNAIL_DIR):
         """Create base path for the derivatives.
@@ -615,7 +615,7 @@ class WebResource:
             mime_type = headers.get('Content-Type')
             if not mime_type:
                 mime_type, extension = self.guess_mime_type(local_filename)
-            extension = mimetypes.guess_extension(mime_type)
+            # extension = mimetypes.guess_extension(mime_type)
             os.makedirs(os.path.dirname(self.get_source_path), exist_ok=True)
             shutil.move(local_filename, self.get_source_path)
         except HTTPError as he:

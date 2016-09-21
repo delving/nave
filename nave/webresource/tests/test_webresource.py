@@ -16,12 +16,12 @@ test_cache_uri = "http://example.com/{}".format(image_name)
 # webresource = WebResource(spec=spec_name, base_dir=test_base, uri=test_uri)
 
 
-def test__create_webresource__with_defaults():
+def test__create_webresource__with_defaults(settings):
+    settings.WEB_RESOURCE_BASE = "/tmp"
     webresource = WebResource(spec=spec_name)
     assert webresource is not None
-    assert webresource.base_dir == "/tmp"
+    assert webresource.base_dir == "/tmp/webresource"
     assert webresource.settings is not None
-    assert webresource.org_id == "vagrant"
 
 
 def test__webresource__get_spec_dir(tmpdir, settings):
@@ -33,15 +33,14 @@ def test__webresource__get_spec_dir(tmpdir, settings):
     assert webresource.org_id in spec_dir
 
 
-def test__create_dataset_webresource_dir(tmpdir):
-    test_base = str(tmpdir)
+def test__create_dataset_webresource_dir(tmpdir, settings):
+    test_base = os.path.join(str(tmpdir), "webresource")
+    assert not os.path.exists(test_base)
     webresource = WebResource(spec=spec_name, base_dir=test_base)
     assert webresource is not None
     assert webresource.base_dir == test_base
-    assert len(os.listdir(test_base)) == 0
-    assert not webresource.exist_webresource_dirs
-    webresource.create_dataset_webresource_dirs()
-    assert len(os.listdir(test_base)) != 0
+    assert len(os.listdir(test_base)) == 1
+    assert webresource.exist_webresource_dirs
     assert os.listdir(test_base) == [webresource.org_id]
     assert os.path.exists(
         os.path.join(webresource.get_spec_dir, THUMBNAIL_DIR)
@@ -92,7 +91,7 @@ def test__webresource__clean_uri():
 
 
 def test__webresource__uri_to_path(tmpdir, settings):
-    test_base = str(tmpdir)
+    test_base = os.path.join(str(tmpdir), "webresource")
     test_path = os.path.join(test_base, settings.ORG_ID, spec_name, SOURCE_DIR, "123.jpg")
     webresource = WebResource(spec=spec_name, base_dir=test_base, uri=test_uri)
     assert webresource.uri_to_path is not None
@@ -129,12 +128,12 @@ def test__webresource__get_deepzoom_uri(settings):
 
 def test__webresource__set_base_dir(settings):
     webresource = WebResource(spec=spec_name, uri=test_uri)
-    assert webresource._base_dir is None
+    assert webresource._base_dir is not None
     assert webresource.base_dir == settings.WEB_RESOURCE_BASE
     assert webresource._base_dir is not None
     assert webresource._base_dir == settings.WEB_RESOURCE_BASE
 
-    new_base_dir = "/tmp/unknown/"
+    new_base_dir = "/tmp/unknown/webresource"
     webresource = WebResource(spec=spec_name, uri=test_uri, base_dir=new_base_dir)
     assert webresource._base_dir is not None
     assert webresource._base_dir == new_base_dir
