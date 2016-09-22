@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
+
 """ This module provides wrappers to SPARQL query types
 
 By default it uses the settings from the settings.py, but if you instantiate SPARQL directly you can override
@@ -13,7 +14,7 @@ from django.http import Http404
 from django.utils.log import getLogger
 from rdflib import Graph
 
-from lod import RDF_STORE_DB, RDF_STORE_HOST, RDF_STORE_PORT, namespace_manager
+from lod import RDF_STORE_DB, RDF_STORE_HOST, RDF_STORE_PORT, RDF_STORE_TYPE, namespace_manager
 
 logger = getLogger(__name__)
 
@@ -42,7 +43,7 @@ class RDFStore:
 
     def __init__(self, db=RDF_STORE_DB, host=RDF_STORE_HOST, port=RDF_STORE_PORT, acceptance_mode=False,
                  graph_store_uri_suffix="data", sparql_query_uri_suffix="sparql",
-                 sparql_update_uri_suffix="update"
+                 sparql_update_uri_suffix="update", sparql_update_success_message="Update succeeded"
                  ):
         self.db = db if not acceptance_mode else "{}_acceptance".format(db)
         self.host = host
@@ -53,6 +54,7 @@ class RDFStore:
         self.sparql_query_uri_suffix = sparql_query_uri_suffix
         self.sparql_update_uri_suffix = sparql_update_uri_suffix
         self.namespace_manager = namespace_manager
+        self.sparql_update_success_message = sparql_update_success_message
         self.graph_store = None
 
     @property
@@ -105,7 +107,7 @@ class RDFStore:
         :type named_graph: string
         :return: Boolean
         """
-        query = "where {{<{}> ?p ?o}}".format(uri) if uri else "{}".format(query)
+        query = "where {{<{}> ?p ?o}}".format(uri) if uri is not None else "{}".format(query)
         response = self.build_sparql_query(query, QueryType.ask, named_graph=named_graph)
         return response['boolean']
 
@@ -136,7 +138,7 @@ class RDFStore:
                                            named_graph=named_graph,
                                            update=True)
         logger.log(response)
-        if "Update succeeded" in str(response):
+        if self.sparql_update_success_message in str(response):
             return True
         return False
 
@@ -187,7 +189,7 @@ class RDFStore:
                                            query_method=POST,
                                            named_graph=named_graph,
                                            update=True)
-        if "Update succeeded" in str(response):
+        if self.sparql_update_success_message in str(response):
             return True
         return False
 
@@ -273,6 +275,7 @@ class GraphStore:
         r = requests.post("{}?graph={}".format(self.graph_store, named_graph),
                           data=rdf_string,
                           headers=headers)
+        return r
         if r.status_code == 404:
             # create the graph because it does not exist
             r = requests.put("{}?graph={}".format(self.graph_store, named_graph),
@@ -280,9 +283,9 @@ class GraphStore:
                              headers=headers)
         if r.status_code not in [200, 201, 204]:
             logger.error("unable to store document {} in graph {} because of:\n {}".format(
-                    rdf_string,
-                    named_graph,
-                    r.status_code
+                rdf_string,
+                named_graph,
+                r.status_code
             )
             )
             return False
@@ -298,9 +301,9 @@ class GraphStore:
                          headers=headers)
         if r.status_code not in [200, 201, 204]:
             logger.error("unable to store document {} in graph {} because of bla:\n {}".format(
-                    rdf_string,
-                    named_graph,
-                    r.status_code)
+                rdf_string,
+                named_graph,
+                r.status_code)
             )
             return False
         logger.info("Stored RDF in {}".format(named_graph))
@@ -308,9 +311,27 @@ class GraphStore:
 
 
 # test if the right database are defined
-_rdfstore_test = RDFStore(db="test")
-_rdfstore_acceptance = RDFStore(acceptance_mode=True)
-_rdfstore_production = RDFStore()
+def create_rdf_store(db_name=RDF_STORE_DB, port=RDF_STORE_PORT,
+                     host=RDF_STORE_HOST, acceptance_mode=False, rdf_store_type=None):
+    rdf_store_type = rdf_store_type if rdf_store_type else RDF_STORE_TYPE
+    if rdf_store_type.lower() == "blazegraph":
+        query_params = {
+            "graph_store_uri_suffix": "sparql",
+            "sparql_query_uri_suffix": "sparql",
+            "sparql_update_uri_suffix": "sparql",
+            "sparql_update_success_message": "mutationCount"
+        }
+        if "blazegraph/namespace/" not in db_name:
+            db_name = "blazegraph/namespace/{}".format(db_name)
+    else:
+        # fuseki is the default
+        query_params = {
+            "graph_store_uri_suffix": "data",
+            "sparql_query_uri_suffix": "sparql",
+            "sparql_update_uri_suffix": "update",
+            "sparql_update_success_message": "Update succeeded"
+        }
+    return RDFStore(db=db_name, host=host, port=port, acceptance_mode=acceptance_mode, **query_params)
 
 
 # convenience methods to the Default RDFStore
@@ -321,24 +342,4 @@ def get_namespace_manager():
 
 def get_rdfstore(acceptance_mode=False):
     """get the rdfstore in the right mode."""
-    return _rdfstore_production if not acceptance_mode else _rdfstore_acceptance
-
-
-def get_sparql_base_url(acceptance_mode=False):
-    return get_rdfstore(acceptance_mode).base_url
-
-
-def get_graph_store_url(acceptance_mode=False):
-    return get_rdfstore(acceptance_mode).get_graph_store_url
-
-
-def get_sparql_query_url(acceptance_mode=False):
-    return get_rdfstore(acceptance_mode).get_sparql_query_url
-
-
-def get_sparql_update_url(acceptance_mode=False):
-    return get_rdfstore(acceptance_mode).get_sparql_update_url
-
-
-def describe(uri, named_graph=None, acceptance_mode=False):
-    return get_rdfstore(acceptance_mode=acceptance_mode).describe(uri, named_graph=named_graph)
+    return create_rdf_store(acceptance_mode=acceptance_mode)
