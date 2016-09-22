@@ -8,7 +8,6 @@ In addition we check if the right settings are configured in the settings.py.
 """
 import logging
 import os
-from urllib.parse import urlparse
 
 import requests
 from django.conf import settings
