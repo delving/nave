@@ -23,7 +23,7 @@ from nave.void.processors import BulkApiProcessor
 def test__processors__bulk_call():
     path = os.path.join(settings.DJANGO_ROOT, "void", "tests", "resources", "bulk_api_sample.txt")
     with open(path, 'r') as f:
-        processor = BulkApiProcessor(f, store=rdfstore._rdfstore_test)
+        processor = BulkApiProcessor(f, store=rdfstore.create_rdf_store("test"))
         assert processor
         processor.process()
         stats = processor._processing_statistics()

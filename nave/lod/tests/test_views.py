@@ -33,7 +33,7 @@ def test_cache_page_redirect_if_not_found(rf):
         '/nl/page/cache/http%3A//data.cultureelerfgoed.nl/semnet/7403e26d-cf33-4372-ad72-a2f9fcf8f63b',
         follow=True
     )
-    store = rdfstore._rdfstore_test
+    store = rdfstore.create_rdf_store("test")
     store._clear_all()
     assert CacheResource.objects.count() == 0
     view = LoDHTMLView.as_view(store=store)
@@ -64,7 +64,7 @@ def test_cache_page_redirect_if_not_found(rf):
         '/nl/page/cache/http%3A//sws.geonames.org/2755003/about.rdf',
         follow=True
     )
-    store = rdfstore._rdfstore_test
+    store = rdfstore.create_rdf_store("test")
     store._clear_all()
     assert CacheResource.objects.count() == 0
     view = LoDHTMLView.as_view(store=store)

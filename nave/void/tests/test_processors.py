@@ -16,5 +16,5 @@ def test__processors__single_call():
     BROKER_BACKEND='memory')
 def test__processors__bulk_call():
     with open(os.path.join(os.path.dirname(__file__), 'resources/bulk_api_sample.txt'), 'r') as f:
-        processor = BulkApiProcessor(f, store=rdfstore._rdfstore_test)
+        processor = BulkApiProcessor(f, store=rdfstore.create_rdf_store("test"))
         assert processor

@@ -24,7 +24,7 @@ class TestESEConvertor(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.store = rdfstore._rdfstore_test
+        cls.store = rdfstore.create_rdf_store("test")
         cls.store._clear_all()
         cls.graph = load_nquad_fixtures()
         cls.dataset_graph_uri = "http://localhost:8000/resource/dataset/ton-smits-huis/graph"

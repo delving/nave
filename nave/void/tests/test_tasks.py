@@ -19,7 +19,7 @@ def load_nquad_fixtures(path=None):
         source=path,
         format='nquads'
     )
-    store = rdfstore._rdfstore_test
+    store = rdfstore.create_rdf_store("test")
     graph_store = store.get_graph_store
     for context in graph.contexts():
         graph_store.put(context.identifier.strip("<>"), context)
@@ -31,7 +31,7 @@ class TestNQuadFixtures(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.graph = None
-        cls.store = rdfstore._rdfstore_test
+        cls.store = rdfstore.create_rdf_store("test")
         cls.store._clear_all()
 
     @classmethod

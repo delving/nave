@@ -55,7 +55,7 @@ class TestResourceCache(TestCase):
     def test_store_remote_cached_resource(self):
         test_uri = "http://nl.dbpedia.org/resource/Ton_Smits"
         resource = CacheResource.get_remote_lod_resource(test_uri)
-        store = rdfstore._rdfstore_test
+        store = rdfstore.create_rdf_store("test")
         assert len(resource) > 0
         store._clear_all()
         graph_store = store.get_graph_store
@@ -85,7 +85,7 @@ class TestResourceCache(TestCase):
         assert '/' not in quote(test_uri, safe='')
 
     def test_save_cached_resource(self):
-        store = rdfstore._rdfstore_test
+        store = rdfstore.create_rdf_store("test")
         store._clear_all()
         graph = load_nquad_fixtures()
         assert len(graph) > 0
@@ -119,7 +119,7 @@ class TestResourceCache(TestCase):
             0
         )
         assert CacheResource.objects.count() == 0
-        store = rdfstore._rdfstore_test
+        store = rdfstore.create_rdf_store("test")
         store._clear_all()
         graph = load_nquad_fixtures()
         assert len(graph) > 0
