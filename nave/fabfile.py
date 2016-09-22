@@ -52,7 +52,7 @@ env.django_dirname = "%s/%s" % (env.proj_dirname, 'nave')
 env.proj_path = "%s/%s" % (env.venv_path, env.proj_dirname)
 env.django_path = "%s/%s/%s" % (env.venv_path, env.proj_dirname, 'nave')
 env.process_num = 1
-env.manage = "%s/bin/python %s/project/manage.py" % (env.venv_path, env.venv_path, 'nave')
+env.manage = "%s/bin/python %s/project/manage.py" % (env.venv_path, env.venv_path)
 
 env.live_host = conf.get("ACC_HOSTNAME", env.hosts[0] if env.hosts else None)
 env.preferred_live_host = env.live_host.split(' ')[0]
