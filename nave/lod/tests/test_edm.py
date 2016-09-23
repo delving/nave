@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 """This module test the EDM mapping type.
 
 
@@ -19,8 +19,8 @@ test_data = """<?xml version='1.0' encoding='utf-8'?>
         xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dc="http://purl.org/dc/elements/1.1/"
         xmlns:edm="http://www.europeana.eu/schemas/edm/"
         xmlns:nave="http://schemas.delving.eu/nave/terms/" xmlns:narthex="http://schemas.delving.eu/narthex/terms/">
-        <skos:Concept rdf:about="http://data.beeldengeluid.nl/gtaa/155912"> 
-            <skos:prefLabel xml:lang="nl">Steger, E.A.M.A.</skos:prefLabel> 
+        <skos:Concept rdf:about="http://data.beeldengeluid.nl/gtaa/155912">
+            <skos:prefLabel xml:lang="nl">Steger, E.A.M.A.</skos:prefLabel>
             <skos:definition>A person</skos:definition>
         </skos:Concept>
         <edm:ProvidedCHO rdf:about="http://www.openbeelden.nl/files/01/65/165083.WEEKNUMMER552-HRE0000CF2E.mpg">

@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 from nave.search.search import NaveESQuery, UserQuery
 
 

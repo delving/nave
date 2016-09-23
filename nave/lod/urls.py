@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 """
 This module contains all the routing rules for the Linked Open Data app.
 """

@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 """This module tests the RDFModel BaseClass.
 """
 from django.conf import settings

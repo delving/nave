@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 """Viewsets for the Django Rest Framework
 
 For more information, see http://www.django-rest-framework.org/api-guide/viewsets/

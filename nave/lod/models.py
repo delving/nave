@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 """
 This model contains the functionality to save SPARQL queries that can be used in the
 '/snorql' SPARQL query explorer to provide the user with some example queries.

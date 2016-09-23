@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 from django.conf.urls import *  # NOQA
 from rest_framework import routers
 

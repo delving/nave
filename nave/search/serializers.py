@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 """
 All the Django Rest Framework (http://www.django-rest-framework.org/tutorial/quickstart)
 serializers

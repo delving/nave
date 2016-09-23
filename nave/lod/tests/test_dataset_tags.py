@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 from urllib.parse import quote
 
 from nave.lod.templatetags.dataset_tags import get_resolved_uri
