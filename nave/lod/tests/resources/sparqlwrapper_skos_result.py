@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 skos_result = {
     "head": {
         "vars": ["s", "p", "o", "broader", "prefLabel"]

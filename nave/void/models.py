@@ -747,9 +747,9 @@ class DataSet(TimeStampedModel, GroupOwned):
     def delete_from_triple_store(self, store):
         """Delete all triples in the triple store that link back to the Dataset.
 
-         * drop all record graphs
-         * drop dataset/skos/graph
-         * drop all skos mappings graphs  
+        * drop all record graphs
+        * drop dataset/skos/graph
+        * drop all skos mappings graphs
         * drop dataset graph
         """
         try:

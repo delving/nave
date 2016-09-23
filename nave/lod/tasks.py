@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 """This module contains the tasks for storing RDFmodel
 data into the graphstore
 

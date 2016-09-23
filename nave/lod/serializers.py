@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 from rest_framework import serializers
 
 from .models import CacheResource, UserGeneratedContent
