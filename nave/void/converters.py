@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 """
 This module contains the converters of EDM resource graphs (saved in a Named Graph) into
 legacy flat formats. We currently support:

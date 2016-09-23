@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 The LoD app is initialised here.
 
@@ -14,7 +13,6 @@ from django.conf import settings
 from rdflib import Graph
 from rdflib.namespace import NamespaceManager, Namespace
 
-from nave.lod.utils import mimetype
 from nave.lod.utils.mimetype import EXTENSION_TO_MIME_TYPE
 
 logger = logging.getLogger(__name__)
@@ -26,14 +24,6 @@ default_app_config = 'nave.lod.apps.LoDConfig'
 
 # Use the EDM resource bindings and template to render EDM LoD HTML pages
 USE_EDM_BINDINGS = False
-
-# The database name of the RDF store
-RDF_STORE_DB = None
-
-try:
-    RDF_STORE_DB = settings.RDF_STORE_DB
-except AttributeError as e:
-    raise AttributeError("""Variable RDF_STORE_DB must be defined in the settings.py """)
 
 try:
     # The hostname were the triple store is running
@@ -52,6 +42,8 @@ try:
 
     RDF_STORE_TYPE = settings.RDF_STORE_TYPE
 
+    RDF_STORE_DB = settings.RDF_STORE_DB
+
 except AttributeError as e:
 
     raise AttributeError("""
@@ -62,6 +54,9 @@ except AttributeError as e:
 
     # The port where the triple store is reachable at
     RDF_STORE_PORT = 3030
+
+    # The name of the RDF database use, e.g. test. Most often you would use the SITE_NAME for this
+    RDF_STORE_DB = "demo"
 
     # the base url of the RDF resources that will be served by this django LoD app (no scheme prefix!!)
     RDF_BASE_URL = 'prod.lod.com'
