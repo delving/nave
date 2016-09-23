@@ -281,7 +281,7 @@ class NaveESQuery(object):
 
     @property
     def facet_list(self):
-        if self.default_facets is None:
+        if self.default_facets:
             return []
         return [facet.es_field for facet in self.default_facets]
 
