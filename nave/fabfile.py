@@ -26,6 +26,7 @@ if sys.argv[0].split(os.sep)[-1] in ("fab",  # POSIX
     try:
         settings = os.environ.get("DJANGO_SETTINGS_MODULE")
         conf = importlib.import_module(settings).FABRIC
+	print(settings)
         try:
             conf["ACC_HOSTS"][0]
         except (KeyError, ValueError):
