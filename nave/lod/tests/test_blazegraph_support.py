@@ -1,7 +1,7 @@
 import pytest
 import requests
 
-from lod.utils import rdfstore
+from nave.lod.utils import rdfstore
 
 rdf_store = rdfstore.create_rdf_store(
     rdf_store_type="BlazeGraph",
