@@ -418,9 +418,10 @@ class ElasticSearchOAIProvider(OAIProvider):
         spec = filters.get("dataset__spec", None)
         modified_from = filters.get('modified__gt', None)
         modified_until = filters.get('modified__lt', None)
+        if spec and not self.spec:
+            self.spec = spec
         if self.spec:
-            spec = self.spec
-            s = s.query("match", **{'system.spec.raw': spec})
+            s = s.query("match", **{'system.spec.raw': self.spec})
         if self.query:
             if 'query' in self.query:
                 s = s.query(self.query.get('query'))
