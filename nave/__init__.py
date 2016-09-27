@@ -15,4 +15,6 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # Also add information on how to contact you by electronic and paper mail.
 
-__version__ = "0.9.4"
+from common import version
+
+__version__ = version.__version__
