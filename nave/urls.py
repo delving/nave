@@ -6,7 +6,7 @@ from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.generic import TemplateView
 from solid_i18n.urls import solid_i18n_patterns
-from nave.common.views import NarthexRedirectView
+from nave.common import views
 
 admin.autodiscover()
 urlpatterns = patterns('',
@@ -23,7 +23,7 @@ if settings.USE_WAGTAIL_CMS:
 urlpatterns += solid_i18n_patterns('',
                             url(r'^admin/', include(admin.site.urls)),  # NOQA
                             url(r'^api-auth', include('rest_framework.urls', namespace='rest_framework')),
-                            url(r'narthex/', NarthexRedirectView.as_view()),
+                            url(r'narthex/', views.NarthexRedirectView.as_view()),
                             url(r'^', include('nave.projects.{}.urls'.format(settings.SITE_NAME))),
                             url(r'^', include('nave.search.urls')),
                             url(r'^', include('nave.virtual_collection.urls')),
@@ -36,6 +36,8 @@ urlpatterns += solid_i18n_patterns('',
                             url(r'^', include('nave.webresource.urls')),
                             url(r'^', include('nave.search_widget.urls')),
                             # template and data from nave.void app
+                            url(r'^version/$', views.nave_version),
+                            # template and data from void app
                             url(r'^statistics/', TemplateView.as_view(template_name="statistics.html")),
                             url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
                             )

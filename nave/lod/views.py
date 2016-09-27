@@ -151,9 +151,9 @@ class LoDDataView(View):
             graph = self.store.describe(uri=kwargs['uri'])
         elif mode in ['context', 'api', 'api-flat']:
             if 'named_graph' in kwargs:
-                graph, _ = RDFModel.get_context_graph(self.store, named_graph=kwargs['named_graph'])
+                graph, _ = ElasticSearchRDFRecord.get_context_graph(self.store, named_graph=kwargs['named_graph'])
             else:
-                graph, _ = RDFModel.get_context_graph(self.store, target_uri=kwargs['uri'])
+                graph, _ = ElasticSearchRDFRecord.get_context_graph(self.store, target_uri=kwargs['uri'])
         else:
             raise ValueError("Mode {} not supported".format(mode))
         return graph
