@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 """ This module provides wrappers to SPARQL query types
 
 By default it uses the settings from the settings.py, but if you instantiate SPARQL directly you can override
@@ -270,7 +270,7 @@ class GraphStore:
         :param named_graph: the uri to the named graph
         :return: Graph
         """
-        headers = {'Content-Type': 'text/nt'}
+        headers = {'Content-Type': 'text/n3'}
         response = requests.get(
             "{graph_store_url}?{graph_param}={graph_name_uri}".format(
                 graph_store_url=self.graph_store,
@@ -282,7 +282,8 @@ class GraphStore:
         if as_graph:
             graph = Graph(identifier=named_graph)
             graph.namespace_manager = namespace_manager
-            graph.parse(data=response.content, format='nt')
+            n3 = response.content.decode("utf-8")
+            graph.parse(data=n3, format='n3')
             return graph
         return response
 
