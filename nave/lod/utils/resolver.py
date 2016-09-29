@@ -1058,6 +1058,23 @@ class RDFRecord:
                     entries_removed += 1
         return graph, entries_removed
 
+    def update_webresource_in_graph(self, graph: Graph):
+        """Resolve webresource API calls to direct URIs."""
+        # initially only do nave.deepZoomUri
+        resolve_predicates = [NAVE.deepZoomUrl]
+        for predicate in resolve_predicates:
+            entries = list(graph.subject_objects(predicate=predicate))
+            if entries:
+                for s, o in entries:
+                    if '/api/webresource' in o:
+                        graph.remove((s, predicate, o))
+                        from webresource.webresource import WebResource
+                        resolve_uri = WebResource.get_redirect_url(str(o))
+                        object_type = type(o)
+                        if resolve_uri:
+                            graph.add((s, predicate, object_type(resolve_uri)))
+        return graph
+
     def get_context_graph(self, with_mappings=False, include_mapping_target=False, acceptance=False, target_uri=None,
                           with_webresource=False):
         """Get Graph instance with linked ProxyResources.
