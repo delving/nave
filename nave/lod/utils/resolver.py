@@ -1349,6 +1349,42 @@ class ElasticSearchRDFRecord(RDFRecord):
             as_bindings=as_bindings
         )
 
+    @staticmethod
+    def get_query_value_dict(query_fields, graph_bindings):
+        """Return a Dict with query fields and their value from the graph_bindings."""
+        return {field: graph_bindings.get_list(field.replace('.raw', '')) for field in query_fields}
+
+    @staticmethod
+    def get_query_value_query_list(query_fields, graph_bindings):
+        """Return a list of ElasticSearch Queries"""
+        query_values = ElasticSearchRDFRecord.get_query_value_dict(query_fields, graph_bindings)
+        query_list = []
+        for k, v in query_values.items():
+            for field_value in v:
+                query_list.append(Q('match', **{k: str(field_value.value)}))
+        return query_list
+
+    def get_raw_related(self, query_fields, filter_query, graph_bindings, store_name=None):
+        """Return a List of Nave items based on  the values from the query_fields extracted from the GraphBindings."""
+        if store_name is None:
+            store_name = settings.SITE_NAME
+        query_list =  self.get_query_value_query_list(query_fields, graph_bindings)
+        s = Search(using=client, index=store_name)
+        related_query = s.query(
+            'bool',
+            should=query_list
+        )
+        if filter_query:
+            for k, v in filter_query.items():
+                related_query = related_query.filter("term", **{k: v})
+        hits = related_query.execute()
+        items = []
+        for item in hits:
+            from search.search import NaveESItemWrapper
+            nave_item = NaveESItemWrapper(item)
+            items.append(nave_item)
+        return items
+
     def get_more_like_this(self, mlt_count=15, mlt_fields=None, filter_query=None):
         return self.es_related_items(self.hub_id, doc_type=self._doc_type, mlt_count=mlt_count,  mlt_fields=mlt_fields,
                                      filter_query=filter_query)

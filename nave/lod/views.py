@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-
-"""
 import json
 import logging
 import os
@@ -364,11 +361,21 @@ class LoDHTMLView(TemplateView):
             from collections import OrderedDict
             context['data'] = {"mlt_banners": OrderedDict()}
             for name, config in settings.MLT_BANNERS.items():
-                context['data']['mlt_banners'][name] = object_local_cache.get_more_like_this(
-                        mlt_count=10,
-                        mlt_fields=config.get("fields", None),
-                        filter_query=config.get("filter_query", None)
+                mlt_fields = config.get("fields", None)
+                if mlt_fields and any(".raw" in field for field in mlt_fields):
+                    # .raw fields don't work with MORE LIKE THIS queries so are
+                    # queried directly.
+                    context['data']['mlt_banners'][name] = object_local_cache.get_raw_related(
+                        query_fields=mlt_fields,
+                        filter_query=config.get("filter_query", None),
+                        graph_bindings=graph_bindings
                     )
+                else:
+                    context['data']['mlt_banners'][name] = object_local_cache.get_more_like_this(
+                            mlt_count=10,
+                            mlt_fields=mlt_fields,
+                            filter_query=config.get("filter_query", None)
+                        )
         view_modes = {
             'properties': "rdf/_rdf_properties.html"
         }
