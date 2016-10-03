@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-
-"""
 import json
 import logging
 import os
@@ -11,9 +8,8 @@ import requests
 from django import http
 from django.conf import settings
 from django.core.urlresolvers import reverse
-from django.db.models.loading import get_model
-from django.http.response import HttpResponseRedirectBase, HttpResponse, Http404, HttpResponseNotAllowed, \
-    HttpResponseBadRequest
+from django.http.response import HttpResponseRedirectBase, HttpResponse, \
+    Http404, HttpResponseNotAllowed, HttpResponseBadRequest
 from django.shortcuts import redirect
 from django.views.generic import TemplateView, RedirectView, View
 from rdflib.namespace import SKOS, RDF
@@ -25,7 +21,8 @@ import lod.utils
 from lod.utils import rdfstore
 from lod.utils.resolver import GraphBindings, RDFRecord
 from lod.utils.mimetype import best_match
-from lod.utils.mimetype import extension_to_mime, HTML_MIME, mime_to_extension, result_extension_to_mime
+from lod.utils.mimetype import extension_to_mime, HTML_MIME, mime_to_extension,\
+    result_extension_to_mime
 from lod.utils.rdfstore import get_rdfstore, UnknownGraph
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
@@ -33,7 +30,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from lod.utils.resolver import ElasticSearchRDFRecord
 
 from .serializers import UserGeneratedContentSerializer
-from .models import SPARQLQuery, RDFPrefix, RDFModel, CacheResource, RDFSubjectLookUp, UserGeneratedContent
+from .models import SPARQLQuery, RDFPrefix, RDFModel, CacheResource, UserGeneratedContent
 from .tasks import retrieve_and_cache_remote_lod_resource
 
 logger = logging.getLogger(__name__)
@@ -364,11 +361,21 @@ class LoDHTMLView(TemplateView):
             from collections import OrderedDict
             context['data'] = {"mlt_banners": OrderedDict()}
             for name, config in settings.MLT_BANNERS.items():
-                context['data']['mlt_banners'][name] = object_local_cache.get_more_like_this(
-                        mlt_count=10,
-                        mlt_fields=config.get("fields", None),
-                        filter_query=config.get("filter_query", None)
+                mlt_fields = config.get("fields", None)
+                if mlt_fields and any(".raw" in field for field in mlt_fields):
+                    # .raw fields don't work with MORE LIKE THIS queries so are
+                    # queried directly.
+                    context['data']['mlt_banners'][name] = object_local_cache.get_raw_related(
+                        query_fields=mlt_fields,
+                        filter_query=config.get("filter_query", None),
+                        graph_bindings=graph_bindings
                     )
+                else:
+                    context['data']['mlt_banners'][name] = object_local_cache.get_more_like_this(
+                            mlt_count=10,
+                            mlt_fields=mlt_fields,
+                            filter_query=config.get("filter_query", None)
+                        )
         view_modes = {
             'properties': "rdf/_rdf_properties.html"
         }
