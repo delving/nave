@@ -873,8 +873,10 @@ class RDFRecord:
             self.get_graph_by_source_uri(uri=self._source_uri)
 
     @staticmethod
-    def clean_local_id(raw_id):
-        local_id = raw_id.replace("_", "-").replace(":", "-").replace(" ", "-").replace("+", "-").replace("/", "-")
+    def clean_local_id(raw_id, is_hub_id=False):
+        local_id = raw_id.replace(":", "-").replace(" ", "-").replace("+", "-").replace("/", "-")
+        if not is_hub_id:
+            local_id = local_id.replace("_", "-")
         if "--" in local_id:
             local_id = re.sub("[-]{2,10}", "-", local_id)
         return local_id
