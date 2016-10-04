@@ -404,7 +404,7 @@ class NaveESQuery(object):
                 self._is_item_query = True
             elif self.hub_id_pattern.findall(clean_id):
                 from nave.lod.utils.resolver import RDFRecord
-                clean_id = RDFRecord.clean_local_id(clean_id)
+                clean_id = RDFRecord.clean_local_id(clean_id, is_hub_id=True)
                 query = query.query.query(_id=clean_id)
                 self._is_item_query = True
             else:
