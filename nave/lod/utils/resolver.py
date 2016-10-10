@@ -1354,10 +1354,16 @@ class ElasticSearchRDFRecord(RDFRecord):
         if store_name is None:
             store_name = settings.SITE_NAME
         query_list =  self.get_query_value_query_list(query_fields, graph_bindings)
+        if not query_list:
+            return []
         s = Search(using=client, index=store_name)
+        must_not_list = []
+        if self.hub_id:
+            must_not_list.append(Q("match", _id=self.hub_id))
         related_query = s.query(
             'bool',
-            should=query_list
+            should=query_list,
+            must_not=must_not_list
         )
         if filter_query:
             for k, v in filter_query.items():
