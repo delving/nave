@@ -20,6 +20,11 @@ def get_binding(value, arg):
     return value[arg]
 
 
+@register.assignment_tag(takes_context=True)
+def get_resource_fields(context, fieldname):
+    return context['resources'].get_list(fieldname)
+
+
 @register.simple_tag(takes_context=True)
 def get_resolved_uri(context, uri):
     """Returns resolved uri, or Cached URI."""
@@ -204,6 +209,7 @@ def detail_field(
         is_authenticated=False,
         surround=None,
         predicate_uri=None,
+        local_bindings=None,
         rdf_object=None,
         value_only=False):
     """
@@ -211,7 +217,8 @@ def detail_field(
     @fieldname: the fieldname whose data to retrieve
     :return: field(s) and predicate
     """
-    bindings = context['resources']
+
+    bindings = local_bindings if local_bindings else context['resources']
     request = context['request']
     fields = None
     predicate = None
