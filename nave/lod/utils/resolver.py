@@ -466,6 +466,10 @@ class RDFResource:
         self._objects = None
         self._predicates = None
         self._rdf_types = None
+        self._search_label_dict = defaultdict(list)
+
+    def __getitem__(self, search_label):
+        return self.get_first(search_label)
 
     def __str__(self):
         return self.get_uri()
@@ -528,6 +532,34 @@ class RDFResource:
 
     def get_type(self):
         return self.get_types()[0]
+
+    def get_list(self, search_label):
+        if not self._search_label_dict:
+            for predicate, rdf_objects in self.get_items().items():
+                for rdf_object in rdf_objects:
+                    self._search_label_dict[predicate.search_label].append(rdf_object)
+        return self._search_label_dict.get(search_label, [])
+
+    def get_first(self, search_label):
+        objects = self.get_list(search_label)
+        if objects:
+            return objects[0]
+        return None
+
+    def get_first_literal(self, predicate, graph=None):
+        if graph is None:
+            graph = self._graph
+        if not isinstance(predicate, URIRef):
+            predicate = URIRef(predicate)
+        for s, o in graph.subject_objects(subject=self.subject_uri, predicate=predicate):
+            if isinstance(o, Literal):
+                if o.datatype == URIRef('http://www.w3.org/2001/XMLSchema#boolean'):
+                    return True if o.value in ['true', 'True'] else False
+                elif o.datatype == URIRef('http://www.w3.org/2001/XMLSchema#integer'):
+                    return int(o.value)
+                else:
+                    return o.value
+        return None
 
     def get_items(self, sort=True, exclude_list=None, include_list=None, as_tuples=False):
         """Dict of RDFPredicate with List of RDFObject"""
@@ -672,6 +704,7 @@ class RDFObject:
         self._is_inlined = False
         self._is_normalised = False
         self._lang = None
+        self._resource = None
         self._inline_enrichment_link()
 
     def _inline_enrichment_link(self):
@@ -810,6 +843,14 @@ class RDFObject:
             about_uri = None
             return False
         return self._bindings.has_resource(self._rdf_object, self) if self._bindings else False
+
+    @property
+    def get_resource(self):
+        if not self.has_resource:
+            return None
+        if not self._resource:
+            self._resource = self._bindings.get_resource(self._rdf_object)
+        return self._resource
 
     @property
     def is_bnode(self):
@@ -1354,10 +1395,16 @@ class ElasticSearchRDFRecord(RDFRecord):
         if store_name is None:
             store_name = settings.SITE_NAME
         query_list =  self.get_query_value_query_list(query_fields, graph_bindings)
+        if not query_list:
+            return []
         s = Search(using=client, index=store_name)
+        must_not_list = []
+        if self.hub_id:
+            must_not_list.append(Q("match", _id=self.hub_id))
         related_query = s.query(
             'bool',
-            should=query_list
+            should=query_list,
+            must_not=must_not_list
         )
         if filter_query:
             for k, v in filter_query.items():
