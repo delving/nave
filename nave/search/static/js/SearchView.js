@@ -70,7 +70,7 @@ SearchView.initFacets = function () {
         var facet_body = container.find('.facet-body');
         var facet_list = container.find('.facet-list');
         var facet_tools = container.find('.facet-tools');
-        var facet_toggle = container.find('.facet-toggle')
+        var facet_toggle = container.find('.facet-toggle');
 
         if(links.length <= 3 ){
             $(facet_tools).hide();
@@ -114,15 +114,22 @@ SearchView.initFacets = function () {
 // creates "tags" for inputted search strings and selected facets
 /***********************************************************************************/
 SearchView.initSearchTags = function() {
-    var $form = $('#form-simple-search');
+
+
+    // var $form = $('#form-simple-search');
+    // $form.on('submit', function(){
+    //     $form.find('input#q').val().trim();
+    // });
+        
     var $queryForm = $('#form-query-fields');
-    //var $input = $form.find('input#q');
+
     var $input = $('div#qtags');
     var $btnClear = $('#btn-clear-simple-search');
     //var tagSize = 'small';
     $input.tagsinput({
         itemText:'text',
         itemValue:'value',
+        trimValue: true,
         tagClass: function (item) {
             var classStr = 'label label-default';
             switch (item.name) {
@@ -139,21 +146,25 @@ SearchView.initSearchTags = function() {
     $queryForm.find('input:hidden').each(function() {
         var $param = $(this);
         var $qTerms = [];
-        // TODO: if this is a query (q) element, then split it up if it contains more than a singe term
-        // if ($param.attr('name') == 'q' ) {
-        //     qTerms = $param.attr('value').split(' ');
-        //     qTerms.forEach(function(element){
-        //         $input.tagsinput('add', {'text': element, 'value': element, 'name': $param.attr('name')});
-        //     });
-        // }
-        // else {
-        //     $input.tagsinput('add', {'text': $param.attr('data-text'), 'value': $param.attr('value'), 'name': $param.attr('name')});
-        // }
-        if($param.attr('value')){
+        if ($param.attr('name') == 'q' ) {
+            // first trim whitespace then split into array
+            qTerms = $param.attr('value').replace(/^\s+|\s+$/gm,'').split(' ');
+            // add each element in the array
+            qTerms.forEach(function(element){
+                $input.tagsinput('add', {'text': element, 'value': element, 'name': $param.attr('name')});
+            });
+        }
+        else {
             $input.tagsinput('add', {'text': $param.attr('data-text'), 'value': $param.attr('value'), 'name': $param.attr('name')});
         }
+        // if($param.attr('value')){
+        //     $input.tagsinput('add', {'text': $param.attr('data-text'), 'value': $param.attr('value'), 'name': $param.attr('name')});
+        // }
 
     });
+
+
+
 
     $btnClear.removeClass('hidden');
     // clean all queries and start fresh
@@ -163,12 +174,44 @@ SearchView.initSearchTags = function() {
             $queryForm.find('input:hidden').remove()
         ).done(function () {
                 $queryForm.submit();
-            });
+        });
     });
 
+    // remove a specific item from the hidden form for a new query
     $input.on('beforeItemRemove', function(event) {
-        $queryForm.find('input[value="'+event.item.value+'"]').remove();
+        // $queryForm.find('input[value="'+event.item.value+'"]').remove();
+        // $queryForm.submit();
+        var _value = event.item.value;
+        $queryForm.find(':input').each(function(){
+            var _this = $(this);
+            // console.log(_input.attr('name') + ": " + _this.val());
+            // no special actions needed for facet just remove
+            if( _this.val() == _value && _this.attr('name') == 'qf' ){
+                _this.remove();
+            }
+            if( _this.attr('name') == 'q') {
+                // be kinds and always trim
+                _q = _this.val().trim();
+                // nr of words in the query
+                _nrWords = _q.split(/\s+/).length;
+                console.log(_q.toLowerCase().indexOf(_value.toLowerCase()));
+                if ( _nrWords > 1 && _q.toLowerCase().indexOf(_value.toLowerCase()) >= 0 ) {
+                    console.log('go');
+                    console.log('actual input value: ', _this.val());
+                    console.log('string to be removed: ', _value);
+                    console.log('new input value: ', _this.val().replace(_value,''));
+                    _this.val(_this.val().replace(_value,''));
+
+                } else {
+                    _this.remove();
+                }
+
+            }
+
+        });
         $queryForm.submit();
+        // return false;
+
     });
 };
 
