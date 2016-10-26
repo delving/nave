@@ -194,24 +194,15 @@ SearchView.initSearchTags = function() {
                 _q = _this.val().trim();
                 // nr of words in the query
                 _nrWords = _q.split(/\s+/).length;
-                console.log(_q.toLowerCase().indexOf(_value.toLowerCase()));
                 if ( _nrWords > 1 && _q.toLowerCase().indexOf(_value.toLowerCase()) >= 0 ) {
-                    console.log('go');
-                    console.log('actual input value: ', _this.val());
-                    console.log('string to be removed: ', _value);
-                    console.log('new input value: ', _this.val().replace(_value,''));
                     _this.val(_this.val().replace(_value,''));
 
                 } else {
                     _this.remove();
                 }
-
             }
-
         });
         $queryForm.submit();
-        // return false;
-
     });
 };
 
