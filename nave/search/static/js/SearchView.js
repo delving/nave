@@ -54,7 +54,6 @@ SearchView.processImages = function () {
 /***********************************************************************************/
 SearchView.initFacets = function () {
     // facet sorting
-    // $facetContainer = $(".facet-container");
     $(".facet-container .sort").on('click', function (e) {
         e.preventDefault();
         var _this = $(this),
@@ -115,12 +114,6 @@ SearchView.initFacets = function () {
 /***********************************************************************************/
 SearchView.initSearchTags = function() {
 
-
-    // var $form = $('#form-simple-search');
-    // $form.on('submit', function(){
-    //     $form.find('input#q').val().trim();
-    // });
-        
     var $queryForm = $('#form-query-fields');
 
     var $input = $('div#qtags');
@@ -145,10 +138,9 @@ SearchView.initSearchTags = function() {
 
     $queryForm.find('input:hidden').each(function() {
         var $param = $(this);
-        var $qTerms = [];
         if ($param.attr('name') == 'q' ) {
             // first trim whitespace then split into array
-            qTerms = $param.attr('value').replace(/^\s+|\s+$/gm,'').split(' ');
+            var qTerms = $param.attr('value').replace(/^\s+|\s+$/gm,'').split(' ');
             // add each element in the array
             qTerms.forEach(function(element){
                 $input.tagsinput('add', {'text': element, 'value': element, 'name': $param.attr('name')});
@@ -157,15 +149,8 @@ SearchView.initSearchTags = function() {
         else {
             $input.tagsinput('add', {'text': $param.attr('data-text'), 'value': $param.attr('value'), 'name': $param.attr('name')});
         }
-        // if($param.attr('value')){
-        //     $input.tagsinput('add', {'text': $param.attr('data-text'), 'value': $param.attr('value'), 'name': $param.attr('name')});
-        // }
-
     });
-
-
-
-
+    
     $btnClear.removeClass('hidden');
     // clean all queries and start fresh
     $btnClear.on('click', function () {
@@ -179,8 +164,6 @@ SearchView.initSearchTags = function() {
 
     // remove a specific item from the hidden form for a new query
     $input.on('beforeItemRemove', function(event) {
-        // $queryForm.find('input[value="'+event.item.value+'"]').remove();
-        // $queryForm.submit();
         var _value = event.item.value;
         $queryForm.find(':input').each(function(){
             var _this = $(this);
@@ -194,24 +177,15 @@ SearchView.initSearchTags = function() {
                 _q = _this.val().trim();
                 // nr of words in the query
                 _nrWords = _q.split(/\s+/).length;
-                console.log(_q.toLowerCase().indexOf(_value.toLowerCase()));
                 if ( _nrWords > 1 && _q.toLowerCase().indexOf(_value.toLowerCase()) >= 0 ) {
-                    console.log('go');
-                    console.log('actual input value: ', _this.val());
-                    console.log('string to be removed: ', _value);
-                    console.log('new input value: ', _this.val().replace(_value,''));
                     _this.val(_this.val().replace(_value,''));
 
                 } else {
                     _this.remove();
                 }
-
             }
-
         });
         $queryForm.submit();
-        // return false;
-
     });
 };
 
