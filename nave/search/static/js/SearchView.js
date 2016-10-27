@@ -70,7 +70,7 @@ SearchView.initFacets = function () {
         var facet_body = container.find('.facet-body');
         var facet_list = container.find('.facet-list');
         var facet_tools = container.find('.facet-tools');
-        var facet_toggle = container.find('.facet-toggle')
+        var facet_toggle = container.find('.facet-toggle');
 
         if(links.length <= 3 ){
             $(facet_tools).hide();
@@ -102,9 +102,9 @@ SearchView.initFacets = function () {
             }
         });
 
-       facet_toggle.on('click', function(){
-           $(this).find('i').toggleClass('fa-minus fa-plus');
-       });
+        facet_toggle.on('click', function(){
+            $(this).find('i').toggleClass('fa-minus fa-plus');
+        });
 
     });
 };
@@ -114,15 +114,14 @@ SearchView.initFacets = function () {
 // creates "tags" for inputted search strings and selected facets
 /***********************************************************************************/
 SearchView.initSearchTags = function() {
-    var $form = $('#form-simple-search');
     var $queryForm = $('#form-query-fields');
-    //var $input = $form.find('input#q');
     var $input = $('div#qtags');
     var $btnClear = $('#btn-clear-simple-search');
     //var tagSize = 'small';
     $input.tagsinput({
         itemText:'text',
         itemValue:'value',
+        trimValue: true,
         tagClass: function (item) {
             var classStr = 'label label-default';
             switch (item.name) {
@@ -139,20 +138,19 @@ SearchView.initSearchTags = function() {
     $queryForm.find('input:hidden').each(function() {
         var $param = $(this);
         var $qTerms = [];
-        // TODO: if this is a query (q) element, then split it up if it contains more than a singe term
-        // if ($param.attr('name') == 'q' ) {
-        //     qTerms = $param.attr('value').split(' ');
-        //     qTerms.forEach(function(element){
-        //         $input.tagsinput('add', {'text': element, 'value': element, 'name': $param.attr('name')});
-        //     });
-        // }
-        // else {
-        //     $input.tagsinput('add', {'text': $param.attr('data-text'), 'value': $param.attr('value'), 'name': $param.attr('name')});
-        // }
-        if($param.attr('value')){
+        if ($param.attr('name') == 'q') {
+            if ($param.val().length > 0){
+                // first trim whitespace then split into array
+                qTerms = $param.attr('value').replace(/^\s+|\s+$/gm,'').split(' ');
+                // add each element in the array
+                qTerms.forEach(function(element){
+                    $input.tagsinput('add', {'text': element, 'value': element, 'name': $param.attr('name')});
+                });
+            }
+        }
+        else {
             $input.tagsinput('add', {'text': $param.attr('data-text'), 'value': $param.attr('value'), 'name': $param.attr('name')});
         }
-
     });
 
     $btnClear.removeClass('hidden');
@@ -162,12 +160,35 @@ SearchView.initSearchTags = function() {
             $input.tagsinput('removeAll'),
             $queryForm.find('input:hidden').remove()
         ).done(function () {
-                $queryForm.submit();
-            });
+            $queryForm.submit();
+        });
     });
 
+    // remove a specific item from the hidden form for a new query
     $input.on('beforeItemRemove', function(event) {
-        $queryForm.find('input[value="'+event.item.value+'"]').remove();
+        var _value = event.item.value;
+        $queryForm.find(':input').each(function(){
+            var _this = $(this);
+            // no special actions needed for facet just remove
+            if( _this.val() == _value && _this.attr('name') == 'qf' ){
+                _this.remove();
+            }
+            if ( _this.attr('name') == 'q') {
+                // be kinds and always trim
+                _q = _this.val().trim();
+                // nr of terms in the query
+                _nrTerms = _q.split(/\s+/).length;
+                // remove one query term from within string of multiple terms
+                if ( _nrTerms > 1 && _q.toLowerCase().indexOf(_value.toLowerCase()) >= 0 ) {
+                    _this.val(_this.val().replace(_value,''));
+
+                }
+                // remove the single query term
+                else if ( _nrTerms == 1 ) {
+                    _this.remove();
+                }
+            }
+        });
         $queryForm.submit();
     });
 };
@@ -197,27 +218,27 @@ SearchView.initGeo = function () {
     map = L.map('ds-map',  { layers: [tiles] });
 
     // function buildMap(mapReceiver) {
-        // $.getJSON("/search/?format=geojson&cluster.factor=1&" + queryStr, function (data) {
-        //     // first check if there is any data
-        //     if(data.features.length && data.features.length > 0){
-        //         var centerPoint = L.latLng(51.55, 0); // default should not be necessary
-        //         if (data.features.length == 1) {
-        //             var feature = data.features[0];
-        //             centerPoint = L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]);
-        //         }
-        //         //console.log("set view to center point", centerPoint);
-        //         map.setView([centerPoint.lat, centerPoint.lng], 5);
-        //         var featureGroup = new L.FeatureGroup();
-        //         featureGroup.addTo(map);
-        //         var markerClusterGroup = new L.MarkerClusterGroup();
-        //         markerClusterGroup.addTo(map);
-        //         mapReceiver(featureGroup, markerClusterGroup)
-        //     }
-        //     // if there is no data then hide geo functionality
-        //     else {
-        //         $('#tab-geo, #tab-grid').hide();
-        //     }
-        // });
+    // $.getJSON("/search/?format=geojson&cluster.factor=1&" + queryStr, function (data) {
+    //     // first check if there is any data
+    //     if(data.features.length && data.features.length > 0){
+    //         var centerPoint = L.latLng(51.55, 0); // default should not be necessary
+    //         if (data.features.length == 1) {
+    //             var feature = data.features[0];
+    //             centerPoint = L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]);
+    //         }
+    //         //console.log("set view to center point", centerPoint);
+    //         map.setView([centerPoint.lat, centerPoint.lng], 5);
+    //         var featureGroup = new L.FeatureGroup();
+    //         featureGroup.addTo(map);
+    //         var markerClusterGroup = new L.MarkerClusterGroup();
+    //         markerClusterGroup.addTo(map);
+    //         mapReceiver(featureGroup, markerClusterGroup)
+    //     }
+    //     // if there is no data then hide geo functionality
+    //     else {
+    //         $('#tab-geo, #tab-grid').hide();
+    //     }
+    // });
     // }
 
     buildMap(function(featureGroup, markerClusterGroup) {
