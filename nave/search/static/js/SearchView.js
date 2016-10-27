@@ -53,8 +53,6 @@ SearchView.processImages = function () {
 // SearchView.initFacets requires search/static/js/search-facets-sort.js
 /***********************************************************************************/
 SearchView.initFacets = function () {
-    // facet sorting
-    // $facetContainer = $(".facet-container");
     $(".facet-container .sort").on('click', function (e) {
         e.preventDefault();
         var _this = $(this),
@@ -117,7 +115,6 @@ SearchView.initSearchTags = function() {
     var $queryForm = $('#form-query-fields');
     var $input = $('div#qtags');
     var $btnClear = $('#btn-clear-simple-search');
-    //var tagSize = 'small';
     $input.tagsinput({
         itemText:'text',
         itemValue:'value',
