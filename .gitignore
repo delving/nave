@@ -29,6 +29,8 @@ nave/projects/*
 !nave/projects/README.md
 .vagrant
 *.swp
+.ropeproject
+.coverage*
 
 # the files stored during fab deploy
 nave/last.tar

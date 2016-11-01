@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 """This module implements all the bindings used by the view layers for RDF Graphs.
 
 This module deals with all the conversion of Named Graphs or SPARQL results into Python objects
@@ -1047,7 +1047,7 @@ class RDFRecord:
             g = self.parse_graph_from_string(self._rdf_string)
             self._graph = g
         return self._graph
-    
+
     @staticmethod
     def delete_webresource_graphs(spec, store=None):
         if not store:
@@ -1063,7 +1063,7 @@ class RDFRecord:
               <http://schemas.delving.eu/narthex/terms/datasetSpec> "{spec}".
           }}
           GRAPH ?g {{
-            ?s ?p ?o. 
+            ?s ?p ?o.
           }}}}
         """.format(spec=spec)
         return store.update(query=query)
@@ -1417,11 +1417,16 @@ class ElasticSearchRDFRecord(RDFRecord):
             items.append(nave_item)
         return items
 
-    def get_more_like_this(self, mlt_count=15, mlt_fields=None, filter_query=None):
-        return self.es_related_items(self.hub_id, doc_type=self._doc_type, mlt_count=mlt_count,  mlt_fields=mlt_fields,
-                                     filter_query=filter_query)
+    def get_more_like_this(self, mlt_count=15, mlt_fields=None,
+                           filter_query=None, wrapped=True, converter=None):
+        return self.es_related_items(self.hub_id, doc_type=self._doc_type,
+                                     mlt_count=mlt_count,  mlt_fields=mlt_fields,
+                                     filter_query=filter_query, wrapped=wrapped,
+                                     converter=converter)
 
-    def es_related_items(self, hub_id, doc_type=None, mlt_fields=None, store_name=None, mlt_count=5, filter_query=None):
+    def es_related_items(self, hub_id, doc_type=None, mlt_fields=None,
+                         store_name=None, mlt_count=5, filter_query=None,
+                         wrapped=True, converter=None):
         if store_name is None:
             store_name = settings.SITE_NAME
         if mlt_fields is None or not isinstance(mlt_fields, list):
@@ -1448,7 +1453,11 @@ class ElasticSearchRDFRecord(RDFRecord):
         hits = mlt_query.execute()
         items = []
         for item in hits:
-            from search.search import NaveESItemWrapper
-            nave_item = NaveESItemWrapper(item)
+            if wrapped:
+                from search.search import NaveESItemWrapper
+                nave_item = NaveESItemWrapper(item, converter=converter)
+            else:
+                from search.search import NaveESItem
+                nave_item = NaveESItem(item, converter=converter)
             items.append(nave_item)
         return items

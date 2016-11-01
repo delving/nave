@@ -290,6 +290,8 @@ class LoDHTMLView(TemplateView):
 
         context['source_uri'] = target_uri
         context['about_label'] = target_uri.split('/')[-1]
+        context['about_spec'] = target_uri.split('/')[-2]
+
         context['cached'] = cached
 
         # special query for skos
