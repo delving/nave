@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 """ file: search/views.py
 
 The Django views used by the search module.
@@ -6,7 +6,6 @@ The Django views used by the search module.
 
 """
 import inspect
-import json
 import logging
 import sys
 from collections import OrderedDict
@@ -15,8 +14,8 @@ import requests
 from django.conf import settings
 from django.db.models.loading import get_model
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed, JsonResponse
-from django.shortcuts import get_object_or_404, redirect
-from django.utils.translation import ugettext_lazy as _, activate, get_language
+from django.shortcuts import redirect
+from django.utils.translation import ugettext_lazy as _, activate
 from django.views.generic import ListView, DetailView, RedirectView, View, TemplateView
 from rest_framework.decorators import list_route
 from rest_framework.generics import ListAPIView, RetrieveAPIView
@@ -39,7 +38,7 @@ from void.models import EDMRecord
 
 from .renderers import N3Renderer, JSONLDRenderer, TURTLERenderer, NTRIPLESRenderer, RDFRenderer, GeoJsonRenderer, \
     XMLRenderer, KMLRenderer, GeoBufRenderer
-from .search import NaveESQuery, NaveQueryResponse, NaveQueryResponseWrapper, NaveItemResponse, NaveESItemList, \
+from .search import NaveESQuery, NaveQueryResponse, NaveQueryResponseWrapper, NaveItemResponse, \
     NaveESItem
 from .serializers import NaveQueryResponseWrapperSerializer, NaveESItemSerializer
 
@@ -337,7 +336,6 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
         return JSONRenderer().render(serialized_item.data)
 
     def list(self, request, format=None, *args, **kwargs):
-        acceptance = self.acceptance_mode
         # if has id redirect to detail view
         if 'id' in request.query_params:
             params = request.query_params.copy()
@@ -399,9 +397,23 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
             return HttpResponseBadRequest()
         mlt = True if request.query_params.get('mlt', 'false') == "true" else False
         mlt_count = int(request.query_params.get('mlt.count', 5))
-        response = NaveItemResponse(query, self, index=self.get_index_name, mlt=mlt, mlt_count=mlt_count)
+        mlt_filter_queries = request.query_params.getlist('mlt.qf', [])
+        mlt_fq_dict = {}
+        for fq in mlt_filter_queries:
+            if ":" in fq:
+                k, v = fq.split(":", maxsplit=1)
+                mlt_fq_dict[k] = v
         record = ElasticSearchRDFRecord(hub_id=pk)
         record.get_graph_by_id(hub_id=pk)
+        response = NaveItemResponse(
+            query,
+            self,
+            index=self.get_index_name,
+            mlt=mlt,
+            mlt_count=mlt_count,
+            mlt_filter_query=mlt_fq_dict,
+            rdf_record=record
+        )
         renderer_format = request.accepted_renderer.format
         if renderer_format in list(EXTENSION_TO_MIME_TYPE.keys()) and renderer_format not in ['xml', 'json']:
             graph = record.get_graph()
@@ -564,7 +576,6 @@ class NaveDocumentTemplateView(TemplateView):
             )
         # todo: remove: should no longer be necessary with the addition of common.middleware.ForceLangMiddleware
         language = self.request.GET.get('lang', None)
-        current_language = get_language()
         if language:
             activate(language)
         bindings = GraphBindings(
@@ -627,7 +638,6 @@ class NaveDocumentDetailView(DetailView):
             )
         # todo: remove: should no longer be necessary with the addition of common.middleware.ForceLangMiddleware
         language = self.request.GET.get('lang', None)
-        current_language = get_language()
         if language:
             activate(language)
         bindings = GraphBindings(

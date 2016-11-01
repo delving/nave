@@ -1268,7 +1268,8 @@ class NaveQueryResponseWrapper(object):
 
 
 class NaveItemResponse(object):
-    def __init__(self, query, nave_query, index, mlt=False, mlt_items=None, mlt_count=5, ):
+    def __init__(self, query, nave_query, index, mlt=False, mlt_items=None,
+                 mlt_count=5, mlt_filter_query=None, rdf_record=None):
         self._index = index
         self._query = query
         self._nave_query = nave_query
@@ -1278,16 +1279,26 @@ class NaveItemResponse(object):
         self._id = None
         self._item = None
         self._mlt_count = mlt_count
+        self._mlt_filter_query = mlt_filter_query
         self._mlt_items = mlt_items
+        self._rdf_record = rdf_record
         self._mlt_results = self._create_mlt()
 
     def get_mlt(self):
         return self._mlt_results
 
     def _create_mlt(self):
-        # todo build query first and get first one for item and rest as related items
-        if self._mlt and self.item:
-            # todo: implement the elasticsearch-dsl version of MLT
+        if self._mlt and self._rdf_record:
+            items = self._rdf_record.get_more_like_this(
+                mlt_count=self._mlt_count,
+                mlt_fields=self._nave_query.mlt_fields,
+                filter_query=self._mlt_filter_query,
+                wrapped=False,
+                converter=self._nave_query.get_converter()
+            )
+            return items
+        elif self._mlt and self.item:
+            # todo: remove this later.
             doc_type = self.item.doc_type
             doc_id = self.item.doc_id
             from . import get_es_client
