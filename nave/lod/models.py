@@ -756,8 +756,10 @@ class RDFModelTest(RDFModel):
         return "Document"
 
 
-class UserGeneratedContent(GroupOwned, TimeStampedModel):
+class UserGeneratedContent(GroupOwned):
     """Model for enrichments created by Users via a form on the Detail pages."""
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
     source_uri = models.URLField(
         verbose_name=_("RDF source URI"),
     )

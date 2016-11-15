@@ -84,5 +84,5 @@ class UserGeneratedContentAdmin(reversion.admin.VersionAdmin):
     fields = ['name', 'content_type', 'link',
               'source_uri', 'short_description', 'published']
 
-admin.site.register(UserGeneratedContent, UserGeneratedContentAdmin)
-
+if not admin.site.is_registered(UserGeneratedContent):
+    admin.site.register(UserGeneratedContent, UserGeneratedContentAdmin)

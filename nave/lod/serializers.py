@@ -12,6 +12,11 @@ class CacheResourceSerializer(serializers.HyperlinkedModelSerializer):
 
 class UserGeneratedContentSerializer(serializers.ModelSerializer):
 
+    def create(self, data):
+        # Will only be done if a new object is being created
+        data['user'] = self.context.get('request')._user
+        return super().create(data)
+
     class Meta:
         model = UserGeneratedContent
-        exclude = ('groups', 'user', 'html_summary')
+        exclude = ('groups', 'html_summary')
