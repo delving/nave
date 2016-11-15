@@ -566,3 +566,9 @@ class UserGeneratedContentDetail(RetrieveUpdateDestroyAPIView):
     queryset = UserGeneratedContent.objects.all()
     serializer_class = UserGeneratedContentSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request._user)
+
+    def perform_update(self, serializer):
+        serializer.save(user=self.request._user)
