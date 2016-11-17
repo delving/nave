@@ -9,10 +9,7 @@ from django.template.loader import get_template
 from django.views.generic import DetailView
 from django_downloadview import PathDownloadView
 
-from django.core import urlresolvers
-
 from .models import DiwInstance
-
 
 logger = logging.getLogger(__name__)
 
