@@ -289,7 +289,7 @@ class GraphStore:
 
     def head(self, named_graph):
         """Testing for validity of derefencable named graphs."""
-        headers = {'Content-Type': 'text/nt'}
+        headers = {'Content-Type': 'application/n-triples; charset=utf-8'}
         response = requests.head(
             "{graph_store_url}?{graph_param}={graph_name_uri}".format(
                 graph_store_url=self.graph_store,
@@ -333,7 +333,7 @@ class GraphStore:
 
     def put(self, named_graph, data):
         """PUT request to replace or create the graph with information form data"""
-        headers = {'Content-Type': 'text/nt'}
+        headers = {'Content-Type': 'application/n-triples; charset=utf-8'}
         rdf_string = self._get_data_as_rdf_string(data)
         r = requests.put(
             "{graph_store_url}?{graph_param}={graph_name_uri}".format(
