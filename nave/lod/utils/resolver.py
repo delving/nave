@@ -1151,7 +1151,8 @@ class RDFRecord:
     def get_spec_name(self):
         if self._spec is None:
             uri_parts = self.source_uri.split('/')
-            self._spec = uri_parts[-2]
+            if "aggregation" in uri_parts:
+                self._spec = uri_parts[-2]
         return self._spec
 
     def create_sparql_update_query(self, delete=False, acceptance=False):

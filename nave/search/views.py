@@ -585,7 +585,7 @@ class NaveDocumentTemplateView(TemplateView):
         )
         context['resources'] = bindings
         context['absolute_uri'] = RDFRecord.get_external_rdf_url(target_uri, self.request)
-        context['about_spec'] = target_uri.split('/')[-2]
+        context['about_spec'] = RDFRecord.get_spec_name()
 
         for rdf_type in bindings.get_about_resource().get_types():
             search_label = rdf_type.search_label.lower()
