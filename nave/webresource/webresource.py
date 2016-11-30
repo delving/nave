@@ -354,7 +354,7 @@ class WebResource:
             for ext in ['tif', 'jp2', 'jpg']:
                 if ext in wr_dict:
                     return wr_dict[ext][0]
-        return matches[0]
+        return matches[0] if len(matches) > 0 else None
 
     @property
     def get_source_path(self):
@@ -615,7 +615,7 @@ class WebResource:
             mime_type = headers.get('Content-Type')
             if not mime_type:
                 mime_type, extension = self.guess_mime_type(local_filename)
-            extension = mimetypes.guess_extension(mime_type)
+            # extension = mimetypes.guess_extension(mime_type)
             os.makedirs(os.path.dirname(self.get_source_path), exist_ok=True)
             shutil.move(local_filename, self.get_source_path)
         except HTTPError as he:
