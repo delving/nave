@@ -582,8 +582,6 @@ SERIALIZATION_MODULES = {
 
 RDF_USE_LOCAL_GRAPH = True
 
-RESOLVE_WEBRESOURCES_VIA_RDF = False
-
 RDF_STORE_TRIPLES = False
 
 RDF_DYNAMIC_CACHE = True
@@ -701,6 +699,13 @@ MLT_BANNERS = {}
 #############################
 
 WEB_RESOURCE_BASE = '/tmp/webresource'
+
+WEB_RESOURCE_MAX_SIZE = 500
+WEB_RESOURCE_THUMB_SMALL = 220
+WEB_RESOURCE_THUMB_LARGE = 500
+
+RESOLVE_WEBRESOURCES_VIA_RDF = False
+
 ZIPPED_SEARCH_RESULTS_DOWNLOAD_FOLDER = '/tmp/zips'
 
 # TODO: remove these settings when the new webresource package is deployed
