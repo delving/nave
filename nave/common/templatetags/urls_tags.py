@@ -98,3 +98,17 @@ def form_hidden_fields(request, exclude=[]):
             html = html + '<input type="hidden" name="'+param+'" value="'+field.strip()+'" data-text="'+text.strip()+'"/>'
     return html
 
+
+
+@register.assignment_tag(takes_context=True)
+def has_cookie(context, cookie_name):
+    """
+    returns true if a given cookie is present
+    :param context:
+    :param cookie_name:
+    :return: Boolean
+    """
+    request = context['request']
+    value = request.COOKIES.get(cookie_name,'')
+    return True if value else False
+
