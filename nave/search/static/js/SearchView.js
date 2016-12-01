@@ -125,7 +125,7 @@ SearchView.initSearchTags = function() {
                 case 'q':
                     classStr = 'label label-query ';
                     return classStr;
-                case 'qf':
+                case 'qf[]':
                     classStr = 'label label-facet ';
                     return classStr;
             }
