@@ -753,12 +753,12 @@ class FacetCountLink(object):
             selected_facets = self._facet_params.getlist('qf')
             # todo: later replace the replace statements with urlencode() as well for query filters
             if facet_params:
-                link = "{}&qf={}".format(
+                link = "{}&qf[]={}".format(
                     facet_params.urlencode(),
                     self._filter_query.replace(":", "%3A").replace("&", "%26")
                 )
             else:
-                link = "qf={}".format(
+                link = "qf[]={}".format(
                     self._filter_query.replace(":", "%3A").replace("&", "%26")
                 )
             if self.is_selected:

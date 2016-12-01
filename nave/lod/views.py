@@ -241,9 +241,12 @@ class LoDHTMLView(TemplateView):
     def get_content_type_template(self, about_type):
         return settings.RDF_CONTENT_DETAIL.get(about_type.lower(), None)
 
+    def get_absolute_request_url(self):
+        """Return the canonical RDF resource url for this page."""
+        return self.request.build_absolute_uri().replace('/page/', '/resource/')
+
     def get_context_data(self, **kwargs):
-        # todo later add acceptance mode
-        target_uri = self.request.build_absolute_uri().replace('/page/', '/resource/')
+        target_uri = self.get_absolute_request_url()
         if "?" in target_uri:
             target_uri = re.sub("\?.*$", '', target_uri)
         # target_uri = target_uri.split('?')[:-1]
