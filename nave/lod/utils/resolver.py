@@ -997,7 +997,9 @@ class RDFRecord:
         entry_points = settings.RDF_ROUTED_ENTRY_POINTS
         if domain in entry_points:
             domain = RDFRecord.get_rdf_base_url()
-        return "http://{domain}{path}".format(domain=domain, path=parsed_target.path)
+        import urllib
+        clean_path = urllib.parse.unquote(parsed_target.path)
+        return "http://{domain}{path}".format(domain=domain, path=clean_path)
 
     def get_graph_by_id(self, hub_id, store_name=None, as_bindings=False):
         raise NotImplementedError("Implement me")
@@ -1371,7 +1373,7 @@ class ElasticSearchRDFRecord(RDFRecord):
     def get_graph_by_source_uri(self, uri, store_name=None, as_bindings=False):
         return self.query_for_graph(
             "match",
-            {"system.source_uri.raw" : uri},
+            {"system.source_uri.raw": uri},
             store_name=store_name,
             as_bindings=as_bindings
         )
