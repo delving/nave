@@ -125,7 +125,13 @@ SearchView.initSearchTags = function() {
                 case 'q':
                     classStr = 'label label-query ';
                     return classStr;
+                case 'qf':
+                    classStr = 'label label-facet ';
+                    return classStr;
                 case 'qf[]':
+                    classStr = 'label label-facet ';
+                    return classStr;
+                case 'qf%5B%5D':
                     classStr = 'label label-facet ';
                     return classStr;
             }
@@ -167,7 +173,7 @@ SearchView.initSearchTags = function() {
         $queryForm.find(':input').each(function(){
             var _this = $(this);
             // no special actions needed for facet just remove
-            if( _this.val() == _value && _this.attr('name') == 'qf' ){
+            if( _this.val() == _value && _this.attr('name') == 'qf[]' || _this.attr('name') == 'qf' ){
                 _this.remove();
             }
             if ( _this.attr('name') == 'q') {
