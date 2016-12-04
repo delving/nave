@@ -377,18 +377,14 @@ class WebResource:
     @property
     def get_deepzoom_uri(self):
         """Get fully qualified deepzoom URI for redirection to the WebServer."""
-        # todo remove later when nginx works properly
-        return "{}/fcgi-bin/iipsrv.fcgi?DeepZoom={}/{}/{}.tif.dzi".format(
+        return os.path.join(
             self.domain,
-            settings.WEB_RESOURCE_BASE.rstrip('/'),
+            "webresource",
             self.get_relative_spec_dir,
-            self.get_derivative_base_path(kind=DEEPZOOM_DIR))
-        # return os.path.join(
-        #     self.domain,
-        #     "webresource",
-        #     self.get_relative_spec_dir,
-        #     "{}.tif.dzi".format(self.get_derivative_base_path(kind=DEEPZOOM_DIR))
-        # )
+            "{}.tif.dzi".format(
+                self.get_derivative_base_path(kind=DEEPZOOM_DIR)
+            )
+        )
 
     @property
     def get_source_uri(self):
