@@ -595,9 +595,6 @@ class WebResource:
             pass
         # TODO: implement me
 
-    def test_something(self):
-        self.cache_remote_link()
-
     def guess_mime_type(self, path):
         """Guess the extension and mime-type of the file."""
         with magic.Magic(flags=magic.MAGIC_MIME_TYPE) as m:
