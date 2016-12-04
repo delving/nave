@@ -25,30 +25,6 @@ def get_es():
 logger = get_task_logger(__name__)
 
 
-def get_or_set_pid(task_id):
-    # todo implement
-    # return created
-    pass
-
-
-@task
-def find_and_purge_orphaned_files():
-    # todo implement
-    #  check if processed it is still active then exit
-    #  set pid in file with process_id
-    #  loop over every 500 orphans
-    #  create es_delete action
-    #  send away in bulk
-    #  drop graphs from triplestore
-    #
-    pass
-
-
-@task
-def find_records_and_store_in_triplestore():
-    # todo implement
-    pass
-
 @task()
 def retrieve_and_cache_remote_lod_resource(cache_uri, store=None):
     if not store:
