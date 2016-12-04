@@ -422,11 +422,9 @@ class WebResource:
             if not self.exists_source:
                 return None
         if not self.exists_deepzoom:
-            created = self.create_deepzoom()
-            if created:
-                uri = self.get_deepzoom_uri
-            else:
-                uri = None
+            from webresource import tasks
+            tasks.create_deepzoom.delay(self._uri, self.spec)
+            return self.get_deepzoom_uri
         else:
             uri = self.get_deepzoom_uri
         return uri

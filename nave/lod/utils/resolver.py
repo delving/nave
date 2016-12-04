@@ -1103,6 +1103,38 @@ class RDFRecord:
                     entries_removed += 1
         return graph, entries_removed
 
+    @staticmethod
+    def is_web_resource_api_call(uri):
+        if "/api/webresource/" in uri:
+            base, query_params = uri.split('?', maxsplit=1)
+            splitter = "&amp;" if "&amp;" in query_params else "&"
+            params = query_params.split(splitter)
+            query_dict = defaultdict()
+            for param in params:
+                k, v = param.split("=", maxsplit=1)
+                query_dict[k] = v
+            if 'uri' in query_dict and 'spec' in query_dict:
+                uri = query_dict.get('uri')
+                spec = query_dict.get('spec')
+                return uri, spec
+        return None
+
+    @staticmethod
+    def resolve_deepzoom_uri(graph, deepzoom_predicate=URIRef("http://schemas.delving.eu/nave/terms/deepZoomUrl")):
+        """Replace API call for deepZoomUrl with direct link."""
+        for s, o in graph.subject_objects(predicate=deepzoom_predicate):
+            api_call = RDFRecord.is_web_resource_api_call(str(o))
+            if api_call:
+                from webresource.webresource import WebResource
+                uri, spec = api_call
+                wr = WebResource(uri=uri, spec=spec)
+                if wr.exists_source:
+                    graph.remove((s, deepzoom_predicate, o))
+                    deep_zoom_url = wr.get_deepzoom_redirect()
+                    if deep_zoom_url:
+                        graph.add((s, deepzoom_predicate, Literal(deep_zoom_url)))
+        return graph
+
     def get_context_graph(self, with_mappings=False, include_mapping_target=False, acceptance=False, target_uri=None,
                           with_webresource=False):
         """Get Graph instance with linked ProxyResources.
@@ -1122,11 +1154,9 @@ class RDFRecord:
             ds = ds_model.objects.filter(spec=self.get_spec_name())
             if len(ds) > 0:
                 ds = ds.first()
-            else:
-                return graph
-            proxy_resources, graph = proxy_resource_model.update_proxy_resource_uris(ds, graph)
-            for proxy_resource in proxy_resources:
-                graph = graph + proxy_resource.to_graph(include_mapping_target=include_mapping_target)
+                proxy_resources, graph = proxy_resource_model.update_proxy_resource_uris(ds, graph)
+                for proxy_resource in proxy_resources:
+                    graph = graph + proxy_resource.to_graph(include_mapping_target=include_mapping_target)
         if with_webresource:
             webresource_graph = RDFRecord.get_webresource_context_graph(target_uri=self.source_uri)
             if webresource_graph:
@@ -1135,6 +1165,8 @@ class RDFRecord:
                 graph = graph + webresource_graph
         # reduce edm duplicates to one each
         graph, _ = self.reduce_duplicates(graph=graph, leave=1, predicates=[EDM.isShownBy, EDM.object, EDM.isShownAt])
+        # create direct link to DeepZoom image
+        graph = self.resolve_deepzoom_uri(graph)
         if target_uri and not target_uri.endswith("/about") and target_uri != self.source_uri:
             g = Graph(identifier=URIRef(self.named_graph))
             subject = URIRef(target_uri)
