@@ -1136,7 +1136,7 @@ class RDFRecord:
         return graph
 
     def get_context_graph(self, with_mappings=False, include_mapping_target=False, acceptance=False, target_uri=None,
-                          with_webresource=False):
+                          with_webresource=False, resolve_deepzoom_uri=False):
         """Get Graph instance with linked ProxyResources.
 
         :param target_uri: target_uri if you want a sub-selection of the whole graph
@@ -1166,7 +1166,8 @@ class RDFRecord:
         # reduce edm duplicates to one each
         graph, _ = self.reduce_duplicates(graph=graph, leave=1, predicates=[EDM.isShownBy, EDM.object, EDM.isShownAt])
         # create direct link to DeepZoom image
-        graph = self.resolve_deepzoom_uri(graph)
+        if resolve_deepzoom_uri:
+            graph = self.resolve_deepzoom_uri(graph)
         if target_uri and not target_uri.endswith("/about") and target_uri != self.source_uri:
             g = Graph(identifier=URIRef(self.named_graph))
             subject = URIRef(target_uri)

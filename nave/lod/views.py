@@ -304,9 +304,11 @@ class LoDHTMLView(TemplateView):
                     subject=target_uri, predicate=RDF.type, object=SKOS.Concept))
 
         if object_local_cache:
-            # todo: add code to retrieve proxyresources
-            # (with_mappings=True, include_mapping_target=True, acceptance=acceptance)
-            graph = object_local_cache.get_context_graph(with_mappings=True, include_mapping_target=True)
+            graph = object_local_cache.get_context_graph(
+                with_mappings=True,
+                include_mapping_target=True,
+                resolve_deepzoom_uri=True
+            )
             nr_levels = 4
         elif cached:
             if CacheResource.objects.filter(document_uri=target_uri).exists():

@@ -62,8 +62,8 @@ SUPPORTED_IMAGE_EXTENSIONS = [
 
 class WebResource:
 
-    def __init__(self, spec, uri=None, path=None, hub_id=None, base_dir=None, settings=None, org_id=None,
-                 domain=None):
+    def __init__(self, spec, uri=None, path=None, hub_id=None, base_dir=None,
+                 settings=None, org_id=None, domain=None):
         self.spec = spec
         self._uri = uri
         self._source_path = path
@@ -131,7 +131,10 @@ class WebResource:
 
     @property
     def exist_webresource_dirs(self):
-        return all(os.path.exists(os.path.join(self.get_spec_dir, p)) for p in WEB_RESOURCE_DIRS)
+        return all(
+            os.path.exists(
+                os.path.join(self.get_spec_dir, p)
+            ) for p in WEB_RESOURCE_DIRS)
 
     @property
     def exists_deepzoom(self):
@@ -145,7 +148,9 @@ class WebResource:
 
     def exists_thumbnail(self, width, height):
         """Check if the thumbnail derivative already exists."""
-        return os.path.exists(self.get_thumbnail_path(width=width, height=height))
+        return os.path.exists(
+            self.get_thumbnail_path(width=width, height=height)
+        )
 
     def create_dataset_webresource_dirs(self):
         """Create all subdirectories for the WebResource based on spec."""
@@ -161,7 +166,8 @@ class WebResource:
 
         If force is true a new item is created each time otherwise it will skip.
 
-        # vips im_vips2tiff source_image output_image.tif:deflate,tile:256x256,pyramid
+        # vips im_vips2tiff source_image \
+            output_image.tif:deflate,tile:256x256,pyramid
 
         """
         start = time.time()
@@ -172,7 +178,13 @@ class WebResource:
             ["vips", "im_vips2tiff", input_file] +
             ["{}:deflate,tile:256x256,pyramid".format(output_file)])
         elapsed = (time.time() - start)
-        logger.info("Deepzoomed {} => {} in {}".format(input_file, output_file, str(timedelta(seconds=elapsed))))
+        logger.info(
+            "Deepzoomed {} => {} in {}".format(
+                input_file,
+                output_file,
+                str(timedelta(seconds=elapsed))
+            )
+        )
         return True if created == 0 else False
 
     def create_thumbnail(self, width, height):
@@ -191,16 +203,29 @@ class WebResource:
             im.thumbnail((width, height))
             im.save(outfile, "JPEG")
             elapsed = (time.time() - start)
-            logger.info("Thumbnailed {} => {} in {}".format(infile, outfile, str(timedelta(seconds=elapsed))))
+            logger.info(
+                "Thumbnailed {} => {} in {}".format(
+                    infile,
+                    outfile,
+                    str(timedelta(seconds=elapsed))
+                )
+            )
         except IOError as err:
-            logger.error("cannot create thumbnail for {} because of {}".format(infile, err))
+            logger.error(
+                "cannot create thumbnail for {} because of {}".format(
+                    infile,
+                    err)
+            )
             return False
         return True
 
     def get_all_derivatives(self):
         """Get all derivatives and return the paths as a list."""
         # todo: implement this as a glob
-        path = os.path.join(self.get_spec_dir, self.get_derivative_base_path(THUMBNAIL_DIR))
+        path = os.path.join(
+            self.get_spec_dir,
+            self.get_derivative_base_path(THUMBNAIL_DIR)
+        )
         derivatives = glob("{}_*".format(path))
         derivatives.append(self.get_deepzoom_path)
         return derivatives
@@ -221,7 +246,9 @@ class WebResource:
         if not self.exists_source:
             return False
         source_path = self.get_source_path
-        return os.path.exists(derivative_path) and os.path.getmtime(derivative_path) < os.path.getmtime(source_path)
+        from os.path import exists, getmtime
+        path_exists = exists(derivative_path)
+        return path_exists and getmtime(derivative_path) < getmtime(source_path)
 
     @staticmethod
     def get_hash(uri):
@@ -250,7 +277,9 @@ class WebResource:
         if not self._uri and self._source_path:
             self._uri = self.path_to_uri
         elif not self._uri and not self._path:
-            raise ValueError("Either path or uri must be given in the constructor")
+            raise ValueError(
+                "Either path or uri must be given in the constructor"
+            )
         return self._uri
 
     @property
@@ -259,7 +288,9 @@ class WebResource:
 
         The cached uri should be returned without any changes.
         """
-        return self.uri.replace("urn:{}/".format(self.spec), "") if not self.is_cached else self.uri
+        if not self.is_cached:
+            return self.uri.replace("urn:{}/".format(self.spec), "")
+        return self.uri
 
     def get_cache_uri(path):
         """Get the Cache Source URI from the metadata.
@@ -278,11 +309,17 @@ class WebResource:
         path = self._source_path
         base, rel_path = path.split('/{}/'.format(self.spec, max_split=1))
         if rel_path.startswith(SOURCE_DIR):
-            uri = rel_path.replace("{}/".format(SOURCE_DIR), "urn:{}/".format(self.spec))
+            uri = rel_path.replace(
+                "{}/".format(SOURCE_DIR),
+                "urn:{}/".format(self.spec)
+            )
         elif rel_path.startswith(CACHE_DIR):
             uri = self.get_cache_uri()
         else:
-            mesg = "Path {} not found in WebResource store for spec {}".format(path, self.spec)
+            mesg = "Path {} not found in WebResource store for spec {}".format(
+                path,
+                self.spec
+            )
             logger.warn(mesg)
             raise ValueError(mesg)
         return uri
@@ -397,7 +434,7 @@ class WebResource:
         )
 
     def get_thumbnail_uri(self, width, height, mime_type="jpeg"):
-        """Get fully qualified thumbnail URI for redirection to the WebServer."""
+        """Get fully qualified thumbnail URI for redirection."""
         return os.path.join(
             self.domain,
             "webresource",
@@ -410,7 +447,8 @@ class WebResource:
         )
 
     def get_deepzoom_redirect(self):
-        """All processing steps for finding, creating, and redirecting to the deepzoom derivative."""
+        """All processing steps for finding, creating, and redirecting to the
+        deepzoom derivative."""
         if self.is_derivative_stale(self.get_deepzoom_path):
             self.remove_all_derivatives()
         if not self.exists_source and self.is_cached:
@@ -418,9 +456,17 @@ class WebResource:
             if not self.exists_source:
                 return None
         if not self.exists_deepzoom:
-            from webresource import tasks
-            tasks.create_deepzoom.delay(self._uri, self.spec)
-            return self.get_deepzoom_uri
+            if hasattr(settings, 'USE_WEBRESOURCE_QUEUE'):
+                if settings.USE_WEBRESOURCE_QUEUE:
+                    from webresource import tasks
+                    tasks.create_deepzoom.delay(self._uri, self.spec)
+                    uri = None
+            else:
+                created = self.create_deepzoom()
+                if created:
+                    uri = self.get_deepzoom_uri
+                else:
+                    uri = None
         else:
             uri = self.get_deepzoom_uri
         return uri
@@ -428,14 +474,16 @@ class WebResource:
     def get_source_redirect(self):
         """Get the redirect URL to the source digital object for download.
 
-        This is mostly used for document and other links. For Source images the access should be limited.
+        This is mostly used for document and other links. For Source images the
+        access should be limited.
         """
         if self.exists_source:
             return self.get_source_uri
         return None
 
     def get_thumbnail_redirect(self, width, height):
-        """All processing steps for finding, creating, and redirecting to the thumbnail derivative."""
+        """All processing steps for finding, creating, and redirecting to
+        the thumbnail derivative."""
         thumbnail_path = self.get_thumbnail_path(width, height)
         if self.is_derivative_stale(thumbnail_path):
             self.remove_all_derivatives()
@@ -460,7 +508,9 @@ class WebResource:
 
     @property
     def get_colors(self):
-        hex_colors = [webcolors.rgb_to_hex(c.value) for c in self.color_palette.colors]
+        hex_colors = [
+            webcolors.rgb_to_hex(c.value) for c in self.color_palette.colors
+        ]
         return hex_colors
 
     @property
@@ -505,12 +555,12 @@ class WebResource:
 
     @property
     def is_source_deleted(self):
-        """Check if the source is deleted but the json and derivatives remain."""
+        """Check if the source is deleted but the json/derivatives remain."""
         return not self.exists_source and self.exists_json
 
     @property
     def get_all_webresource_files(self):
-        """Return a list of paths of all the files linked to this webresource."""
+        """Return a list of paths of all the files linked to the webresource."""
         files = self.get_all_derivatives()
         files.append(self.get_deepzoom_path)
         files.append(self.get_json_path)
@@ -529,7 +579,8 @@ class WebResource:
     def to_json(self):
         """Persist the generated WebResource information to disk.
 
-        This json file is stored next to the source digital object with a .json extension.
+        This json file is stored next to the source digital object with
+        a .json extension.
         """
         # TODO: implement me
         # check if object exists and then upsert
@@ -557,7 +608,8 @@ class WebResource:
         return object_number
 
     def generate_edm_rdf_subject(self):
-        """Reconstruct the EDM RDF subject from the available information in the WebResource.
+        """Reconstruct the EDM RDF subject from the available information in
+        the WebResource.
 
         This link can be used to connect the webresource to the EDM record.
         """
@@ -597,7 +649,8 @@ class WebResource:
         return mime_type, extension
 
     def cache_external_uri(self):
-        """Retrieve digital object from remote URI and store it in the spec cache directory."""
+        """Retrieve digital object from remote URI and store it in the
+        spec cache directory."""
         if not self.is_cached:
             return
         try:
