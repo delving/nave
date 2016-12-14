@@ -481,7 +481,8 @@ class RDFModel(TimeStampedModel, GroupOwned):
                     subject = BNode(binding[s]['value'])
                 predicate = URIRef(binding[p]['value'])
                 obj = RDFModel.get_object_from_sparql_result(binding[o])
-                graph.add((subject, predicate, obj))
+                if None not in [predicate, obj]:
+                    graph.add((subject, predicate, obj))
         # materialize inferences
         for subject, obj in graph.subject_objects(
                 predicate=URIRef("http://www.openarchives.org/ore/terms/isAggregatedBy")):

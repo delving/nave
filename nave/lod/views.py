@@ -345,6 +345,7 @@ class LoDHTMLView(TemplateView):
         context['skos_links'], context['skos_filter'] = graph_bindings.get_all_skos_links()
         context['resources'] = graph_bindings
         resource = graph_bindings.get_about_resource()
+        context['about_resource'] = resource
         context['items'] = resource.get_items(as_tuples=True)
         rdf_type = graph_bindings.get_about_resource().get_type()
         context['rdf_type'] = rdf_type

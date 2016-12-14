@@ -21,8 +21,10 @@ def get_binding(value, arg):
 
 
 @register.assignment_tag(takes_context=True)
-def get_resource_fields(context, fieldname):
-    return context['resources'].get_list(fieldname)
+def get_resource_fields(context, fieldname, local_bindings=None):
+    if not local_bindings:
+        local_bindings = context['resources']
+    return local_bindings.get_list(fieldname)
 
 
 @register.simple_tag(takes_context=True)
