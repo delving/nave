@@ -154,7 +154,8 @@ class GraphBindings:
                  aggregate_edm_blank_nodes=True,
                  label_properties=(SKOS.prefLabel, RDFS.label, URIRef('http://www.w3.org/2004/02/skos/core#altLabel'),
                                    FOAF.name, URIRef('http://www.geonames.org/ontology#name'), DC.title,
-                                   URIRef('http://schemas.delving.eu/narthex/terms/proxyLiteralValue')),
+                                   URIRef('http://schemas.delving.eu/narthex/terms/proxyLiteralValue'),
+                                   URIRef('http://dbpedia.org/ontology/name')),
                  thumbnail_fields = (
                         FOAF.depiction,
                         URIRef('http://schemas.delving.eu/nave/terms/thumbnail'),
@@ -787,21 +788,27 @@ class RDFObject:
     def value(self):
         """ give back the value if the object_type is a literal """
         if self.is_literal:
-            return self._rdf_object.value
+            return self._rdf_object
         elif self.is_bnode:
-            return str(self._rdf_object)
-        elif self.is_uri:
-            # todo give back label + uri
-            label = self._graph.preferredLabel(
-                subject=self._rdf_object,
-                labelProperties=self._bindings.label_properties,
-                default=[("raw", Literal(str(self._rdf_object)))]
-            )
-            label = label[0][1]
+            label = self.get_resource.get_label()
+            label = label[0]
             if label.language:
                 self._lang = label.language
             return label
+        elif self.is_uri:
+            return self.get_label(self._rdf_object)
         return None
+
+    def get_label(self, rdf_object):
+        label = self._graph.preferredLabel(
+            subject=rdf_object,
+            labelProperties=self._bindings.label_properties,
+            default=[("raw", Literal(str(rdf_object)))]
+        )
+        label = label[0][1]
+        if label.language:
+            self._lang = label.language
+        return label
 
     @property
     def resource_is_concept(self):
@@ -1204,8 +1211,10 @@ class RDFRecord:
             sparql_update = """DROP SILENT GRAPH <{graph_uri}>;""".format(graph_uri=self.named_graph)
         return sparql_update
 
-    def create_es_action(self, doc_type, record_type, action="index", index=settings.SITE_NAME, store=None,
-                         context=True, flat=True, exclude_fields=None, acceptance=False, content_hash=None):
+    def create_es_action(self, doc_type, record_type, action="index",
+                         index=settings.SITE_NAME, store=None,
+                         context=True, flat=True, exclude_fields=None,
+                         acceptance=False, content_hash=None):
 
         if not store:
             store = rdfstore.get_rdfstore()
