@@ -791,10 +791,13 @@ class RDFObject:
             return self._rdf_object
         elif self.is_bnode:
             label = self.get_resource.get_label()
-            label = label[0]
-            if label.language:
-                self._lang = label.language
-            return label
+            if label:
+                label = label[0]
+                if label.language:
+                    self._lang = label.language
+                return label
+            else:
+                return str(self._rdf_object)
         elif self.is_uri:
             return self.get_label(self._rdf_object)
         return None
@@ -1142,6 +1145,27 @@ class RDFRecord:
                         graph.add((s, deepzoom_predicate, Literal(deep_zoom_url)))
         return graph
 
+    @staticmethod
+    def get_context_graph_via_query(store=None, target_uri=None):
+        if not store:
+            store = rdfstore.get_rdfstore()
+        bind = ""
+        if target_uri:
+            bind = "BIND(<{}> as ?s)".format(target_uri)
+        query = """SELECT ?o ?p2 ?o2
+                    WHERE
+                      {{
+                      {bind}
+                        ?s ?p ?o
+                        OPTIONAL
+                          {{ ?o ?p2 ?o2 .}}
+                      }}
+                    LIMIT   500
+               """.format(bind=bind)
+        response = store.query(query=query)
+        from lod.models import RDFModel
+        return RDFModel.get_graph_from_sparql_results(response)
+
     def get_context_graph(self, with_mappings=False, include_mapping_target=False, acceptance=False, target_uri=None,
                           with_webresource=False, resolve_deepzoom_uri=False):
         """Get Graph instance with linked ProxyResources.
@@ -1154,6 +1178,8 @@ class RDFRecord:
         """
         if hasattr(settings, "RESOLVE_WEBRESOURCES_VIA_RDF") and isinstance(settings.RESOLVE_WEBRESOURCES_VIA_RDF, bool):
             with_webresource = settings.RESOLVE_WEBRESOURCES_VIA_RDF
+        if hasattr(settings, "RESOLVE_CONTEXT_VIA_RDF") and isinstance(settings.RESOLVE_CONTEXT_VIA_RDF, bool):
+            with_sparql_context = settings.RESOLVE_CONTEXT_VIA_RDF
         graph = self.get_graph()
         if with_mappings:
             ds_model = get_model(app_label="void", model_name="DataSet")
@@ -1170,6 +1196,11 @@ class RDFRecord:
                 graph, _ = self.reduce_duplicates(graph)
                 # clean isShownBy, object, thumbnail, thumbnailLarge, thumbnailSmall, deepZoomUrl
                 graph = graph + webresource_graph
+        # add context via SPARQL
+        if with_sparql_context:
+            context_graph, nr_levels = self.get_context_graph_via_query(target_uri=self.source_uri)
+            if context_graph:
+                graph = graph + context_graph
         # reduce edm duplicates to one each
         graph, _ = self.reduce_duplicates(graph=graph, leave=1, predicates=[EDM.isShownBy, EDM.object, EDM.isShownAt])
         # create direct link to DeepZoom image
