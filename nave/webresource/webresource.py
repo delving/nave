@@ -30,7 +30,6 @@ from colorific.palette import extract_colors
 from PIL import Image
 import requests
 import webcolors
-from django.conf import settings
 
 logger = logging.getLogger(__file__)
 
@@ -189,7 +188,7 @@ class WebResource:
 
     def create_thumbnail(self, width, height):
         """Create the thumbnail derivative of the source digital object."""
-        max_size = getattr(settings, 'WEB_RESOURCE_MAX_SIZE', 1000)
+        max_size = getattr(self.settings, 'WEB_RESOURCE_MAX_SIZE', 1000)
         if not isinstance(max_size, int):
             max_size = int(max_size)
         if width > max_size or height > max_size:
@@ -456,8 +455,8 @@ class WebResource:
             if not self.exists_source:
                 return None
         if not self.exists_deepzoom:
-            if hasattr(settings, 'USE_WEBRESOURCE_QUEUE'):
-                if settings.USE_WEBRESOURCE_QUEUE:
+            if hasattr(self.settings, 'USE_WEBRESOURCE_QUEUE'):
+                if self.settings.USE_WEBRESOURCE_QUEUE:
                     from webresource import tasks
                     tasks.create_deepzoom.delay(self._uri, self.spec)
                     uri = None
