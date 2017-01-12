@@ -1166,8 +1166,10 @@ class RDFRecord:
         from lod.models import RDFModel
         return RDFModel.get_graph_from_sparql_results(response)
 
-    def get_context_graph(self, with_mappings=False, include_mapping_target=False, acceptance=False, target_uri=None,
-                          with_webresource=False, resolve_deepzoom_uri=False):
+    def get_context_graph(
+        self, with_mappings=False, include_mapping_target=False,
+        acceptance=False, target_uri=None, with_webresource=False,
+        resolve_deepzoom_uri=False, with_sparql_context=False):
         """Get Graph instance with linked ProxyResources.
 
         :param target_uri: target_uri if you want a sub-selection of the whole graph
@@ -1175,6 +1177,8 @@ class RDFRecord:
         :param include_mapping_target: Boolean also include the mapping target triples in graph
         :param with_mappings: Boolean integrate the ProxyMapping into the graph
         :param with_webresource: Boolean if webresources should be inserted from the triple store
+        :param resolve_deepzoom_uri: Boolean add resolved webresource mapping to output
+        :param with_sparql_context: Boolean if context should be resolved with a sparql query
         """
         if hasattr(settings, "RESOLVE_WEBRESOURCES_VIA_RDF") and isinstance(settings.RESOLVE_WEBRESOURCES_VIA_RDF, bool):
             with_webresource = settings.RESOLVE_WEBRESOURCES_VIA_RDF
