@@ -335,7 +335,7 @@ class WebResource:
         webresource_path = self.get_from_source_path(path)
         if webresource_path and not self._source_path:
             self._source_path = webresource_path
-        return webresource_path
+        return webresource_path if webresource_path else path
 
     def get_derivative_base_path(self, uri=None, kind=THUMBNAIL_DIR):
         """Create base path for the derivatives.
