@@ -18,6 +18,11 @@ if settings.USE_WAGTAIL_CMS:
 
     urlpatterns += solid_i18n_patterns('',
                                        url(r'^cms/', include(wagtailadmin_urls)),
+                                       url(r'^version/$', views.nave_version),
+                                       url(r'^', include('webresource.urls')),
+                                        (r'^crossdomain.xml$', TemplateView.as_view(template_name='crossdomain.xml')),
+                                        (r'^robots.txt$', TemplateView.as_view(template_name='robots.txt')),
+                                        (r'^humans.xml$', TemplateView.as_view(template_name='humans.txt')),
                                        )
 
 urlpatterns += solid_i18n_patterns('',
@@ -27,15 +32,10 @@ urlpatterns += solid_i18n_patterns('',
                             url(r'^', include('projects.{}.urls'.format(settings.SITE_NAME))),
                             url(r'^', include('search.urls')),
                             url(r'^', include('virtual_collection.urls')),
-                            url(r'^', include('webresource.urls')),
-                            (r'^crossdomain.xml$', TemplateView.as_view(template_name='crossdomain.xml')),
-                            (r'^robots.txt$', TemplateView.as_view(template_name='robots.txt')),
-                            (r'^humans.xml$', TemplateView.as_view(template_name='humans.txt')),
+                            # url(r'^', include('webresource.urls')),
                             url(r'^hm/', include('health_monitor.urls')),
                             url(r'^', include('lod.urls')),
-                            url(r'^', include('webresource.urls')),
                             url(r'^', include('search_widget.urls')),
-                            url(r'^version/$', views.nave_version),
                             # template and data from void app
                             url(r'^statistics/', TemplateView.as_view(template_name="statistics.html")),
                             url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),

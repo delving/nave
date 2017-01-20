@@ -1115,7 +1115,7 @@ class RDFRecord:
 
     @staticmethod
     def is_web_resource_api_call(uri):
-        if "/api/webresource/" in uri:
+        if "/api/webresource" in uri:
             base, query_params = uri.split('?', maxsplit=1)
             splitter = "&amp;" if "&amp;" in query_params else "&"
             params = query_params.split(splitter)
