@@ -9,20 +9,21 @@ from solid_i18n.urls import solid_i18n_patterns
 from common import views
 
 admin.autodiscover()
-urlpatterns = patterns('',
-                       url(r'^', include('void.urls')),
-                       )
+urlpatterns = patterns(
+    '',
+    url(r'^', include('void.urls')),
+    url(r'^version/$', views.nave_version),
+    url(r'^', include('webresource.urls')),
+    (r'^crossdomain.xml$', TemplateView.as_view(template_name='crossdomain.xml')),
+    (r'^robots.txt$', TemplateView.as_view(template_name='robots.txt')),
+    (r'^humans.xml$', TemplateView.as_view(template_name='humans.txt')),
+)
 
 if settings.USE_WAGTAIL_CMS:
     from wagtail.wagtailadmin import urls as wagtailadmin_urls
 
     urlpatterns += solid_i18n_patterns('',
                                        url(r'^cms/', include(wagtailadmin_urls)),
-                                       url(r'^version/$', views.nave_version),
-                                       url(r'^', include('webresource.urls')),
-                                        (r'^crossdomain.xml$', TemplateView.as_view(template_name='crossdomain.xml')),
-                                        (r'^robots.txt$', TemplateView.as_view(template_name='robots.txt')),
-                                        (r'^humans.xml$', TemplateView.as_view(template_name='humans.txt')),
                                        )
 
 urlpatterns += solid_i18n_patterns('',
