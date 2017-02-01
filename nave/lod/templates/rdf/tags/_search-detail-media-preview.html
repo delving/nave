@@ -7,7 +7,11 @@
             {% for value in values %}
                 {# TODO: check for deepzoom, video audio and render html accordingly #}
                 {% if value.value %}
-                    {% if fullscreen %}<a href="{{ value.value }}" class="fullscreen">{% endif %}
+                    {% if fullscreen %}
+                        <a href="{{ value.value }}" class="fullscreen">
+                    {% else %}
+                        <a href="{{ uri }}" class="">
+                    {% endif %}
                         <img src="{{ value.value }}" alt="{% for a in alt %}{{ a }}{% endfor %}" />
                     {% if fullscreen %}</a>{% endif %}
                 {% else %}
