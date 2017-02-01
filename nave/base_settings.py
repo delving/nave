@@ -305,7 +305,6 @@ THIRD_PARTY_APPS = (
     'easy_thumbnails',
     'oauth2_provider',
     'django_extensions',
-    'import_export',
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework_swagger',
