@@ -14,7 +14,6 @@ import six
 from six import string_types
 
 from elasticsearch import Elasticsearch
-from elasticsearch.helpers import bulk_index
 
 from ._version import __version__  # noqa
 from . import monkeypatch
@@ -225,12 +224,8 @@ def _facet_counts(items):
 
 class FacetResult(object):
     def __init__(self, name, data, *args, **kwargs):
-        if data['_type'] not in FACET_TYPES:
-            raise InvalidFacetType(
-                'Facet _type "{0}". key "{1}" val "{2}"'.format(
-                    data['_type'], name, data))
 
-        self._data = data
+        self._data = data.get('buckets')
         self.__dict__.update(data)
 
         for attr in ('entries', 'ranges', 'terms'):
@@ -1198,7 +1193,7 @@ class S(PythonMixin):
             fields = set()
 
         if facets:
-            qs['facets'] = facets
+            qs['aggs'] = facets
             # Hunt for `facet_filter` shells and update those. We use
             # None as a shell, so if it's explicitly set to None, then
             # we update it.
@@ -1207,7 +1202,7 @@ class S(PythonMixin):
                     facet['facet_filter'] = qs['filter']
 
         if facets_raw:
-            qs.setdefault('facets', {}).update(facets_raw)
+            qs.setdefault('aggs', {}).update(facets_raw)
 
         if sort:
             qs['sort'] = sort
@@ -1625,7 +1620,7 @@ class S(PythonMixin):
         return iter(self._do_search())
 
     def _raw_facets(self):
-        return self._do_search().response.get('facets', {})
+        return self._do_search().response.get('aggregations', {})
 
     def facet_counts(self):
         """
@@ -1813,7 +1808,7 @@ class SearchResults(object):
         self.response = response
         self.took = response.get('took', 0)
         self.count = response.get('hits', {}).get('total', 0)
-        self.facets = _facet_counts(response.get('facets', {}).items())
+        self.facets = _facet_counts(response.get('aggregations', {}).items())
         self.results = results
         self.fields = fields
 

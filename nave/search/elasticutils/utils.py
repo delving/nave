@@ -21,7 +21,7 @@ def to_json(data):
     >>> to_json({'query': {'match': {'message': 'test message'}}})
     '{"query": {"match": {"message": "test message"}}}'
 
-    >>> from elasticutils import S
+    >>> from search.elasticutils import S
     >>> some_s = S().query(message__match='test message')
     >>> to_json(some_s.build_search())
     '{"query": {"match": {"message": "test message"}}}'

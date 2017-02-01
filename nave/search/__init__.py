@@ -104,7 +104,11 @@ mappings = {
                                 'index': 'not_analyzed',
                                 'type': 'string'}},
                                 'type': 'string'},
-                            'source_graph': {'index': 'no', 'type': 'string'},
+                            'source_graph': {
+                                'index': 'no',
+                                'type': 'string',
+                                'doc_values': False
+                            },
                             'source_uri': {'fields': {'raw': {
                                 'index': 'not_analyzed',
                                 'type': 'string'}},

@@ -101,7 +101,7 @@ class GeoS(S):
         query = self.query()
         if filtered:
             filt = query.build_search().get('filter')
-            filtered = {'facet_filter': filt}
+            filtered = {'filter': filt}
             filtered.update(cluster_config)
             cluster_config = filtered
         return query.facet_raw(places=cluster_config)
@@ -619,17 +619,21 @@ class NaveESQuery(object):
                     # implement facet raw queries
                     formatted_facet_filter = {
                         facet:
-                        {
-                            'terms': {'field': facet, 'size': self.facet_size}
-                        }
+                            {
+                                'terms': {'field': facet, 'size': self.facet_size}
+                            }
                     }
-                    and_face_filter_list = [{"terms": {k: v}} for k, v in facet_filter.items()]
+                    and_facet_filter_list = [{"terms": {k: v}} for k, v in facet_filter.items()]
                     if bbox_filter:
-                        and_face_filter_list.append(bbox_filter)
-                    if and_face_filter_list:
-                        formatted_facet_filter[facet]['facet_filter'] = {
-                            #'terms': facet_filter
-                            "and": and_face_filter_list
+                        and_facet_filter_list.append(bbox_filter)
+                    if and_facet_filter_list:
+                        formatted_facet_filter = {
+                            facet: {
+                                'aggs': formatted_facet_filter,
+                                'filter': {
+                                    'and': and_facet_filter_list
+                                }
+                            }
                         }
                     query = query.facet_raw(**formatted_facet_filter)
         # add bounding box
@@ -816,9 +820,13 @@ class FacetLink(object):
 
     def _create_facet_count_links(self):
         facet_count_links = []
-        for term in self._facet_terms:
-            count = term.get('count')
-            value = term.get('term')
+        if 'buckets' not in self._facet_terms:
+            for k, v in self._facet_terms.items():
+                if k != 'doc_count':
+                    self._facet_terms = v
+        for term in self._facet_terms.get('buckets'):
+            count = term.get('doc_count')
+            value = term.get('key')
             facet_count_links.append(
                     FacetCountLink(self._name, value, count, self._query)
             )
@@ -920,9 +928,12 @@ class NaveFacets(object):
                 clean_name = "{}_facet".format(clean_name)
             facet_query_link = FacetLink(
                     name=clean_name,
-                    total=facet.total,
-                    missing=facet.missing,
-                    other=facet.other,
+                    # todo: replace later with count facet.total,
+                    total=0,
+                    # todo: replace later with count facet.total,facet.missing,
+                    missing=0,
+                    # todo: replace later with count facet.total,facet.other,
+                    other=0,
                     query=self._nave_query,
                     facet_terms=facet
             )
@@ -1418,7 +1429,10 @@ class NaveQueryResponse(object):
         NaveFacets as a list
         """
         if not self._facets:
-            self._facets = NaveFacets(self._query, self._results.facets)
+            self._facets = NaveFacets(
+                self._query,
+                self._results.response.get('aggregations')
+            )
         return self._facets
 
     @property
