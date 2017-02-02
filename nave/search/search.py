@@ -173,7 +173,7 @@ class NaveESQuery(object):
         self.acceptance = acceptance
         self.index_name = index_name
         self.doc_types = doc_types
-        self.default_facets = default_facets.copy() if default_facets is not None else default_facets
+        self.default_facets = default_facets.copy() if default_facets is not None else []
         self.size = size
         self.default_filters = default_filters
         self.hidden_filters = hidden_filters
@@ -658,6 +658,8 @@ class NaveESQuery(object):
         self.query = query
         self.facet_params = facet_params
         self.base_params = params
+        import json
+        logger.info(json.dumps(query.build_search()))
         return query
 
     def build_geo_query(self, request):
