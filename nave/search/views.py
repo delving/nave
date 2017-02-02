@@ -102,7 +102,9 @@ class ClusterGeoJsonView(ListView):
         query_factory = NaveESQuery(index_name=settings.SITE_NAME)
         query = query_factory.build_geo_query(request)
         results = query.execute()
-        geo_json = query.get_geojson(query.get_feature_collection(results.facets))
+        geo_json = {}
+        # todo enable geojson again
+        # geo_json = query.get_geojson(query.get_feature_collection(results.facets))
         return HttpResponse(geo_json, content_type="application/json")
 
 

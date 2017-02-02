@@ -16,6 +16,8 @@ from collections import namedtuple
 
 from django.conf import settings
 from elasticsearch import Elasticsearch
+from elasticsearch_dsl.connections import connections
+
 
 logger = logging.getLogger(__name__)
 
@@ -50,8 +52,8 @@ ES_TIMEOUT = get_settings('ES_TIMEOUT', 10)
 ORG_ID = get_settings("ORG_ID", settings.SITE_NAME.lower())
 
 # check if all the indexes are created and if not create with the right mappings
-es_client = Elasticsearch(
-    hosts=settings.ES_URLS,
+connections.create_connection(
+    hosts=ES_URLS,
     sniff_on_start=True,
     sniff_on_connection_fail=True,
     sniffer_timeout=60,
@@ -61,8 +63,9 @@ es_client = Elasticsearch(
 
 
 def get_es_client():
-    return es_client
+    return Elasticsearch()
 
+es_client = get_es_client()
 
 mappings = {
     "mappings": {

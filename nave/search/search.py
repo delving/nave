@@ -1,6 +1,4 @@
-"""
-All ES query related functionality goes into this module
-"""
+"""All ES query related functionality goes into this module."""
 import collections
 import logging
 import re
@@ -9,156 +7,17 @@ import urllib.parse
 from collections import defaultdict, namedtuple
 from contextlib import contextmanager
 
-import geojson
 from django.conf import settings
 from django.core.paginator import Paginator, Page, EmptyPage, PageNotAnInteger
 from django.http import QueryDict
 from elasticsearch_dsl import Search
 from elasticsearch_dsl.result import Result
-from .elasticutils import S, F, Q
-from geojson import Point, Feature, FeatureCollection
-# noinspection PyMethodMayBeStatic
 from rest_framework.request import Request
 import six
 
-
-from .utils import gis
 from void.convertors import BaseConverter
 
 logger = logging.getLogger(__name__)
-
-
-class GeoS(S):
-    BOUNDING_BOX_PARAM_KEYS = ['min_x', 'min_y', 'max_x', 'max_y']
-
-    def process_filter_bbox(self, key, val, action):
-
-        def valid_bbox_filter():
-            valid_keys = self.BOUNDING_BOX_PARAM_KEYS.sort()
-            values_are_valid = all(isinstance(coor, float) for coor in list(val.values()))
-            return isinstance(val, dict) and val.keys.sort() is valid_keys and values_are_valid
-
-        if not valid_bbox_filter:
-            return
-        key = key if key is not None else "point"
-
-        geo_filter = {
-            "geo_bounding_box": {
-                key: {
-                    "bottom_left": {
-                        "lat": val.get('min_x'),
-                        "lon": val.get('min_y')
-                    },
-                    "top_right": {
-                        "lat": val.get('max_x'),
-                        "lon": val.get('max_y')
-                    }
-                }
-            }
-        }
-        return geo_filter
-
-    def process_filter_polygon(self, key, val, action):
-        # TODO finish implementation
-        """
-        Filter results by polygon
-        http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl-geo-polygon-filter.html
-        """
-
-        def valid_polygon_filter():
-            valid_keys = self.BOUNDING_BOX_PARAM_KEYS.sort()
-            values_are_valid = all(isinstance(coor, float) for coor in list(val.values()))
-            return isinstance(val, dict) and val.keys.sort() is valid_keys and values_are_valid
-
-        if not valid_polygon_filter:
-            return
-        key = key if key is not None else "point"
-
-        polygon_filter = {
-            "geo_polygon": {
-                key: [
-                    {"lat": 40, "lon": -70},
-                    {"lat": 30, "lon": -80},
-                    {"lat": 20, "lon": -90}
-                ]
-            }
-        }
-        return polygon_filter
-
-    def facet_geocluster(self, filtered=True, factor=0.6):
-        """
-        Add facets for clustered geo search.
-
-        Note: It should always be the last in the chain
-        """
-        cluster_config = {
-            "geohash": {
-                "field": "point",
-                "factor": factor,
-                'show_doc_id': True
-            }
-        }
-        query = self.query()
-        if filtered:
-            filt = query.build_search().get('filter')
-            filtered = {'filter': filt}
-            filtered.update(cluster_config)
-            cluster_config = filtered
-        return query.facet_raw(places=cluster_config)
-
-    @staticmethod
-    def get_feature_collection(facets):
-        features = []
-        if 'places' in facets:
-            for place in facets.get('places').clusters:
-                total = place.get('total', 0)
-                center = place.get('center')
-                center_point = Point((center['lon'], center['lat']))
-                properties = {'count': total}
-                feature_id = place.get('doc_id')
-                extra_properties = {key: place.get(key) for key in list(place.keys()) if key in ['doc_type']}
-                if extra_properties:
-                    properties.update(extra_properties)
-                features.append(Feature(geometry=center_point, id=feature_id, properties=properties))
-        return FeatureCollection(features)
-
-    @staticmethod
-    def get_geojson(feature_collection):
-        return geojson.dumps(feature_collection)
-
-    def places_as_geojson(self, facets):
-        features = self.get_feature_collection(facets)
-        return self.get_geojson(features)
-
-    @staticmethod
-    def get_lat_long_bounding_box(boundingbox_params):
-        bounding_box = {}
-        if all('.' in coor for coor in list(boundingbox_params.values())):
-            bounding_box = {key: float(value) for key, value in list(boundingbox_params.items())}
-        elif all('.' not in coor for coor in list(boundingbox_params.values())):
-            # converting rd to lat long
-            min_y, min_x = gis.rd_to_wgs84(boundingbox_params.get('min_x'), boundingbox_params.get('min_y'))
-            max_y, max_x = gis.rd_to_wgs84(boundingbox_params.get('max_x'), boundingbox_params.get('max_y'))
-            bounding_box['min_x'] = min_x
-            bounding_box['min_y'] = min_y
-            bounding_box['max_x'] = max_x
-            bounding_box['max_y'] = max_y
-        return bounding_box
-
-
-    @staticmethod
-    def get_solr_style_bounding_box(distance, point):
-        """The hub2 equivalent filter for a bounding box."""
-        # lonLat conform geojson
-        lat, lon = point.split(',')
-        point = "{},{}".format(lon, lat)
-        bb_filter = {
-            "geo_distance": {
-                "distance": "{}km".format(distance),
-                "point": point
-            }
-        }
-        return bb_filter
 
 
 class NaveESQuery(object):
@@ -168,8 +27,8 @@ class NaveESQuery(object):
     """
 
     def __init__(self, index_name=None, doc_types=None, default_facets=None, size=16,
-                 default_filters=None, hidden_filters=None, cluster_geo=False, geo_query=False, robust_params=True, facet_size=50,
-                 converter=None, acceptance=False):
+                 default_filters=None, hidden_filters=None, cluster_geo=False, geo_query=False, robust_params=True,
+                 facet_size=50, converter=None, acceptance=False):
         self.acceptance = acceptance
         self.index_name = index_name
         self.doc_types = doc_types
@@ -322,11 +181,11 @@ class NaveESQuery(object):
         return self.index_name
 
     def _create_query(self):
-        query = GeoS().es(urls=settings.ES_URLS, timeout=settings.ES_TIMEOUT)
+        query = Search()
         if self.get_index_name:
-            query = query.indexes(*self._as_list(self.get_index_name))
+            query = query.index(*self._as_list(self.get_index_name))
         if self.doc_types:
-            query = query.doctypes(*self._as_list(self.doc_types))
+            query = query.doc_types(*self._as_list(self.doc_types))
         return query
 
     def _create_query_string(self, query_string):
@@ -392,7 +251,7 @@ class NaveESQuery(object):
         return param_key_list and is_valid
 
     def __repr__(self):
-        return str(self.query.steps)
+        return str(self.query.to_dict())
 
     def build_query(self):
         if self.default_facets:
@@ -436,7 +295,9 @@ class NaveESQuery(object):
             except ValueError as ve:
                 self.error_messages.append("param {}: {}".format(key, str(ve)))
                 logger.warn(
-                        "problem with param {} causing {} for request {}".format(key, ve, request.build_absolute_uri()))
+                    "problem with param {} causing {} for request {}"
+                    .format(key, ve, request.build_absolute_uri())
+                )
                 # if not self.robust_params:
                 #     raise
                 raise
@@ -454,10 +315,12 @@ class NaveESQuery(object):
 
         params = self._clean_params(query_dict.copy())
         facet_params = self._clean_params(query_dict.copy())
+
         # build id based query
         query = self.build_item_query(query, params)
         if self._is_item_query:
             return query
+
         # remove non filter keys
         for key, value in list(facet_params.items()):
             if key in ['start', 'page', 'rows', 'format', 'diw-version', 'lang', 'callback',
@@ -465,10 +328,12 @@ class NaveESQuery(object):
                 del facet_params[key]
             if not value and key in facet_params:
                 del facet_params[key]
+
         # implement size
         if 'rows' in params:
             with robust('rows'):
                 self.size = int(params.get('rows'))
+                j
         # implement paging
         if 'page' in params:
             with robust('page'):
@@ -487,16 +352,18 @@ class NaveESQuery(object):
                 query = query[start:end]
         else:
             query = query[:self.size]
-        # update key
-        if 'query' in params and 'q' not in params:
-            params['q'] = params.get('query')
-        # add hidden filters:
-        exclude_filter_list = params.getlist("pop.filterkey")
+
+        # add hidden filters
         hidden_filter_dict = self._filters_as_dict(
             self.hidden_filters,
             exclude=exclude_filter_list
         ) if self.hidden_filters else defaultdict(set)
         hidden_queries = hidden_filter_dict.pop("query", [])
+
+        # update key
+        if 'query' in params and 'q' not in params:
+            params['q'] = params.get('query')
+
         if self.param_is_valid('q', params) and not params.get('q') in ['*:*']:
             query_string = params.get('q')
 
@@ -508,87 +375,37 @@ class NaveESQuery(object):
         # add lod_filtering support
         elif "lod_id" in params:
             lod_uri = params.get("lod_id")
-            query = query.query(
-                    **{'rdf.object.id': lod_uri, "must": True}).filter(~F(**{'system.about_uri': lod_uri}))
+            # todo implement this filter with elastic dsl
+            # query = query.query(
+            #         **{'rdf.object.id': lod_uri, "must": True}).filter(~Q(**{'system.about_uri': lod_uri}))
         elif hidden_queries:
             query = query.query_raw(self._create_query_string(" ".join(hidden_queries)))
         else:
             query = query.query()
 
         # add filters
-        filter_dict = self._filters_as_dict(self.default_filters) if self.default_filters else defaultdict(set)
+        filter_dict = self._filters_as_dict(self.default_filters) \
+                if self.default_filters else defaultdict(set)
         if 'qf' in params:
             with robust('qf'):
                 self._filters_as_dict(params.getlist('qf'), filter_dict)
+
 
         if 'hqf' in params:
             with robust('hqf'):
                 hqf_list = params.getlist('hqf')
                 self._filters_as_dict(
-                        filters=hqf_list,
-                        filter_dict=hidden_filter_dict,
-                        exclude=exclude_filter_list
+                    filters=hqf_list,
+                    filter_dict=hidden_filter_dict,
+                    exclude=exclude_filter_list
                 )
                 facet_params.pop('hqf')
-        facet_bool_type_and = False
-        if "facetBoolType" in params:
-            facet_bool_type_and = params.get("facetBoolType").lower() in ["and"]
-        # Important: hidden query filters need to be additional query and not filters.
-        if hidden_filter_dict:
-            for key, values in hidden_filter_dict.items():
-                f = F()
-                for value in values:
-                    clean_value = value
-                    if clean_value.startswith('"') and clean_value.endswith('"'):
-                        clean_value = clean_value.strip('"')
-                    if key.startswith('-'):
-                        f |= ~F(**{self.query_to_facet_key(key): clean_value})
-                    elif facet_bool_type_and:
-                        f &= F(**{self.query_to_facet_key(key): clean_value})
-                    else:
-                        f |= F(**{self.query_to_facet_key(key): clean_value})
 
-                query = query.filter(f)
-                # todo: remove old solution later
-                # query_list = []
-                # for value in values:
-                #     if key.startswith('-'):
-                #         query_list.append("(NOT {})".format(value))
-                #     else:
-                #         query_list.append("{}".format(value))
-                # if facet_bool_type_and:
-                #     query_string = " AND ".join(query_list)
-                # else:
-                #     query_string = " OR ".join(query_list)
-                # query = query.filter(F(**{self.query_to_facet_key(key): "({})".format(query_string)}))
-        applied_facet_fields = []
-
-        if filter_dict:
-            for key, values in list(filter_dict.items()):
-                applied_facet_fields.append(key.lstrip('-+').replace('.raw', ''))
-                f = F()
-                for value in values:
-                    clean_value = value
-                    if clean_value.startswith('"') and clean_value.endswith('"'):
-                        clean_value = clean_value.strip('"')
-                    if key.startswith('-'):
-                        f |= ~F(**{self.query_to_facet_key(key): clean_value})
-                    elif facet_bool_type_and:
-                        f &= F(**{self.query_to_facet_key(key): clean_value})
-                    else:
-                        f |= F(**{self.query_to_facet_key(key): clean_value})
-
-                query = query.filter(f)
+        # combine all filters
         filter_dict.update(hidden_filter_dict)
         self.applied_filters = filter_dict
-        # old solr style bounding box query
-        bbox_filter = None
-        if {'pt', 'd'}.issubset(list(params.keys())):
-            point = params.get('pt')
-            if point:
-                bbox_filter = GeoS.get_solr_style_bounding_box(params.get('d', '10'), point)
-                query = query.filter_raw(bbox_filter)
-                # todo: test this with the monument data
+        applied_facet_fields = []
+
         # add facets
         facet_list = self._as_list(self.facet_list) if self.default_facets else []
         if 'facet' in params:
@@ -606,62 +423,71 @@ class NaveESQuery(object):
             self.default_facets.append(FacetConfig(
                 es_field=facet,
                 label=facet
-            ))
+            )
+        )
         if facet_list:
             with robust('facet'):
                 if 'facet.size' in params:
                     self.facet_size = int(params.get('facet.size'))
-                facet_filt_dict = {"{}.raw".format(k.replace('.raw', '')): list(v) for k, v in filter_dict.items()}
+                # add .raw if not already there
+                # facet_list = ["{}.raw".format(facet.rstrip('.raw')) for facet in facet_list]
                 for facet in facet_list:
-                    # remove current facet from filter dict
-                    if not facet_bool_type_and:
-                        facet_filter = {k: v for k, v in facet_filt_dict.items() if k != facet}
+                    filtered = facet.replace('.raw', '') not in applied_facet_fields
+                    # todo: check if filtered needs to be added back later: filtered=filtered,
+                    query.aggs.bucket(facet, 'terms', field=facet, size=self.facet_size)
+        facet_bool_type_and = False
+        if "facetBoolType" in params:
+            facet_bool_type_and = params.get("facetBoolType").lower() in ["and"]
+        if filter_dict:
+            applied_facet_fields = {key.lstrip('-+').replace('.raw', '') for key in filter_dict.keys()}
+            all_filter_list = []
+            for key, values in list(filter_dict.items()):
+                from elasticsearch_dsl.query import Q
+                clean_key = key.lstrip('-+').replace('.raw', '')
+                facet_filter_list = []
+                for value in values:
+                    if key.startswith('-'):
+                        facet_filter_list.append(~Q('match', **{self.query_to_facet_key(key): value}))
                     else:
-                        facet_filter = facet_filt_dict
-                    # implement facet raw queries
-                    formatted_facet_filter = {
-                        facet:
-                            {
-                                'terms': {'field': facet, 'size': self.facet_size}
-                            }
-                    }
-                    and_facet_filter_list = [{"terms": {k: v}} for k, v in facet_filter.items()]
-                    if bbox_filter:
-                        and_facet_filter_list.append(bbox_filter)
-                    if and_facet_filter_list:
-                        formatted_facet_filter = {
-                            facet: {
-                                'aggs': formatted_facet_filter,
-                                'filter': {
-                                    'and': and_facet_filter_list
-                                }
-                            }
-                        }
-                    query = query.facet_raw(**formatted_facet_filter)
-        # add bounding box
-        bounding_box_param_keys = GeoS.BOUNDING_BOX_PARAM_KEYS
-        if set(bounding_box_param_keys).issubset(list(params.keys())):
-            with robust(str(bounding_box_param_keys)):
-                boundingbox_params = {key: val for key, val in list(params.items()) if key in bounding_box_param_keys}
-                bounding_box = GeoS.get_lat_long_bounding_box(boundingbox_params)
-                if bounding_box:
-                    query = query.filter(point__bbox=bounding_box)
-        # add clusters
-        if self.cluster_geo:
-            with robust('geo_cluster'):
-                filtered = bool(params.get('cluster.filtered')) if 'cluster.filtered' in params else True
-                if 'cluster.factor' in params:
-                    factor = float(params.get('cluster.factor'))
-                    query = query.facet_geocluster(factor=factor, filtered=filtered)
-                else:
-                    query = query.facet_geocluster(filtered=filtered)
-        if self.geo_query:
-            query = query.query_raw({"match": {"delving_hasGeoHash": True}})
+                        facet_filter_list.append(Q('match', **{self.query_to_facet_key(key): value}))
+                all_filter_list.append(Q('bool', should=facet_filter_list))
+            if facet_bool_type_and:
+                query = query.post_filter('bool', must=all_filter_list)
+            else:
+                query = query.post_filter('bool', should=all_filter_list)
+        # todo enable geosearching later again
+        # old solr style bounding box query
+        # bbox_filter = None
+        # if {'pt', 'd'}.issubset(list(params.keys())):
+            # point = params.get('pt')
+            # if point:
+                # bbox_filter = GeoS.get_solr_style_bounding_box(params.get('d', '10'), point)
+                # query = query.filter_raw(bbox_filter)
+                # # todo: test this with the monument data
+        # # add bounding box
+        # bounding_box_param_keys = GeoS.BOUNDING_BOX_PARAM_KEYS
+        # if set(bounding_box_param_keys).issubset(list(params.keys())):
+            # with robust(str(bounding_box_param_keys)):
+                # boundingbox_params = {key: val for key, val in list(params.items()) if key in bounding_box_param_keys}
+                # bounding_box = GeoS.get_lat_long_bounding_box(boundingbox_params)
+                # if bounding_box:
+                    # query = query.filter(point__bbox=bounding_box)
+        # # add clusters
+        # if self.cluster_geo:
+            # with robust('geo_cluster'):
+                # filtered = bool(params.get('cluster.filtered')) if 'cluster.filtered' in params else True
+                # if 'cluster.factor' in params:
+                    # factor = float(params.get('cluster.factor'))
+                    # query = query.facet_geocluster(factor=factor, filtered=filtered)
+                # else:
+                    # query = query.facet_geocluster(filtered=filtered)
+        # if self.geo_query:
+            # query = query.query_raw({"match": {"delving_hasGeoHash": True}})
         self.query = query
         self.facet_params = facet_params
         self.base_params = params
         import json
-        logger.debug(json.dumps(query.build_search()))
+        logger.debug(json.dumps(query.to_dict()))
         return query
 
     def build_geo_query(self, request):
@@ -777,10 +603,10 @@ class FacetCountLink(object):
                 return ""
             if self._query.converter:
                 link = self._query.apply_converter_rules(
-                        query_string=link,
-                        converter=self._query.converter,
-                        as_query_dict=False,
-                        reverse=True
+                    query_string=link,
+                    converter=self._query.converter,
+                    as_query_dict=False,
+                    reverse=True
                 )
                 self._link = link if link.startswith("&") else "&{}".format(link)
             else:
@@ -824,13 +650,9 @@ class FacetLink(object):
 
     def _create_facet_count_links(self):
         facet_count_links = []
-        if 'buckets' not in self._facet_terms:
-            for k, v in self._facet_terms.items():
-                if k != 'doc_count':
-                    self._facet_terms = v
-        for term in self._facet_terms.get('buckets'):
-            count = term.get('doc_count')
-            value = term.get('key')
+        for term in self._facet_terms.buckets:
+            count = term.doc_count
+            value = term.key
             facet_count_links.append(
                     FacetCountLink(self._name, value, count, self._query)
             )
@@ -913,12 +735,12 @@ class NaveFacets(object):
             facet_order = settings.FACET_CONFIG
         ordered_dict = collections.OrderedDict()
         for facet in facet_order:
-            ordered_dict[facet.es_field] = facets.get(facet.es_field)
+            ordered_dict[facet.es_field] = facets[facet.es_field]
         return ordered_dict
 
     def _create_facet_query_links(self):
         facet_query_links = collections.OrderedDict()
-        for key, facet in self._facets.items():
+        for key in self._facets:
             if key in ['places.raw']:
                 continue
             clean_name = key.replace('.raw', '')
@@ -930,14 +752,16 @@ class NaveFacets(object):
                         reverse=True
                 )
                 clean_name = "{}_facet".format(clean_name)
+            facet = self._facets[key]
+
+            other_docs = facet.sum_other_doc_count
+            total = len(facet.buckets) + other_docs
             facet_query_link = FacetLink(
                     name=clean_name,
-                    # todo: replace later with count facet.total,
-                    total=0,
+                    total=total,
                     # todo: replace later with count facet.total,facet.missing,
                     missing=0,
-                    # todo: replace later with count facet.total,facet.other,
-                    other=0,
+                    other=other_docs,
                     query=self._nave_query,
                     facet_terms=facet
             )
@@ -1325,7 +1149,7 @@ class NaveItemResponse(object):
             doc_type = self.item.doc_type
             doc_id = self.item.doc_id
             from . import get_es_client
-            s = Search(using=get_es_client(), index=self._index)
+            s = Search(index=self._index)
             mlt_query = s.query(
                     'more_like_this',
                     fields=self._nave_query.mlt_fields,
@@ -1398,7 +1222,7 @@ class NaveQueryResponse(object):
     @property
     def num_found(self):
         if not self._num_found:
-            self._num_found = self.es_results.count
+            self._num_found = self.es_results.hits.total
         return self._num_found
 
     @property
@@ -1423,7 +1247,7 @@ class NaveQueryResponse(object):
         """
         if not self._items:
             self._items = NaveESItemList(
-                    results=self._results.results,
+                    results=self._results.hits.hits,
                     converter=self._converter).items
         return self._items
 
@@ -1435,7 +1259,7 @@ class NaveQueryResponse(object):
         if not self._facets:
             self._facets = NaveFacets(
                 self._query,
-                self._results.response.get('aggregations')
+                self._results.aggregations
             )
         return self._facets
 
