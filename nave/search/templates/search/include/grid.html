@@ -4,7 +4,7 @@
             <div class="results-grid-item-container">
                 <div class="results-grid-item  {{ grid_class }}" id="#result_{{ forloop.counter0 }}">
                     <a href="{% url 'results_detail_foldout' doc_type=result.item.doc_type slug=result.item.fields.system.slug  %}"
-                       data-slug="{{ result.item.fields.system.slug }}" data-doc_type="{{ result.item.doc_type }}" data-mode="{{ acceptance }}"
+                       rel="nofollow" data-slug="{{ result.item.fields.system.slug }}" data-doc_type="{{ result.item.doc_type }}" data-mode="{{ acceptance }}"
                        class="result-item-link"  data-index="{{ forloop.counter0 }}" data-detail-uri="{{ result.item.fields.system.source_uri }}">
                         <div class="media">
                             {# nave_thumbSmall #}
