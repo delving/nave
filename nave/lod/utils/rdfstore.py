@@ -83,7 +83,6 @@ class RDFStore:
             self.graph_store = GraphStore(rdf_store=self)
         return self.graph_store
 
-    # @retry(exceptions=TimeoutError, tries=2, jitter=(1000, 2000))
     def build_sparql_query(self, query, query_type, query_method=GET, named_graph=None, update=False):
         """Construct the boilerplate of a sparql query
         """

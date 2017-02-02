@@ -305,7 +305,6 @@ THIRD_PARTY_APPS = (
     'rest_framework.authtoken',
     'rest_framework_swagger',
     'orderable',
-    'djcelery',
     'geojson',
     'djgeojson',
     'leaflet',
@@ -725,18 +724,6 @@ CELERY_IGNORE_RESULT = True
 CELERY_ALWAYS_EAGER = False  # production should be false
 
 CELERY_ACKS_LATE = True
-
-# CELERYBEAT_SCHEDULE = {
-#     'sync-every-minute': {
-#         'task': 'void.tasks.schedule_out_of_sync_datasets',
-#         'schedule': timedelta(seconds=30),
-#         #'args': (rdfstore._production_store,)
-#     },
-# }
-
-# store schedule in the DB:
-CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
-
 
 CELERYBEAT_SCHEDULE = {
     'add-every-60-seconds': {
