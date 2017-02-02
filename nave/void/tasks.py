@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 """This module does contains the synchronisation tasks that keep the
 metadata records stored in RDF store by Narthex in sync with the the Nave
 database and search index.
@@ -27,7 +27,7 @@ from elasticsearch import helpers
 from lod.models import RDFModel
 from lod.utils import rdfstore
 from lod.utils.rdfstore import QueryType
-from void import get_es
+from search import get_es_client
 from void.models import DataSet, EDMRecord, DataSetType, OaiPmhPublished
 from void.processors import BulkApiProcessor
 
@@ -174,7 +174,7 @@ def reindex_dataset(ds, acceptance=False):
                     acceptance=acceptance
             )
 
-    response = helpers.bulk(get_es(), actions=process_records())
+    response = helpers.bulk(get_es_client(), actions=process_records())
     return response
 
 
@@ -329,7 +329,7 @@ def synchronise_dataset_records(store, dataset_graph_uri=None, ds=None, index=se
                 synchronise_record(graph_uri, ds, store, actions, index=index)
             # index actions
             logger.info("number of actions scheduled: {}".format(len(actions)))
-            response = helpers.bulk(client=get_es(), actions=actions, stats_only=True)
+            response = helpers.bulk(client=get_es_client(), actions=actions, stats_only=True)
             records_processed += len(graph_list)
             logger.info("processed {}/{} for {}".format(records_processed, valid_records, ds.spec))
             logger.debug("ElasticSearch bulk update: {}".format(response))

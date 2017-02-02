@@ -12,7 +12,7 @@ from rdflib.plugins.parsers.ntriples import ParseError
 
 from lod.utils import rdfstore
 from lod.utils.resolver import RDFRecord
-from void import get_es
+from search import get_es_client
 from void.models import DataSet
 
 from lod import tasks
@@ -44,7 +44,7 @@ class BulkApiProcessor:
 
     def diff_by_content_hash(self):
         ids = [{"_id": key[0]} for key in self.es_actions.keys()]
-        mget_ids = get_es().mget(body={"docs": ids}, index=settings.SITE_NAME, _source_include=['system.content_hash'])
+        mget_ids = get_es_client().mget(body={"docs": ids}, index=settings.SITE_NAME, _source_include=['system.content_hash'])
         index_sets = {(doc.get('_id'), doc['_source'].get('system', {'content_hash': None}).get('content_hash')) for doc in mget_ids.get('docs') if doc['found']}
         new_records = set(self.es_actions.keys()).difference(index_sets)
         self.records_stored = len(new_records)
@@ -71,7 +71,7 @@ class BulkApiProcessor:
 
     def bulk_index(self, es_actions):
         logger.debug(self.es_actions)
-        nr, errors = helpers.bulk(get_es(), es_actions)
+        nr, errors = helpers.bulk(get_es_client(), es_actions)
         if nr > 0 and not errors:
             logger.info("Indexed records: {}".format(nr))
             return True
