@@ -231,7 +231,7 @@ class NaveESQuery(object):
         }
         query_string = multiple_replace(mapping_dict, query_string)
         # default fielded query is to .value
-        query_string = re.sub("([\w]+)_([\w]+):", r"\1_\2.value:", query_string)
+        query_string = re.sub(r"([\w]+)_([\w]+):", r"\1_\2.value:", query_string)
         if "delving_spec.value" in query_string:
             query_string = query_string.replace("delving_spec.value", "system.spec.raw")
         elif "delving_" in query_string:
@@ -333,7 +333,6 @@ class NaveESQuery(object):
         if 'rows' in params:
             with robust('rows'):
                 self.size = int(params.get('rows'))
-                j
         # implement paging
         if 'page' in params:
             with robust('page'):
@@ -354,6 +353,7 @@ class NaveESQuery(object):
             query = query[:self.size]
 
         # add hidden filters
+        exclude_filter_list = params.getlist("pop.filterkey")
         hidden_filter_dict = self._filters_as_dict(
             self.hidden_filters,
             exclude=exclude_filter_list
@@ -373,8 +373,8 @@ class NaveESQuery(object):
                 query_string = "{} {}".format(query_string, hq)
             query = query.query_raw(self._create_query_string(query_string))
         # add lod_filtering support
-        elif "lod_id" in params:
-            lod_uri = params.get("lod_id")
+        # elif "lod_id" in params:
+            # lod_uri = params.get("lod_id")
             # todo implement this filter with elastic dsl
             # query = query.query(
             #         **{'rdf.object.id': lod_uri, "must": True}).filter(~Q(**{'system.about_uri': lod_uri}))
@@ -432,7 +432,7 @@ class NaveESQuery(object):
                 # add .raw if not already there
                 # facet_list = ["{}.raw".format(facet.rstrip('.raw')) for facet in facet_list]
                 for facet in facet_list:
-                    filtered = facet.replace('.raw', '') not in applied_facet_fields
+                    # filtered = facet.replace('.raw', '') not in applied_facet_fields
                     # todo: check if filtered needs to be added back later: filtered=filtered,
                     query.aggs.bucket(facet, 'terms', field=facet, size=self.facet_size)
         facet_bool_type_and = False
@@ -443,7 +443,6 @@ class NaveESQuery(object):
             all_filter_list = []
             for key, values in list(filter_dict.items()):
                 from elasticsearch_dsl.query import Q
-                clean_key = key.lstrip('-+').replace('.raw', '')
                 facet_filter_list = []
                 for value in values:
                     if key.startswith('-'):
@@ -511,7 +510,7 @@ class NaveESQuery(object):
             facet_key = 'legacy.{}'.format(facet_key)
         if "." not in facet_key:
             facet_key = "{}.raw".format(facet_key)
-        return facet_key.lstrip('-')
+        return facet_key.lstrip('-+')
 
     @staticmethod
     def clean_facets(facet_dict):
@@ -1293,8 +1292,8 @@ class NaveQueryResponse(object):
     def layout(self):
         converter = self._converter
         if not converter and settings.DEFAULT_V1_CONVERTER is not None:
-                from void import REGISTERED_CONVERTERS
-                converter = REGISTERED_CONVERTERS.get(settings.DEFAULT_V1_CONVERTER, None)
+            from void import REGISTERED_CONVERTERS
+            converter = REGISTERED_CONVERTERS.get(settings.DEFAULT_V1_CONVERTER, None)
         if not converter:
             return {}
         layout_fields = converter().get_layout_fields()
