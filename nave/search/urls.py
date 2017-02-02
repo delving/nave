@@ -34,8 +34,6 @@ urlpatterns = [
     url(r'^detail/fold-out/(?P<slug>(.*))$', DetailResultView.as_view(), name='results_detail_foldout'),
     url(r'^detail/foldout/image/(?P<slug>(.*))$', FoldOutDetailImageView.as_view(), name='image_detail'),
     # url(r'^proxy/$', 'dataset.views.proxy', name='proxy'),
-    url(r'^{}/(?P<spec>(.*))/(?P<local_id>(.*))$'.format(settings.ORG_ID), HubIDRedirectView.as_view(), name='hub_id_redirect'),
-    # todo: check if removed /? does not regress functionality
     url(r'/?', include(search_router.urls), name='search_routers'),
     url(r'^docs/', include('rest_framework_swagger.urls')),
     url(r'^geoviewer/$', KNReiseGeoView.as_view()),

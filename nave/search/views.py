@@ -562,7 +562,7 @@ class NaveDocumentTemplateView(TemplateView):
             if cache_resource.exists():
                 graph = cache_resource.first().get_graph()
         elif settings.RDF_USE_LOCAL_GRAPH:
-            mode = self.request.REQUEST.get('mode', 'default')
+            mode = self.request.GET.get('mode', 'default')
             acceptance = True if mode == 'acceptance' else False
             context['acceptance'] = acceptance
 
