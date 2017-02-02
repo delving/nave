@@ -1228,7 +1228,7 @@ class NaveQueryResponse(object):
     @property
     def paginator(self):
         if not self._paginator:
-            self._paginator = ESPaginator(self.es_results.objects, self._rows, count=self.num_found)
+            self._paginator = ESPaginator(self.es_results.hits, self._rows, count=self.num_found)
         return self._paginator
 
     @property
