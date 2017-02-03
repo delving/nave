@@ -1,5 +1,0 @@
-# production dependencies for python 3.4+
--r base.txt
-django-compressor==1.4 # found around fabfile.py:602 - should be here
-python3-memcached==1.51 # found around fabfile.py:602 - should be here
-setproctitle==1.1.8 # found around fabfile.py:602 - should be here
