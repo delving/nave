@@ -7,7 +7,11 @@
             {% for value in values %}
                 {# TODO: check for deepzoom, video audio and render html accordingly #}
                 {% if value.value %}
-                    {% if fullscreen %}<a href="{{ value.value }}" class="fullscreen">{% endif %}
+                    {% if fullscreen %}
+                        <a href="{{ value.value }}" class="fullscreen" rel="nofollow">
+                    {% else %}
+                        <a href="{{ uri }}" rel="canonical">
+                    {% endif %}
                         <img src="{{ value.value }}" alt="{% for a in alt %}{{ a }}{% endfor %}" />
                     {% if fullscreen %}</a>{% endif %}
                 {% else %}
@@ -30,9 +34,9 @@
                         {# TODO: check for deepzoom, video audio and render html accordingly #}
                         {#  deepzoom info in nave_deepZoomUrl #}
                         {% if fullscreen %}
-                            <a href="{{ value.value }}" class="fullscreen">
+                            <a href="{{ value.value }}" class="fullscreen" rel="nofollow">
                         {% endif %}
-                        <img src="{{ value.value }}" alt="{% for a in alt %}{{ a }}{% endfor %}" />
+                            <img src="{{ value.value }}" alt="{% for a in alt %}{{ a }}{% endfor %}" />
                         {% if fullscreen %}
                             </a>
                         {% endif %}
@@ -40,11 +44,11 @@
                 {% endfor %}
             </div>
             <!-- Navigation left and right -->
-            <a class="left carousel-control" href="#media-carousel" role="button" data-slide="prev">
+            <a class="left carousel-control" href="#media-carousel" role="button" data-slide="prev" rel="nofollow">
                 <span class="glyphicon glyphicon-chevron-left carousel-nav carousel-previous" aria-hidden="true"></span>
                 <span class="sr-only">Previous</span>
             </a>
-            <a class="right carousel-control" href="#media-carousel" role="button" data-slide="next">
+            <a class="right carousel-control" href="#media-carousel" role="button" data-slide="next" rel="nofollow">
                 <span class="glyphicon glyphicon-chevron-right carousel-nav carousel-next" aria-hidden="true"></span>
                 <span class="sr-only">Next</span>
             </a>

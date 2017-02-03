@@ -39,16 +39,16 @@ msgstr ""
 #: templates/search/include/pagination.html:6
 #: templates/search/include/pagination.html:10
 msgid "Previous"
-msgstr ""
+msgstr "Tidligere"
 
 #: templates/search/include/pagination.html:20
 #: templates/search/include/pagination.html:24
 msgid "Next"
-msgstr ""
+msgstr "Neste"
 
 #: templates/search/include/select-rows.html:2
 msgid "Number of results per page:"
-msgstr ""
+msgstr "Antall resultater per side"
 
 #: templates/search/search-results.html:10
 msgid "Home"

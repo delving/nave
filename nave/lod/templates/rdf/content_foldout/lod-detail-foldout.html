@@ -44,6 +44,6 @@
         {% detail_field 'dc_rights' label=_("dc_rights") %}
         {% detail_field 'edm_rights' multiple=True label=_('edm_rights') is_link=True %}
 
-        <a href="{{ absolute_uri }}{% if acceptance %}?mode=acceptance{% endif %}" class="btn btn-default btn-to-detail">{% trans 'View details' %}</a>
+        <a href="{{ absolute_uri }}{% if acceptance %}?mode=acceptance{% endif %}" rel="canonical" class="btn btn-default btn-to-detail">{% trans 'View details' %}</a>
     </div>
 </div>

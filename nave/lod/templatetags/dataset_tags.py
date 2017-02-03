@@ -87,7 +87,7 @@ MockRDFObject = namedtuple('MockRDFObject', ["value"])
 
 
 @register.inclusion_tag('rdf/tags/_search-detail-media-preview.html', takes_context=True)
-def detail_media_preview(context, fieldname, alt="", fullscreen=False, indicators=False, thumbnail_nav=False):
+def detail_media_preview(context, fieldname, alt="", fullscreen=False, indicators=False, thumbnail_nav=False, uri="", ):
     """
     :param context: page context
     :param fieldname: DataSet.MetadataRecord field name
@@ -103,6 +103,7 @@ def detail_media_preview(context, fieldname, alt="", fullscreen=False, indicator
     thumbnail_nav = thumbnail_nav
     indicators = indicators
     rights = rights
+    uri = uri
 
     # values = ['http://www.dcn-images.nl/img/BDM/BDM_09809.jpg', 'http://www.dcn-images.nl/img/BDM/BDM_00807.jpg', 'http://www.dcn-images.nl/img/BDM/BDM_01999.jpg']
     # values = ['http://igem.adlibsoft.com/wwwopacx/wwwopac.ashx?command=getcontent&server=images&value=bergh\\001305.jpg',
@@ -140,7 +141,8 @@ def detail_media_preview(context, fieldname, alt="", fullscreen=False, indicator
         'fullscreen': fullscreen,
         'indicators': indicators,
         'thumbnail_nav': thumbnail_nav,
-        'rights': rights
+        'rights': rights,
+        'uri':uri
     }
 
 
@@ -208,6 +210,7 @@ def detail_field(
         separator='',
         word_limit=0,
         add_link=False,
+        is_inline_data=False,
         is_authenticated=False,
         surround=None,
         predicate_uri=None,
@@ -248,6 +251,7 @@ def detail_field(
         'allow_html': allow_html,
         'label': label,
         'is_link': is_link,
+        'is_inline_data': is_inline_data,
         'new_query': new_query,
         'new_facet_query': new_facet_query,
         'predicate': predicate,
