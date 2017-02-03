@@ -202,8 +202,7 @@ TEMPLATES = [
 # List of middleware classes to use. Order is important; in the request phase,
 # these middleware classes will be applied in the order given, and in the
 # response phase the middleware will be applied in reverse order.
-MIDDLEWARE_CLASSES = (
-    'common.middleware.TimedProfilerMiddleware',
+MIDDLEWARE = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'corsheaders.middleware.CorsMiddleware',
@@ -214,10 +213,6 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.contrib.admindocs.middleware.XViewMiddleware',
     'common.middleware.FallBackLanguageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'common.middleware.SimpleProfilerMiddleware',
-    'common.middleware.TimedProfilerMiddleware',
-    'common.middleware.EventStoreLoggingMiddleware',
 )
 
 AUTHENTICATION_BACKENDS = (
