@@ -1,13 +1,7 @@
-<<<<<<< HEAD
 # -*- coding: utf-8 -*-
 """This module does contains the synchronisation tasks that keep the
 metadata records stored in RDF store by Narthex in sync with the the Nave
 database and search index.
-||||||| parent of b068025... Boyscout: Removing all spurious <U+2028> linebreaks
-# -*- coding: utf-8 -*- 
-=======
-# -*- coding: utf-8 -*-
->>>>>>> b068025... Boyscout: Removing all spurious <U+2028> linebreaks
 
 To see how Narthex stores everything:
 
