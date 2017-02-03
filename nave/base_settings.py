@@ -7,7 +7,6 @@ import re
 from collections import defaultdict
 from datetime import timedelta
 from os.path import abspath, dirname, join, normpath
-from sys import path
 
 from django.utils.translation import ugettext_lazy as _
 
@@ -34,10 +33,6 @@ BASEDIR = dirname(abspath(__file__))
 
 PROJECT_ROOT = DJANGO_ROOT
 
-
-# Add our project to our pythonpath, this way we don't need to type our project
-# name in our dotted import paths:
-path.append(DJANGO_ROOT)
 # ######### END PATH CONFIGURATION
 
 
