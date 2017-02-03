@@ -34,6 +34,6 @@ urlpatterns = [
     url(r'^detail/fold-out/(?P<slug>(.*))$', DetailResultView.as_view(), name='results_detail_foldout'),
     url(r'^detail/foldout/image/(?P<slug>(.*))$', FoldOutDetailImageView.as_view(), name='image_detail'),
     # url(r'^proxy/$', 'dataset.views.proxy', name='proxy'),
-    url(r'/?', include(search_router.urls), name='search_routers'),
+    url(r'', include(search_router.urls), name='search_routers'),
     url(r'^geoviewer/$', KNReiseGeoView.as_view()),
 ]
