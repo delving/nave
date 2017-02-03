@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 """
 This class holds the models for the 'void' app.
 
@@ -34,7 +34,6 @@ from django_extensions.db.models import TimeStampedModel, TitleDescriptionModel
 from elasticsearch import helpers
 from rdflib import URIRef, Graph, Literal, ConjunctiveGraph
 from rdflib.namespace import RDF, SKOS
-from taggit.managers import TaggableManager
 
 from lod import namespace_manager
 from lod.models import RDFModel
@@ -457,7 +456,7 @@ class DataSet(TimeStampedModel, GroupOwned):
     )
     file_watch_directory = models.FilePathField(
             _("file watcher directory"),
-            path=os.path.join(settings.FILE_WATCH_BASE_FOLDER),  # todo later add spec_field
+            path="/tmp",  # todo later add spec_field
             blank=True,
             allow_folders=True,
             allow_files=False,
@@ -495,10 +494,6 @@ class DataSet(TimeStampedModel, GroupOwned):
     has_sync_error = models.BooleanField(
             _("has synchronisation error"),
             default=False
-    )
-    excluded_index_fields = TaggableManager(
-            verbose_name=_('excluded index fields'),
-            blank=True
     )
     last_full_harvest_date = models.DateTimeField(blank=True, null=True)
 

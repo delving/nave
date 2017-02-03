@@ -371,7 +371,7 @@ class NaveESQuery(object):
                 query_string = query_string.replace('&quot;', '"')
             for hq in hidden_queries:
                 query_string = "{} {}".format(query_string, hq)
-            query = query.query_raw(self._create_query_string(query_string))
+            query = query.query(self._create_query_string(query_string))
         # add lod_filtering support
         # elif "lod_id" in params:
             # lod_uri = params.get("lod_id")

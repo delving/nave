@@ -1,17 +1,15 @@
 # -*- coding: utf-8 -*-
 """Common settings and globals."""
-
 from __future__ import absolute_import, unicode_literals
 
 import os
 import re
 from collections import defaultdict
 from datetime import timedelta
-from os.path import abspath, basename, dirname, join, normpath, sep
+from os.path import abspath, dirname, join, normpath
 from sys import path
 
-import raven
-from django.utils.translation import ugettext, ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _
 
 print("Welcome to the Delving Nave. ({})".format(os.getpid()))
 
@@ -21,12 +19,12 @@ MIGRATION_MODULES = {
     'easy_thumbnails': 'easy_thumbnails.migrations',
 }
 
-########################
+# #######################
 # MAIN DJANGO SETTINGS #
-########################
+# #######################
 
 
-########## PATH CONFIGURATION
+# ######### PATH CONFIGURATION
 # Absolute filesystem path to the Django project directory:
 
 DJANGO_ROOT = dirname(abspath(__file__))
@@ -42,20 +40,20 @@ PROJECT_ROOT = DJANGO_ROOT
 # Add our project to our pythonpath, this way we don't need to type our project
 # name in our dotted import paths:
 path.append(DJANGO_ROOT)
-########## END PATH CONFIGURATION
+# ######### END PATH CONFIGURATION
 
 
-########## DEBUG CONFIGURATION
+# ######### DEBUG CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#debug
 DEBUG = True
 
-########## END DEBUG CONFIGURATION
+# ######### END DEBUG CONFIGURATION
 
 APPEND_SLASH = True
 
 TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 
-########## MANAGER CONFIGURATION
+# ######### MANAGER CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#admins
 # People who get code error notifications.
 # In the format (('Full Name', 'email@example.com'),
@@ -68,10 +66,10 @@ ADMINS = (
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#managers
 MANAGERS = ADMINS
-########## END MANAGER CONFIGURATION
+# ######### END MANAGER CONFIGURATION
 
 
-########## GENERAL CONFIGURATION
+# ######### GENERAL CONFIGURATION
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.
@@ -101,14 +99,14 @@ LOCALE_PATHS = [
     normpath(join(PROJECT_ROOT, 'common', 'locale'))
 ]
 
-########## END GENERAL CONFIGURATION
+# ######### END GENERAL CONFIGURATION
 
 
-############################
+# ###########################
 # PATHS                    #
-############################
+# ###########################
 
-########## STATIC FILE CONFIGURATION
+# ######### STATIC FILE CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#static-root
 STATIC_ROOT = normpath(join(PROJECT_ROOT, 'static'))
 
@@ -124,39 +122,42 @@ STATIC_URL = '/static/'
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'django.contrib.staticfiles.finders.FileSystemFinder',
-    'compressor.finders.CompressorFinder',
+    # 'compressor.finders.CompressorFinder',
 )
-########## END STATIC FILE CONFIGURATION
+# ######### END STATIC FILE CONFIGURATION
 
-########## MEDIA CONFIGURATION
+# ######### MEDIA CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#media-root
 MEDIA_ROOT = normpath(join(PROJECT_ROOT, 'media'))
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#media-url
 MEDIA_URL = '/media/'
-########## END MEDIA CONFIGURATION
+# ######### END MEDIA CONFIGURATION
 
-########## SECRET CONFIGURATION
+# ######### SECRET CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
 # Note: This key should only be used for development and testing.
 SECRET_KEY = r"(-%5-4d^f!5rz=kx!e6jfde_qzd9zi0g4tq%kb#@7+z#*-$ol-"
-NEVERCACHE_KEY = "310ab0e2-9a61-4e31-9de3-6af493b5c6cd8d32524f-618d-4aca-9665-1ab5ac91875d7e1adc60-cd9c-4f5b-b430-900"
-########## END SECRET CONFIGURATION
+NEVERCACHE_KEY = (
+    "310ab0e2-9a61-4e31-9de3-6af493b5c6cd8d32524f-618d-4aca-9665-"
+    "1ab5ac91875d7e1adc60-cd9c-4f5b-b430-900"
+)
+# ######### END SECRET CONFIGURATION
 
-########## SITE CONFIGURATION
+# ######### SITE CONFIGURATION
 # Hosts/domain names that are valid for this site
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = ["localhost", "82.94.206.176"]
-########## END SITE CONFIGURATION
+# ######### END SITE CONFIGURATION
 
-########## FIXTURE CONFIGURATION
+# ######### FIXTURE CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-FIXTURE_DIRS
 # FIXTURE_DIRS = (
 #     normpath(join(PROJECT_ROOT, 'fixtures')),
 # )
-########## END FIXTURE CONFIGURATION
+# ######### END FIXTURE CONFIGURATION
 
-########## TEMPLATE CONFIGURATION
+# ######### TEMPLATE CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-context-processors
 # List of processors used by RequestContext to populate the context.
 # Each one should be a callable that takes the request object as its
@@ -164,7 +165,6 @@ ALLOWED_HOSTS = ["localhost", "82.94.206.176"]
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        # 'APP_DIRS': True,
         # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-debug
         # 'DEBUG': DEBUG,
         'OPTIONS': {
@@ -183,20 +183,21 @@ TEMPLATES = [
                     'common.context_processors.current_url',
                 ],
             # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-loaders
-            'loaders': [
-                'django.template.loaders.filesystem.Loader',
-                'django.template.loaders.app_directories.Loader',
-                'django.template.loaders.eggs.Loader'
+            'loaders':
+                [
+                    'django.template.loaders.filesystem.Loader',
+                    'django.template.loaders.app_directories.Loader',
+                    'django.template.loaders.eggs.Loader'
                 ],
         }
     },
 ]
 
 
-########## END TEMPLATE CONFIGURATION
+# ######### END TEMPLATE CONFIGURATION
 
 
-########## MIDDLEWARE CONFIGURATION
+# ######### MIDDLEWARE CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#middleware-classes
 # List of middleware classes to use. Order is important; in the request phase,
 # these middleware classes will be applied in the order given, and in the
@@ -205,6 +206,7 @@ MIDDLEWARE_CLASSES = (
     'common.middleware.TimedProfilerMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -212,8 +214,6 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.contrib.admindocs.middleware.XViewMiddleware',
     'common.middleware.FallBackLanguageMiddleware',
-    'solid_i18n.middleware.SolidLocaleMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'common.middleware.SimpleProfilerMiddleware',
     'common.middleware.TimedProfilerMiddleware',
@@ -225,8 +225,7 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 )
 
-########### solid_i18n CONFIGURATIONS
-SOLID_I18N_USE_REDIRECTS = True
+# Rosetta translations
 
 ROSETTA_MESSAGES_PER_PAGE = 100
 
@@ -234,37 +233,39 @@ ROSETTA_AUTO_COMPILE = True
 
 ROSETTA_WSGI_AUTO_RELOAD = True
 
-ROSETTA_EXCLUDED_APPLICATIONS = ('filer', 'rest_framework', 'django_extensions', 'taggit', 'mptt', 'reversion')
+ROSETTA_EXCLUDED_APPLICATIONS = (
+    'filer', 'rest_framework', 'django_extensions', 'taggit', 'reversion'
+)
 
 # Every cache key will get prefixed with this value - here we set it to
 # the name of the directory the project is in to try and use something
 # project specific.
 CACHE_MIDDLEWARE_KEY_PREFIX = 'nave'
 
-########## END MIDDLEWARE CONFIGURATION
+# ######### END MIDDLEWARE CONFIGURATION
 
 # Whether a user's session cookie expires when the Web browser is closed.
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 
-########## URL CONFIGURATION
+# ######### URL CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#root-urlconf
 ROOT_URLCONF = 'urls'
-########## END URL CONFIGURATION
+# ######### END URL CONFIGURATION
 
 
-########## CORS CONFIGURATION
+# ######### CORS CONFIGURATION
 
 # see: https://github.com/ottoyiu/django-cors-headers
 CORS_ORIGIN_ALLOW_ALL = True
 # CORS_URLS_REGEX = r'^/api/.*$'
 
-########## END CORS CONFIGUATION
+# ######### END CORS CONFIGUATION
 
 
-################
+# ###############
 # APPLICATIONS #
-################
+# ###############
 
 DJANGO_APPS = (
     # Default Django apps:
@@ -289,33 +290,20 @@ DJANGO_APPS = (
     'django.contrib.admin',
     # 'admin_reorder',
 )
-########## APP CONFIGURATION
+# ######### APP CONFIGURATION
 
 
 THIRD_PARTY_APPS = (
-    'compressor',
-    'treebeard',
-    'mptt',
-    'reversion',
-    'filer',
-    'easy_thumbnails',
-    'oauth2_provider',
+    'corsheaders',
     'django_extensions',
+    'leaflet',
+    'oauth2_provider',
+    'raven.contrib.django.raven_compat',
     'rest_framework',
     'rest_framework.authtoken',
-    'rest_framework_swagger',
-    'orderable',
-    'geojson',
-    'djgeojson',
-    'leaflet',
-    'taggit',
-    'taggit_autosuggest',
-    'django_object_actions',
-    'corsheaders',
+    'reversion',
     'rosetta',  # for translation
-    'raven.contrib.django.raven_compat',
-    #'health_check',
-    #'health_monitor',
+    'taggit',
 )
 
 # Apps specific for this project go here.
@@ -328,16 +316,16 @@ LOCAL_APPS = (
 )
 
 
-######################################################################
+# #####################################################################
 # COMPESSOR SETTINGS                                                 #
 # see: https://django-compressor.readthedocs.org/en/latest/settings/ #
-######################################################################
+# #####################################################################
 
 COMPRESS_ENABLED = False
 
-#########################
+# ########################
 # OPTIONAL APPLICATIONS #
-#########################
+# ########################
 
 # These will be added to ``INSTALLED_APPS``, only if available.
 OPTIONAL_APPS = (
@@ -348,7 +336,7 @@ OPTIONAL_APPS = (
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + LOCAL_APPS + THIRD_PARTY_APPS + OPTIONAL_APPS
-########## END APP CONFIGURATION
+# ######### END APP CONFIGURATION
 
 # See: https://github.com/django-debug-toolbar/django-debug-toolbar#installation
 DEBUG_TOOLBAR_CONFIG = {
@@ -356,16 +344,11 @@ DEBUG_TOOLBAR_CONFIG = {
     'SHOW_TEMPLATE_CONTEXT': True,
 }
 
-#AUTH_PROFILE_MODULE = "theme.OscrProfile"
-# ACCOUNTS_VERIFICATION_REQUIRED = True
-ACCOUNTS_PROFILE_VIEWS_ENABLED = True
-
-
 # Sentry / Raven configuration
 
 RAVEN_CONFIG = {
     # dev setup override in production
-    # 'dsn': 'https://bea553a71cc54834a4f03507a92f02a1:5b093ba2516b49bd85f103f2aa02239e@app.getsentry.com/51537',
+    # 'dsn': '',
     # If you are using git, you can also automatically configure the
     # release based on the git info.
     # 'release': raven.fetch_git_sha(SITE_ROOT),
@@ -375,14 +358,14 @@ IGNORABLE_404_URLS = (
     re.compile('/hm'),
 )
 
-########## LOGGING CONFIGURATION
+# ######### LOGGING CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#logging
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
 # the site admins on every HTTP 500 error when DEBUG=False.
 # See http://docs.djangoproject.com/en/dev/topics/logging for
 # more details on how to customize your logging configuration.
-########## END LOGGING CONFIGURATION
+# ######### END LOGGING CONFIGURATION
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -409,8 +392,8 @@ LOGGING = {
         },
         'file': {
             'level': 'DEBUG',
-                     'class': 'logging.FileHandler',
-                              'filename': 'debug.log',
+            'class': 'logging.FileHandler',
+            'filename': 'debug.log',
         },
         'sentry': {
             'level': 'ERROR',
@@ -422,8 +405,8 @@ LOGGING = {
             'formatter': 'verbose'
         },
         'null': {
-                'level': 'DEBUG',
-                'class': 'logging.NullHandler',
+            'level': 'DEBUG',
+            'class': 'logging.NullHandler',
         },
     },
     'loggers': {
@@ -484,12 +467,12 @@ LOGGING = {
     }
 }
 
-########## WSGI CONFIGURATION
+# ######### WSGI CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#wsgi-application
 WSGI_APPLICATION = 'wsgi.application'
-########## END WSGI CONFIGURATION
+# ######### END WSGI CONFIGURATION
 
-############# REST Framework configuration
+# ############ REST Framework configuration
 
 OAUTH2_PROVIDER = {
     # this is the list of available scopes
@@ -499,9 +482,9 @@ OAUTH2_PROVIDER = {
 REST_FRAMEWORK = {
     # Use hyperlinked styles by default.
     # Only used if the `serializer_class` attribute is not set on a view.
-    #'DEFAULT_MODEL_SERIALIZER_CLASS': (
+    # 'DEFAULT_MODEL_SERIALIZER_CLASS': (
     #    'rest_framework.serializers.HyperlinkedModelSerializer',
-    #),
+    # ),
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.BrowsableAPIRenderer',
         'rest_framework.renderers.JSONRenderer',
@@ -520,12 +503,12 @@ REST_FRAMEWORK = {
     'PAGINATE_BY': 10,
 }
 
-############# End
+# ############ End
 
 
-####################
+# ###################
 # django extenions #
-####################
+# ###################
 
 GRAPH_MODELS = {
     'all_applications': True,
@@ -537,25 +520,24 @@ SHELL_PLUS = "ipython"
 
 IPYTHON_ARGUMENTS = [
     '--ext', 'django_extensions.management.notebook_extension',
-    #'--debug',
+    # '--debug',
 ]
 
-############ End django extensions
+# ########### End django extensions
 
 
-
-############################
-## Leaflet configuration   #
-############################
+# ###########################
+# # Leaflet configuration   #
+# ###########################
 
 SERIALIZATION_MODULES = {
     'geojson': 'djgeojson.serializers'
 }
 
 
-#########################
+# ########################
 # DataSet configuration #
-#########################
+# ########################
 
 RDF_USE_LOCAL_GRAPH = True
 
@@ -671,9 +653,9 @@ MLT_DETAIL_ENABLE = True
 
 MLT_BANNERS = {}
 
-#############################
+# ############################
 #  IMAGE CONFIGURATION      #
-#############################
+# ############################
 
 WEB_RESOURCE_BASE = '/tmp/webresource'
 
@@ -685,14 +667,10 @@ RESOLVE_WEBRESOURCES_VIA_RDF = False
 
 ZIPPED_SEARCH_RESULTS_DOWNLOAD_FOLDER = '/tmp/zips'
 
-# TODO: remove these settings when the new webresource package is deployed
-FILE_WATCH_BASE_FOLDER = '/tmp'
-DEEPZOOM_BASE_DIR = os.path.join(FILE_WATCH_BASE_FOLDER, "derivatives", "deepzoom")
-THUMBNAIL_BASE_DIR = os.path.join(FILE_WATCH_BASE_FOLDER, "derivatives", "thumbnail")
 
-#############################
-## Celery Broker settings.  #
-#############################
+# ############################
+# # Celery Broker settings.  #
+# ############################
 
 BULK_API_ASYNC = True
 
@@ -739,7 +717,7 @@ FACET_CONFIG = [
 ]
 
 
-#CELERY_TASK_RESULT_EXPIRES = 18000
+# CELERY_TASK_RESULT_EXPIRES = 18000
 
 THUMBNAIL_PROCESSORS = (
     # This is needed for cmsplugin_filer_image to work correctly
@@ -751,19 +729,9 @@ THUMBNAIL_PROCESSORS = (
     'easy_thumbnails.processors.background',
 )
 
-##################
-# Django Cities  #
-##################
-
-# Localized names will be imported for all ISO 639-1 locale codes below.
-# 'und' is undetermined language data (most alternate names are missing a lang tag).
-# See download.geonames.org/export/dump/iso-languagecodes.txt
-# 'LANGUAGES' will match your language settings, and 'ALL' will install everything
-#CITIES_LOCALES = [str('en'), str('nl'), str('und')]
-
-#########################
+# ########################
 # Leaflet map settings  #
-#########################
+# ########################
 # latlng = L.latLng(52.374028073342, 4.899862287025)
 LEAFLET_CONFIG = {
     # 'SPATIAL_EXTENT': (4.8998622870259, 52.374028073342, 7, 46),

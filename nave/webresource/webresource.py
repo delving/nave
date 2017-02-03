@@ -379,9 +379,7 @@ class WebResource:
         """Return all matches to the w"""
         # strip extension
         path = os.path.splitext(webresource_path)[0]
-        # find the path
-        full_path = os.path.join(self, path)
-        return glob("{}*".format(full_path))
+        return glob("{}*".format(path))
 
     def get_from_source_path(self, webresource_path):
         matches = self.get_source_path_matches(webresource_path)

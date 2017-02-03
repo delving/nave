@@ -1185,8 +1185,9 @@ class RDFRecord:
             with_sparql_context = settings.RESOLVE_CONTEXT_VIA_RDF
         graph = self.get_graph()
         if with_mappings:
-            ds_model = get_model(app_label="void", model_name="DataSet")
-            proxy_resource_model = get_model(app_label="void", model_name="ProxyResource")
+            from django.apps import apps
+            ds_model = apps.get_model(app_label="void", model_name="DataSet")
+            proxy_resource_model = apps.get_model(app_label="void", model_name="ProxyResource")
             ds = ds_model.objects.filter(spec=self.get_spec_name())
             if len(ds) > 0:
                 ds = ds.first()
