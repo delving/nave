@@ -14,9 +14,7 @@ from django.utils.translation import ugettext_lazy as _
 print("Welcome to the Delving Nave. ({})".format(os.getpid()))
 
 MIGRATION_MODULES = {
-    'filer': 'filer.migrations',
     'taggit': 'taggit.migrations',
-    'easy_thumbnails': 'easy_thumbnails.migrations',
 }
 
 # #######################
@@ -50,8 +48,6 @@ DEBUG = True
 # ######### END DEBUG CONFIGURATION
 
 APPEND_SLASH = True
-
-TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 
 # ######### MANAGER CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#admins
@@ -122,7 +118,6 @@ STATIC_URL = '/static/'
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'django.contrib.staticfiles.finders.FileSystemFinder',
-    # 'compressor.finders.CompressorFinder',
 )
 # ######### END STATIC FILE CONFIGURATION
 
@@ -149,13 +144,6 @@ NEVERCACHE_KEY = (
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = ["localhost", "82.94.206.176"]
 # ######### END SITE CONFIGURATION
-
-# ######### FIXTURE CONFIGURATION
-# See: https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-FIXTURE_DIRS
-# FIXTURE_DIRS = (
-#     normpath(join(PROJECT_ROOT, 'fixtures')),
-# )
-# ######### END FIXTURE CONFIGURATION
 
 # ######### TEMPLATE CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-context-processors
@@ -257,7 +245,6 @@ CORS_ORIGIN_ALLOW_ALL = True
 
 # ######### END CORS CONFIGUATION
 
-
 # ###############
 # APPLICATIONS #
 # ###############
@@ -310,14 +297,6 @@ LOCAL_APPS = (
     'virtual_collection',
 )
 
-
-# #####################################################################
-# COMPESSOR SETTINGS                                                 #
-# see: https://django-compressor.readthedocs.org/en/latest/settings/ #
-# #####################################################################
-
-COMPRESS_ENABLED = False
-
 # ########################
 # OPTIONAL APPLICATIONS #
 # ########################
@@ -326,7 +305,6 @@ COMPRESS_ENABLED = False
 OPTIONAL_APPS = (
     # "debug_toolbar",
     # "debug_panel",
-    # "werkzeug",
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -471,15 +449,14 @@ WSGI_APPLICATION = 'wsgi.application'
 
 OAUTH2_PROVIDER = {
     # this is the list of available scopes
-    'SCOPES': {'read': 'Read scope', 'write': 'Write scope', 'groups': 'Access to your groups'}
+    'SCOPES': {
+        'read': 'Read scope',
+        'write': 'Write scope',
+        'groups': 'Access to your groups'
+    }
 }
 
 REST_FRAMEWORK = {
-    # Use hyperlinked styles by default.
-    # Only used if the `serializer_class` attribute is not set on a view.
-    # 'DEFAULT_MODEL_SERIALIZER_CLASS': (
-    #    'rest_framework.serializers.HyperlinkedModelSerializer',
-    # ),
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.BrowsableAPIRenderer',
         'rest_framework.renderers.JSONRenderer',
@@ -713,16 +690,6 @@ FACET_CONFIG = [
 
 
 # CELERY_TASK_RESULT_EXPIRES = 18000
-
-THUMBNAIL_PROCESSORS = (
-    # This is needed for cmsplugin_filer_image to work correctly
-    'filer.thumbnail_processors.scale_and_crop_with_subject_location',
-    'easy_thumbnails.processors.colorspace',
-    'easy_thumbnails.processors.autocrop',
-    'easy_thumbnails.processors.scale_and_crop',
-    'easy_thumbnails.processors.filters',
-    'easy_thumbnails.processors.background',
-)
 
 # ########################
 # Leaflet map settings  #
