@@ -172,14 +172,14 @@ TEMPLATES = [
                 [
                     'django.contrib.auth.context_processors.auth',
                     'django.contrib.messages.context_processors.messages',
-                    'django.core.context_processors.i18n',
-                    'django.core.context_processors.debug',
-                    'django.core.context_processors.request',
-                    'django.core.context_processors.media',
-                    'django.core.context_processors.csrf',
-                    'django.core.context_processors.tz',
-                    'django.core.context_processors.request',
-                    'django.core.context_processors.static',
+                    'django.template.context_processors.i18n',
+                    'django.template.context_processors.debug',
+                    'django.template.context_processors.request',
+                    'django.template.context_processors.media',
+                    'django.template.context_processors.csrf',
+                    'django.template.context_processors.tz',
+                    'django.template.context_processors.request',
+                    'django.template.context_processors.static',
                     'common.context_processors.current_url',
                 ],
             # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-loaders
@@ -522,23 +522,6 @@ REST_FRAMEWORK = {
 
 ############# End
 
-############## Swagger settings
-SWAGGER_SETTINGS = {
-        "exclude_namespaces": ['v1-list', 'v2-list', 'search_urls', 'search_urls'],  # List URL namespaces to ignore
-    "api_version": '0.1',  # Specify your API's version
-    "api_path": "/api",  # Specify the path to your API not a root level
-    "enabled_methods": [  # Specify which methods to enable in Swagger UI
-                          'get',
-                          'post',
-                          'put',
-                          'patch',
-                          'delete'
-    ],
-    "api_key": '',  # An API key
-    "is_authenticated": False,  # Set to True to enforce user authentication,
-    "is_superuser": False,  # Set to True to enforce admin only access
-}
-#############
 
 ####################
 # django extenions #

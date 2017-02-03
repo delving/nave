@@ -1,7 +1,6 @@
 from django.conf.urls import *
 
 
-urlpatterns = patterns(
-    '',
+urlpatterns = [
     # url(r'', include('health_check.urls')),
-)
+]

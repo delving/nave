@@ -12,5 +12,4 @@ urlpatterns = [
     url(r'^api/oai-pmh/$', ElasticSearchOAIProvider.as_view(), name='es_dataset_oai'),
     url(r'^resolve/(?P<link>(.*))$', ImageRedirectView.as_view(),),
     url(r'^statistics/datasets/$', DataSetStatisticsView.as_view())
-
     ]

@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*- 
-from django.conf.urls import *  # NOQA
+# -*- coding: utf-8 -*-
+from django.conf.urls import url
 from rest_framework import routers
 
 from . import views
@@ -9,8 +9,7 @@ vc_router.register(r'vc/(?P<slug>([^/]*?))/search/$', views.VirtualCollectionSea
 vc_router.register(r'vc/(?P<slug>([^/]*?))/api/$', views.SearchListAPIView, base_name='api-results')
 
 
-urlpatterns = patterns(
-    '',
+urlpatterns = [
     url(r'^vc/(?P<slug>([^/]*?))/search/$', views.VirtualCollectionSearchView.as_view({'get': 'get'}),
          name="virtual_collection_search"),
     # todo test if this search api returns the right information
@@ -21,4 +20,4 @@ urlpatterns = patterns(
     # url(r'', include(vc_router.urls), name='vc_routers'),
     url(r'^vc/(?P<slug>([^/]*?))/oai-pmh/$', views.VirtualCollectionPmhProvider.as_view(),
         name="virtual_collection_pmh")
-)
+]

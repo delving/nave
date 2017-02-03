@@ -6,15 +6,14 @@ Note:
 
     url(r'^', include('webresource.urls')),
 """
-from django.conf.urls import *  # NOQA
+from django.conf.urls import url
 
 from . import views
 
-urlpatterns = patterns(
-    '',
+urlpatterns = [
     url(r'api/webresource/$', views.WebResourceRedirectView.as_view(),
         name="webresource"),
     url(r'api/webresource/_docs/$', views.webresource_docs, name="webresource_docs")
     # todo: include the references to statistics as well
     # for example _statistics _docs etc
-)
+]

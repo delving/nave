@@ -23,7 +23,6 @@ django-orderable==4.0.2
 django-overextends==0.4.1
 django-picklefield==0.3.2
 django-polymorphic==0.9.1
-django-rest-swagger==0.3.6
 django-reversion>=2.0.0
 django-rosetta==0.7.11
 django-suit-ckeditor==0.0.2
