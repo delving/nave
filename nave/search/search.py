@@ -1,5 +1,6 @@
 """All ES query related functionality goes into this module."""
 import collections
+import itertools
 import logging
 import re
 import urllib.error
@@ -10,7 +11,8 @@ from contextlib import contextmanager
 from django.conf import settings
 from django.core.paginator import Paginator, Page, EmptyPage, PageNotAnInteger
 from django.http import QueryDict
-from elasticsearch_dsl import Search
+from elasticsearch_dsl import Search, aggs
+from elasticsearch_dsl.query import Q
 from elasticsearch_dsl.result import Result
 from rest_framework.request import Request
 import six
@@ -416,6 +418,7 @@ class NaveESQuery(object):
                         facet_list.extend(facet.split(','))
                     else:
                         facet_list.append(facet)
+
         # add facets to config
         # add non default facets to the bottom intersection from keys
         for facet in set(facet_list).difference(set(self.facet_list)):
@@ -425,25 +428,15 @@ class NaveESQuery(object):
                 label=facet
             )
         )
-        if facet_list:
-            with robust('facet'):
-                if 'facet.size' in params:
-                    self.facet_size = int(params.get('facet.size'))
-                # add .raw if not already there
-                # facet_list = ["{}.raw".format(facet.rstrip('.raw')) for facet in facet_list]
-                for facet in facet_list:
-                    # filtered = facet.replace('.raw', '') not in applied_facet_fields
-                    # todo: check if filtered needs to be added back later: filtered=filtered,
-                    query.aggs.bucket(facet, 'terms', field=facet, size=self.facet_size)
         facet_bool_type_and = False
         if "facetBoolType" in params:
             facet_bool_type_and = params.get("facetBoolType").lower() in ["and"]
+        facet_filter_dict = defaultdict(list)
         if filter_dict:
             applied_facet_fields = {key.lstrip('-+').replace('.raw', '') for key in filter_dict.keys()}
             all_filter_list = []
             for key, values in list(filter_dict.items()):
-                from elasticsearch_dsl.query import Q
-                facet_filter_list = []
+                facet_filter_list = facet_filter_dict[key]
                 for value in values:
                     if key.startswith('-'):
                         facet_filter_list.append(~Q('match', **{self.query_to_facet_key(key): value}))
@@ -454,6 +447,32 @@ class NaveESQuery(object):
                 query = query.post_filter('bool', must=all_filter_list)
             else:
                 query = query.post_filter('bool', should=all_filter_list)
+
+        # create facet_filter_dict with queries with key for each facet entry
+        if facet_list:
+            with robust('facet'):
+                if 'facet.size' in params:
+                    self.facet_size = int(params.get('facet.size'))
+                # add .raw if not already there
+                # facet_list = ["{}.raw".format(facet.rstrip('.raw')) for facet in facet_list]
+                if facet_bool_type_and:
+                    facet_filter_list = list(itertools.chain.from_iterable(facet_filter_dict.values()))
+                for facet in facet_list:
+                    if not facet_bool_type_and:
+                        or_filter_list = [filters for key, filters in facet_filter_dict.items() if not facet.startswith(key)]
+                        facet_filter_list = list(itertools.chain.from_iterable(or_filter_list))
+                    a = aggs.Filter(
+                        Q('bool', must=facet_filter_list)
+                    )
+                    a.bucket(
+                        facet,
+                        'terms',
+                        field=facet,
+                        size=self.facet_size,
+                    )
+                    # create an aggregation
+                    # add it as a bucket
+                    query.aggs.bucket(facet, a)
         # todo enable geosearching later again
         # old solr style bounding box query
         # bbox_filter = None
@@ -635,10 +654,12 @@ class FacetCountLink(object):
 
 
 class FacetLink(object):
-    def __init__(self, name, facet_terms, query, total=0, other=0, missing=0):
+    def __init__(self, name, facet_terms, query, total=0, other=0,
+                 missing=0, doc_count=0):
         self._name = name
         self._clean_name = None
         self._i18n = None
+        self._doc_count = doc_count
         self._total = total
         self._other = other
         self._missing = missing
@@ -752,17 +773,19 @@ class NaveFacets(object):
                 )
                 clean_name = "{}_facet".format(clean_name)
             facet = self._facets[key]
-
+            doc_count = facet.doc_count
+            facet = facet[key]
             other_docs = facet.sum_other_doc_count
             total = len(facet.buckets) + other_docs
             facet_query_link = FacetLink(
-                    name=clean_name,
-                    total=total,
-                    # todo: replace later with count facet.total,facet.missing,
-                    missing=0,
-                    other=other_docs,
-                    query=self._nave_query,
-                    facet_terms=facet
+                name=clean_name,
+                total=total,
+                # todo: replace later with count facet.total,facet.missing,
+                missing=0,
+                other=other_docs,
+                query=self._nave_query,
+                facet_terms=facet,
+                doc_count=doc_count
             )
             facet_query_links[key] = facet_query_link
         return facet_query_links
