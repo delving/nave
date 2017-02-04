@@ -1,4 +1,4 @@
-# Copyright (C) 2026  Delving B.V.
+# Copyright (C) 2016  Delving B.V.
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
