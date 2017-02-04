@@ -22,7 +22,7 @@ docs/_build/*
 .ipynb_checkpoints
 nave/debug.log
 *~
-nave/wsgi.py
+wsgi.py
 .tox/
 *.mo
 nave/projects/*
