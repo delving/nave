@@ -10,12 +10,12 @@ from elasticsearch import helpers
 from rdflib import ConjunctiveGraph
 from rdflib.plugins.parsers.ntriples import ParseError
 
-from lod.utils import rdfstore
-from lod.utils.resolver import RDFRecord
-from search import get_es_client
-from void.models import DataSet
+from nave.lod.utils import rdfstore
+from nave.lod.utils.resolver import RDFRecord
+from nave.search import get_es_client
+from nave.void.models import DataSet
 
-from lod import tasks
+from nave.lod import tasks
 
 logger = logging.getLogger(__name__)
 
@@ -110,7 +110,7 @@ class BulkApiProcessor:
                 acceptance_mode = action.get('acceptanceMode', "false")
                 acceptance = True if acceptance_mode is not None and acceptance_mode.lower() in ['true'] else False
                 content_hash = action.get('contentHash', None)
-                from lod.utils.resolver import ElasticSearchRDFRecord
+                from nave.lod.utils.resolver import ElasticSearchRDFRecord
                 record = ElasticSearchRDFRecord(spec=self.spec, rdf_string=graph_ntriples)
                 try:
                     rdf_format = record.DEFAULT_RDF_FORMAT if "<rdf:RDF" not in graph_ntriples else "xml"

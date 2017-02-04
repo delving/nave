@@ -1,6 +1,6 @@
 # coding=utf-8
 """Unit tests for the ElasticSearch RDF models."""
-from search.es_models import RDFIndexRecord
+from nave.search.es_models import RDFIndexRecord
 
 test_index = "test"
 

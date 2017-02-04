@@ -18,7 +18,7 @@ from shapely.geometry import Point, LineString, Polygon
 from geojson import Feature, FeatureCollection
 from geojson import Point as GeoPoint
 
-from lod.utils.rdfstore import get_namespace_manager
+from nave.lod.utils.rdfstore import get_namespace_manager
 
 
 class KMLRenderer(BaseRenderer):

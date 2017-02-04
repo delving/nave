@@ -22,7 +22,7 @@ from elasticsearch_dsl.connections import connections
 logger = logging.getLogger(__name__)
 
 # Verbose name configuration for this app
-default_app_config = 'search.apps.SearchConfig'
+default_app_config = 'nave.search.apps.SearchConfig'
 
 
 LayoutItem = namedtuple("LayoutItem", ["name", "i18n"])

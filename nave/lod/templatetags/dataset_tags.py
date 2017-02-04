@@ -1,14 +1,13 @@
 import logging
 import subprocess
 
-import os
 from collections import namedtuple
 from urllib.parse import urlparse
 
 from django import template
 from django.conf import settings
 
-from lod.utils.resolver import RDFRecord, get_cache_url
+from nave.lod.utils.resolver import RDFRecord, get_cache_url
 
 register = template.Library()
 

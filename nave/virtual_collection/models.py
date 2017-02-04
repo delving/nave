@@ -7,7 +7,7 @@ from django_extensions.db.fields import AutoSlugField
 from django_extensions.db.models import TimeStampedModel
 from django.utils.translation import ugettext_lazy as _
 
-from void.models import GroupOwned
+from nave.void.models import GroupOwned
 
 
 class VirtualCollection(TimeStampedModel, GroupOwned):

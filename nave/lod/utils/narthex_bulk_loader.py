@@ -11,12 +11,12 @@ from elasticsearch import helpers
 
 from rdflib import Literal, URIRef, ConjunctiveGraph
 
-from lod.tasks import get_es
-from lod.utils import rdfstore
-from lod.utils.rdfstore import get_rdfstore
-from lod.utils.resolver import RDFRecord, GraphBindings
+from nave.lod.tasks import get_es
+from nave.lod.utils import rdfstore
+from nave.lod.utils.rdfstore import get_rdfstore
+from nave.lod.utils.resolver import RDFRecord, GraphBindings
 
-from lod.utils.resolver import ElasticSearchRDFRecord
+from nave.lod.utils.resolver import ElasticSearchRDFRecord
 
 logger = logging.getLogger(__file__)
 

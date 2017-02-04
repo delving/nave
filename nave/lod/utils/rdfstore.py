@@ -14,7 +14,7 @@ from django.conf import settings
 from django.http import Http404
 from rdflib import Graph
 
-from lod import RDF_STORE_DB, RDF_STORE_HOST, RDF_STORE_PORT, namespace_manager
+from nave.lod import RDF_STORE_DB, RDF_STORE_HOST, RDF_STORE_PORT, namespace_manager
 
 logger = logging.getLogger(__name__)
 

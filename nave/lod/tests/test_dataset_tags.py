@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from urllib.parse import quote
 
-import lod
-from lod.templatetags.dataset_tags import get_resolved_uri
-from lod.utils.resolver import RDFRecord
+from nave import lod
+from nave.lod.templatetags.dataset_tags import get_resolved_uri
+from nave.lod.utils.resolver import RDFRecord
 
 
 def test__get_rdf_base_url__return_base_url_from_settings(settings):

@@ -6,9 +6,9 @@ from django.conf.urls.i18n import i18n_patterns
 from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.generic import TemplateView
-from common import views
+from nave.common import views
 
-from search.views import LegacyAPIRedirectView
+from nave.search.views import LegacyAPIRedirectView
 
 admin.autodiscover()
 urlpatterns = [
@@ -32,14 +32,14 @@ urlpatterns += i18n_patterns(
     url(r'^api-auth', include('rest_framework.urls', namespace='rest_framework')),
     url(r'narthex/', views.NarthexRedirectView.as_view()),
     url(r'^api/search/$', LegacyAPIRedirectView.as_view(), name='api_redirect'),
-    url(r'^', include('projects.{}.urls'.format(settings.SITE_NAME))),
+    url(r'^', include('nave.projects.{}.urls'.format(settings.SITE_NAME))),
     url(r'^', include('search.urls')),
     url(r'^', include('virtual_collection.urls')),
     # url(r'^', include('webresource.urls')),
     url(r'^hm/', include('health_monitor.urls')),
     url(r'^', include('lod.urls')),
     url(r'^', include('search_widget.urls')),
-    # template and data from void app
+    # template and data from nave.void app
     url(r'^statistics/', TemplateView.as_view(template_name="statistics.html")),
     url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
     prefix_default_language=False
@@ -60,7 +60,7 @@ if settings.USE_WAGTAIL_CMS:
 
     if os.path.exists(os.path.join(settings.DJANGO_ROOT, "projects", settings.SITE_NAME, "wagtail_urls.py")):
         urlpatterns += [
-            url(r'^', include('projects.{}.wagtail_urls'.format(settings.SITE_NAME)))
+            url(r'^', include('nave.projects.{}.wagtail_urls'.format(settings.SITE_NAME)))
         ]
 
 

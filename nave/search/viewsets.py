@@ -11,7 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
-from search.serializers import UserSerializer, GroupSerializer
+from nave.search.serializers import UserSerializer, GroupSerializer
 
 
 class OauthTokenViewSet(ModelViewSet):

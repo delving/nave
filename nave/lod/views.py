@@ -16,19 +16,19 @@ from django.views.generic import TemplateView, RedirectView, View
 from rdflib.namespace import SKOS, RDF
 
 
-from lod import RDF_SUPPORTED_MIME_TYPES, USE_EDM_BINDINGS
-from lod.tests.resources import sparqlwrapper_result
-import lod.utils
-from lod.utils import rdfstore
-from lod.utils.resolver import GraphBindings, RDFRecord
-from lod.utils.mimetype import best_match
-from lod.utils.mimetype import extension_to_mime, HTML_MIME, mime_to_extension,\
+from nave.lod import RDF_SUPPORTED_MIME_TYPES, USE_EDM_BINDINGS
+from nave.lod.tests.resources import sparqlwrapper_result
+from nave.nave.lod import utils
+from nave.lod.utils import rdfstore
+from nave.lod.utils.resolver import GraphBindings, RDFRecord
+from nave.lod.utils.mimetype import best_match
+from nave.lod.utils.mimetype import extension_to_mime, HTML_MIME, mime_to_extension,\
     result_extension_to_mime
-from lod.utils.rdfstore import get_rdfstore, UnknownGraph
+from nave.lod.utils.rdfstore import get_rdfstore, UnknownGraph
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
-from lod.utils.resolver import ElasticSearchRDFRecord
+from nave.lod.utils.resolver import ElasticSearchRDFRecord
 
 from .serializers import UserGeneratedContentSerializer
 from .models import SPARQLQuery, RDFPrefix, RDFModel, CacheResource, UserGeneratedContent

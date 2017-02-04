@@ -6,7 +6,7 @@ import dj.choices.fields
 from django.conf import settings
 import django.utils.timezone
 import django_extensions.db.fields
-import void.models
+import nave.void.models
 
 
 class Migration(migrations.Migration):
@@ -30,8 +30,8 @@ class Migration(migrations.Migration):
                 ('spec', models.CharField(max_length=56, help_text='spec name for the dataset', verbose_name='spec name', unique=True)),
                 ('document_uri', models.URLField(verbose_name='document_uri', help_text='The document uri ')),
                 ('named_graph', models.URLField(verbose_name='named_graph', help_text='The named graph that this record belongs to')),
-                ('dataset_type', dj.choices.fields.ChoiceField(verbose_name='Dataset Type', help_text='The type of the dataset', default=1, choices=void.models.DataSetType)),
-                ('oai_pmh', dj.choices.fields.ChoiceField(verbose_name='OAI-PMH', help_text='OAI-PMH harvestable', default=1, choices=void.models.OaiPmhPublished)),
+                ('dataset_type', dj.choices.fields.ChoiceField(verbose_name='Dataset Type', help_text='The type of the dataset', default=1, choices=nave.void.models.DataSetType)),
+                ('oai_pmh', dj.choices.fields.ChoiceField(verbose_name='OAI-PMH', help_text='OAI-PMH harvestable', default=1, choices=nave.void.models.OaiPmhPublished)),
                 ('published', models.BooleanField(verbose_name='published', default=True, help_text='Is this collection publicly available.')),
                 ('data_owner', models.CharField(verbose_name='data_owner', max_length=512)),
                 ('total_records', models.IntegerField(verbose_name='total number of records', default=0)),

@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-
-"""
+"""Module to provide OAI-PMH interface."""
 from collections import defaultdict, namedtuple
 from enum import Enum
 
@@ -10,14 +8,14 @@ import requests
 from dateutil import parser
 from django.conf import settings
 from django.views.generic import TemplateView
-from elasticsearch_dsl import Search, A, Q
+from elasticsearch_dsl import Search, A
 from lxml import etree as ET
 
-from lod.utils.resolver import RDFRecord, ElasticSearchRDFRecord
-from void.views import REGISTERED_CONVERTERS
-from void.models import DataSet, OaiPmhPublished, EDMRecord
+from nave.lod.utils.resolver import RDFRecord, ElasticSearchRDFRecord
+from nave.void.views import REGISTERED_CONVERTERS
+from nave.void.models import DataSet, OaiPmhPublished, EDMRecord
 
-from search import get_es_client
+from nave.search import get_es_client
 
 
 class OaiVerb(Enum):

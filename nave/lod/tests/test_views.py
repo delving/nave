@@ -6,9 +6,9 @@ Testing the various elements of the LoD views
 import pytest
 from django.test import override_settings
 
-from lod import tasks
-from lod.utils import mimetype
-from lod.views import *
+from nave.lod import tasks
+from nave.lod.utils import mimetype
+from nave.lod.views import *
 
 
 def test_get_lod_mime_type(rf):

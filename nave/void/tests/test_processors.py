@@ -2,8 +2,8 @@ import os
 
 from django.test import override_settings
 
-from lod.utils import rdfstore
-from void.processors import BulkApiProcessor
+from nave.lod.utils import rdfstore
+from nave.void.processors import BulkApiProcessor
 
 
 def test__processors__single_call():

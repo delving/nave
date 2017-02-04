@@ -7,12 +7,12 @@ from django.views.generic import DetailView, TemplateView
 from rest_framework.renderers import TemplateHTMLRenderer, JSONRenderer
 from rest_framework_jsonp.renderers import JSONPRenderer
 
-from search.renderers import XMLRenderer
+from nave.search.renderers import XMLRenderer
 
-from search.views import SearchListAPIView
+from nave.search.views import SearchListAPIView
 
-from search.search import NaveESQuery
-from void.oaipmh import ElasticSearchOAIProvider
+from nave.search.search import NaveESQuery
+from nave.void.oaipmh import ElasticSearchOAIProvider
 from .models import VirtualCollection
 
 logger = logging.getLogger(__name__)

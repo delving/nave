@@ -27,12 +27,12 @@ from rdflib import Namespace, ConjunctiveGraph, URIRef, Literal, BNode, Graph
 from rdflib.namespace import RDFS, RDF, FOAF, DC, DCTERMS, OWL
 from rdflib.plugins.serializers.nquads import _nq_row
 
-from lod import namespace_manager, RDF_BASE_URL
-from lod.namespace import NAVE
-from lod.utils import rdfstore
-from lod.utils.resolver import get_cache_url, get_remote_lod_resource, store_remote_cached_resource, get_geo_points, \
+from nave.lod import namespace_manager, RDF_BASE_URL
+from nave.lod.namespace import NAVE
+from nave.lod.utils import rdfstore
+from nave.lod.utils.resolver import get_cache_url, get_remote_lod_resource, store_remote_cached_resource, get_geo_points, \
     get_graph_statistics, GraphBindings
-from lod.utils.resolver import RDFRecord
+from nave.lod.utils.resolver import RDFRecord
 
 fmt = '%Y-%m-%d %H:%M:%S%z'  # '%Y-%m-%d %H:%M:%S %Z%z'
 

@@ -163,7 +163,7 @@ TEMPLATES = [
                     'django.template.context_processors.tz',
                     'django.template.context_processors.request',
                     'django.template.context_processors.static',
-                    'common.context_processors.current_url',
+                    'nave.common.context_processors.current_url',
                 ],
             # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-loaders
             'loaders':
@@ -195,7 +195,7 @@ MIDDLEWARE = (
     'oauth2_provider.middleware.OAuth2TokenMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.contrib.admindocs.middleware.XViewMiddleware',
-    'common.middleware.FallBackLanguageMiddleware',
+    'nave.common.middleware.FallBackLanguageMiddleware',
 )
 
 AUTHENTICATION_BACKENDS = (
@@ -260,7 +260,7 @@ DJANGO_APPS = (
     # Admin panel and documentation:
     'django.contrib.admindocs',
     # our very own common to override and add
-    'common',
+    'nave.common',
     # django-suit to pimp the admin
     'suit',
     'suit_ckeditor',
@@ -285,11 +285,11 @@ THIRD_PARTY_APPS = (
 
 # Apps specific for this project go here.
 LOCAL_APPS = (
-    'lod',
-    'void',
-    'search',
-    'webresource',
-    'virtual_collection',
+    'nave.lod',
+    'nave.void',
+    'nave.search',
+    'nave.webresource',
+    'nave.virtual_collection',
 )
 
 # ########################
@@ -407,27 +407,27 @@ LOGGING = {
             'handlers': ['console'],
             'propagate': False,
         },
-        'common': {
+        'nave.common': {
             'handlers': ['console', 'file'],
             'level': 'DEBUG',
             'propagate': True,
         },
-        'search': {
+        'nave.search': {
             'handlers': ['console', 'file'],
             'level': 'DEBUG',
             'propagate': True,
         },
-        'lod': {
+        'nave.lod': {
             'handlers': ['console', 'file'],
             'level': 'DEBUG',
             'propagate': True,
         },
-        'void': {
+        'nave.void': {
             'handlers': ['console', 'file'],
             'level': 'DEBUG',
             'propagate': True,
         },
-        'virtual_collection': {
+        'nave.virtual_collection': {
             'handlers': ['console', 'file'],
             'level': 'DEBUG',
             'propagate': True,
@@ -455,7 +455,7 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.BrowsableAPIRenderer',
         'rest_framework.renderers.JSONRenderer',
-        'search.renderers.XMLRenderer',
+        'nave.search.renderers.XMLRenderer',
     ),
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.

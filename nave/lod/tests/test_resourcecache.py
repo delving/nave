@@ -11,11 +11,11 @@ from elasticsearch_dsl import Search
 from rdflib import Graph
 from rdflib.namespace import RDF
 
-from lod import tasks
-from lod.models import ResourceCacheTarget, CacheResource
-from lod.utils import rdfstore
-from lod.utils.resolver import RDFRecord
-from void.tests.test_tasks import load_nquad_fixtures
+from nave.lod import tasks
+from nave.lod.models import ResourceCacheTarget, CacheResource
+from nave.lod.utils import rdfstore
+from nave.lod.utils.resolver import RDFRecord
+from nave.void.tests.test_tasks import load_nquad_fixtures
 
 
 class TestResourceCacheTarget(TestCase):

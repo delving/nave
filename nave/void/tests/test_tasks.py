@@ -10,12 +10,12 @@ from elasticsearch_dsl import Search
 from pytest import skip
 from rdflib import ConjunctiveGraph, URIRef, Graph
 
-from lod.models import RDFModel
-from lod.utils import rdfstore
-from lod.utils.rdfstore import UnknownGraph
-from void import tasks
-from void.models import DataSet, EDMRecord
-from void.tasks import schedule_out_of_sync_datasets
+from nave.lod.models import RDFModel
+from nave.lod.utils import rdfstore
+from nave.lod.utils.rdfstore import UnknownGraph
+from nave.void import tasks
+from nave.void.models import DataSet, EDMRecord
+from nave.void.tasks import schedule_out_of_sync_datasets
 
 
 def load_nquad_fixtures(path=None):

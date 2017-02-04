@@ -14,7 +14,7 @@ class Command(BaseCommand):
         metadata_prefix = args[2]
 
         self.stdout.write('Starting harvesting for {} from '.format(spec, base_url))
-        from void.oaipmh import OAIHarvester
+        from nave.void.oaipmh import OAIHarvester
         harvester = OAIHarvester(base_url=base_url)
         output_file = harvester.get_records_from_oai_pmh(set_spec=spec, metadata_prefix=metadata_prefix)
         self.stdout.write('Wrote output to {}'.format(output_file))

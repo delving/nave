@@ -6,8 +6,8 @@ import pytest
 from django.contrib.auth.models import User
 from rest_framework.test import APIRequestFactory, APIClient
 
-from lod.utils import rdfstore
-from void.processors import BulkApiProcessor
+from nave.lod.utils import rdfstore
+from nave.void.processors import BulkApiProcessor
 
 user = User.objects.get_or_create(username='test_user')
 factory = APIRequestFactory()

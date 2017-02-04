@@ -12,12 +12,12 @@ from rest_framework.parsers import JSONParser
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
-from void import tasks
-from void.models import ProxyResourceField, ProxyMapping
-from void.parsers import PlainTextParser
-from void.processors import BulkApiProcessor
+from nave.void import tasks
+from nave.void.models import ProxyResourceField, ProxyMapping
+from nave.void.parsers import PlainTextParser
+from nave.void.processors import BulkApiProcessor
 
-from void.convertors import ICNConverter, TIBConverter, ABMConverter, ESEConverter, EDMStrictConverter, EDMConverter, \
+from nave.void.convertors import ICNConverter, TIBConverter, ABMConverter, ESEConverter, EDMStrictConverter, EDMConverter, \
     DefaultAPIV2Converter
 
 REGISTERED_CONVERTERS = {

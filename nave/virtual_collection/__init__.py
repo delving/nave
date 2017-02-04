@@ -1,2 +1,2 @@
 # Verbose name configuration for this app
-default_app_config = 'virtual_collection.apps.VirtualCollectionConfig'
+default_app_config = 'nave.virtual_collection.apps.VirtualCollectionConfig'

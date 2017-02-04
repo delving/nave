@@ -1,15 +1,12 @@
 # -*- coding: utf-8 -*-
-"""This module test the EDM mapping type.
-
-
-"""
+"""This module test the EDM mapping type."""
 from unittest import skip
 
 from django.test import TestCase
 from rdflib import Graph, URIRef, Literal
 from rdflib.namespace import FOAF, DC
 
-from lod.utils.resolver import RDFPredicate, RDFObject, RDFResource, GraphBindings
+from nave.lod.utils.resolver import RDFPredicate, RDFObject, RDFResource, GraphBindings
 
 
 test_data = """<?xml version='1.0' encoding='utf-8'?>

@@ -3,7 +3,7 @@ from celery import shared_task
 from celery.task import task
 from celery.utils.log import get_task_logger
 
-from lod.utils import rdfstore
+from nave.lod.utils import rdfstore
 
 logger = get_task_logger(__name__)
 
@@ -13,7 +13,7 @@ def create_webresource_dirs(endpoint=None):
     if endpoint is None:
         endpoint = rdfstore.get_sparql_base_url()
 
-    from void.views import DataSetStatistics
+    from nave.void.views import DataSetStatistics
     stats = DataSetStatistics(endpoint)
     specs = stats.get_spec_list(include_deleted=False)
     created_dirs = 0
