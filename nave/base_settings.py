@@ -228,7 +228,7 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 # ######### URL CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#root-urlconf
-ROOT_URLCONF = 'urls'
+ROOT_URLCONF = 'nave.urls'
 # ######### END URL CONFIGURATION
 
 

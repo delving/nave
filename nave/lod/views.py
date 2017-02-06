@@ -18,7 +18,7 @@ from rdflib.namespace import SKOS, RDF
 
 from nave.lod import RDF_SUPPORTED_MIME_TYPES, USE_EDM_BINDINGS
 from nave.lod.tests.resources import sparqlwrapper_result
-from nave.nave.lod import utils
+from nave.lod import utils
 from nave.lod.utils import rdfstore
 from nave.lod.utils.resolver import GraphBindings, RDFRecord
 from nave.lod.utils.mimetype import best_match

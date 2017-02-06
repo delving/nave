@@ -12,9 +12,9 @@ from nave.search.views import LegacyAPIRedirectView
 
 admin.autodiscover()
 urlpatterns = [
-    url(r'^', include('void.urls')),
+    url(r'^', include('nave.void.urls')),
     url(r'^version/$', views.nave_version),
-    url(r'^', include('webresource.urls')),
+    url(r'^', include('nave.webresource.urls')),
     url(r'^crossdomain.xml$', TemplateView.as_view(template_name='crossdomain.xml')),
     url(r'^robots.txt$', TemplateView.as_view(template_name='robots.txt')),
     url(r'^humans.xml$', TemplateView.as_view(template_name='humans.txt')),
@@ -33,12 +33,12 @@ urlpatterns += i18n_patterns(
     url(r'narthex/', views.NarthexRedirectView.as_view()),
     url(r'^api/search/$', LegacyAPIRedirectView.as_view(), name='api_redirect'),
     url(r'^', include('nave.projects.{}.urls'.format(settings.SITE_NAME))),
-    url(r'^', include('search.urls')),
-    url(r'^', include('virtual_collection.urls')),
+    url(r'^', include('nave.search.urls')),
+    url(r'^', include('nave.virtual_collection.urls')),
     # url(r'^', include('webresource.urls')),
-    url(r'^hm/', include('health_monitor.urls')),
-    url(r'^', include('lod.urls')),
-    url(r'^', include('search_widget.urls')),
+    # url(r'^hm/', include('nave.health_monitor.urls')),
+    url(r'^', include('nave.lod.urls')),
+    url(r'^', include('nave.search_widget.urls')),
     # template and data from nave.void app
     url(r'^statistics/', TemplateView.as_view(template_name="statistics.html")),
     url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),

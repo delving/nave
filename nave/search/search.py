@@ -428,9 +428,9 @@ class NaveESQuery(object):
                 label=facet
             )
         )
-        facet_bool_type_and = False
+        facet_bool_type_and = True
         if "facetBoolType" in params:
-            facet_bool_type_and = params.get("facetBoolType").lower() in ["and"]
+            facet_bool_type_and = params.get('facetBoolType').lower() in ['and']
         facet_filter_dict = defaultdict(list)
         if filter_dict:
             applied_facet_fields = {key.lstrip('-+').replace('.raw', '') for key in filter_dict.keys()}
