@@ -3,12 +3,22 @@ from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):
-    args = '<spec> <path to xml>'
-    help = 'bulk load xml files processed by Narthex'
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            'spec',
+            type=str,
+            help='The datasets spec.'
+        )
+        parser.add_argument(
+            'processed_xml',
+            type=str,
+            help='The full path to the narthex processed xml file.'
+        )
 
     def handle(self, *args, **options):
-        spec = args[0]
-        processed_xml = args[1]
+        spec = options['spec']
+        processed_xml = options['processed_xml']
 
         self.stdout.write('Starting to loading EDM for spec {}'.format(spec))
         from nave.lod.utils.narthex_bulk_loader import NarthexBulkLoader

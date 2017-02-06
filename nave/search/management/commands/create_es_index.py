@@ -12,7 +12,7 @@ class Command(BaseCommand):
 
         self.stdout.write('Started creating index for {} with alias: {}'.format(index_name, alias))
 
-        from search import create_index
+        from nave.search import create_index
         create_index(
                 index_name=index_name,
                 aliases=alias

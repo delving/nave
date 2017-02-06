@@ -218,7 +218,7 @@ class TestNarthexSynchronisation(TestCase):
                        BROKER_BACKEND='memory',
                        CELERY_RESULT_BACKEND='database')
     def test_synchronise_dataset(self):
-        from search import get_es_client
+        from nave.search import get_es_client
         client = get_es_client()
         s = Search(client).index(self.index_name)
         del_response = client.delete_by_query(index=self.index_name, q="*:*")

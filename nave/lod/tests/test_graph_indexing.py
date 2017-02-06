@@ -200,7 +200,7 @@ class TestGraphIndexing(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        from search import get_es_client
+        from nave.search import get_es_client
         cls.client = get_es_client()
         cls.index = "nested_test"
         if cls.client.indices.exists(cls.index):

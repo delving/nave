@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 """This module contains all the tests for the Resource Cache mechanism of Nave.
 """
 import time
@@ -109,7 +109,7 @@ class TestResourceCache(TestCase):
         CELERY_ALWAYS_EAGER=True,
         BROKER_BACKEND='memory')
     def test_save_cached_resource(self):
-        from search import get_es_client
+        from nave.search import get_es_client
         client = get_es_client()
         s = Search(client).index("test")
         del_response = client.delete_by_query(index='test', q="*:*")

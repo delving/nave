@@ -19,7 +19,7 @@ from nave.lod.utils.rdfstore import get_rdfstore
 
 
 def get_es():
-    from search import get_es_client
+    from nave.search import get_es_client
     return get_es_client()
 
 logger = get_task_logger(__name__)
