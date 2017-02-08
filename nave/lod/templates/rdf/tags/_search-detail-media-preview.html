@@ -13,7 +13,7 @@
                         <a href="{{ uri }}" rel="canonical">
                     {% endif %}
                         <img src="{{ value.value }}" alt="{% for a in alt %}{{ a }}{% endfor %}" />
-                    {% if fullscreen %}</a>{% endif %}
+                        </a>
                 {% else %}
                     <img  src="{% static 'img/media-placeholder.svg' %}"/>
                 {% endif %}
