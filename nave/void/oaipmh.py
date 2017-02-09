@@ -12,7 +12,7 @@ from elasticsearch_dsl import Search, A
 from lxml import etree as ET
 
 from nave.lod.utils.resolver import RDFRecord, ElasticSearchRDFRecord
-from nave.void.views import REGISTERED_CONVERTERS
+from nave.void import REGISTERED_CONVERTERS
 from nave.void.models import DataSet, OaiPmhPublished, EDMRecord
 
 from nave.search import get_es_client

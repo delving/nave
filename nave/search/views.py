@@ -35,7 +35,7 @@ from nave.search.tasks import download_all_search_results
 from nave.void.models import EDMRecord
 
 
-from nave.void.views import REGISTERED_CONVERTERS
+from nave.void import REGISTERED_CONVERTERS
 from .renderers import N3Renderer, JSONLDRenderer, TURTLERenderer, NTRIPLESRenderer, RDFRenderer, GeoJsonRenderer, \
     XMLRenderer, KMLRenderer, GeoBufRenderer
 from .search import NaveESQuery, NaveQueryResponse, NaveQueryResponseWrapper, NaveItemResponse, \
