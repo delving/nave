@@ -10,7 +10,8 @@ django-reversion>=2.0.8
 django-rosetta>=0.7.12
 django-suit>=0.2.24
 django-suit-ckeditor>=0.0.2
-djangorestframework>=jsonp-1.0.2
+django-taggit==0.18.3
+djangorestframework-jsonp>=1.0.0
 elasticsearch-dsl>=5.1.0,<6.0.0
 fastkml>=0.11
 filemagic>=1.6
