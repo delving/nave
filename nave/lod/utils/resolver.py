@@ -1134,7 +1134,7 @@ class RDFRecord:
         for s, o in graph.subject_objects(predicate=deepzoom_predicate):
             api_call = RDFRecord.is_web_resource_api_call(str(o))
             if api_call:
-                from webresource.webresource import WebResource
+                from nave.webresource.webresource import WebResource
                 uri, spec = api_call
                 wr = WebResource(uri=uri, spec=spec)
                 if wr.exists_source:
