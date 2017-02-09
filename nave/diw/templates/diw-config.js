@@ -1,4 +1,4 @@
-{% load staticfiles future  %}
+{% load staticfiles %}
 
 jQuery(document).ready(function($) {
     jQuery(document).delvingInstant({

@@ -187,7 +187,7 @@ class NaveESQuery(object):
         if self.get_index_name:
             query = query.index(*self._as_list(self.get_index_name))
         if self.doc_types:
-            query = query.doc_types(*self._as_list(self.doc_types))
+            query = query.doc_type(*self._as_list(self.doc_types))
         return query
 
     def _create_query_string(self, query_string):

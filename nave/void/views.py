@@ -17,19 +17,7 @@ from nave.void.models import ProxyResourceField, ProxyMapping
 from nave.void.parsers import PlainTextParser
 from nave.void.processors import BulkApiProcessor
 
-from nave.void.convertors import ICNConverter, TIBConverter, ABMConverter, ESEConverter, EDMStrictConverter, EDMConverter, \
-    DefaultAPIV2Converter
 
-REGISTERED_CONVERTERS = {
-    "icn": ICNConverter,
-    "tib": TIBConverter,
-    "abm": ABMConverter,
-    "ese": ESEConverter,
-    "edm": EDMConverter,
-    "edm-strict": EDMStrictConverter,
-    "v2": DefaultAPIV2Converter,
-    "raw": None
-}
 
 logger = logging.getLogger(__name__)
 
