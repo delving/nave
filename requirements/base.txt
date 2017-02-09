@@ -1,4 +1,4 @@
 -r library_base.txt
 gunicorn==19.6.0
-wagtail==1.4.3
+wagtail==1.8.1
 django-overextends>=0.4.2
