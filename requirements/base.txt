@@ -1,4 +1,5 @@
 -r library_base.txt
+django-overextends==0.4.2
 gunicorn==19.6.0
+python3-memcached==1.51
 wagtail==1.8.1
-django-overextends>=0.4.2
