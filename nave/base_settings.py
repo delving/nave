@@ -172,6 +172,7 @@ TEMPLATES = [
                     'django.template.loaders.app_directories.Loader',
                     'django.template.loaders.eggs.Loader'
                 ],
+            'builtins': ['overextends.templatetags.overextends_tags'],
         }
     },
 ]
