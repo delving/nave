@@ -656,7 +656,7 @@ CELERY_ACKS_LATE = True
 
 CELERYBEAT_SCHEDULE = {
     'add-every-60-seconds': {
-        'task': 'webresource.tasks.create_webresource_dirs',
+        'task': 'nave.webresource.tasks.create_webresource_dirs',
         'schedule': timedelta(seconds=60),
         'args': None
     },
