@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """This module contains the tasks for storing RDFmodel
-data into the graphstore
-
-
+data into the graphstore.
 """
 import socket
 import time
@@ -10,6 +8,7 @@ from urllib.error import URLError
 
 from celery.task import task
 from celery.utils.log import get_task_logger
+from django.apps import apps
 from django.conf import settings
 from elasticsearch import helpers
 
@@ -25,6 +24,36 @@ def get_es():
 logger = get_task_logger(__name__)
 
 
+def get_model_label(instance):
+    """Return app_label, model_name and record id from Django model record."""
+    app_label = instance._meta.app_label
+    model_name = instance.__class__.__name__
+    record_id = instance.id
+    logger.info(app_label, model_name, record_id)
+    return app_label, model_name, record_id
+
+
+def get_model_record(app_label, model_name, record_id):
+    """Find record via parameters.idid
+
+    Utility to find records that are put on the queue for processing.
+    """
+    rdf_model= apps.get_model(
+        app_label=app_label,
+        model_name=model_name
+    )
+    obj = rdf_model.objects.filter(id=record_id).first()
+    if not obj:
+        logger.warn(
+            "Unable to find record for {}.models.{} with id {}".format(
+                app_label,
+                model_name,
+                record_id
+            )
+        )
+        return None
+    return obj
+
 @task()
 def retrieve_and_cache_remote_lod_resource(cache_uri, store=None):
     if not store:
@@ -34,19 +63,25 @@ def retrieve_and_cache_remote_lod_resource(cache_uri, store=None):
 
 
 @task()
-def store_cache_resource(obj, store=None):
+def store_cache_resource(app_label, model_name, record_id, store=None):
+    """Store cached LoD resource in the GrahpStore."""
+    obj = get_model_record(app_label, model_name, record_id)
     if not store:
         store = get_rdfstore()
     graph_store = store.get_graph_store
+    if not obj:
+        return False
     response = obj.update_cached_resource(graph_store)
     return response
 
 
 @task()
-def delete_rdf_resource(obj, store=None):
+def delete_rdf_resource(app_label, model_name, record_id, store=None):
+    """Delete RDF of Django model from the GraphStore."""
+    obj = get_model_record(app_label, model_name, record_id)
     if not store:
         store = get_rdfstore()
-    if issubclass(obj.__class__, RDFModel):
+    if obj and issubclass(obj.__class__, RDFModel):
         graph_store = store.get_graph_store
         response = graph_store.delete(obj.named_graph)
         logger.debug("Delete graph: {}".format(obj.named_graph))
@@ -55,12 +90,13 @@ def delete_rdf_resource(obj, store=None):
 
 
 @task()
-def store_graph(obj):
+def store_graph(app_label, model_name, record_id):
     """ Store the RDFModel subclass in the production graph store
     :param obj: a subclass of RDFModel
     :return: Boolean
     """
-    if issubclass(obj.__class__, RDFModel):
+    obj = get_model_record(app_label, model_name, record_id)
+    if obj and issubclass(obj.__class__, RDFModel):
         store = rdfstore.get_rdfstore().get_graph_store
         store.put(obj.named_graph, obj.get_graph())
         logger.debug("Stored graph data in graph: {}".format(obj.named_graph))
@@ -107,9 +143,17 @@ def process_sparql_updates(sparql_updates, store=None):
 
 
 @task()
-def remove_rdf_from_index(obj, index=settings.SITE_NAME, store=None):
-    if issubclass(obj.__class__, RDFModel):
-        nr, errors = helpers.bulk(get_es(), [obj.create_es_action(action='delete', index=index, store=store)])
+def remove_rdf_from_index(
+    app_label, model_name, record_id, index=settings.SITE_NAME, store=None
+    ):
+    """Remove RDF for Django Record from the GraphStore."""
+    obj = get_model_record(app_label, model_name, record_id)
+    if obj and issubclass(obj.__class__, RDFModel):
+        nr, errors = helpers.bulk(
+            get_es(),
+            [obj.create_es_action(action='delete', index=index, store=store)],
+            raise_on_error=False
+        )
         if nr > 0 and not errors:
             logger.info("Removed records: {}".format(nr))
             return True
@@ -120,8 +164,10 @@ def remove_rdf_from_index(obj, index=settings.SITE_NAME, store=None):
 
 
 @task()
-def update_rdf_in_index(obj, index=settings.SITE_NAME, store=None):
-    if issubclass(obj.__class__, RDFModel):
+def update_rdf_in_index(app_label, model_name, record_id,
+                        index=settings.SITE_NAME, store=None):
+    obj = get_model_record(app_label, model_name, record_id)
+    if obj and issubclass(obj.__class__, RDFModel):
         nr, errors = helpers.bulk(get_es(), [obj.create_es_action(index=index, store=store, context=False)])
         if nr > 0 and not errors:
             logger.info("Indexed records: {}".format(nr))
