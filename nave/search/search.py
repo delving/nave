@@ -902,9 +902,16 @@ class ESPaginator(Paginator):
     """
 
     def __init__(self, *args, **kwargs):
-        count = kwargs.pop('count', None)
+        count = kwargs.pop('count', 0)
         super(ESPaginator, self).__init__(*args, **kwargs)
         self._count = count
+
+    @property
+    def count(self):
+        """
+        Returns the total number of objects, across all pages.
+        """
+        return self._count
 
     def page(self, number, just_source=True):
         """ Returns a Page object for the given 1-based page number. """
@@ -1250,7 +1257,7 @@ class NaveQueryResponse(object):
     @property
     def paginator(self):
         if not self._paginator:
-            self._paginator = ESPaginator(self.es_results.hits, self._rows, count=self.num_found)
+            self._paginator = ESPaginator(self.es_results.hits.hits, self._rows, count=self.num_found)
         return self._paginator
 
     @property
