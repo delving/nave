@@ -1,7 +1,7 @@
 import os
 import shutil
 
-from webresource.webresource import WebResource, SOURCE_DIR, THUMBNAIL_DIR, DEEPZOOM_DIR
+from nave.webresource.webresource import WebResource, SOURCE_DIR, THUMBNAIL_DIR, DEEPZOOM_DIR
 
 spec_name = "test-spec"
 image_name = "123.jpg"

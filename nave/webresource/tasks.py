@@ -20,7 +20,7 @@ def create_webresource_dirs(endpoint=None):
     logger.info("Start syncing WebResource directories")
     for spec in specs.keys():
         logger.info(spec)
-        from webresource.webresource import WebResource
+        from nave.webresource.webresource import WebResource
         webresource = WebResource(spec=spec)
         created = webresource.create_dataset_webresource_dirs()
         if created:
@@ -32,7 +32,7 @@ def create_webresource_dirs(endpoint=None):
 @task()
 def create_deepzoom(uri, spec):
     """Celery function for creating deepzoom images."""
-    from webresource.webresource import WebResource
+    from nave.webresource.webresource import WebResource
     wr = WebResource(uri=uri, spec=spec)
     if not wr.exists_deepzoom:
         return wr.create_deepzoom()

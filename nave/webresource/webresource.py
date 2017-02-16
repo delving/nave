@@ -455,7 +455,7 @@ class WebResource:
         if not self.exists_deepzoom:
             if hasattr(self.settings, 'USE_WEBRESOURCE_QUEUE'):
                 if self.settings.USE_WEBRESOURCE_QUEUE:
-                    from webresource import tasks
+                    from nave.webresource import tasks
                     tasks.create_deepzoom.delay(self._uri, self.spec)
                     uri = None
             else:
