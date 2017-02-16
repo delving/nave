@@ -4,7 +4,7 @@
 import urllib.request, urllib.parse, urllib.error
 
 from django import template
-
+from django.utils.safestring import mark_safe
 from ..helper import UrlHelper
 
 register = template.Library()
@@ -79,7 +79,7 @@ def form_hidden_field(request, field):
     html = ''
     if request.GET.get(field):
         html = '<input type="hidden" name="'+field+'" value="'+request.GET.get(field)+'" />'
-    return html
+    return mark_safe(html)
 
 
 @register.simple_tag
@@ -96,7 +96,7 @@ def form_hidden_fields(request, exclude=[]):
             # only relevant to qf but will return correct value for "q=term" as well
             text = field.split(':', 1)[-1]
             html = html + '<input type="hidden" name="'+param+'" value="'+field.strip()+'" data-text="'+text.strip()+'"/>'
-    return html
+    return mark_safe(html)
 
 
 
