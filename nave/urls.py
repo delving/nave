@@ -22,6 +22,11 @@ urlpatterns = [
 
 if settings.USE_WAGTAIL_CMS:
     from wagtail.wagtailadmin import urls as wagtailadmin_urls
+    if 'puput' in settings.INSTALLED_APPS:
+        urlpatterns += i18n_patterns(
+            url(r'', include('puput.urls')),
+            prefix_default_language=False
+    )
     urlpatterns += i18n_patterns(
         url(r'^cms/', include(wagtailadmin_urls)),
         prefix_default_language=False
