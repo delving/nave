@@ -1215,7 +1215,6 @@ class RDFRecord:
                         Literal(deepzoom)
                     ))
                     if isinstance(about_uri, URIRef):
-                        print(about_uri, EDM.isShownBy)
                         graph.add((
                             about_uri,
                             EDM.isShownBy,
