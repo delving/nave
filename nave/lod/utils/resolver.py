@@ -30,6 +30,7 @@ from urllib.parse import urlparse, quote
 
 import re
 from django.conf import settings
+from django.urls import reverse
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search, Q
 from rdflib import ConjunctiveGraph
@@ -1098,7 +1099,8 @@ class RDFRecord:
         from nave.lod.models import RDFModel
         return RDFModel.get_graph_from_sparql_results(response, None)[0]
 
-    def reduce_duplicates(self, graph: Graph, leave=0, predicates=None):
+    @staticmethod
+    def reduce_duplicates(graph: Graph, leave=0, predicates=None):
         """Reduce duplicates or all entries from a predicate from a Graph."""
         entries_removed = 0
         if predicates is None:
@@ -1145,6 +1147,88 @@ class RDFRecord:
         return graph
 
     @staticmethod
+    def resolve_webresource_uris(graph, source_check=True):
+        """Add DeepZoom, and thumbnail derivatives to WebResource."""
+        from rdflib.namespace import RDF
+        web_resources = graph.subjects(
+            predicate=RDF.type,
+            object=URIRef("http://www.europeana.eu/schemas/edm/WebResource")
+        )
+        about_uri = graph.subjects(
+            predicate=RDF.type,
+            object=URIRef(
+                'http://www.openarchives.org/ore/terms/Aggregation'
+            )
+        )
+        if about_uri:
+            about_uri = list(about_uri)[0]
+        # remove blank_nodes
+        wr_list = []
+        for wr in web_resources:
+            if not isinstance(wr, URIRef):
+                for p, o in graph.predicate_objects(subject=wr):
+                    graph.remove((wr, p, o))
+            else:
+                wr_list.append(wr)
+        has_api_call = any(str(wr).startswith('urn:') for wr in wr_list)
+
+        if wr_list and has_api_call:
+            # remove all others
+            RDFRecord.reduce_duplicates(graph)
+        for wr in wr_list:
+            api_call = str(wr).startswith('urn:')
+            if api_call:
+                uri = str(wr)
+                spec = uri.split('/')[0].replace('urn:', '')
+                from nave.webresource.webresource import WebResource
+                web_resource = WebResource(uri=uri, spec=spec)
+                if not source_check or web_resource.exists_source:
+                    api_call = "{}?spec={}&uri={}".format(
+                        reverse('webresource'),
+                        spec,
+                        uri
+                    )
+                    if settings.WEB_RESOURCE_USE_RDF_BASE:
+                        api_call = settings.RDF_BASE_URL + api_call
+                    thumb_small = "{}&docType=thumbnail&width={}".format(
+                        api_call,
+                        settings.WEB_RESOURCE_THUMB_SMALL
+                    )
+                    thumb_large = "{}&docType=thumbnail&width={}".format(
+                        api_call,
+                        settings.WEB_RESOURCE_THUMB_LARGE
+                    )
+                    graph.add((
+                        wr,
+                        NAVE.thumbnailSmall,
+                        Literal(thumb_small)
+                    ))
+                    graph.add((
+                        wr,
+                        NAVE.thumbnailLarge,
+                        Literal(thumb_large)
+                    ))
+                    deepzoom = "{}&docType=deepzoom".format(api_call)
+                    graph.add((
+                        wr,
+                        NAVE.deepZoomUrl,
+                        Literal(deepzoom)
+                    ))
+                    if isinstance(about_uri, URIRef):
+                        print(about_uri, EDM.isShownBy)
+                        graph.add((
+                            about_uri,
+                            EDM.isShownBy,
+                            URIRef(thumb_large)
+                        ))
+                        graph.add((
+                            about_uri,
+                            EDM.object,
+                            URIRef(thumb_small)
+                        ))
+        return wr_list, graph
+
+    @staticmethod
     def get_context_graph_via_query(store=None, target_uri=None):
         if not store:
             store = rdfstore.get_rdfstore()
@@ -1168,7 +1252,8 @@ class RDFRecord:
     def get_context_graph(
         self, with_mappings=False, include_mapping_target=False,
         acceptance=False, target_uri=None, with_webresource=False,
-        resolve_deepzoom_uri=False, with_sparql_context=False):
+        resolve_deepzoom_uri=False, with_sparql_context=False,
+        source_check=False):
         """Get Graph instance with linked ProxyResources.
 
         :param target_uri: target_uri if you want a sub-selection of the whole graph
@@ -1205,6 +1290,8 @@ class RDFRecord:
             context_graph, nr_levels = self.get_context_graph_via_query(target_uri=self.source_uri)
             if context_graph:
                 graph = graph + context_graph
+
+        _, graph = self.resolve_webresource_uris(graph, source_check=source_check)
         # reduce edm duplicates to one each
         graph, _ = self.reduce_duplicates(graph=graph, leave=1, predicates=[EDM.isShownBy, EDM.object, EDM.isShownAt])
         # create direct link to DeepZoom image
