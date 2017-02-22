@@ -305,7 +305,10 @@ class GraphBindings:
         :param uri_ref:  URIRef from the graph
         :return: lod.utils.RDFResource
         """
-        uri = BNode(uri_ref) if not uri_ref.startswith('http://')  else URIRef(uri_ref)
+        if uri_ref.startswith('http') or uri_ref.startswith('urn:'):
+            uri = URIRef(uri_ref)
+        else:
+            uri = BNode(uri_ref)
         self._add_to_call_queue(uri_ref=uri, obj=obj)
         return self._resources.get(uri)  # later add None again
 
@@ -1183,6 +1186,11 @@ class RDFRecord:
                 from nave.webresource.webresource import WebResource
                 web_resource = WebResource(uri=uri, spec=spec)
                 if not source_check or web_resource.exists_source:
+                    graph.add((
+                        about_uri,
+                        EDM.hasView,
+                        URIRef(uri)
+                    ))
                     api_call = "{}?spec={}&uri={}".format(
                         reverse('webresource'),
                         spec,
