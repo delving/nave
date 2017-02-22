@@ -11,9 +11,21 @@ from django.conf.urls import url
 from . import views
 
 urlpatterns = [
-    url(r'api/webresource/$', views.WebResourceRedirectView.as_view(),
-        name="webresource"),
-    url(r'api/webresource/_docs/$', views.webresource_docs, name="webresource_docs")
+    url(
+        r'api/webresource/$',
+        views.WebResourceRedirectView.as_view(),
+        name="webresource"
+    ),
+    url(
+        r'api/webresource/deepzoom/(?P<urn>.*$)',
+        views.DeepZoomRedirectView.as_view(),
+        name="webresource_deepzoom"
+    ),
+    url(
+        r'api/webresource/_docs/$',
+        views.webresource_docs,
+        name="webresource_docs"
+    )
     # todo: include the references to statistics as well
     # for example _statistics _docs etc
 ]

@@ -50,8 +50,8 @@ class WebResourceRedirectView(RedirectView):
             height = int(height)
 
         domain = self.request.META['HTTP_HOST']
-        if settings.DEBUG:
-            domain = domain.replace(':8000', '')
+        # if settings.DEBUG:
+            # domain = domain.replace(':8000', '')
 
         # media_type = self.query_string.get('mediaType')
         # default_image = self.query_string.get('defaultImage')
@@ -67,6 +67,26 @@ class WebResourceRedirectView(RedirectView):
             redirect_uri = webresource.get_deepzoom_redirect()
         # TODO: possibly later add route to source for logged in or APi token users
         return redirect_uri
+
+
+class DeepZoomRedirectView(RedirectView):
+    """Custom redirect to deal with tiles request of DeepZoom viewers."""
+    # permanent = False
+    # query_string = False
+
+    def get_redirect_url(self, *args, **kwargs):
+        urn = kwargs['urn']
+        spec = urn.split('/')[0].replace('urn:', '')
+        domain = self.request.META['HTTP_HOST']
+        return 'http://localhost:8000'
+        from .webresource import WebResource
+        if urn.endswith('.dzi'):
+            wr = WebResource(uri=urn, spec=spec, domain=domain)
+            return wr.get_deepzoom_redirect()
+        elif '_files' in urn:
+            urn, tile_path  = urn.split('_files', maxsplit=1)
+            wr = WebResource(uri=urn, spec=spec, domain=domain)
+            return wr.get_deepzoom_tile_path(tile_path=tile_path)
 
 
 def webresource_docs(request):
