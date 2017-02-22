@@ -1343,7 +1343,17 @@ class RDFRecord:
     @staticmethod
     def delete_from_index(spec, index='{}'.format(settings.SITE_NAME)):
         """Delete all dataset records from the Search Index. """
-        response = client.delete_by_query(index=index, q="system.spec.raw:\"{}\"".format(spec))
+        # TODO: Add body to this call with proper query
+        query_string = {
+            "query": {
+                "simple_query_string" : {
+                    "query": "\"{}\"".format(spec),
+                    "fields": ["system.spec.raw"],
+                    "default_operator": "and"
+                }
+            }
+        }
+        response = client.delete_by_query(index=index, body=query_string)
         logger.info("Deleted {} from Search index with message: {}".format(spec, response))
         return response
 
@@ -1491,7 +1501,7 @@ class ElasticSearchRDFRecord(RDFRecord):
                 related_query = related_query.filter("term", **{k: v})
         hits = related_query.execute()
         items = []
-        for item in hits:
+        for item in hits.hits:
             from nave.search.search import NaveESItemWrapper
             nave_item = NaveESItemWrapper(item)
             items.append(nave_item)
@@ -1532,7 +1542,7 @@ class ElasticSearchRDFRecord(RDFRecord):
                 mlt_query = mlt_query.filter("term", **{k: v})
         hits = mlt_query.execute()
         items = []
-        for item in hits:
+        for item in hits.hits:
             if wrapped:
                 from nave.search.search import NaveESItemWrapper
                 nave_item = NaveESItemWrapper(item, converter=converter)

@@ -271,12 +271,12 @@ class NaveESQuery(object):
             clean_id = hub_id if hub_id else params.get('id')
             if self.nave_id_pattern.findall(clean_id):
                 doc_type, clean_id = clean_id.split('__')
-                query = query.query.query(_id=clean_id, _type=doc_type)
+                query = query.query.query(Q("ids", values=[clean_id], type=doc_type))
                 self._is_item_query = True
             elif self.hub_id_pattern.findall(clean_id):
                 from nave.lod.utils.resolver import RDFRecord
                 clean_id = RDFRecord.clean_local_id(clean_id, is_hub_id=True)
-                query = query.query.query(_id=clean_id)
+                query = query.query.query(Q("ids", values=[clean_id]))
                 self._is_item_query = True
             else:
                 raise ValueError("unknown clean_id type: {}".format(clean_id))
@@ -1066,24 +1066,24 @@ class NaveESItem(object):
         pass
 
     def _create_meta(self):
-        if isinstance(self._es_item, Result):
-            self._doc_id = self._es_item.meta.id
-            self._doc_type = self._es_item.meta.doc_type
-            self._index = self._es_item.meta.index
-            self._score = self._es_item.meta.score
-        else:
-            # todo: deprecate this elasticutils code later
+        if isinstance(self._es_item, dict):
             self._doc_id = self._es_item.get('_id')
             self._doc_type = self._es_item.get('_type')
             self._index = self._es_item.get('_index')
             self._score = self._es_item.get('_score')
+        else:
+            self._doc_id = self._es_item.meta.id
+            self._doc_type = self._es_item.meta.doc_type
+            self._index = self._es_item.meta.index
+            self._score = self._es_item.meta.score
 
     def _create_item(self):
-        # todo filter out None later
-        if isinstance(self._es_item, Result):
+        if not isinstance(self._es_item, dict):
             fields = self._es_item.to_dict()
         else:
-            fields = self._es_item['_source']
+            fields = self._es_item
+        if '_source' in fields:
+            fields = fields['_source']
         if self._converter and self._doc_type == "void_edmrecord":
             fields = self._converter(es_result_fields=fields).convert()
         items = sorted(fields.items())
@@ -1257,7 +1257,7 @@ class NaveQueryResponse(object):
     @property
     def paginator(self):
         if not self._paginator:
-            self._paginator = ESPaginator(self.es_results.hits.hits, self._rows, count=self.num_found)
+            self._paginator = ESPaginator(self.es_results.hits, self._rows, count=self.num_found)
         return self._paginator
 
     @property
