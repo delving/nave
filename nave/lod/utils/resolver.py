@@ -1343,7 +1343,6 @@ class RDFRecord:
     @staticmethod
     def delete_from_index(spec, index='{}'.format(settings.SITE_NAME)):
         """Delete all dataset records from the Search Index. """
-        # TODO: Add body to this call with proper query
         query_string = {
             "query": {
                 "simple_query_string" : {
