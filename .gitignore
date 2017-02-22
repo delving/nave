@@ -41,3 +41,4 @@ nave_public.egg-info
 do_compilemessages.sh
 enable_users.py
 tags
+.venv
