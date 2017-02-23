@@ -1,43 +1,44 @@
 {% load i18n static %}
-<div class="media-viewer">
-    {% if webresources and webresources|length_is:"1" %}
-        {##################################################}
-        {# SINGLE WEBRESOURCE #############################}
-        {##################################################}
-        {% for webresource in webresources %}
-            {% if webresource.has_resource and webresource.get_resource.nave_thumbLarge.value %}
-                <img src="{{ webresource.get_resource.nave_thumbLarge.value }}" alt="{% for a in alt %}{{ a }}{% endfor %}" />
-                {% if webresource.get_resource.nave_allowSourceDownload.value %}
-                    <div class="download" style="margin-top: 30px;">
-                        {# TODO: highres url?????? #}
-                        <a href="{{ webresource.get_resource.nave_thumbLarge.value }}" class="btn btn-info">Download afbeelding</a>
-                    </div>
+{# todo: pass along metadata record values for: creator, title, date and collection to display in alt tag for image, perhaps custom image size (highres) for fullscreen viewing #}
+
+    {% if values and values|length_is:"1" %}
+
+            {% for value in values %}
+                {# TODO: check for deepzoom, video audio and render html accordingly #}
+                {% if value.value %}
+                    {% if fullscreen %}
+                        <a href="{{ value.value }}" class="fullscreen" rel="nofollow">
+                    {% else %}
+                        <a href="{{ uri }}" rel="canonical">
+                    {% endif %}
+                        <img src="{{ value.value }}" alt="{% for a in alt %}{{ a }}{% endfor %}" />
+                        </a>
+                {% else %}
+                    <img  src="{% static 'img/media-placeholder.svg' %}"/>
                 {% endif %}
-            {% else %}
-                <img  src="{% static 'img/media-placeholder.svg' %}"/>
-            {% endif %}
-        {% endfor %}
-    {% elif webresources %}
-        {##################################################}
-        {# MULTIPLE WEBRESOURCES ##########################}
-        {##################################################}
+            {% endfor %}
+
+    {% elif values %}
+
         <div id="media-carousel" class="carousel slide">
             {% if indicators %}
                 <ol class="carousel-indicators">
-                    {% for webresource in webresources %}
+                    {% for value in values %}
                         <li data-target="#media-carousel" data-slide-to="{{ forloop.counter0  }}" class="{% if forloop.first %}active{% endif %}"></li>
                     {% endfor %}
                 </ol>
             {% endif %}
             <div class="carousel-inner" role="listbox">
-                {% for webresource in webresources %}
+                {% for value in values %}
                     <div class="item {% if forloop.first %}active{% endif %}" data-slide-number="{{ forloop.counter0 }}">
-                        <img src="{{ webresource.get_resource.nave_thumbLarge.value }}" alt="{% for a in alt %}{{ a }}{% endfor %}" />
-                        {% if webresource.get_resource.nave_allowSourceDownload.value %}
-                            <div class="download" style="margin-top: 30px;">
-                                {# TODO: highres url?????? #}
-                                <a href="{{ webresource.get_resource.nave_thumbLarge.value }}" class="btn btn-info">Download afbeelding</a>
-                            </div>
+                        {# TODO: check for deepzoom, video audio and render html accordingly #}
+                        {#  deepzoom info in nave_deepZoomUrl #}
+                        {% if fullscreen %}
+                            <a href="{{ value.value }}" class="fullscreen" rel="nofollow">
+                        {% endif %}
+                            <img src="{{ value.value }}" alt="{% for a in alt %}{{ a }}{% endfor %}" />
+                        {% if fullscreen %}
+                            </a>
                         {% endif %}
                     </div>
                 {% endfor %}
@@ -56,19 +57,20 @@
         {% if thumbnail_nav %}
             <div class="carousel-thumbnails">
                 <ul class="list-inline thumbnail-nav">
-                    {% for webresource in webresources %}
+                    {% for value in values %}
                         <li data-target="#media-carousel" data-slide-to="{{ forloop.counter0 }}" class="{% if forloop.first %}active{% endif %}"
                             id="carousel-selector-{{ forloop.counter0 }}">
-                            <img src="{{ webresource.get_resource.nave_thumbSmall.value }}" alt="{% for a in alt %}{{ a }}{% endfor %}" width="200"/>
+                            <img src="{{ value.value }}" alt="{% for a in alt %}{{ a }}{% endfor %}" height="100" width="100"/>
                         </li>
                     {% endfor %}
                 </ul>
             </div>
         {% endif %}
+
     {% else %}
         <div class="no-image-placeholder" style="height:460px;">
             <div class="overlay"></div>
             <span>{% trans 'No preview available' %}</span>
         </div>
     {% endif %}
-</div>
+
