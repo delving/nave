@@ -78,7 +78,6 @@ class DeepZoomRedirectView(RedirectView):
         urn = kwargs['urn']
         spec = urn.split('/')[0].replace('urn:', '')
         domain = self.request.META['HTTP_HOST']
-        return 'http://localhost:8000'
         from .webresource import WebResource
         if urn.endswith('.dzi'):
             wr = WebResource(uri=urn, spec=spec, domain=domain)

@@ -1107,7 +1107,10 @@ class RDFRecord:
         """Reduce duplicates or all entries from a predicate from a Graph."""
         entries_removed = 0
         if predicates is None:
-            predicates = [EDM.isShownBy, EDM.object, NAVE.thumbSmall, NAVE.thumbLarge, NAVE.thumbnail, NAVE.deepZoomUrl]
+            predicates = [
+                EDM.isShownBy, EDM.object, NAVE.thumbSmall, NAVE.thumbLarge,
+                NAVE.thumbnail, NAVE.deepZoomUrl, EDM.hasView
+            ]
         for predicate in predicates:
             entries = list(graph.subject_objects(predicate=predicate))
             if entries and len(entries) > leave:
@@ -1208,13 +1211,18 @@ class RDFRecord:
                     )
                     graph.add((
                         wr,
-                        NAVE.thumbnailSmall,
+                        NAVE.thumbSmall,
                         Literal(thumb_small)
                     ))
                     graph.add((
                         wr,
-                        NAVE.thumbnailLarge,
+                        NAVE.thumbLarge,
                         Literal(thumb_large)
+                    ))
+                    graph.add((
+                        wr,
+                        NAVE.thumbnail,
+                        Literal(thumb_small)
                     ))
                     deepzoom = "{}&docType=deepzoom".format(api_call)
                     graph.add((
