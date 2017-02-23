@@ -645,7 +645,11 @@ BULK_API_ASYNC = True
 
 BROKER_URL = 'amqp://guest:guest@localhost:5672//'
 
-CELERY_RESULT_BACKEND = 'amqp'  # 'amqp'
+CELERY_RESULT_BACKEND = 'amqp'  # 'amqp', 'redis'
+
+CELERY_ACCEPT_CONTENT = ['json', 'pickle']
+CELERY_TASK_SERIALIZER = 'pickle'
+CELERY_RESULT_SERIALIZER = 'picle'
 
 CELERY_CONCURRENCY = 2
 
