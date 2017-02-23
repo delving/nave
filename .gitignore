@@ -40,5 +40,5 @@ uwsgi.ini
 nave_public.egg-info
 do_compilemessages.sh
 enable_users.py
-tags
+tags/
 .venv
