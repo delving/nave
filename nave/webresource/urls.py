@@ -22,6 +22,11 @@ urlpatterns = [
         name="webresource_deepzoom"
     ),
     url(
+        r'api/deepzoom/(?P<webresource>.*$)',
+        views.DeepZoomRedirectView.as_view(),
+        name="webresource_deepzoom_resolve"
+    ),
+    url(
         r'api/webresource/_docs/$',
         views.webresource_docs,
         name="webresource_docs"

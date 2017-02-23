@@ -408,14 +408,13 @@ class WebResource:
             )
         )
 
-    @property
     def get_deepzoom_tile_path(self, tile_path):
         """Get fully qualified path to DeepZoom tile."""
         return os.path.join(
             self.domain,
             "webresource",
             self.get_relative_spec_dir,
-            "{}_file{}".format(
+            "{}.tif_files{}".format(
                 self.get_derivative_base_path(kind=DEEPZOOM_DIR),
                 tile_path
             )

@@ -75,17 +75,25 @@ class DeepZoomRedirectView(RedirectView):
     # query_string = False
 
     def get_redirect_url(self, *args, **kwargs):
-        urn = kwargs['urn']
+        urn = kwargs['webresource']
         spec = urn.split('/')[0].replace('urn:', '')
-        domain = self.request.META['HTTP_HOST']
+        if not urn.startswith('urn:'):
+            urn = 'urn:{}'.format(urn)
+        if settings.WEB_RESOURCE_USE_RDF_BASE:
+            domain = settings.RDF_BASE_URL
+        else:
+            domain = self.request.META['HTTP_HOST']
         from .webresource import WebResource
-        if urn.endswith('.dzi'):
-            wr = WebResource(uri=urn, spec=spec, domain=domain)
-            return wr.get_deepzoom_redirect()
-        elif '_files' in urn:
+        if '_files' in urn:
             urn, tile_path  = urn.split('_files', maxsplit=1)
             wr = WebResource(uri=urn, spec=spec, domain=domain)
             return wr.get_deepzoom_tile_path(tile_path=tile_path)
+        else:
+            urn = urn.replace('.tif.dzi', '').replace('.dzi', '')
+            wr = WebResource(uri=urn, spec=spec, domain=domain)
+            if not domain in settings.ALLOWED_HOSTS:
+                return wr.get_deepzoom_uri
+            return wr.get_deepzoom_redirect()
 
 
 def webresource_docs(request):

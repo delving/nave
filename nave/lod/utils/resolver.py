@@ -1241,7 +1241,10 @@ class RDFRecord:
                             NAVE.sourceDownload,
                             Literal(source_download)
                         ))
-                    deepzoom = "{}&docType=deepzoom".format(api_call)
+                    deepzoom = reverse(
+                        'webresource_deepzoom_resolve',
+                        kwargs={'webresource': str(wr).replace('urn:', '')}
+                    )
                     graph.add((
                         wr,
                         NAVE.deepZoomUrl,
