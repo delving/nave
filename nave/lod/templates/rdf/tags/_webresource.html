@@ -1,4 +1,5 @@
 {% load i18n static %}
+
 <div class="media-viewer">
     {% if webresources and webresources|length_is:"1" %}
         {##################################################}
@@ -36,7 +37,7 @@
                         {% if webresource.get_resource.nave_allowSourceDownload.value %}
                             <div class="download" style="margin-top: 30px;">
                                 {# TODO: highres url?????? #}
-                                <a href="{{ webresource.get_resource.nave_thumbLarge.value }}" class="btn btn-info">Download afbeelding</a>
+                                <a href="{{ webresource.get_resource.nave_sourceDownload.value }}" class="btn btn-info">Download afbeelding</a>
                             </div>
                         {% endif %}
                     </div>
@@ -59,7 +60,7 @@
                     {% for webresource in webresources %}
                         <li data-target="#media-carousel" data-slide-to="{{ forloop.counter0 }}" class="{% if forloop.first %}active{% endif %}"
                             id="carousel-selector-{{ forloop.counter0 }}">
-                            <img src="{{ webresource.get_resource.nave_thumbSmall.value }}" alt="{% for a in alt %}{{ a }}{% endfor %}" width="200"/>
+                            <img src="{{ webresource.get_resource.nave_sourceDownload.value }}" alt="{% for a in alt %}{{ a }}{% endfor %}" width="200"/>
                         </li>
                     {% endfor %}
                 </ul>
@@ -72,3 +73,5 @@
         </div>
     {% endif %}
 </div>
+
+

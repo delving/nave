@@ -82,11 +82,32 @@ def get_value(context, fieldname):
 
 # ######### result detail predicate and field value display ############################
 
+@register.inclusion_tag('rdf/tags/_webresource.html', takes_context=True)
+def detail_webresource(context, alt="", indicators=False, thumbnail_nav=False, webresources=""):
+    """
+    :param context: page context
+    :param fieldname: DataSet.MetadataRecord field name
+    :return: string
+    """
+    thumbnail_nav = thumbnail_nav
+    indicators = indicators
+    webresources = webresources
+    bindings = context['resources']
+    alt = bindings[alt].value if bindings[alt] else []
+
+    return {
+        'indicators': indicators,
+        'thumbnail_nav': thumbnail_nav,
+        'webresources': webresources,
+        'alt': alt
+    }
+
+
 MockRDFObject = namedtuple('MockRDFObject', ["value"])
 
 
 @register.inclusion_tag('rdf/tags/_search-detail-media-preview.html', takes_context=True)
-def detail_media_preview(context, fieldname, alt="", fullscreen=False, indicators=False, thumbnail_nav=False, uri="", ):
+def detail_media_preview(context, fieldname, alt="", fullscreen=False, indicators=False, thumbnail_nav=False, uri="", webresources=""):
     """
     :param context: page context
     :param fieldname: DataSet.MetadataRecord field name
@@ -103,6 +124,7 @@ def detail_media_preview(context, fieldname, alt="", fullscreen=False, indicator
     indicators = indicators
     rights = rights
     uri = uri
+    webresources = webresources
 
     # values = ['http://www.dcn-images.nl/img/BDM/BDM_09809.jpg', 'http://www.dcn-images.nl/img/BDM/BDM_00807.jpg', 'http://www.dcn-images.nl/img/BDM/BDM_01999.jpg']
     # values = ['http://igem.adlibsoft.com/wwwopacx/wwwopac.ashx?command=getcontent&server=images&value=bergh\\001305.jpg',
@@ -141,7 +163,8 @@ def detail_media_preview(context, fieldname, alt="", fullscreen=False, indicator
         'indicators': indicators,
         'thumbnail_nav': thumbnail_nav,
         'rights': rights,
-        'uri':uri
+        'uri':uri,
+        'webresources': webresources
     }
 
 
