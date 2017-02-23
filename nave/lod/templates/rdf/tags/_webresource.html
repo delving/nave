@@ -11,7 +11,7 @@
                 {% if webresource.get_resource.nave_allowSourceDownload.value %}
                     <div class="download" style="margin-top: 30px;">
                         {# TODO: highres url?????? #}
-                        <a href="{{ webresource.get_resource.nave_thumbLarge.value }}" class="btn btn-info">Download afbeelding</a>
+                        <a href="{{ webresource.get_resource.nave_sourceDownload.value }}" class="btn btn-info">Download afbeelding</a>
                     </div>
                 {% endif %}
             {% else %}
