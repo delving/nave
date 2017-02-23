@@ -1209,6 +1209,10 @@ class RDFRecord:
                         api_call,
                         settings.WEB_RESOURCE_THUMB_LARGE
                     )
+                    source_download = "{}&docType=thumbnail&width={}".format(
+                        api_call,
+                        settings.WEB_RESOURCE_MAX_SIZE
+                    )
                     graph.add((
                         wr,
                         NAVE.thumbSmall,
@@ -1224,6 +1228,19 @@ class RDFRecord:
                         NAVE.thumbnail,
                         Literal(thumb_small)
                     ))
+                    allow_source_download = graph.objects(
+                        subject=wr,
+                        predicate=NAVE.allowSourceDownload
+                    )
+                    add_source_download = all(
+                        str(o).lower() == 'true' for o in allow_source_download
+                    )
+                    if add_source_download:
+                        graph.add((
+                            wr,
+                            NAVE.sourceDownload,
+                            Literal(source_download)
+                        ))
                     deepzoom = "{}&docType=deepzoom".format(api_call)
                     graph.add((
                         wr,
