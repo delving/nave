@@ -1145,8 +1145,8 @@ class RDFRecord:
                 from nave.webresource.webresource import WebResource
                 uri, spec = api_call
                 wr = WebResource(uri=uri, spec=spec)
+                graph.remove((s, deepzoom_predicate, o))
                 if wr.exists_source:
-                    graph.remove((s, deepzoom_predicate, o))
                     deep_zoom_url = wr.get_deepzoom_redirect()
                     if deep_zoom_url:
                         graph.add((s, deepzoom_predicate, Literal(deep_zoom_url)))
