@@ -28,7 +28,8 @@ def deepzoom_js(
 @register.inclusion_tag('rdf/tags/_deepzoom_viewer.html')
 def deepzoom_viewer(
         viewer_id="zoom_viewer",
-        viewer_class="embed-responsive-item"):
+        viewer_class="embed-responsive-item",
+        webresources=""):
     """
     get zoom url count and values
     :return: count as integer and urls as array
@@ -36,4 +37,5 @@ def deepzoom_viewer(
     return {
         'viewer_id': viewer_id,
         'viewer_class': viewer_class,
+        'webresources': webresources
     }
