@@ -721,4 +721,6 @@ WATCHMAN_CHECKS = (
     'nave.common.watchman_checks.check_es_status',
     'nave.common.watchman_checks.check_fuseki_status',
     'nave.common.watchman_checks.check_celery_status',
+    'nave.common.watchman_checks.nave_version',
+    'nave.common.watchman_checks.project_version',
 )

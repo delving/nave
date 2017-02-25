@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime, timedelta
+import os
 import shutil
 import sys
 from time import sleep
@@ -10,6 +11,44 @@ from watchman.decorators import check
 
 from nave.search import get_es_client
 
+@check
+def nave_version():
+    nave_path = os.path.join(settings.SITE_ROOT)
+    try:
+        import git
+        from . import version
+        repo = git.Repo(nave_path)
+        sha = repo.head.object.hexsha
+        short_sha = repo.git.rev_parse(sha, short=8)
+    except ImportError:
+        sha = short_sha = None
+    return {
+        'version_nave': {
+            'ok': True,
+            'version': version.__version__,
+            'sha': sha,
+            'short_sha': short_sha,
+        }
+    }
+
+@check
+def project_version():
+    project_path = os.path.join(settings.PROJECT_ROOT)
+    try:
+        import git
+        repo = git.Repo(project_path)
+        sha = repo.head.object.hexsha
+        short_sha = repo.git.rev_parse(sha, short=8)
+    except ImportError:
+        sha = short_sha = None
+    return {
+        'version_project': {
+            'ok': True,
+            'name': settings.SITE_NAME,
+            'sha': sha,
+            'short_sha': short_sha,
+        }
+    }
 
 @check
 def get_disk_space_status():
