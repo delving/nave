@@ -708,3 +708,17 @@ LEAFLET_CONFIG = {
     'MINIMAP': True,
     'RESET_VIEW': False
 }
+
+###################################
+# WATCHMAN health configuration   #
+###################################
+
+WATCHMAN_CHECKS = (
+    'watchman.checks.caches',
+    'watchman.checks.databases',
+    'watchman.checks.storage',
+    'nave.common.watchman_checks.get_disk_space_status',
+    'nave.common.watchman_checks.check_es_status',
+    'nave.common.watchman_checks.check_fuseki_status',
+    'nave.common.watchman_checks.check_celery_status',
+)
