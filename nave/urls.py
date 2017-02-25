@@ -18,6 +18,7 @@ urlpatterns = [
     url(r'^crossdomain.xml$', TemplateView.as_view(template_name='crossdomain.xml')),
     url(r'^robots.txt$', TemplateView.as_view(template_name='robots.txt')),
     url(r'^humans.xml$', TemplateView.as_view(template_name='humans.txt')),
+    url(r'^watchman/', include('watchman.urls')),
 ]
 
 if settings.USE_WAGTAIL_CMS:
@@ -35,8 +36,6 @@ urlpatterns += i18n_patterns(
     url(r'^', include('nave.projects.{}.urls'.format(settings.SITE_NAME))),
     url(r'^', include('nave.search.urls')),
     url(r'^', include('nave.virtual_collection.urls')),
-    # url(r'^', include('webresource.urls')),
-    # url(r'^hm/', include('nave.health_monitor.urls')),
     url(r'^', include('nave.lod.urls')),
     url(r'^', include('nave.search_widget.urls')),
     # template and data from nave.void app

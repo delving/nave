@@ -282,6 +282,7 @@ THIRD_PARTY_APPS = (
     'reversion',
     'rosetta',  # for translation
     'taggit',
+    'watchman',
 )
 
 # Apps specific for this project go here.
