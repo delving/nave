@@ -29,6 +29,7 @@ $(function(){
         var slug = $(this).data('slug');
         var doc_type = $(this).data('doc_type');
         var acceptance_mode = $(this).data('mode');
+        var query_string = $(this).data('query');
         // determine the row
         var row = Math.floor(index / fo_cols);
         // and the elements in the row
@@ -42,7 +43,7 @@ $(function(){
         });
         // append the foldout html to the last elem in the row
         var dataTarget = $('.result-item-detail');
-        dataTarget.load(fo_endpoint+doc_type+"/"+slug+"?mode="+acceptance_mode);
+        dataTarget.load(fo_endpoint+doc_type+"/"+slug+"?mode="+acceptance_mode+"&q="+query_string);
 
         // scroll up above the fold
         var offset = dataTarget.offset().top;
