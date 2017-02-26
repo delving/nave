@@ -19,6 +19,7 @@ urlpatterns = [
     url(r'^robots.txt$', TemplateView.as_view(template_name='robots.txt')),
     url(r'^humans.xml$', TemplateView.as_view(template_name='humans.txt')),
     url(r'^watchman/', include('watchman.urls')),
+    url(r'^rosetta/', include('rosetta.urls')),
 ]
 
 if settings.USE_WAGTAIL_CMS:
@@ -45,10 +46,6 @@ urlpatterns += i18n_patterns(
 )
 
 
-if 'rosetta' in settings.INSTALLED_APPS:
-    urlpatterns += i18n_patterns(
-        url(r'^rosetta/', include('rosetta.urls')),
-    )
 
 if settings.USE_WAGTAIL_CMS:
     from wagtail.wagtailcore import urls as wagtail_urls
