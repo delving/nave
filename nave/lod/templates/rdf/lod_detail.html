@@ -111,10 +111,12 @@
                 <div class="tools">
                     <label><input type="checkbox" id="display-predicate-uri-label">&#160;&#160;{% trans 'Display predicate uris' %}</label>
                     {# <label><input type="checkbox" id="display-link-context">&#160;&#160;{% trans 'Display link context' %}</label>#}
-                    <a class="btn btn-xs btn-default" href="{{ about }}.n3" target="_blank"><i class="fa fa-download fa-fw"></i> ntriples</a>
-                    <a class="btn btn-xs btn-default" href="{{ about }}.ttl" target="_blank"><i class="fa fa-download fa-fw"></i> turtle</a>
-                    <a class="btn btn-xs btn-default" href="{{ about }}.rdf" target="_blank"><i class="fa fa-download fa-fw"></i> rdf/xml</a>
-                    <a class="btn btn-xs btn-default" href="{{ about }}.json-ld" target="_blank"><i class="fa fa-download fa-fw"></i> json-ld</a>
+                    {% if lod_allowed %}
+                        <a class="btn btn-xs btn-default" href="{{ about }}.n3" target="_blank"><i class="fa fa-download fa-fw"></i> ntriples</a>
+                        <a class="btn btn-xs btn-default" href="{{ about }}.ttl" target="_blank"><i class="fa fa-download fa-fw"></i> turtle</a>
+                        <a class="btn btn-xs btn-default" href="{{ about }}.rdf" target="_blank"><i class="fa fa-download fa-fw"></i> rdf/xml</a>
+                        <a class="btn btn-xs btn-default" href="{{ about }}.json-ld" target="_blank"><i class="fa fa-download fa-fw"></i> json-ld</a>
+                    {% endif %}
                 </div>
             </h4>
             <div class="row" id="properties">

@@ -359,8 +359,8 @@ class RDFModel(TimeStampedModel, GroupOwned):
         about.add((subject, cc.attributionURL, URIRef(self.source_uri)))
         about.add((subject, cc.attributionName, Literal(self.get_attribution_name())))
         about.add((subject, NAVE.hubId, Literal(self.hub_id)))
-        about.add((subject, NAVE.spec, Literal(self.spec)))
-        about.add((subject, nave.allowLinkedOpenData, Literal(
+        about.add((subject, NAVE.spec, Literal(self.get_spec_name())))
+        about.add((subject, NAVE.allowLinkedOpenData, Literal(
             self.allow_linked_open_data,
             datatype="xsd:boolean"
         )))

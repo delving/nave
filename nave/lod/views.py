@@ -181,7 +181,8 @@ class LoDDataView(View):
                 target_uri = '{}/'.format(target_uri)
             if CacheResource.objects.filter(document_uri=target_uri).exists():
                 cache_object = CacheResource.objects.filter(document_uri=target_uri).first()
-                content = cache_object.get_graph().serialize(format=rdf_format)
+                graph = cache_object.get_graph()
+                content = graph.serialize(format=rdf_format)
             else:
                 raise UnknownGraph("URI {} is not known in our graph store".format(target_uri))
         elif settings.RDF_USE_LOCAL_GRAPH:
@@ -196,21 +197,21 @@ class LoDDataView(View):
             mode = self.get_mode(request)
             if mode in ['context', 'api', 'api-flat']:
                 # get_graph(with_mappings=True, include_mapping_target=True, acceptance=acceptance)
-                content = local_object.get_context_graph(with_mappings=True, include_mapping_target=True)
+                graph = local_object.get_context_graph(with_mappings=True, include_mapping_target=True)
                 if mode in ['api', 'api-flat']:
-                    bindings = GraphBindings(about_uri=resolved_uri, graph=content)
+                    bindings = GraphBindings(about_uri=resolved_uri, graph=graph)
                     index_doc = bindings.to_index_doc() if mode == 'api' else bindings.to_flat_index_doc()
                     content = json.dumps(index_doc)
                     rdf_format = 'json-ld'
                 else:
-                    content = content.serialize(format=rdf_format)
+                    content = graph.serialize(format=rdf_format)
             else:
-                content = local_object.get_graph()
-                content = content.serialize(format=rdf_format)
+                graph = local_object.get_graph()
+                content = graph.serialize(format=rdf_format)
         elif self.store.ask(uri=resolved_uri):
             target_uri = resolved_uri
             content = self.get_content(target_uri, rdf_format, request)
-        if not GraphBindings.is_lod_allowed(content):
+        if not GraphBindings.is_lod_allowed(graph):
             raise UnknownGraph("URI {} access is not allowed in our graph store".format(resolved_uri))
         return HttpResponse(
             content,
@@ -225,7 +226,7 @@ class LoDDataView(View):
         else:
             mode = self.get_mode(request, "describe")
             describe = self.get_graph(mode=mode, uri=target_uri)
-        if not describe:
+        if not describe or not GraphBindings.is_lod_allowed():
             logger.warn("Unable to find graph for: {}".format(target_uri))
             raise Http404()
         if mode in ['api', 'api-flat']:
@@ -353,6 +354,7 @@ class LoDHTMLView(TemplateView):
         context['items'] = resource.get_items(as_tuples=True)
         rdf_type = graph_bindings.get_about_resource().get_type()
         context['rdf_type'] = rdf_type
+        context['lod_allowed'] = GraphBindings.is_lod_allowed(graph)
         context['content_template'] = self.get_content_type_template(rdf_type.search_label)
         context['graph_stats'] = RDFModel.get_graph_statistics(graph)
         context['alt'] = ""
