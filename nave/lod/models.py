@@ -38,6 +38,7 @@ fmt = '%Y-%m-%d %H:%M:%S%z'  # '%Y-%m-%d %H:%M:%S %Z%z'
 
 logger = logging.getLogger(__name__)
 
+EDM = Namespace('http://www.europeana.eu/schemas/edm/')
 
 def get_user_model_name():
     """
@@ -222,6 +223,10 @@ class RDFModel(TimeStampedModel, GroupOwned):
         blank=True,
         null=True
     )
+    allow_linked_open_data = models.BooleanField(
+        verbose_name=_('Allow Linked Open Data'),
+        default=True
+    )
     # TODO: currently the marking as orphan is not fully implemented. It needs to be tested with the BULK API update
     # mechanism
     orphaned = models.BooleanField(default=False)
@@ -354,6 +359,11 @@ class RDFModel(TimeStampedModel, GroupOwned):
         about.add((subject, cc.attributionURL, URIRef(self.source_uri)))
         about.add((subject, cc.attributionName, Literal(self.get_attribution_name())))
         about.add((subject, NAVE.hubId, Literal(self.hub_id)))
+        about.add((subject, NAVE.spec, Literal(self.spec)))
+        about.add((subject, nave.allowLinkedOpenData, Literal(
+            self.allow_linked_open_data,
+            datatype="xsd:boolean"
+        )))
         return about
 
     def _populate_graph(self):
@@ -368,6 +378,13 @@ class RDFModel(TimeStampedModel, GroupOwned):
         for key, value in self.get_graph_mapping().items():
             if isinstance(key, URIRef):
                 predicate = key
+                if key in [EDM.hasView]:
+                    if type(value) in [URIRef, list]:
+                        if type(value) == list:
+                            for v in value:
+                                graph.add((v, RDF.type, EDM.WebResource))
+                        else:
+                            graph.add((value, RDF.type, EDM.WebResource))
             elif isinstance(key, str) and key.startswith('http://'):
                 predicate = URIRef(key)
             elif isinstance(key, str) and ":" in key:
@@ -376,17 +393,23 @@ class RDFModel(TimeStampedModel, GroupOwned):
                 predicate = URIRef("{}/{}".format(str(ns).rstrip('/'), label))
             else:
                 raise ValueError("unknown predicate key in mapping dict: {} => ".format(key, value))
-            if type(value) in [str, float, int] and value:
-                if isinstance(value, str) and any([value.startswith(uri_prefix) for uri_prefix in ["http", "urn"]]):
-                    value = URIRef(value)
-                else:
-                    value = Literal(value)
-            elif type(value) in [Literal, URIRef]:
-                value = value
+            if value and type(value) in [list]:
+                values = value
             else:
-                logger.warn("Unsupported datatype {} for value {}".format(type(value), value))
-            if value:
-                graph.add((subject, predicate, value))
+                values = [value]
+            for value in values:
+                if type(value) in [str, float, int, bool] and value:
+                    if isinstance(value, str) and any([value.startswith(uri_prefix) for uri_prefix in ["http", "urn"]]):
+                        value = URIRef(value)
+                    else:
+                        value = Literal(value)
+                elif type(value) in [Literal, URIRef]:
+                    value = value
+                else:
+                    logger.warn("Unsupported datatype {} for value {}".format(type(value), value))
+                    value = None
+                if value:
+                    graph.add((subject, predicate, value))
         graph.namespace_manager = namespace_manager
         return graph
 
