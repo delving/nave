@@ -379,12 +379,12 @@ class RDFModel(TimeStampedModel, GroupOwned):
             if isinstance(key, URIRef):
                 predicate = key
                 if key in [EDM.hasView]:
-                    if type(value) in [URIRef, list]:
-                        if type(value) == list:
+                    if type(value) in [URIRef, list, tuple]:
+                        if type(value) == URIRef:
+                            graph.add((value, RDF.type, EDM.WebResource))
+                        else:
                             for v in value:
                                 graph.add((v, RDF.type, EDM.WebResource))
-                        else:
-                            graph.add((value, RDF.type, EDM.WebResource))
             elif isinstance(key, str) and key.startswith('http://'):
                 predicate = URIRef(key)
             elif isinstance(key, str) and ":" in key:
@@ -393,7 +393,7 @@ class RDFModel(TimeStampedModel, GroupOwned):
                 predicate = URIRef("{}/{}".format(str(ns).rstrip('/'), label))
             else:
                 raise ValueError("unknown predicate key in mapping dict: {} => ".format(key, value))
-            if value and type(value) in [list]:
+            if value and type(value) in [list, tuple, set]:
                 values = value
             else:
                 values = [value]

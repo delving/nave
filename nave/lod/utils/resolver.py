@@ -1122,7 +1122,7 @@ class RDFRecord:
         if predicates is None:
             predicates = [
                 EDM.isShownBy, EDM.object, NAVE.thumbSmall, NAVE.thumbLarge,
-                NAVE.thumbnail, NAVE.deepZoomUrl, EDM.hasView
+                NAVE.thumbnail, NAVE.deepZoomUrl
             ]
         for predicate in predicates:
             entries = list(graph.subject_objects(predicate=predicate))
@@ -1181,6 +1181,8 @@ class RDFRecord:
                 )
             )
         )
+        if not about_uri:
+            about_uri = [s for s in graph.subjects(predicate=EDM.hasView)]
         if about_uri and len(about_uri) > 0:
             about_uri = about_uri[0]
         else:
@@ -1351,7 +1353,8 @@ class RDFRecord:
             if context_graph:
                 graph = graph + context_graph
 
-        _, graph = self.resolve_webresource_uris(graph, source_check=source_check)
+        _, graph = self.resolve_webresource_uris(
+            graph, source_check=source_check)
         # reduce edm duplicates to one each
         graph, _ = self.reduce_duplicates(graph=graph, leave=1, predicates=[EDM.isShownBy, EDM.object, EDM.isShownAt])
         # create direct link to DeepZoom image
