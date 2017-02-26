@@ -295,6 +295,19 @@ class GraphBindings:
         points = get_geo_points(self._graph)
         return True if points else False
 
+    @staticmethod
+    def is_lod_allowed(graph):
+        """Check if LoD routing is allowed."""
+        allowed = True
+        lod_allowed = list(
+            graph.objects(
+                predicate=NAVE.allowLinkedOpenData
+            )
+        )
+        if len(lod_allowed) > 0:
+            allowed = all([str(o).lower() == 'true' for o in lod_allowed])
+        return allowed
+
     def _add_to_call_queue(self, uri_ref, obj=None):
         if obj:
             self._call_queue[str(uri_ref)].append(obj)

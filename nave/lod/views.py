@@ -16,6 +16,7 @@ from django.views.generic import TemplateView, RedirectView, View
 from rdflib.namespace import SKOS, RDF
 
 
+import nave
 from nave.lod import RDF_SUPPORTED_MIME_TYPES, USE_EDM_BINDINGS
 from nave.lod.tests.resources import sparqlwrapper_result
 from nave.lod import utils
@@ -78,10 +79,10 @@ class HubIDRedirectView(RedirectView):
         graph = record.get_graph_by_id(self.kwargs.get('slug'))
         if not graph:
             raise Http404()
-        routed_uri = lod.utils.lod.get_external_rdf_url(record.source_uri, self.request)
+        routed_uri = nave.lod.utils.lod.get_external_rdf_url(record.source_uri, self.request)
         logger.debug("Routed uri: {}".format(routed_uri))
         rdf_format = self.request.GET.get("format")
-        if rdf_format and rdf_format in lod.RDF_SUPPORTED_EXTENSIONS:
+        if rdf_format and rdf_format in nave.lod.RDF_SUPPORTED_EXTENSIONS:
             routed_uri = "{}.{}".format(routed_uri, rdf_format)
         return routed_uri
 
@@ -209,6 +210,8 @@ class LoDDataView(View):
         elif self.store.ask(uri=resolved_uri):
             target_uri = resolved_uri
             content = self.get_content(target_uri, rdf_format, request)
+        if not GraphBindings.is_lod_allowed(content):
+            raise UnknownGraph("URI {} access is not allowed in our graph store".format(resolved_uri))
         return HttpResponse(
             content,
             content_type='{}; charset=utf8'.format(result_extension_to_mime(rdf_format))
