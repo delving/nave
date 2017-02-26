@@ -1160,14 +1160,18 @@ class RDFRecord:
             predicate=RDF.type,
             object=URIRef("http://www.europeana.eu/schemas/edm/WebResource")
         )
-        about_uri = graph.subjects(
-            predicate=RDF.type,
-            object=URIRef(
-                'http://www.openarchives.org/ore/terms/Aggregation'
+        about_uri = list(
+            graph.subjects(
+                predicate=RDF.type,
+                object=URIRef(
+                    'http://www.openarchives.org/ore/terms/Aggregation'
+                )
             )
         )
-        if about_uri:
-            about_uri = list(about_uri)[0]
+        if about_uri and len(about_uri) > 0:
+            about_uri = about_uri[0]
+        else:
+            about_uri = None
         # remove blank_nodes
         wr_list = []
         for wr in web_resources:
@@ -1183,7 +1187,7 @@ class RDFRecord:
             RDFRecord.reduce_duplicates(graph)
         for wr in wr_list:
             api_call = str(wr).startswith('urn:')
-            if api_call:
+            if api_call and about_uri:
                 uri = str(wr)
                 spec = uri.split('/')[0].replace('urn:', '')
                 from nave.webresource.webresource import WebResource
@@ -1245,10 +1249,18 @@ class RDFRecord:
                         'webresource_deepzoom_resolve',
                         kwargs={'webresource': str(wr).replace('urn:', '')}
                     )
+                    hosts = [
+                        x for x in settings.ALLOWED_HOSTS
+                        if 'hubs.delving.org' in x
+                    ]
+                    if hosts:
+                        deepzoom_base = "http://{}".format(hosts[0])
+                    else:
+                        deepzoom_base = 'http://localhost:8000'
                     graph.add((
                         wr,
                         NAVE.deepZoomUrl,
-                        Literal(deepzoom)
+                        Literal(deepzoom_base + deepzoom)
                     ))
                     if isinstance(about_uri, URIRef):
                         graph.add((
