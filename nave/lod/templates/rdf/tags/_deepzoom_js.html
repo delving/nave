@@ -13,7 +13,7 @@
     else {
     zoom_src = zooms;
     }
-    var viewer = OpenSeadragon({
+    var viewer = new OpenSeadragon.Viewer({
         id: "{{ viewer_id }}",
         prefixUrl: "{% static 'img/openseadragon/' %}",
         tileSources: zoom_src,
@@ -25,8 +25,8 @@
         showNavigator: true,
         {% endif %}
         navigatorPosition: "{{ navigator_position }}",
-        showReferenceStrip: true,
         visibilityRatio: 1.0,
         constrainDuringPan: true,
     });
+
 </script>
