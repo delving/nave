@@ -63,7 +63,14 @@ connections.create_connection(
 
 
 def get_es_client():
-    return Elasticsearch()
+    return Elasticsearch(
+        hosts=ES_URLS,
+        sniff_on_start=True,
+        sniff_on_connection_fail=True,
+        sniffer_timeout=60,
+        maxsize=25,  # default value 10
+        timeout=ES_TIMEOUT,
+    )
 
 es_client = get_es_client()
 
