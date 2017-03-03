@@ -323,7 +323,6 @@
             $('#media-carousel').on('slid.bs.carousel', function (e) {
                 var id = $('.item.active').data('slide-number');
                 id = parseInt(id);
-                console.log(id);
                 $('[id^=carousel-selector-]').removeClass('active');
                 $('[id=carousel-selector-'+id+']').addClass('active');
             });
