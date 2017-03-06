@@ -1268,7 +1268,9 @@ class RDFRecord:
                         x for x in settings.ALLOWED_HOSTS
                         if 'hubs.delving.org' in x
                     ]
-                    if hosts:
+                    if settings.RDF_BASE_URL in settings.ALLOWED_HOSTS:
+                        deepzoom_base = settings.RDF_BASE_URL
+                    elif hosts:
                         deepzoom_base = "http://{}".format(hosts[0])
                     else:
                         deepzoom_base = 'http://localhost:8000'
