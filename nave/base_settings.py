@@ -113,6 +113,7 @@ STATIC_URL = '/static/'
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'django.contrib.staticfiles.finders.FileSystemFinder',
+    'compressor.finders.CompressorFinder',
 )
 # ######### END STATIC FILE CONFIGURATION
 
@@ -247,13 +248,13 @@ CORS_ORIGIN_ALLOW_ALL = True
 
 DJANGO_APPS = (
     # Default Django apps:
-    "django.contrib.auth",
-    "django.contrib.contenttypes",
-    "django.contrib.redirects",
-    "django.contrib.sessions",
-    "django.contrib.sites",
-    "django.contrib.sitemaps",
-    "django.contrib.staticfiles",
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.redirects',
+    'django.contrib.sessions',
+    'django.contrib.sites',
+    'django.contrib.sitemaps',
+    'django.contrib.staticfiles',
     'django.contrib.messages',
     'django.contrib.gis',
     # Useful template tags:
@@ -266,6 +267,7 @@ DJANGO_APPS = (
     'suit',
     'suit_ckeditor',
     'django.contrib.admin',
+    'compressor',
     # 'admin_reorder',
 )
 # ######### APP CONFIGURATION
