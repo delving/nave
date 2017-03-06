@@ -13,11 +13,12 @@ The following settings are Optional for this app
 """
 import logging
 from collections import namedtuple
+import sys
 
 from django.conf import settings
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl.connections import connections
-
+from elasticsearch.exceptions import ConnectionError, TransportError
 
 logger = logging.getLogger(__name__)
 
@@ -52,14 +53,20 @@ ES_TIMEOUT = get_settings('ES_TIMEOUT', 10)
 ORG_ID = get_settings("ORG_ID", settings.SITE_NAME.lower())
 
 # check if all the indexes are created and if not create with the right mappings
-connections.create_connection(
-    hosts=ES_URLS,
-    sniff_on_start=True,
-    sniff_on_connection_fail=True,
-    sniffer_timeout=60,
-    maxsize=25,  # default value 10
-    timeout=ES_TIMEOUT,
-)
+try:
+    connections.create_connection(
+        hosts=ES_URLS,
+        sniff_on_start=True,
+        sniff_on_connection_fail=True,
+        sniffer_timeout=60,
+        maxsize=25,  # default value 10
+        timeout=ES_TIMEOUT,
+    )
+except (ConnectionError, TransportError) as ce:
+    logger.error(
+        "Unable to connect to Elasticsearch hosts: {}".format(ES_URLS)
+    )
+    sys.exit(1)
 
 
 def get_es_client():
@@ -73,6 +80,16 @@ def get_es_client():
     )
 
 es_client = get_es_client()
+
+# test connection
+try:
+    es_client.ping()
+except (ConnectionError, TransportError) as ce:
+    logger.error(
+        "Unable to connect to Elasticsearch hosts: {}".format(ES_URLS)
+    )
+    sys.exit(1)
+
 
 mappings = {
     "mappings": {
