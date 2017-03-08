@@ -5,6 +5,5 @@ eventlet==0.20.1
 gunicorn==19.6.0
 puput==0.8
 python3-memcached==1.51
-wagtail==1.8.1
-puput==0.8
+wagtail==1.9
 django-watchman==0.12.0
