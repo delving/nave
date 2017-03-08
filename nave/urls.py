@@ -22,12 +22,16 @@ urlpatterns = [
     url(r'^rosetta/', include('rosetta.urls')),
 ]
 
+
 if settings.USE_WAGTAIL_CMS:
     from wagtail.wagtailadmin import urls as wagtailadmin_urls
+    from wagtail.wagtaildocs import urls as wagtaildocs_urls
     urlpatterns += i18n_patterns(
         url(r'^cms/', include(wagtailadmin_urls)),
+        url(r'^documents/', include(wagtaildocs_urls)),
         prefix_default_language=False
     )
+
 
 urlpatterns += i18n_patterns(
     url(r'^admin/', include(admin.site.urls)),  # NOQA
