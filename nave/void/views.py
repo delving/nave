@@ -7,29 +7,24 @@ from django.http import HttpResponseRedirect
 from django.views.generic import ListView, RedirectView, TemplateView
 from rest_framework import status
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication, TokenAuthentication
-from rest_framework.decorators import api_view, authentication_classes, permission_classes, parser_classes
+from rest_framework.decorators import api_view, authentication_classes, permission_classes, parser_classes, \
+     renderer_classes
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.parsers import JSONParser
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 from rest_framework.response import Response
+from rest_framework_xml.parsers import XMLParser
+from rest_framework_xml.renderers import XMLRenderer
 
 from nave.void import tasks
 from nave.void.models import ProxyResourceField, ProxyMapping
-from nave.void.parsers import PlainTextParser
+from nave.void.parsers import PlainTextParser, XMLTreeParser
 from nave.void.processors import BulkApiProcessor
-
 
 
 logger = logging.getLogger(__name__)
 
 
-@api_view(['PUT', 'POST', 'GET'])
-def index_api(request):
-    """Entrypoint for the hub2 index-api."""
-    if request.method in ['PUT', 'POST']:
-        content = request.data
-    else:
-        return HttpResponseRedirect(reverse("index_api_docs"))
 
 @api_view(['PUT', 'POST'])
 @authentication_classes((SessionAuthentication, BasicAuthentication, TokenAuthentication))
@@ -43,6 +38,25 @@ def bulk_api(request):
             return Response(processor.process(), status=status.HTTP_201_CREATED)
         tasks.process_bulk_api_request.delay(content)
         return Response({'status': "ok"}, status=status.HTTP_201_CREATED)
+
+
+@api_view(['PUT', 'POST', 'GET'])
+@parser_classes((XMLTreeParser,))
+# @renderer_classes((XMLRenderer,))
+@permission_classes((AllowAny,))
+def index_api(request):
+    """Entrypoint for the hub2 index-api."""
+    if request.method in ['PUT', 'POST']:
+        content = request.data
+        print(content)
+        return Response(
+            content,
+            content_type="application/xml",
+            status=status.HTTP_201_CREATED
+        )
+    else:
+        return HttpResponseRedirect(reverse("index_api_docs"))
+
 
 def index_api_docs(request):
     from django.http.response import HttpResponse
