@@ -14,8 +14,8 @@ from rest_framework.parsers import JSONParser
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 from rest_framework.response import Response
 from rest_framework_xml.parsers import XMLParser
-from rest_framework_xml.renderers import XMLRenderer
 
+from nave.search.renderers import XMLRenderer
 from nave.void import tasks
 from nave.void.models import ProxyResourceField, ProxyMapping
 from nave.void.parsers import PlainTextParser, XMLTreeParser
@@ -42,18 +42,21 @@ def bulk_api(request):
 
 @api_view(['PUT', 'POST', 'GET'])
 @parser_classes((XMLTreeParser,))
-# @renderer_classes((XMLRenderer,))
+@renderer_classes((XMLRenderer,))
 @permission_classes((AllowAny,))
 def index_api(request):
     """Entrypoint for the hub2 index-api."""
     if request.method in ['PUT', 'POST']:
         content = request.data
-        print(content)
-        return Response(
-            content,
-            content_type="application/xml",
-            status=status.HTTP_201_CREATED
-        )
+        # todo add processor for the index API data
+        response_list = {
+            'totalItemCount': 0,
+            'indexedItemCount': 0,
+            'deletedItemCount': 0,
+            'invalidItemCount': 0,
+            'invalidItems': []
+        }
+        return Response({'indexResponse': response_list})
     else:
         return HttpResponseRedirect(reverse("index_api_docs"))
 
