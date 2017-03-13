@@ -3,6 +3,7 @@ from urllib.parse import unquote
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
+from django.http import HttpResponseRedirect
 from django.views.generic import ListView, RedirectView, TemplateView
 from rest_framework import status
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication, TokenAuthentication
@@ -22,6 +23,14 @@ from nave.void.processors import BulkApiProcessor
 logger = logging.getLogger(__name__)
 
 
+@api_view(['PUT', 'POST', 'GET'])
+def index_api(request):
+    """Entrypoint for the hub2 index-api."""
+    if request.method in ['PUT', 'POST']:
+        content = request.data
+    else:
+        return HttpResponseRedirect(reverse("index_api_docs"))
+
 @api_view(['PUT', 'POST'])
 @authentication_classes((SessionAuthentication, BasicAuthentication, TokenAuthentication))
 @parser_classes((PlainTextParser,))
@@ -35,6 +44,49 @@ def bulk_api(request):
         tasks.process_bulk_api_request.delay(content)
         return Response({'status': "ok"}, status=status.HTTP_201_CREATED)
 
+def index_api_docs(request):
+    from django.http.response import HttpResponse
+    content = """The Index API makes it possible to send custom items to be indexed.
+
+        It expects to receive an XML document containing one or more items to be indexed.
+        Each item must have an itemId attribute which serves as identifier for the item to be indexed,
+        as well as an itemType attribute which indicates the type of the item, to be used to filter it later on.
+
+        An item contains one or more field elements that describe the data to be indexed. A field must provide a name attribute,
+        and can optionally specify:
+        - a fieldType attribute which is used by the indexing mechanism (default value: "text")
+        - a facet attribute which means that the field is to be made available as a facet (default value: false)
+
+        The possible values for fieldType are: string, location, int, single, text, date, link
+
+        For example:
+
+        <indexRequest>
+            <indexItem itemId="123" itemType="book">
+                <field name="title" fieldType="string">The Hitchhiker's Guide to the Galaxy</field>
+                <field name="author" fieldType="string" facet="true">Douglas Adams</field>
+            </indexItem>
+        </indexRequest>
+
+
+        It is possible to remove existing items by specifying the delete flag:
+
+        <indexRequest>
+            <indexItem itemId="123" itemType="book" delete="true" />
+        </indexRequest>
+
+
+        Additionally, there is a number of optional system fields that can be specified, and that help to trigger additional functionality:
+
+        <indexRequest>
+            <indexItem itemId="123" itemType="book">
+                <systemField name="thumbnail">http://path/to/thumbnail</field>
+            </indexItem>
+        </indexRequest>
+
+        The possible systemField names are: collection, collectionPart, thumbnail, thumbnailLarg, thumbnailSmall, landingPage, provider, owner, title, description, fullText
+        """
+    return HttpResponse(content_type='text/plain', content=content)
 
 @api_view(['PUT', 'POST', 'DELETE'])
 @authentication_classes((SessionAuthentication, BasicAuthentication, TokenAuthentication))
