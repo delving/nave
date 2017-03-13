@@ -13,7 +13,6 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from rest_framework.parsers import JSONParser
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 from rest_framework.response import Response
-from rest_framework_xml.parsers import XMLParser
 
 from nave.search.renderers import XMLRenderer
 from nave.void import tasks
@@ -48,6 +47,7 @@ def index_api(request):
     """Entrypoint for the hub2 index-api."""
     if request.method in ['PUT', 'POST']:
         content = request.data
+        print(content)
         # todo add processor for the index API data
         response_list = {
             'totalItemCount': 0,
