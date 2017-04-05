@@ -103,6 +103,8 @@ class NaveESQuery(object):
         for filt in filters:
             if exclude and is_excluded(filt):
                 continue
+            elif not filt:
+                continue
             elif ":" in filt:
                 key, *value = filt.split(":")
                 key = key.replace('_facet', '')
