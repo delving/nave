@@ -26,7 +26,7 @@ class Command(BaseCommand):
         index = options['index']
         from elasticsearch_dsl import Search, A
         s = Search(using=es_client, index=index)
-        a = A('terms', field='system.spec.raw')
+        a = A('terms', field='system.spec.raw', size=500)
         s.aggs.bucket('specs', a)
         response = s.execute()
         for spec in response.aggregations.specs.buckets:
