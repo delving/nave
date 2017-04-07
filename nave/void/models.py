@@ -805,7 +805,7 @@ class DataSet(TimeStampedModel, GroupOwned):
             logger.info("Indexed records {} for dataset {}".format(nr, self.spec))
             return True
         elif errors:
-            logger.error("Something went wrong with bulk index: {}".format(errors))
+            logger.warn("Something went wrong with bulk index: {}".format(errors))
             return False
         return False
 
