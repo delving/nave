@@ -18,7 +18,7 @@ from nave.search.renderers import XMLRenderer
 from nave.void import tasks
 from nave.void.models import ProxyResourceField, ProxyMapping
 from nave.void.parsers import PlainTextParser, XMLTreeParser
-from nave.void.processors import BulkApiProcessor
+from nave.void.processors import BulkApiProcessor, IndexApiProcessor
 
 
 logger = logging.getLogger(__name__)
@@ -47,15 +47,9 @@ def index_api(request):
     """Entrypoint for the hub2 index-api."""
     if request.method in ['PUT', 'POST']:
         content = request.data
-        print(content)
-        # todo add processor for the index API data
-        response_list = {
-            'totalItemCount': 0,
-            'indexedItemCount': 0,
-            'deletedItemCount': 0,
-            'invalidItemCount': 0,
-            'invalidItems': []
-        }
+        logger.debug(content)
+        processor = IndexApiProcessor(payload=content)
+        response_list = processor.process()
         return Response({'indexResponse': response_list})
     else:
         return HttpResponseRedirect(reverse("index_api_docs"))
