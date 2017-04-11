@@ -384,7 +384,11 @@ class RDFModel(TimeStampedModel, GroupOwned):
                             graph.add((value, RDF.type, EDM.WebResource))
                         else:
                             for v in value:
-                                graph.add((v, RDF.type, EDM.WebResource))
+                                if isinstance(v, list):
+                                    for entry in v:
+                                        graph.add((entry, RDF.type, EDM.WebResource))
+                                elif v:
+                                    graph.add((v, RDF.type, EDM.WebResource))
             elif isinstance(key, str) and key.startswith('http://'):
                 predicate = URIRef(key)
             elif isinstance(key, str) and ":" in key:
@@ -633,96 +637,28 @@ class RDFModel(TimeStampedModel, GroupOwned):
         response = store.query(query=query)
         return response
 
-    def create_es_action(self, action="index", record_type=None, index=settings.SITE_NAME, store=None, doc_type=None,
-                         context=True, flat=True, exclude_fields=None, acceptance=False):
+    def create_es_action(self, action="index", record_type=None,
+                         index=settings.SITE_NAME, store=None, doc_type=None,
+                         context=True, flat=True, exclude_fields=None,
+                         acceptance=False):
         if doc_type is None:
             doc_type = self._generate_doc_type()
         if record_type is None:
             record_type = self.get_rdf_type()
-        if not store:
-            store = rdfstore.get_rdfstore()
 
-        if acceptance:
-            index = "{}_acceptance".format(index)
-
-        if record_type == "http://www.openarchives.org/ore/terms/Aggregation":
-            record_type = "mdr"
-
-        if action == "delete":
-            return {
-                '_op_type': action,
-                '_index': index,
-                '_type': doc_type,
-                '_id': self.hub_id
-            }
-
-        graph = None
-
-        if not context:
-            graph = self.get_graph()
-        else:
-            graph, nr_levels = self.get_context_graph(store=store, named_graph=self.named_graph)
-            graph.namespace_manager = namespace_manager
-
-        bindings = GraphBindings(
-            about_uri=self.source_uri,
-            graph=graph
+        rdf_record = RDFRecord(
+            hub_id=self.hub_id,
+            source_uri=self.source_uri,
+            named_graph_uri=self.named_graph,
+            graph=self.get_graph(),
         )
-        index_doc = bindings.to_flat_index_doc() if flat else bindings.to_index_doc()
-        if exclude_fields:
-            index_doc = {k: v for k, v in index_doc.items() if k not in exclude_fields}
-        # add delving spec for default searchability
-        index_doc["delving_spec"] = [
-            {'@type': "Literal",
-             'value': self.get_spec_name(),
-             'raw': self.get_spec_name(),
-             'lang': None}
-        ]
-        logger.debug(index_doc)
-        mapping = {
-            '_op_type': action,
-            '_index': index,
-            '_type': doc_type,
-            '_id': self.hub_id,
-            '_source': index_doc
-        }
-        thumbnail = bindings.get_about_thumbnail
-        mapping['_source']['system'] = {
-            'slug': self.hub_id,
-            'spec': self.get_spec_name(),
-            'thumbnail': thumbnail if thumbnail else "",
-            'preview': "detail/foldout/{}/{}".format(doc_type, self.hub_id),
-            'caption': bindings.get_about_caption if bindings.get_about_caption else "",
-            'about_uri': self.document_uri,
-            'source_uri': self.source_uri,
-            'graph_name': self.named_graph,
-            'created_at': datetime.datetime.now().isoformat(),
-            'modified_at': datetime.datetime.now().isoformat(),
-            'source_graph': graph.serialize(format='nt', encoding="utf-8").decode(encoding="utf-8"),
-            'proxy_resource_graph': None,
-            'web_resource_graph': None,
-            # 'about_type': [rdf_type.qname for rdf_type in bindings.get_about_resource().get_types()]
-            # 'collections': None, todo find a way to add collections via link
-        }
-        data_owner = self.dataset.data_owner if hasattr(self, 'dataset') else None
-        dataset_name = self.dataset.name if hasattr(self, 'dataset') else None
-        mapping['_source']['legacy'] = {
-            'delving_hubId': self.hub_id,
-            'delving_recordType': record_type,
-            'delving_spec': self.get_spec_name(),
-            'delving_owner': data_owner,
-            'delving_orgId': settings.ORG_ID,
-            'delving_collection': dataset_name,
-            'delving_title': self.get_first_literal(DC.title, graph),
-            'delving_creator': self.get_first_literal(DC.creator, graph),
-            'delving_description': self.get_first_literal(DC.description, graph),
-            'delving_provider': index_doc.get('edm_provider')[0].get('value') if 'edm_provider' in index_doc else None,
-            'delving_hasGeoHash': "true" if bindings.has_geo() else "false",
-            'delving_hasDigitalObject': "true" if thumbnail else "false",
-            'delving_hasLandingePage': "true" if 'edm_isShownAt' in index_doc else "false",
-            'delving_hasDeepZoom': "true" if 'nave_deepZoom' in index_doc else "false",
-        }
-        return mapping
+        return rdf_record.create_es_action(
+            action=action,
+            record_type=record_type,
+            doc_type=doc_type,
+            index=index
+
+        )
 
     @staticmethod
     def get_geo_points(graph):
