@@ -524,7 +524,7 @@ RDF_SUPPORTED_NAMESPACES = {
     'http://purl.org/dc/elements/1.1/': 'dc',
     'http://schemas.delving.eu/': 'delving',
     'http://purl.org/dc/terms/': 'dcterms',
-    'http://www.delving.eu/namespaces/custom': 'custom',
+    'http://www.delving.eu/namespaces/custom/': 'custom',
     'http://www.musip.nl/': 'musip',
     'http://www.itin.nl/namespace': 'itin',
     'http://www.itin.nl/drupal': 'drup',

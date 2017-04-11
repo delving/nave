@@ -190,35 +190,60 @@ class IndexApiProcessor:
             return []
         return self.data['indexRequest']['indexItem']
 
-    def process(self):
+    def get_es_action(self, item):
+        """Create a Bulk API es action from index item."""
+        graph = self.to_graph(item)
+        record = RDFRecord(
+            hub_id=self.create_hub_id(item),
+            source_uri=self.get_source_uri(item),
+            named_graph_uri=self.get_named_graph(item),
+            graph=graph,
+            spec=self.get_spec(item)
+        )
+        return record.create_es_action(
+            doc_type=self.get_doc_type(item),
+            record_type=self.get_record_type(item),
+            context=False
+        )
+
+    def process(self, index=True):
         """Get a dict of index items by type."""
         total = 0
         indexed = 0
         deleted = 0
         invalid = 0
         invalid_items = []
-        items = []
+        es_actions = []
         for item in self.get_index_items():
             try:
                 total += 1
                 hub_id = self.create_hub_id(item)
                 delete = self.get_delete_status(item)
                 if delete:
-                    items.append(self.create_delete_action(item))
+                    es_actions.append(self.create_delete_action(item))
                     deleted += 1
                 else:
+                    es_action = self.get_es_action(item)
+                    es_actions.append(es_action)
                     indexed += 1
-                    # create graph
-                    # create content items
             except Exception as ex:
                 logger.error(ex)
                 invalid += 1
                 invalid_items.append(item)
-        if items:
-            # bulk index via elastic search
-            # check our own counts against es feedback
-            pass
-        return total, indexed, deleted, invalid, invalid_items
+        if es_actions and index:
+            nr, errors = helpers.bulk(get_es_client(), es_actions)
+            # if nr > 0 and not errors:
+                # logger.info("Indexed records: {}".format(nr))
+                # return True
+            # elif errors:
+                # logger.warn("Something went wrong with bulk index: {}".format(errors))
+        return {
+            'totalItemCount': total,
+            'indexedItemCount': indexed,
+            'deletedItemCount': deleted,
+            'invalidItemCount': invalid,
+            'invalidItems': invalid_items
+        }
 
 
 class BulkApiProcessor:
@@ -277,7 +302,7 @@ class BulkApiProcessor:
             logger.info("Indexed records: {}".format(nr))
             return True
         elif errors:
-            logger.error("Something went wrong with bulk index: {}".format(errors))
+            logger.warn("Something went wrong with bulk index: {}".format(errors))
             return False
         return False
 

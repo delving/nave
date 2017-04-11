@@ -392,19 +392,35 @@ def test__index_api__get_graph():
     assert URIRef('urn:123/456') in objects
 
 
+def test__index_api__get_es_action():
+    """Create Elasticsearch bulk action from index item."""
+    payload = INDEX_JSON
+    processor = IndexApiProcessor(payload=payload)
+    item = processor.get_index_items()[0]
+    es_action = processor.get_es_action(item)
+    assert es_action
+    assert es_action['_id'] == processor.create_hub_id(item)
+    assert es_action['_type'] == processor.get_doc_type(item)
+    assert es_action['_op_type'] == 'index'
+    assert '_source' in es_action
+    record = es_action['_source']
+    assert 'dc_title' in record
+    assert 'custom_city' in record
+    assert 'delving_geoHash' in record
+
+
 def test__index_api__process():
     """Test full processing of payload."""
     payload = INDEX_JSON
     processor = IndexApiProcessor(payload=payload)
-    result = processor.process()
+    result = processor.process(index=False)
     assert result
     assert len(result) == 5
-    total, indexed, deleted, invalid, invalid_items = result
-    assert total == 3
-    assert indexed == 2
-    assert deleted == 1
-    assert invalid == 0
-    assert not invalid_items
+    assert result['totalItemCount'] == 3
+    assert result['indexedItemCount'] == 2
+    assert result['deletedItemCount'] == 1
+    assert result['invalidItemCount'] == 0
+    assert not result['invalidItems']
 
 
 @override_settings(
