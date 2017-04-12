@@ -365,7 +365,7 @@ LOGGING = {
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': 'debug.log',
+            'filename': '/tmp/debug.log',
         },
         'sentry': {
             'level': 'ERROR',
@@ -524,7 +524,7 @@ RDF_SUPPORTED_NAMESPACES = {
     'http://purl.org/dc/elements/1.1/': 'dc',
     'http://schemas.delving.eu/': 'delving',
     'http://purl.org/dc/terms/': 'dcterms',
-    'http://www.delving.eu/namespaces/custom': 'custom',
+    'http://www.delving.eu/namespaces/custom/': 'custom',
     'http://www.musip.nl/': 'musip',
     'http://www.itin.nl/namespace': 'itin',
     'http://www.itin.nl/drupal': 'drup',
@@ -553,6 +553,9 @@ RDF_SUPPORTED_NAMESPACES = {
 
 RDF_SUPPORTED_PREFIXES = defaultdict(list)
 for ns, prefix in RDF_SUPPORTED_NAMESPACES.items():
+    if not ns.endswith('/'):
+       if not ns.endswith('#'):
+            ns = '{}/'.format(ns)
     RDF_SUPPORTED_PREFIXES[prefix].append(ns)
 
 RDF_EXCLUDED_PROPERTIES = [

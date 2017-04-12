@@ -158,7 +158,7 @@ def remove_rdf_from_index(
             logger.info("Removed records: {}".format(nr))
             return True
         elif errors:
-            logger.error("Something went wrong with bulk index: {}".format(errors))
+            logger.warn("Something went wrong with bulk index: {}".format(errors))
             return False
     return False
 
@@ -173,6 +173,6 @@ def update_rdf_in_index(app_label, model_name, record_id,
             logger.info("Indexed records: {}".format(nr))
             return True
         elif errors:
-            logger.error("Something went wrong with bulk index: {}".format(errors))
+            logger.warn("Something went wrong with bulk index: {}".format(errors))
             return False
     return False

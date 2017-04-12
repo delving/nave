@@ -1,3 +1,4 @@
+from collections import defaultdict
 import json
 import logging
 import operator
@@ -7,7 +8,8 @@ from django.apps import apps
 from django.conf import settings
 from django.utils.datastructures import MultiValueDict
 from elasticsearch import helpers
-from rdflib import ConjunctiveGraph
+from rdflib import Namespace, Graph, URIRef, Literal
+from rdflib.namespace import RDF
 from rdflib.plugins.parsers.ntriples import ParseError
 
 from nave.lod.utils import rdfstore
@@ -18,6 +20,230 @@ from nave.void.models import DataSet
 from nave.lod import tasks
 
 logger = logging.getLogger(__name__)
+
+CUSTOM_NS = Namespace(settings.RDF_SUPPORTED_PREFIXES.get('custom')[0])
+DELVING = Namespace(settings.RDF_SUPPORTED_PREFIXES.get('delving')[0])
+NAVE = Namespace(settings.RDF_SUPPORTED_PREFIXES.get('nave')[0])
+
+
+class IndexApiProcessor:
+    """Process JSON from the index API and index as RDF in Elasticsearch.
+
+    You can find more information on the Hub2 implementation here:
+        https://github.com/delving/culture-hub/blob/1590d772d75bb6c004075af76e3653997fe2357d/modules/indexApi/app/controllers/api/Index.scala
+    """
+
+    def __init__(self, payload):
+        self.payload = payload
+        self.data = None
+
+    def validate(self):
+        """Validate the payload input."""
+        try:
+            self.data = json.loads(self.payload)
+            return True, None
+        except Exception as ex:
+            return False, ex
+
+    def get_delete_status(self, item):
+        """Return delete status of the index item."""
+        delete = item.get('@delete')
+        return True if delete and delete.lower() == 'true' else False
+
+    def create_hub_id(self, item):
+        """Rerun hubId from index item."""
+        return "{}_{}_{}".format(
+            settings.ORG_ID,
+            self.get_spec(item),
+            self.get_local_id(item)
+        )
+
+    def get_spec(self, item):
+        """Return spec from index item."""
+        return item['@itemType'].lower()
+
+    def get_record_type(self, item):
+        """Return the recordtype for index items."""
+        return 'indexitem'
+
+    def get_doc_type(self, item):
+        """Return the doctype for Elasticsearch.
+
+        The doc_type for index items should be identical to the record type.
+
+        So index items are sub-divided into datasets that can be queried by
+        their spec.
+        """
+        return self.get_record_type(item)
+
+    def create_delete_action(self, item):
+        """Create delete action for Elasticsearch bulk API."""
+        return {
+            '_op_type': 'delete',
+            '_index': settings.SITE_NAME,
+            '_type': self.get_doc_type(item),
+            '_id': self.create_hub_id(item)
+        }
+
+    def get_local_id(self, item):
+        """Get local identifier from index item."""
+        return item['@itemId'].lower()
+
+    def get_source_uri(self, item, as_uri=False):
+        """Get the RDF source uri."""
+        source_uri = '{}/resource/{}/{}/{}'.format(
+            settings.RDF_BASE_URL,
+            self.get_doc_type(item),
+            self.get_spec(item),
+            self.get_local_id(item)
+        )
+        if as_uri:
+            source_uri = URIRef(source_uri)
+        return source_uri
+
+    def get_named_graph(self, item):
+        """Get the Named Graph uri."""
+        return '{}/graph'.format(self.get_source_uri(item).rstrip('/'))
+
+    def process_field(self, field, system_field=False):
+        """Process the field dictionary.
+
+        Discard fields with empty '#text' values.
+        """
+        triples = []
+        try:
+            label = field['@name']
+            text = field.get('#text')
+            if not text:
+                logger.warn('empty field: {}'.format(field))
+                return None
+            predicate = None
+            if system_field:
+                predicate = DELVING[label]
+            elif ':' in label:
+                ns_prefix, ns_label = label.split(':', maxsplit=1)
+                namespace = settings.RDF_SUPPORTED_PREFIXES.get(ns_prefix)
+                if namespace:
+                    namespace = Namespace(namespace[0])
+                    predicate = namespace[ns_label]
+                else:
+                    logger.warn(
+                        'Discarding because of unknown namespace: {}'.format(
+                            ns_prefix
+                        )
+                    )
+            else:
+                predicate = CUSTOM_NS[label]
+            # todo add switches for fieldType
+            # string, location, int, single, text, date, link
+            if not system_field:
+                field_type = field['@fieldType']
+                if field_type in ['link']:
+                    obj = URIRef(text)
+                elif field_type in ['location']:
+                    triples.append(
+                        (DELVING.geoHash, Literal(text))
+                    )
+                    obj = Literal(text)
+                # todo: support data after v2 internal storage is available
+                else:
+                    obj = Literal(text)
+            else:
+                obj = Literal(text)
+            triples.append((predicate, obj))
+            return triples
+        except KeyError as ke:
+            logger.warn('Invalid field labels: {}\n{}'.format(field, ke))
+        return None
+
+    def to_graph(self, item):
+        """Convert the index item to an RDF graph."""
+        named_graph = URIRef(self.get_named_graph(item))
+        s = URIRef(self.get_source_uri(item))
+        g = Graph(identifier=named_graph)
+        g.add((s, RDF.type, CUSTOM_NS.IndexItem))
+        if not 'field' in item:
+            raise ValueError('"field" needs to exist and be a list.')
+        extracted_fields = []
+        for field in item['field']:
+            extracted_field = self.process_field(field, system_field=False)
+            if extracted_field:
+                extracted_fields.extend(extracted_field)
+        for field in item['systemField']:
+            extracted_field = self.process_field(field, system_field=True)
+            if extracted_field:
+                extracted_fields.extend(extracted_field)
+        for field in extracted_fields:
+            pred, obj = field
+            g.add((s, pred, obj))
+        return g
+
+    def get_index_items(self):
+        """Return a list of index items."""
+        valid, exception = self.validate()
+        if not valid:
+            logger.warn('payload not valid: {}'.format(exception))
+            raise exception
+        if not 'indexRequest' in self.data:
+            return []
+        if not 'indexItem' in self.data['indexRequest']:
+            return []
+        return self.data['indexRequest']['indexItem']
+
+    def get_es_action(self, item):
+        """Create a Bulk API es action from index item."""
+        graph = self.to_graph(item)
+        record = RDFRecord(
+            hub_id=self.create_hub_id(item),
+            source_uri=self.get_source_uri(item),
+            named_graph_uri=self.get_named_graph(item),
+            graph=graph,
+            spec=self.get_spec(item)
+        )
+        return record.create_es_action(
+            doc_type=self.get_doc_type(item),
+            record_type=self.get_record_type(item),
+            context=False
+        )
+
+    def process(self, index=True):
+        """Get a dict of index items by type."""
+        total = 0
+        indexed = 0
+        deleted = 0
+        invalid = 0
+        invalid_items = []
+        es_actions = []
+        for item in self.get_index_items():
+            try:
+                total += 1
+                hub_id = self.create_hub_id(item)
+                delete = self.get_delete_status(item)
+                if delete:
+                    es_actions.append(self.create_delete_action(item))
+                    deleted += 1
+                else:
+                    es_action = self.get_es_action(item)
+                    es_actions.append(es_action)
+                    indexed += 1
+            except Exception as ex:
+                logger.error(ex)
+                invalid += 1
+                invalid_items.append(item)
+        if es_actions and index:
+            nr, errors = helpers.bulk(get_es_client(), es_actions)
+            # if nr > 0 and not errors:
+                # logger.info("Indexed records: {}".format(nr))
+                # return True
+            # elif errors:
+                # logger.warn("Something went wrong with bulk index: {}".format(errors))
+        return {
+            'totalItemCount': total,
+            'indexedItemCount': indexed,
+            'deletedItemCount': deleted,
+            'invalidItemCount': invalid,
+            'invalidItems': invalid_items
+        }
 
 
 class BulkApiProcessor:
@@ -76,7 +302,7 @@ class BulkApiProcessor:
             logger.info("Indexed records: {}".format(nr))
             return True
         elif errors:
-            logger.error("Something went wrong with bulk index: {}".format(errors))
+            logger.warn("Something went wrong with bulk index: {}".format(errors))
             return False
         return False
 

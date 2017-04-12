@@ -914,8 +914,10 @@ class RDFRecord:
 
     DEFAULT_RDF_FORMAT = "nt" if not settings.RDF_DEFAULT_FORMAT else settings.RDF_DEFAULT_FORMAT
 
-    def __init__(self, hub_id=None, source_uri=None, spec=None, rdf_string=None, org_id=None, doc_type=None,
-                 named_graph_uri=None):
+    def __init__(self, hub_id=None, source_uri=None,
+                 spec=None, rdf_string=None,
+                 org_id=None, doc_type=None,
+                 named_graph_uri=None, graph=None):
         if hub_id is None and source_uri is None and rdf_string is None and named_graph_uri is None:
             raise ValueError("either source_uri or hub_id or rdf_string must be given at initialisation.")
         self._hub_id = hub_id
@@ -924,9 +926,8 @@ class RDFRecord:
         self._doc_type = doc_type
         self._source_uri = source_uri
         self._named_graph = named_graph_uri
-        self._source_uri = None
         self._absolute_uri = None
-        self._graph = None
+        self._graph = graph
         self._rdf_string = rdf_string
         self._query_response = None
         self._modified_at = None

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<indexRequest>
+    <indexItem itemType="Story" itemId="3614">
+        <field fieldType="string" name="delving:pmhId">3614</field>
+        <field fieldType="text" name="dcterms:isPartOf">utrecht-altijd</field>
+        <field fieldType="text" name="dcterms:isPartOf">utrecht-altijd</field>
+        <field fieldType="string" name="delving:provider">Utrecht Altijd</field>
+        <field fieldType="string" name="europeana:provider">Utrecht Altijd</field>
+        <field fieldType="string" name="dc:Title">Handmatig werk tussen 1850-1914</field>
+        <field fieldType="string" name="introduction">Vanaf 1870 schoot het aantal fabrieken in de provincie Utrecht omhoog. Door onder meer de komst van de stoomkracht werden diverse beroepstakken gemechaniseerd. Maar bij een groot aantal ambachten bleef het werk grotendeels handmatig, zoals in de landbouw, griendcultuur, touwslagerij en visserij. Tot de Eerste Wereldoorlog veranderde dat nauwelijks.</field>
+        <field fieldType="string" name="delving:description">Vanaf 1870 schoot het aantal fabrieken in de provincie Utrecht omhoog. Door onder meer de komst van de stoomkracht werden diverse beroepstakken gemechaniseerd. Maar bij een groot aantal ambachten bleef het werk grotendeels handmatig, zoals in de landbouw, griendcultuur, touwslagerij en visserij. Tot de Eerste Wereldoorlog veranderde dat nauwelijks.</field>
+        <field fieldType="text" name="delving:description">&lt;h3&gt;Visserij&lt;/h3&gt;\n&lt;p&gt;Het dorp Spakenburg was tussen 1860 en 1932 ??n van de vijf grootste vissersplaatsen aan de Zuiderzee. Rond 1900 bestond de vissersvloot uit ongeveer 200 schepen en het merendeel van de inwoners?was werkzaam in deze beroepstak. Voor Spakenburg vormde de industrialisatie, die zich in Nederland vanaf 1870 inzette, nooit een echte bedreiging: de visserij bleef handwerk. De afsluiting van de Zuiderzee in 1932 en de daarop volgende inpoldering was van veel grotere invloed op het vissersleven. Veel?vissers moesten toen omzien naar een ander beroep. Pas veel later in de 20ste eeuw werd de visserij volledig gemechaniseerd.&lt;/p&gt;\n&lt;h3&gt;Landbouw&lt;/h3&gt;\n&lt;p&gt;Tot 1900 veranderde het werk van de landbouwers nauwelijks. Er kwamen uiteraard modernere werktuigen en gereedschap, maar van echte mechanisatie was geen sprake. Pas in de loop van de 20ste eeuw werd de mechanisering van de
+        landbouw werkelijkheid, waardoor veel boeren moesten uitzien?naar andere werkzaamheden. Tegenwoordig zijn kleine boerenbedrijven nauwelijks nog levensvatbaar. De meeste zijn grootschalig en volledig gemechaniseerd.&lt;/p&gt;\n&lt;h3&gt;Wilgen en hennep&lt;/h3&gt;\n&lt;p&gt;Voor het zuidwestelijk deel van de provincie Utrecht was de touw- en griendcultuur lange tijd van grote economische betekenis. De hennepteelt en wilgengriend was eigenlijk een gevolg van de slechte afwatering in de polders. De meeste grond was daardoor?ongeschikt voor akker- of landbouw. IJsselstein vormde het middelpunt van de griendcultuur waarin dorpsgenoten in de 19de eeuw en eerste kwart van de 20ste eeuw hun boterham verdienden. Oudewater was een belangrijk centrum voor de touwfabricage.&lt;/p&gt;\n&lt;h3&gt;Meubelfabrieken en touwslagerijen&lt;/h3&gt;\n&lt;p&gt;Wilgenhout was geliefd vanwege de taaiheid van het hout, maar ook door de goede splijtbaarheid. Met de hand vlochten IJsselsteiners manden, of
+        bogen ze het hout tot hoepels voor tonnen en vaten. Uit de hoepelmakerijen kwam rond 1900 een industrie voort: rond IJsselstein verrezen enkele grote meubelfabrieken. In Oudewater floreerden vooral de touwslagerijen. Het touw dat zij vervaardigden, werd vooral?gebruikt voor de zeescheepvaart en visserij. In deze beroepstak was geen sprake van mechanisering. De arbeiders die vanuit de baanschuur het touw sponnen, bleven dit doen zoals ze het al eeuwen deden.&lt;/p&gt;</field>
+        <field fieldType="string" name="delving:landingPage">/verhalen/h/handmatig-werk-tussen-1850-1914/</field>
+        <field fieldType="string" name="europeana:isShownAt">/verhalen/h/handmatig-werk-tussen-1850-1914/</field>
+        <field fieldType="string" name="delving:thumbnail">/media/1480/71-vishangen.jpg</field>
+        <field fieldType="string" name="europeana:isShownBy">/media/1480/71-vishangen.jpg</field>
+        <field fieldType="string" name="europeana:object">/media/1480/71-vishangen.jpg</field>
+        <field facet="true" fieldType="string" name="region">Eemland</field>
+        <field facet="true" fieldType="string" name="period">Moderne Tijd (1800 - 1945)</field>
+        <field facet="true" fieldType="string" name="organization">Tabaksteelt Museum Amerongen</field>
+        <field facet="true" fieldType="string" name="organization">Touwmuseum De Baanschuur</field>
+        <field facet="true" fieldType="string" name="organization">Museum Spakenburg</field>
+        <field facet="true" fieldType="string" name="organization">Klederdracht- en Visserijmuseum Spakenburg</field>
+        <field facet="true" fieldType="string" name="categories">Cultuur/Gebruiken</field>
+        <field facet="true" fieldType="string" name="categories">Handel</field>
+        <field facet="true" fieldType="string" name="categories">Industrie</field>
+        <field facet="true" fieldType="string" name="categories">Werken</field>
+        <field facet="true" fieldType="string" name="tags">Huisindustrie</field>
+        <field facet="true" fieldType="string" name="tags">visserij</field>
+        <field facet="true" fieldType="string" name="tags">hennep</field>
+        <field facet="true" fieldType="string" name="city">Bunschoten</field>
+        <field fieldType="string" name="latitude">5224797119999999</field>
+        <field fieldType="string" name="longitude">5224797119999999</field>
+    </indexItem>
+</indexRequest>
