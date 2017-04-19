@@ -1,10 +1,8 @@
-from collections import defaultdict
 import json
 import logging
 import operator
 from io import TextIOWrapper
 
-from django.apps import apps
 from django.conf import settings
 from django.utils.datastructures import MultiValueDict
 from elasticsearch import helpers
@@ -184,9 +182,9 @@ class IndexApiProcessor:
         if not valid:
             logger.warn('payload not valid: {}'.format(exception))
             raise exception
-        if not 'indexRequest' in self.data:
+        if 'indexRequest' not in self.data:
             return []
-        if not 'indexItem' in self.data['indexRequest']:
+        if 'indexItem' not in self.data['indexRequest']:
             return []
         return self.data['indexRequest']['indexItem']
 
@@ -217,7 +215,6 @@ class IndexApiProcessor:
         for item in self.get_index_items():
             try:
                 total += 1
-                hub_id = self.create_hub_id(item)
                 delete = self.get_delete_status(item)
                 if delete:
                     es_actions.append(self.create_delete_action(item))
@@ -232,11 +229,13 @@ class IndexApiProcessor:
                 invalid_items.append(item)
         if es_actions and index:
             nr, errors = helpers.bulk(get_es_client(), es_actions)
-            # if nr > 0 and not errors:
-                # logger.info("Indexed records: {}".format(nr))
-                # return True
-            # elif errors:
-                # logger.warn("Something went wrong with bulk index: {}".format(errors))
+            if nr > 0 and not errors:
+                logger.info("Indexed records: {}".format(nr))
+                return True
+            elif errors:
+                logger.warn(
+                    "Something went wrong with bulk index: {}".format(errors)
+                )
         return {
             'totalItemCount': total,
             'indexedItemCount': indexed,
@@ -270,8 +269,15 @@ class BulkApiProcessor:
 
     def diff_by_content_hash(self):
         ids = [{"_id": key[0]} for key in self.es_actions.keys()]
-        mget_ids = get_es_client().mget(body={"docs": ids}, index=settings.SITE_NAME, _source_include=['system.content_hash'])
-        index_sets = {(doc.get('_id'), doc['_source'].get('system', {'content_hash': None}).get('content_hash')) for doc in mget_ids.get('docs') if doc['found']}
+        mget_ids = get_es_client().mget(
+            body={"docs": ids},
+            index=settings.SITE_NAME,
+            _source_include=['system.content_hash']
+        )
+        index_sets = {
+            (
+                doc.get('_id'),
+                doc['_source'].get('system', {'content_hash': None}).get('content_hash')) for doc in mget_ids.get('docs') if doc['found']}
         new_records = set(self.es_actions.keys()).difference(index_sets)
         self.records_stored = len(new_records)
         self.records_already_stored = len(ids) - self.records_stored

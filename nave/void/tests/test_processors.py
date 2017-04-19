@@ -1,4 +1,3 @@
-import json
 import os
 
 from django.test import override_settings
@@ -7,7 +6,7 @@ from rdflib.namespace import DC
 
 from nave.lod.utils import rdfstore
 from nave.void.processors import BulkApiProcessor, IndexApiProcessor, \
-     CUSTOM_NS, NAVE, DELVING
+     CUSTOM_NS, DELVING
 
 INDEX_JSON = """{
     "indexRequest": {
@@ -128,6 +127,7 @@ INDEX_JSON = """{
         ]
     }
 }"""
+
 
 def test__index_api__payload_should_validate_as_json():
     """Test if the payload is an object we can process."""
@@ -309,7 +309,7 @@ def test__index_api__process_field():
     """Test processing field dicts from an index item."""
     payload = INDEX_JSON
     processor = IndexApiProcessor(payload=payload)
-    field =  {
+    field = {
         "@name": "dc:title",
         "@fieldType": "text",
         "#text": "test16"
@@ -320,7 +320,7 @@ def test__index_api__process_field():
     pred, obj = response[0]
     assert isinstance(pred, URIRef)
     assert isinstance(obj, Literal)
-    field =  {
+    field = {
         "@name": "dc:title",
         "@fieldType": "link",
         "#text": "urn:123/456"
@@ -331,7 +331,7 @@ def test__index_api__process_field():
     pred, obj = response[0]
     assert isinstance(pred, URIRef)
     assert isinstance(obj, URIRef)
-    field =  {
+    field = {
         "@name": "city",
         "@fieldType": "location",
         "#text": "52.0957251,4.3616082"
@@ -347,13 +347,13 @@ def test__index_api__process_field():
     assert isinstance(pred, URIRef)
     assert pred == CUSTOM_NS.city
     assert isinstance(obj, Literal)
-    field =  {
+    field = {
         "@name": "city",
         "@fieldType": "location",
     }
     response = processor.process_field(field)
     assert not response
-    field =  {
+    field = {
         "@name": "owner",
         "#text": "delving"
     }

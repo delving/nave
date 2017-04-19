@@ -51,7 +51,7 @@ class WebResourceRedirectView(RedirectView):
 
         domain = self.request.META['HTTP_HOST']
         # if settings.DEBUG:
-            # domain = domain.replace(':8000', '')
+        # domain = domain.replace(':8000', '')
 
         # media_type = self.query_string.get('mediaType')
         # default_image = self.query_string.get('defaultImage')
@@ -85,13 +85,13 @@ class DeepZoomRedirectView(RedirectView):
             domain = self.request.META['HTTP_HOST']
         from .webresource import WebResource
         if '_files' in urn:
-            urn, tile_path  = urn.split('_files', maxsplit=1)
+            urn, tile_path = urn.split('_files', maxsplit=1)
             wr = WebResource(uri=urn, spec=spec, domain=domain)
             return wr.get_deepzoom_tile_path(tile_path=tile_path)
         else:
             urn = urn.replace('.tif.dzi', '').replace('.dzi', '')
             wr = WebResource(uri=urn, spec=spec, domain=domain)
-            if not domain in settings.ALLOWED_HOSTS:
+            if domain not in settings.ALLOWED_HOSTS:
                 return wr.get_deepzoom_uri
             return wr.get_deepzoom_redirect()
 
