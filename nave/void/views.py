@@ -24,9 +24,10 @@ from nave.void.processors import BulkApiProcessor, IndexApiProcessor
 logger = logging.getLogger(__name__)
 
 
-
 @api_view(['PUT', 'POST'])
-@authentication_classes((SessionAuthentication, BasicAuthentication, TokenAuthentication))
+@authentication_classes(
+    (SessionAuthentication, BasicAuthentication, TokenAuthentication)
+)
 @parser_classes((PlainTextParser,))
 @permission_classes((IsAuthenticated,))
 def bulk_api(request):
@@ -34,7 +35,10 @@ def bulk_api(request):
         content = request.data
         if not settings.BULK_API_ASYNC:
             processor = BulkApiProcessor(content)
-            return Response(processor.process(), status=status.HTTP_201_CREATED)
+            return Response(
+                processor.process(),
+                status=status.HTTP_201_CREATED
+            )
         tasks.process_bulk_api_request.delay(content)
         return Response({'status': "ok"}, status=status.HTTP_201_CREATED)
 
