@@ -92,6 +92,45 @@ except (ConnectionError, TransportError) as ce:
 
 
 mappings = {
+    "settings": {
+        "analysis": {
+            "filter": {
+                "dutch_stop": {
+                    "type":       "stop",
+                    "stopwords":  "_dutch_"
+                },
+                # "dutch_keywords": {
+                    # "type":       "keyword_marker",
+                    # "keywords":   []
+                # },
+                "dutch_stemmer": {
+                    "type":       "stemmer",
+                    "language":   "dutch"
+                },
+                "dutch_override": {
+                    "type":       "stemmer_override",
+                    "rules": [
+                        "fiets=>fiets",
+                        "bromfiets=>bromfiets",
+                        "ei=>eier",
+                        "kind=>kinder"
+                    ]
+                }
+            },
+            "analyzer": {
+                "dutch": {
+                    "tokenizer":  "standard",
+                    "filter": [
+                        "lowercase",
+                        "dutch_stop",
+                        # "dutch_keywords",
+                        "dutch_override",
+                        "dutch_stemmer"
+                    ]
+                }
+            }
+        }
+    },
     "mappings": {
         "_default_":
             {
@@ -218,7 +257,8 @@ mappings = {
                             "fields": {
                                 "raw": {
                                     "type": "string",
-                                    "index": "not_analyzed"
+                                    "index": "not_analyzed",
+                                    "ignore_above": 1024
                                 }
                             }
                         }
@@ -227,7 +267,8 @@ mappings = {
                         "match": "raw",
                         "mapping": {
                             "type": "string",
-                            "index": "not_analyzed"
+                            "index": "not_analyzed",
+                            "ignore_above": 1024
                         }
                     }},
                     {"id": {

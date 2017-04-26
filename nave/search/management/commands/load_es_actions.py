@@ -13,7 +13,6 @@ from nave.search import es_client
 
 class Command(BaseCommand):
 
-
     def add_arguments(self, parser):
         parser.add_argument(
             '--path',
@@ -34,7 +33,11 @@ class Command(BaseCommand):
                 if lines % 500 == 0:
                     try:
                         self.stdout.write('proccessed {} lines'.format(lines))
-                        helpers.bulk(client=es_client, actions=buffer, index=index)
+                        helpers.bulk(
+                            client=es_client,
+                            actions=buffer,
+                            index=index
+                        )
                     except Exception as e:
                         print(e)
                         print(lines)
