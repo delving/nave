@@ -655,9 +655,13 @@ class RDFModel(TimeStampedModel, GroupOwned):
         return rdf_record.create_es_action(
             action=action,
             record_type=record_type,
+            index=index,
+            store=store,
             doc_type=doc_type,
-            index=index
-
+            context=context,
+            flat=flat,
+            exclude_fields=exclude_fields,
+            acceptance=acceptance
         )
 
     @staticmethod
