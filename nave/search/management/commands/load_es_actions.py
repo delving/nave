@@ -31,10 +31,15 @@ class Command(BaseCommand):
                 if action.startswith('{"_op_type":'):
                     buffer.append(json.loads(action))
                     lines += 1
-                if lines % 1000 == 0:
-                    self.stdout.write('proccessed {} lines'.format(lines))
-                    helpers.bulk(client=es_client, actions=buffer, index=index)
-                    buffer[:] = []
+                if lines % 500 == 0:
+                    try:
+                        self.stdout.write('proccessed {} lines'.format(lines))
+                        helpers.bulk(client=es_client, actions=buffer, index=index)
+                    except Exception as e:
+                        print(e)
+                        print(lines)
+                    finally:
+                        buffer[:] = []
         # save remaining records
         helpers.bulk(client=es_client, actions=buffer, index=index)
         self.stdout.write('Start loading data actions into ElasticSearch.')
