@@ -5,10 +5,11 @@
             {% if show_predicate %}
                 <label class="ds-field-label" data-title="{{ predicate.uri }}">
                 {# TODO: add i18 translation wrappers for labels and predicate.labels #}
-                    {% if not label %}
-                        {{ predicate.label }}
-                    {% else %}
+                    {% if label %}
                         {{ label }}
+                    {% elif label == "" %}
+                    {% else %}
+                        {{ predicate.label }}
                     {% endif %} 
                 </label>
             {% endif %}
