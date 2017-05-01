@@ -23,16 +23,40 @@
                     {# display the value #}
                     {% if not allow_html %}
                         {% if not word_limit %}
-                            {{ field.value }}
+                            {% if is_link %}
+                                <a href="{{ field.value }}" target="_blank" title="{% trans 'Opens in new window' %}" data-toggle="tooltip">
+                                    {{ field.value }}
+                                </a>
+                            {% else %}
+                                {{ field.value }}
+                            {% endif %}
                         {% else %}
-                            {{ field.value|truncatewords:word_limit }}
+                            {% if is_link %}
+                                <a href="{{ field.value }}" target="_blank" title="{% trans 'Opens in new window' %}" data-toggle="tooltip">
+                                   {{ field.value|truncatewords:word_limit }}
+                                </a>
+                            {% else %}
+                                {{ field.value|truncatewords:word_limit }}
+                            {% endif %}
                         {% endif %}
                     {% else %}
                         <span class="field-html">
                         {% if not word_limit %}
-                            {{ field.value|safe }}
+                            {% if is_link %}
+                                <a href="{{ field.value }}" target="_blank" title="{% trans 'Opens in new window' %}" data-toggle="tooltip">
+                                    {{ field.value|safe }}
+                                </a>
+                            {% else %}
+                                {{ field.value|safe }}
+                            {% endif %}
                         {% else %}
-                            {{ field.value|truncatewords:word_limit|safe }}
+                            {% if is_link %}
+                                <a href="{{ field.value }}" target="_blank" title="{% trans 'Opens in new window' %}" data-toggle="tooltip">
+                                    {{ field.value|truncatewords:word_limit|safe }}
+                                </a>
+                            {% else %}
+                                {{ field.value|truncatewords:word_limit|safe }}
+                            {% endif %}
                         {% endif %}
                         </span>
                     {% endif %}
@@ -43,16 +67,11 @@
 
                     <div class="field-tools">
                         {% if field.is_uri and field.resource_has_skos_definition and not is_link  %}
-{#                            <a href='{% url 'results-list' %}?q=rdf.object.id:"{{ field.id }}"' class="label label-info js-lod-popover-trigger"><i class="fa fa-info"></i></a>#}
+                            <a href='{% url 'results-list' %}?q=rdf.object.id:"{{ field.id }}"' class="label label-info js-lod-popover-trigger"><i class="fa fa-info"></i></a>
                             <a href='{{ field.id }}' class="label label-info js-lod-popover-trigger"><i class="fa fa-info"></i></a>
                             <div class="js-lod-popover-content hide">
                                 {% detail_field "skos_definition" rdf_object=field predicate_uri="http://www.w3.org/2004/02/skos/core#definition" label=_('Definition') %}
                             </div>
-                        {% endif %}
-                        {% if is_link %}
-                            <a href="{{ field.value }}" target="_blank" title="{% trans 'Opens in new window' %}" class="label label-default" data-toggle="tooltip">
-                                <i class="fa fa-link"></i>
-                            </a>
                         {% endif %}
                         {% if new_facet_query %}
                             <a href="{% url 'results-list' %}?qf={{ fieldname|urlencode }}:{{ field.value }}" class="label label-info" data-toggle="tooltip" title="{% trans fieldname %}">
