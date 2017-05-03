@@ -149,12 +149,18 @@ class BaseConverter(object):
         }
 
     @staticmethod
-    def get_translated_field(key):
+    def get_translated_field(key, translate=True):
         normalised_key = re.sub("abm_|tib_|icn_|delving_", 'nave_', key)
         normalised_key = re.sub("europeana_", 'edm_', normalised_key)
-        if any([normalised_key.endswith(legacy_suffix) for legacy_suffix in ['_string', '_facet', '_text']]):
+        if any(
+            [
+                normalised_key.endswith(legacy_suffix)
+                for legacy_suffix in ['_string', '_facet', '_text']
+             ]):
             normalised_key = "_".join(normalised_key.split("_")[:-1])
-        return _(normalised_key)
+        if translate:
+            return _(normalised_key)
+        return normalised_key
 
     def get_layout_fields(self):
         layout_fields = [collections.OrderedDict(**{"name": key, "i18n": self.get_translated_field(key)}) for key in

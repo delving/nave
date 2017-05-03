@@ -107,7 +107,7 @@ class NaveESQuery(object):
                 continue
             elif ":" in filt:
                 key, *value = filt.split(":")
-                key = key.replace('_facet', '')
+                key = key.replace('_facet', '').replace('_string', '').replace('_text', '')
                 if key.startswith('delving_') and key not in self.non_legacy_keys:
                     key = "legacy.{}".format(key)
                 filter_dict[key].add(":".join(value))
@@ -416,6 +416,7 @@ class NaveESQuery(object):
             with robust('facet'):
                 facets = params.getlist('facet')
                 for facet in facets:
+                    facet = facet.replace('_facet', '').replace('_string', '').replace('_text', '')
                     if ',' in facet:
                         facet_list.extend(facet.split(','))
                     else:
