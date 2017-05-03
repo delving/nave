@@ -186,7 +186,10 @@ class IndexApiProcessor:
             return []
         if 'indexItem' not in self.data['indexRequest']:
             return []
-        return self.data['indexRequest']['indexItem']
+        index_items = self.data['indexRequest']['indexItem']
+        if not isinstance(index_items, list):
+            index_items = [index_items]
+        return index_items
 
     def get_es_action(self, item):
         """Create a Bulk API es action from index item."""
@@ -231,7 +234,6 @@ class IndexApiProcessor:
             nr, errors = helpers.bulk(get_es_client(), es_actions)
             if nr > 0 and not errors:
                 logger.info("Indexed records: {}".format(nr))
-                return True
             elif errors:
                 logger.warn(
                     "Something went wrong with bulk index: {}".format(errors)
