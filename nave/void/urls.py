@@ -10,7 +10,7 @@ urlpatterns = [
     url(r'^api/index/bulk/$', views.bulk_api, name='bulk_api'),
     url(r'^api/index$', views.index_api, name='index_api_no_slash'),
     url(r'^api/index/$', views.index_api, name='index_api'),
-    url(r'^api/index/_docs$', views.index_api_docs, name='api_docs'),
+    url(r'^api/index/_docs$', views.index_api_docs, name='index_api_docs'),
     url(
         r'^api/index/narthex/toggle/proxyfield/$',
         views.toggle_proxy_field,
