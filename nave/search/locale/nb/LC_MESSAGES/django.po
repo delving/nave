@@ -48,16 +48,16 @@ msgid "Next"
 msgstr "neste"
 
 #: templates/search/include/select-rows.html:2
-msgid "Number of results per page:"
-msgstr ""
+msgid "Number of results per page"
+msgstr "Antall resultater per side"
 
 #: templates/search/search-results.html:10
 msgid "Home"
-msgstr ""
+msgstr "Heim"
 
 #: templates/search/search-results.html:13
 msgid "Search"
-msgstr ""
+msgstr "Søk"
 
 #: templates/search/search-results.html:32
 msgid "results"

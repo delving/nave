@@ -290,87 +290,87 @@ msgstr ""
 #: templates/rdf/content_detail/ore_aggregation.html:5
 #: templates/rdf/lod_detail.html:213
 msgid "dc_title"
-msgstr ""
+msgstr "Tittel"
 
 #: templates/rdf/content_detail/ore_aggregation.html:6
 #: templates/rdf/content_foldout/lod-detail-foldout.html:33
 #: templates/rdf/lod_detail.html:217
 msgid "dc_creator"
-msgstr ""
+msgstr "Opphavsperson"
 
 #: templates/rdf/content_detail/ore_aggregation.html:7
 #: templates/rdf/content_detail/ore_aggregation.html:19
 #: templates/rdf/content_foldout/lod-detail-foldout.html:34
 msgid "dc_date"
-msgstr ""
+msgstr "Dato"
 
 #: templates/rdf/content_detail/ore_aggregation.html:8
 #: templates/rdf/content_foldout/lod-detail-foldout.html:42
 msgid "nave_material"
-msgstr ""
+msgstr "Materiale"
 
 #: templates/rdf/content_detail/ore_aggregation.html:9
 #: templates/rdf/content_foldout/lod-detail-foldout.html:43
 msgid "nave_technique"
-msgstr ""
+msgstr "Teknikk"
 
 #: templates/rdf/content_detail/ore_aggregation.html:10
 msgid "dc_format"
-msgstr ""
+msgstr "Format"
 
 #: templates/rdf/content_detail/ore_aggregation.html:11
 #: templates/rdf/content_foldout/lod-detail-foldout.html:36
 #: templates/rdf/lod_detail.html:72
 msgid "dc_description"
-msgstr ""
+msgstr "Beskrivelse"
 
 #: templates/rdf/content_detail/ore_aggregation.html:12
 #: templates/rdf/content_foldout/lod-detail-foldout.html:35
 msgid "dc_subject"
-msgstr ""
+msgstr "Emne"
 
 #: templates/rdf/content_detail/ore_aggregation.html:13
 #: templates/rdf/content_foldout/lod-detail-foldout.html:40
 msgid "dc_type"
-msgstr ""
+msgstr "Ressurstype"
 
 #: templates/rdf/content_detail/ore_aggregation.html:14
 #: templates/rdf/content_foldout/lod-detail-foldout.html:37
 msgid "dc_identifier"
-msgstr ""
+msgstr "Identifikator"
 
 #: templates/rdf/content_detail/ore_aggregation.html:15
 msgid "dc_relation"
-msgstr ""
+msgstr "Relasjon"
 
 #: templates/rdf/content_detail/ore_aggregation.html:16
 msgid "dc_provenance"
-msgstr ""
+msgstr "Proveniens"
 
 #: templates/rdf/content_detail/ore_aggregation.html:17
 msgid "nave_collection"
-msgstr ""
+msgstr "Samling"
 
 #: templates/rdf/content_detail/ore_aggregation.html:18
 msgid "nave_collectionPart"
-msgstr ""
+msgstr "Innsamling del"
 
 #: templates/rdf/content_detail/ore_aggregation.html:20
 #: templates/rdf/content_foldout/lod-detail-foldout.html:41
 msgid "edm_dataProvider"
-msgstr ""
+msgstr "Tilbyder"
 
 #: templates/rdf/content_detail/ore_aggregation.html:21
 msgid "dc_contributor"
-msgstr ""
+msgstr "Bidragsyter"
 
 #: templates/rdf/content_detail/ore_aggregation.html:22
 msgid "dc_source"
-msgstr ""
+msgstr "Kilde"
 
 #: templates/rdf/content_detail/ore_aggregation.html:23
 msgid "nave_province"
-msgstr ""
+msgstr "Provins"
 
 #: templates/rdf/content_detail/ore_aggregation.html:24
 msgid "nave_musipMuseumUri"
@@ -378,30 +378,30 @@ msgstr ""
 
 #: templates/rdf/content_detail/ore_aggregation.html:25
 msgid "edm_isShownAt"
-msgstr ""
+msgstr "Ekstern landingsside"
 
 #: templates/rdf/content_detail/ore_aggregation.html:26
 #: templates/rdf/content_foldout/lod-detail-foldout.html:45
 #: templates/rdf/lod_detail.html:221
 msgid "dc_rights"
-msgstr ""
+msgstr "Rettighetshaver"
 
 #: templates/rdf/content_detail/ore_aggregation.html:27
 #: templates/rdf/content_foldout/lod-detail-foldout.html:46
 msgid "edm_rights"
-msgstr ""
+msgstr "Rettigheter"
 
 #: templates/rdf/content_detail/ore_aggregation.html:28
 msgid "coordinate"
-msgstr ""
+msgstr "Koordinere"
 
 #: templates/rdf/content_foldout/lod-detail-foldout.html:44
 msgid "dcterms_isReferencedBy"
-msgstr ""
+msgstr "Er referert av"
 
 #: templates/rdf/content_foldout/lod-detail-foldout.html:50
 msgid "View details"
-msgstr ""
+msgstr "Vis detaljer"
 
 #: templates/rdf/include/enrichment_link_form.html:14
 #: templates/rdf/include/enrichment_link_form.html:15
@@ -439,39 +439,39 @@ msgstr ""
 
 #: templates/rdf/lod_detail.html:52
 msgid "Return to results"
-msgstr ""
+msgstr "Gå tilbake til resultatene"
 
 #: templates/rdf/lod_detail.html:58
 msgid "Return to previous object"
-msgstr ""
+msgstr "Gå tilbake til forrige objekt"
 
 #: templates/rdf/lod_detail.html:81
 msgid "Content"
-msgstr ""
+msgstr "Innhold"
 
 #: templates/rdf/lod_detail.html:85 templates/rdf/lod_detail.html.py:115
 msgid "Properties"
-msgstr ""
+msgstr "Egenskaper"
 
 #: templates/rdf/lod_detail.html:89
 msgid "Statistics"
-msgstr ""
+msgstr "Statistikk"
 
 #: templates/rdf/lod_detail.html:93
 msgid "Media"
-msgstr ""
+msgstr "Media"
 
 #: templates/rdf/lod_detail.html:96
 msgid "Map"
-msgstr ""
+msgstr "Kart"
 
 #: templates/rdf/lod_detail.html:99
 msgid "Related"
-msgstr ""
+msgstr "Relatert"
 
 #: templates/rdf/lod_detail.html:118
 msgid "Display predicate uris"
-msgstr ""
+msgstr "Vis predikat uris"
 
 #: templates/rdf/lod_detail.html:263
 msgid "Add enrichment link"
@@ -484,19 +484,19 @@ msgstr ""
 #: templates/rdf/tags/_rdf_properties.html:21
 #: templates/rdf/tags/_search-detail-field.html:51
 msgid "Opens in new window"
-msgstr ""
+msgstr "Åpner i nytt vindu"
 
 #: templates/rdf/tags/_rdf_properties.html:38
 #: templates/rdf/tags/_rdf_properties.html:39
 #: templates/rdf/tags/_rdf_properties.html:53
 #: templates/rdf/tags/_rdf_properties.html:54
 msgid "Show more"
-msgstr ""
+msgstr "Vis mer"
 
 #: templates/rdf/tags/_rdf_properties.html:38
 #: templates/rdf/tags/_rdf_properties.html:53
 msgid "Show less"
-msgstr ""
+msgstr "Vis mindre"
 
 #: templates/rdf/tags/_search-detail-field.html:47
 msgid "Definition"
@@ -516,4 +516,4 @@ msgstr ""
 
 #: templates/snorql/properties.html:70
 msgid "More properties"
-msgstr ""
+msgstr "Flere eiendommer"
