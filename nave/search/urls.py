@@ -10,7 +10,7 @@ from .views import DetailResultView, FoldOutDetailImageView, \
     LegacyAPIRedirectView, SearchListHTMLView, LodRelatedSearchHTMLView, V1SearchListApiView, \
     V2SearchListApiView, BigDownloadView, KNReiseGeoView
 
-router = routers.DefaultRouter(trailing_slash=True)
+router = routers.SimpleRouter(trailing_slash=True)
 router.register(r'search/v1', V1SearchListApiView, base_name='v1-list')
 router.register(r'search/v2', V2SearchListApiView, base_name='v2-list')
 router.register(r'users', UserViewSet)
