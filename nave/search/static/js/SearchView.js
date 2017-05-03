@@ -42,10 +42,10 @@ SearchView.initFoldout = function (nr_cols, language) {
 /***********************************************************************************/
 SearchView.processImages = function () {
     $(".media").imgLiquid({
-        fill: true,
-        horizontalAlign: "center",
+        fill: false,
+        horizontalAlign: "top",
         verticalAlign: "center",
-        useBackgroundSize: false
+        useBackgroundSize: true
     });
 };
 
