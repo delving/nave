@@ -42,7 +42,7 @@ class VirtualCollectionSearchView(SearchListAPIView):
         if virtual_collection.facets.all():
             facet_config = []
             for facet in virtual_collection.facets.all():
-                from base_settings import FacetConfig
+                from nave.base_settings import FacetConfig
                 facet_config.append(
                     FacetConfig(
                         es_field=facet.name,
