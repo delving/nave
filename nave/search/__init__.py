@@ -63,9 +63,9 @@ try:
         timeout=ES_TIMEOUT,
     )
 except (ConnectionError, TransportError) as ce:
-    logger.error(
-        "Unable to connect to Elasticsearch hosts: {}".format(ES_URLS)
-    )
+    msg = "Unable to connect to Elasticsearch hosts: {}".format(ES_URLS)
+    logger.error(msg)
+    print(msg)
     sys.exit(1)
 
 
