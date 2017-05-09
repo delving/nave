@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 
 from django import template
 from django.conf import settings
+from django.http import QueryDict
 
 from nave.lod.utils.resolver import RDFRecord, get_cache_url
 
@@ -17,6 +18,15 @@ logger = logging.getLogger(__name__)
 @register.filter(name='lookup')
 def get_binding(value, arg):
     return value[arg]
+
+
+@register.filter
+def replace_string(value, args):
+    qs = QueryDict(args)
+    if 'find' in qs and 'replace' in qs:
+        return value.replace(qs['find'], qs['replace'])
+    else:
+        return value
 
 
 @register.assignment_tag(takes_context=True)
