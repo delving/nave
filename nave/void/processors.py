@@ -171,6 +171,7 @@ class IndexApiProcessor:
             extracted_field = self.process_field(field, system_field=True)
             if extracted_field:
                 extracted_fields.extend(extracted_field)
+        # todo add geoHash for coordinates
         for field in extracted_fields:
             pred, obj = field
             g.add((s, pred, obj))
@@ -186,7 +187,10 @@ class IndexApiProcessor:
             return []
         if 'indexItem' not in self.data['indexRequest']:
             return []
-        return self.data['indexRequest']['indexItem']
+        index_items = self.data['indexRequest']['indexItem']
+        if not isinstance(index_items, list):
+            index_items = [index_items]
+        return index_items
 
     def get_es_action(self, item):
         """Create a Bulk API es action from index item."""
@@ -228,10 +232,13 @@ class IndexApiProcessor:
                 invalid += 1
                 invalid_items.append(item)
         if es_actions and index:
-            nr, errors = helpers.bulk(get_es_client(), es_actions)
+            nr, errors = helpers.bulk(
+                get_es_client(),
+                es_actions,
+                raise_on_error=False
+            )
             if nr > 0 and not errors:
                 logger.info("Indexed records: {}".format(nr))
-                return True
             elif errors:
                 logger.warn(
                     "Something went wrong with bulk index: {}".format(errors)
