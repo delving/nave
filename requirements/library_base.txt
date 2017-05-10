@@ -10,7 +10,7 @@ django-geojson==2.9.1
 django-leaflet>=0.20.0
 django-modelcluster>=3.0
 django-oauth-toolkit>=0.11.0
-django-reversion>=2.0.8
+django-reversion<=2.0.0
 django-rosetta>=0.7.12
 django-suit>=0.2.24
 django-suit-ckeditor>=0.0.2
