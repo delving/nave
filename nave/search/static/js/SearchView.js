@@ -40,12 +40,15 @@ SearchView.initFoldout = function (nr_cols, language) {
 // SearchView.process requires common/static/js/imageLiquid.js
 // Resize an image to fit its container and gives some control over the positioning
 /***********************************************************************************/
-SearchView.processImages = function () {
+SearchView.processImages = function (fill) {
+    var fillImage = true;
+    if(fill){
+        fillImage = fill;
+    }
     $(".media").imgLiquid({
-        fill: false,
-        horizontalAlign: "top",
-        verticalAlign: "center",
-        useBackgroundSize: true
+        fill: fillImage,
+        horizontalAlign: "center",
+        verticalAlign: "center"
     });
 };
 
