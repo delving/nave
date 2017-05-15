@@ -40,7 +40,7 @@ msgstr ""
 
 #: models.py:93
 msgid "description"
-msgstr ""
+msgstr "Beskrivelse"
 
 #: models.py:109 models.py:110
 msgid "RDF Subject LookUp"
