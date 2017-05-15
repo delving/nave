@@ -7,7 +7,7 @@ Deploy a host with ubuntu 14.04 x64 (or similar)
 Prepare the host with Ansible
 -----------------------------
 ::
-    Checkout git@github.com:TotalActiveMedia/hub3-deploy.git
+    Checkout git@github.com:delving/hub3-deploy.git
 
 This will prepare a fresh deployed server and add the user for running hub3.
 The suplied password must mach what you have in settings.py:FABRIC[SSH_PASS]
