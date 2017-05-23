@@ -52,26 +52,26 @@ def get_resolved_uri(context, uri):
 
 
 @register.simple_tag(takes_context=True)
-def field_exists(context, fieldname):
+def field_exists(context, fieldname, local_bindings=None):
     """
     returns if a field property is part of the graph bindings
     :return: Boolean
     """
     # todo finish this implementation
-    bindings = context['resources']
+    bindings = local_bindings if local_bindings else context['resources']
     values = bindings.get_list(fieldname)
     return True if values else False
 
 
 @register.assignment_tag(takes_context=True)
-def has_value(context, fieldname):
+def has_value(context, fieldname, local_bindings=None):
     """
     returns true if given field contains value
     :param context:
     :param fieldname:
     :return: Boolean
     """
-    bindings = context['resources']
+    bindings = local_bindings if local_bindings else context['resources']
     values = bindings.get_list(fieldname)
     return True if values else False
 
