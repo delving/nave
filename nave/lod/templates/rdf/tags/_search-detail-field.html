@@ -102,7 +102,13 @@
             {% endif %}
             {% if not allow_html %}
                 {% if not word_limit %}
-                    {{ field.value }}
+                    {% if is_link %}
+                        <a href="{{ field.value }}" >
+                            {{ field.value }}
+                        </a>
+                    {% else %}
+                        {{ field.value }}
+                    {% endif %}
                 {% else %}
                     {{ field.value|truncatewords:word_limit }}
                 {% endif %}
@@ -115,6 +121,18 @@
                 {% endif %}
                 </span>
             {% endif %}
+            <div class="field-tools">
+                {% if new_facet_query %}
+                    <a href="{% url 'results-list' %}?qf={{ fieldname|urlencode }}:{{ field.value }}" class="label label-info" title="{% trans fieldname %}">
+                        <i class="fa fa-search"></i>
+                    </a>
+                {% endif %}
+                {% if new_query %}
+                    <a href="{% url 'results-list' %}?q={{ field.value|urlencode }}" class="label label-success" title="{% trans 'Free text' %}">
+                        <i class="fa fa-search"></i>
+                    </a>
+                {% endif %}
+            </div>
             {% if surround %}
                 </{{ surround }}>
             {% endif %}
