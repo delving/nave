@@ -450,7 +450,13 @@ class NaveESQuery(object):
                 query = query.post_filter('bool', must=all_filter_list)
             else:
                 query = query.post_filter('bool', should=all_filter_list)
-
+        bbox_filter = None
+        if {'pt', 'd'}.issubset(list(params.keys())):
+            point = params.get('pt')
+            distance = params.get('d')
+            query = query.filter(
+                Q('geo_distance', distance=distance, point=point)
+            )
         # create facet_filter_dict with queries with key for each facet entry
         if facet_list:
             with robust('facet'):
@@ -481,6 +487,7 @@ class NaveESQuery(object):
         # bbox_filter = None
         # if {'pt', 'd'}.issubset(list(params.keys())):
             # point = params.get('pt')
+            # distance = params.get('d')
             # if point:
                 # bbox_filter = GeoS.get_solr_style_bounding_box(params.get('d', '10'), point)
                 # query = query.filter_raw(bbox_filter)

@@ -175,7 +175,11 @@ mappings = {
                                 'type': 'string',
                                 'doc_values': False
                             },
+                            "geohash": {
+                                "type": "geo_point"
+                            },
                             'source_uri': {'fields': {'raw': {
+
                                 'index': 'not_analyzed',
                                 'type': 'string'}},
                                 'type': 'string'},
