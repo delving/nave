@@ -167,11 +167,11 @@ class IndexApiProcessor:
             extracted_field = self.process_field(field, system_field=False)
             if extracted_field:
                 extracted_fields.extend(extracted_field)
-        for field in item['systemField']:
-            extracted_field = self.process_field(field, system_field=True)
-            if extracted_field:
-                extracted_fields.extend(extracted_field)
-        # todo add geoHash for coordinates
+        if 'systemField' in item:
+            for field in item['systemField']:
+                extracted_field = self.process_field(field, system_field=True)
+                if extracted_field:
+                    extracted_fields.extend(extracted_field)
         for field in extracted_fields:
             pred, obj = field
             g.add((s, pred, obj))
@@ -228,6 +228,7 @@ class IndexApiProcessor:
                     es_actions.append(es_action)
                     indexed += 1
             except Exception as ex:
+                import pdb; pdb.set_trace()
                 logger.error(ex)
                 invalid += 1
                 invalid_items.append(item)
