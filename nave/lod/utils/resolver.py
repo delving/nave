@@ -53,7 +53,17 @@ EDM = Namespace('http://www.europeana.eu/schemas/edm/')
 NAVE = Namespace('http://schemas.delving.eu/nave/terms/')
 
 
-def get_geo_points(graph):
+def get_geo_points(graph, only_geohash=False):
+    if only_geohash:
+        geohashes = graph.objects(predicate=NAVE.geoHash)
+        points = []
+        for geohash in geohashes:
+            lat, lon = geohash.split(',')
+            if lat and lon:
+                lat = float(str(lat.strip()))
+                lon = float(str(lon.strip()))
+                points.append([lat, lon])
+        return points
     try:
         lat_list = [float(str(lat)) for lat in
                     graph.objects(predicate=URIRef("http://www.w3.org/2003/01/geo/wgs84_pos#lat"))]
@@ -292,7 +302,7 @@ class GraphBindings:
         return False
 
     def has_geo(self):
-        points = get_geo_points(self._graph)
+        points = get_geo_points(self._graph, only_geohash=True)
         return True if points else False
 
     @staticmethod
@@ -408,7 +418,7 @@ class GraphBindings:
         # index_doc['rdf']['graph'] = self._graph.serialize(format='json-ld', context=context_dict).decode('utf-8')
 
         index_doc['about']['language'] = [{'@type': "Literal", 'value': lang, 'raw': lang} for lang in languages]
-        points = ["{},{}".format(lat, lon) for lat, lon in get_geo_points(self._graph)]
+        points = ["{},{}".format(lat, lon) for lat, lon in get_geo_points(self._graph, only_geohash=True)]
         index_doc['about']['point'] = points
         index_doc['point'] = points
         captions = self.get_about_caption
@@ -446,7 +456,7 @@ class GraphBindings:
                              prop in properties]
         # add languages
         about['language'] = [{'@type': "Literal", 'value': lang, 'raw': lang} for lang in languages]
-        about['point'] = ["{},{}".format(lat, lon) for lat, lon in get_geo_points(self._graph)]
+        about['point'] = ["{},{}".format(lat, lon) for lat, lon in get_geo_points(self._graph, only_geohash=True)]
         caption = self.get_about_caption
         #  todo fix issue with lang being null
         about['caption'] = [
@@ -605,7 +615,7 @@ class RDFResource:
         return self._objects
 
     def has_geo(self):
-        return RDFPredicate('http://www.w3.org/2003/01/geo/wgs84_pos#lat') in self.get_predicates()
+        return NAVE.geoHash in self.get_predicates()
 
     def has_content(self):
         return len(self.get_items()) > 0

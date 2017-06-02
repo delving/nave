@@ -140,7 +140,7 @@ class IndexApiProcessor:
                     obj = URIRef(text)
                 elif field_type in ['location']:
                     triples.append(
-                        (DELVING.geoHash, Literal(text))
+                        (NAVE.geoHash, Literal(text))
                     )
                     obj = Literal(text)
                 # todo: support data after v2 internal storage is available
@@ -167,11 +167,11 @@ class IndexApiProcessor:
             extracted_field = self.process_field(field, system_field=False)
             if extracted_field:
                 extracted_fields.extend(extracted_field)
-        for field in item['systemField']:
-            extracted_field = self.process_field(field, system_field=True)
-            if extracted_field:
-                extracted_fields.extend(extracted_field)
-        # todo add geoHash for coordinates
+        if 'systemField' in item:
+            for field in item['systemField']:
+                extracted_field = self.process_field(field, system_field=True)
+                if extracted_field:
+                    extracted_fields.extend(extracted_field)
         for field in extracted_fields:
             pred, obj = field
             g.add((s, pred, obj))
@@ -228,6 +228,7 @@ class IndexApiProcessor:
                     es_actions.append(es_action)
                     indexed += 1
             except Exception as ex:
+                import pdb; pdb.set_trace()
                 logger.error(ex)
                 invalid += 1
                 invalid_items.append(item)
@@ -331,18 +332,22 @@ class BulkApiProcessor:
             self.spec = action['dataset']
             process_verb = action['action']
             record = None
+            logger.info("Bulk API action: {} ({})".format(process_verb, self.spec))
             if process_verb in ['clear_orphans']:
                 purge_date = action.get('modification_date')
                 if purge_date:
                     orphans_removed = RDFRecord.remove_orphans(spec=self.spec, timestamp=purge_date)
                     logger.info("Deleted {} orphans for {} before {}".format(orphans_removed, self.spec, purge_date))
+                    # print("Deleted {} orphans for {} before {}".format(orphans_removed, self.spec, purge_date))
             elif process_verb in ['disable_index']:
                 RDFRecord.delete_from_index(self.spec)
                 logger.info("Deleted dataset {} from index. ".format(self.spec))
+                # print("Deleted dataset {} from index. ".format(self.spec))
             elif process_verb in ['drop_dataset']:
                 RDFRecord.delete_from_index(self.spec)
                 DataSet.objects.filter(spec=self.spec).delete()
                 logger.info("Deleted dataset {} from index. ".format(self.spec))
+                # print("Deleted dataset {} from index. ".format(self.spec))
             else:
                 record_graph_uri = action['graphUri']
                 graph_ntriples = action['graph']
