@@ -292,7 +292,10 @@ class BaseConverter(object):
         output_doc['europeana_uri'] = ["/".join(hub_id.split('_')[1:])]
         output_doc["delving_hasDigitalObject"] = ['europeana_object' in output_doc]
         if 'europeana_object' in output_doc:
-            output_doc["delving_thumbnail"] = [output_doc.get('europeana_object')]
+            if 'delving_thumbnail' in output_doc:
+                output_doc['delving_thumbnail'].extend(output_doc.get('europeana_object'))
+            else:
+                output_doc["delving_thumbnail"] = output_doc.get('europeana_object')
         output_doc["delving_hasGeoHash"] = ['delving_geoHash' in output_doc]
         output_doc["delving_hasLandingPage"] = ['europeana_isShownAt' in output_doc]
         if 'europeana_isShownAt' in output_doc:
