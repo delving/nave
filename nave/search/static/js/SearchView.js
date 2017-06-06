@@ -86,6 +86,10 @@ SearchView.initFacets = function () {
                 newHref = href.replace(' & ', '%20%26%20');
                 link.attr('href', newHref);
             }
+            // if (href.indexOf('qf=') > 0){
+            //     newHref = href.replace('qf=', 'qf=[]');
+            //     link.attr('href', newHref);
+            // }
         });
 
         // check for first checked facet and scroll it into view, then break out of loop
@@ -147,9 +151,9 @@ SearchView.initSearchTags = function() {
         if ($param.attr('name') == 'q') {
             if ($param.val().length > 0){
                 // first trim whitespace then split into array
-                qTerms = $param.attr('value').replace(/^\s+|\s+$/gm,'').split(' ');
+                $qTerms = $param.attr('value').replace(/^\s+|\s+$/gm,'').split(' ');
                 // add each element in the array
-                qTerms.forEach(function(element){
+                $qTerms.forEach(function(element){
                     $input.tagsinput('add', {'text': element, 'value': element, 'name': $param.attr('name')});
                 });
             }
@@ -172,6 +176,7 @@ SearchView.initSearchTags = function() {
 
     // remove a specific item from the hidden form for a new query
     $input.on('beforeItemRemove', function(event) {
+        event.preventDefault();
         var _value = event.item.value;
         $queryForm.find(':input').each(function(){
             var _this = $(this);
@@ -179,7 +184,7 @@ SearchView.initSearchTags = function() {
             if( _this.val() == _value && _this.attr('name') == 'qf[]' || _this.attr('name') == 'qf' ){
                 _this.remove();
             }
-            if ( _this.attr('name') == 'q') {
+            if ( _this.attr('name') == 'q' && _this.val() == _value ) {
                 // be kinds and always trim
                 _q = _this.val().trim();
                 // nr of terms in the query
