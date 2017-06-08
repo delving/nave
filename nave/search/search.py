@@ -45,7 +45,7 @@ class NaveESQuery(object):
         self.facet_size = facet_size
         self.cluster_geo = cluster_geo
         self.geo_query = geo_query
-        self.cluster_factor = 0.6
+        self.cluster_factor = 3
         self.error_messages = []
         self.query = self._create_query()
         self.base_params = None
@@ -523,6 +523,7 @@ class NaveESQuery(object):
                 boundingbox_params = {key: val for key, val in list(params.items()) if key in bounding_box_param_keys}
                 bounding_box = gis.get_lat_long_bounding_box(boundingbox_params)
                 if bounding_box:
+                    bbox_filter = gis.create_bbox_filter(bounding_box)
                     query = query.filter(
                         bbox_filter
                     )
