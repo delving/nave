@@ -104,6 +104,7 @@ def get_feature_collection(facets):
             properties = {'count': total}
             # todo: get the doc_id for individual keys as extra queries. doc_id is no longer returned.
             feature_id = None  # place.get('doc_id')
+            properties['hash_key'] = place.key
             # extra_properties = {key: place.get(key) for key in list(place.keys()) if key in ['doc_type']}
             # if extra_properties:
                 # properties.update(extra_properties)
