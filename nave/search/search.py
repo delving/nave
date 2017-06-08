@@ -11,13 +11,15 @@ from contextlib import contextmanager
 from django.conf import settings
 from django.core.paginator import Paginator, Page, EmptyPage, PageNotAnInteger
 from django.http import QueryDict
-from elasticsearch_dsl import Search, aggs
+from elasticsearch_dsl import Search, aggs, A
 from elasticsearch_dsl.query import Q
 from elasticsearch_dsl.result import Result
 from rest_framework.request import Request
 import six
 
 from nave.void.convertors import BaseConverter
+from nave.search.utils import gis
+
 
 logger = logging.getLogger(__name__)
 
@@ -450,13 +452,7 @@ class NaveESQuery(object):
                 query = query.post_filter('bool', must=all_filter_list)
             else:
                 query = query.post_filter('bool', should=all_filter_list)
-        bbox_filter = None
-        if {'pt', 'd'}.issubset(list(params.keys())):
-            point = params.get('pt')
-            distance = params.get('d')
-            query = query.filter(
-                Q('geo_distance', distance=distance, point=point)
-            )
+
         # create facet_filter_dict with queries with key for each facet entry
         if facet_list:
             with robust('facet'):
@@ -482,35 +478,56 @@ class NaveESQuery(object):
                     # create an aggregation
                     # add it as a bucket
                     query.aggs.bucket(facet, a)
-        # todo enable geosearching later again
-        # old solr style bounding box query
-        # bbox_filter = None
-        # if {'pt', 'd'}.issubset(list(params.keys())):
-            # point = params.get('pt')
-            # distance = params.get('d')
-            # if point:
-                # bbox_filter = GeoS.get_solr_style_bounding_box(params.get('d', '10'), point)
-                # query = query.filter_raw(bbox_filter)
-                # # todo: test this with the monument data
-        # # add bounding box
-        # bounding_box_param_keys = GeoS.BOUNDING_BOX_PARAM_KEYS
-        # if set(bounding_box_param_keys).issubset(list(params.keys())):
-            # with robust(str(bounding_box_param_keys)):
-                # boundingbox_params = {key: val for key, val in list(params.items()) if key in bounding_box_param_keys}
-                # bounding_box = GeoS.get_lat_long_bounding_box(boundingbox_params)
-                # if bounding_box:
-                    # query = query.filter(point__bbox=bounding_box)
         # # add clusters
-        # if self.cluster_geo:
-            # with robust('geo_cluster'):
+        if self.cluster_geo:
+            with robust('geo_cluster'):
+                factor = 3
+                if 'cluster.factor' in params:
+                    factor = int(params.get('cluster.factor'))
+                facet_filter_list = []
+                filtered = bool(params.get('cluster.filtered')) if 'cluster.filtered' in params else True
+                if filtered:
+                    if facet_bool_type_and:
+                        facet_filter_list = list(itertools.chain.from_iterable(facet_filter_dict.values()))
+                    else:
+                        or_filter_list = [filters for key, filters in facet_filter_dict.items() if not facet.startswith(key)]
+                        facet_filter_list = list(itertools.chain.from_iterable(or_filter_list))
+                # a = aggs.Filter(
+                    # # Q('bool', must=facet_filter_list)
+                # )
+                a = A(
+                    'geohash_grid',
+                    field='point',
+                    precision=factor
+                )
+                query.aggs.bucket('geo_clusters', a)
+                # ---- old
                 # filtered = bool(params.get('cluster.filtered')) if 'cluster.filtered' in params else True
                 # if 'cluster.factor' in params:
                     # factor = float(params.get('cluster.factor'))
-                    # query = query.facet_geocluster(factor=factor, filtered=filtered)
+                    # query = gis.facet_geocluster(query=query, factor=factor, filtered=filtered, filter_list=)
                 # else:
-                    # query = query.facet_geocluster(filtered=filtered)
-        # if self.geo_query:
-            # query = query.query_raw({"match": {"delving_hasGeoHash": True}})
+                    # query = gis.facet_geocluster(query=query, filtered=filtered)
+        # old solr style bounding box query
+        bbox_filter = None
+        if {'pt', 'd'}.issubset(list(params.keys())):
+            point = params.get('pt')
+            distance = params.get('d')
+            query = query.filter(
+                Q('geo_distance', distance=distance, point=point)
+            )
+        # # add bounding box
+        bounding_box_param_keys = gis.BOUNDING_BOX_PARAM_KEYS
+        if set(bounding_box_param_keys).issubset(list(params.keys())):
+            with robust(str(bounding_box_param_keys)):
+                boundingbox_params = {key: val for key, val in list(params.items()) if key in bounding_box_param_keys}
+                bounding_box = gis.get_lat_long_bounding_box(boundingbox_params)
+                if bounding_box:
+                    query = query.filter(
+                        bbox_filter
+                    )
+        if self.geo_query:
+            query = query.filter({"match": {"delving_hasGeoHash": True}})
         self.query = query
         self.facet_params = facet_params
         self.base_params = params
