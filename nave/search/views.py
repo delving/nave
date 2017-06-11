@@ -400,6 +400,8 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
         mlt = True if request.query_params.get('mlt', 'false') == "true" else False
         mlt_count = int(request.query_params.get('mlt.count', 5))
         mlt_filter_queries = request.query_params.getlist('mlt.qf', [])
+        if not mlt_filter_queries and 'mlt.filterkey' in request.query_params:
+            mlt_filter_queries = request.query_params.getlist('mlt.filterkey', [])
         mlt_fq_dict = {}
         for fq in mlt_filter_queries:
             if ":" in fq:
