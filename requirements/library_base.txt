@@ -5,6 +5,7 @@ django-cors-headers>=2.0.1
 django==1.10.6
 django-downloadview>=1.9
 django-extensions>=1.7.6
+django-import-export==0.5.1
 django-jsonfield>=1.0.1
 django-geojson==2.9.1
 django-leaflet>=0.20.0
