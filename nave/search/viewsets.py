@@ -5,7 +5,7 @@ For more information, see http://www.django-rest-framework.org/api-guide/viewset
 
 """
 from django.contrib.auth.models import User, Group
-from oauth2_provider.ext.rest_framework import TokenHasScope
+from oauth2_provider.contrib.rest_framework import TokenHasScope
 from oauth2_provider.models import AccessToken
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
