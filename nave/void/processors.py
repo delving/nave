@@ -20,9 +20,8 @@ from nave.lod import tasks
 logger = logging.getLogger(__name__)
 
 CUSTOM_NS = Namespace(settings.RDF_SUPPORTED_PREFIXES.get('custom')[0])
-DELVING = Namespace(settings.RDF_SUPPORTED_PREFIXES.get('delving')[0])
-NAVE = Namespace(settings.RDF_SUPPORTED_PREFIXES.get('nave')[0])
-
+EDM = Namespace('http://www.europeana.eu/schemas/edm/')
+NAVE = Namespace('http://schemas.delving.eu/nave/terms/')
 
 class IndexApiProcessor:
     """Process JSON from the index API and index as RDF in Elasticsearch.
@@ -120,9 +119,14 @@ class IndexApiProcessor:
                 predicate = DELVING[label]
             elif ':' in label:
                 ns_prefix, ns_label = label.split(':', maxsplit=1)
-                namespace = settings.RDF_SUPPORTED_PREFIXES.get(ns_prefix)
-                if namespace:
+                if ns_prefix in ['europeana', 'edm', 'ese']:
+                    namespace = EDM
+                elif ns_prefix in ['delving', 'nave']:
+                    namespace = NAVE
+                else:
+                    namespace = settings.RDF_SUPPORTED_PREFIXES.get(ns_prefix)
                     namespace = Namespace(namespace[0])
+                if namespace:
                     predicate = namespace[ns_label]
                 else:
                     logger.warn(
@@ -228,7 +232,6 @@ class IndexApiProcessor:
                     es_actions.append(es_action)
                     indexed += 1
             except Exception as ex:
-                import pdb; pdb.set_trace()
                 logger.error(ex)
                 invalid += 1
                 invalid_items.append(item)
