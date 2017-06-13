@@ -23,6 +23,10 @@ class Command(BaseCommand):
         self.stdout.write('Starting to loading EDM for spec {}'.format(spec))
         from nave.lod.utils.narthex_bulk_loader import NarthexBulkLoader
         loader = NarthexBulkLoader()
-        load_results = loader.process_narthex_file(spec=spec, path=processed_xml)
+        load_results = loader.process_narthex_file(
+            spec=spec,
+            path=processed_xml,
+            console=True
+        )
         self.stdout.write("result bulkloading: {}".format(load_results))
         self.stdout.write('Finished to loading EDM for spec {}'.format(spec))

@@ -41,6 +41,8 @@ from .renderers import N3Renderer, JSONLDRenderer, TURTLERenderer, NTRIPLESRende
 from .search import NaveESQuery, NaveQueryResponse, NaveQueryResponseWrapper, NaveItemResponse, \
     NaveESItem
 from .serializers import NaveQueryResponseWrapperSerializer, NaveESItemSerializer
+from .utils import gis
+
 
 logger = logging.getLogger(__file__)
 
@@ -102,9 +104,7 @@ class ClusterGeoJsonView(ListView):
         query_factory = NaveESQuery(index_name=settings.SITE_NAME)
         query = query_factory.build_geo_query(request)
         results = query.execute()
-        geo_json = {}
-        # todo enable geojson again
-        # geo_json = query.get_geojson(query.get_feature_collection(results.facets))
+        geo_json = gis.get_geojson(gis.get_feature_collection(results.aggregations))
         return HttpResponse(geo_json, content_type="application/json")
 
 
@@ -400,6 +400,8 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
         mlt = True if request.query_params.get('mlt', 'false') == "true" else False
         mlt_count = int(request.query_params.get('mlt.count', 5))
         mlt_filter_queries = request.query_params.getlist('mlt.qf', [])
+        if not mlt_filter_queries and 'mlt.filterkey' in request.query_params:
+            mlt_filter_queries = request.query_params.getlist('mlt.filterkey', [])
         mlt_fq_dict = {}
         for fq in mlt_filter_queries:
             if ":" in fq:
@@ -489,7 +491,7 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
         query_factory = NaveESQuery(index_name=self.get_index_name)
         query = query_factory.build_geo_query(request)
         results = query.execute()
-        geo_json = query.get_geojson(query.get_feature_collection(results.facets))
+        geo_json = gis.get_geojson(gis.get_feature_collection(results.aggregations), as_string=False)
         return geo_json
 
     @property

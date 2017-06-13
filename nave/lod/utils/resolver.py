@@ -1483,7 +1483,7 @@ class RDFRecord:
             # 'about_type': [rdf_type.qname for rdf_type in bindings.get_about_resource().get_types()]
             # 'collections': None, todo find a way to add collections via link
         }
-        data_owner = self.dataset.data_owner if hasattr(self, 'dataset') else None
+        data_owner = bindings.get_first_literal(EDM.dataProvider)
         dataset_name = self.dataset.name if hasattr(self, 'dataset') else None
         mapping['_source']['legacy'] = {
             'delving_hubId': self.hub_id,
@@ -1495,7 +1495,7 @@ class RDFRecord:
             'delving_title': bindings.get_first_literal(DC.title),
             'delving_creator': bindings.get_first_literal(DC.creator),
             'delving_description': bindings.get_first_literal(DC.description),
-            'delving_provider': index_doc.get('edm_provider')[0].get('value') if 'edm_provider' in index_doc else None,
+            'delving_provider': bindings.get_first_literal(EDM.provider),
             'delving_hasGeoHash': "true" if bindings.has_geo() else "false",
             'delving_hasDigitalObject': "true" if thumbnail else "false",
             'delving_hasLandingePage': "true" if 'edm_isShownAt' in index_doc else "false",
