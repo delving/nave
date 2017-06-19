@@ -75,7 +75,6 @@ class HubIDRedirectView(RedirectView):
             doc_type = self.kwargs.get('doc_type')
         else:
             doc_type = "void_edmrecord"
-        import pdb; pdb.set_trace()
         record = ElasticSearchRDFRecord(hub_id=hub_id)
         graph = record.get_graph_by_id(hub_id=hub_id)
         if not graph:
