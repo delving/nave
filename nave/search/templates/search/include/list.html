@@ -46,6 +46,7 @@
                             {{ result.item.fields.edm_dataProvider.0.value }}
                         </div>
                     {% endif %}
+                    {% url 'api_redirect_hub_id' hubId=result.item.doc_id %}  
                 </div>
             </div>
         {% empty %}

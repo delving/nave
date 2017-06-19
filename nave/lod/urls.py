@@ -36,7 +36,7 @@ urlpatterns = [
     # hubId
     url(r'^resolve/(?P<doc_type>(.*?))/(?P<hubId>(.*?))/$', HubIDRedirectView.as_view()),
     url(r'^api/resolve/(?P<doc_type>(.*?))/(?P<hubId>(.*?))/$', HubIDRedirectView.as_view()),
-    url(r'^api/resolve/(?P<hubId>(.*?))/?$', HubIDRedirectView.as_view()),
+    url(r'^api/resolve/(?P<hubId>(.*?))/?$', HubIDRedirectView.as_view(), name='api_redirect_hub_id'),
     url(r'^{}/(?P<spec>(.*))/(?P<local_id>(.*))$'.format(settings.ORG_ID), HubIDRedirectView.as_view(), name='hub_id_redirect'),
 
     # redirects

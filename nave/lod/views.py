@@ -75,11 +75,12 @@ class HubIDRedirectView(RedirectView):
             doc_type = self.kwargs.get('doc_type')
         else:
             doc_type = "void_edmrecord"
-        record = ElasticSearchRDFRecord()
-        graph = record.get_graph_by_id(self.kwargs.get('slug'))
+        import pdb; pdb.set_trace()
+        record = ElasticSearchRDFRecord(hub_id=hub_id)
+        graph = record.get_graph_by_id(hub_id=hub_id)
         if not graph:
             raise Http404()
-        routed_uri = nave.lod.utils.lod.get_external_rdf_url(record.source_uri, self.request)
+        routed_uri = record.get_external_rdf_url(record.source_uri, self.request)
         logger.debug("Routed uri: {}".format(routed_uri))
         rdf_format = self.request.GET.get("format")
         if rdf_format and rdf_format in nave.lod.RDF_SUPPORTED_EXTENSIONS:
