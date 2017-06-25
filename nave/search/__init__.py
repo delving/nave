@@ -257,14 +257,7 @@ mappings = {
                     {"value": {
                         "match": "value",
                         "mapping": {
-                            "type": "string",
-                            "fields": {
-                                "raw": {
-                                    "type": "string",
-                                    "index": "not_analyzed",
-                                    "ignore_above": 1024
-                                }
-                            }
+                            "type": "string"
                         }
                     }},
                     {"raw": {
