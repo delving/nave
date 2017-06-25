@@ -1544,13 +1544,9 @@ class RDFRecord:
                 }
             }
         }
-        orphan_counter = 0
-        for rec in elasticsearch.helpers.scan(client, orphan_query):
-            _id = rec.get('_id')
-            _index = rec.get('_index')
-            _doc_type = rec.get('_type')
-            client.delete(index=_index, doc_type=_doc_type, id=_id)
-            orphan_counter += 1
+        response = client.delete_by_query(index=index, body=query_string)
+        orphan_counter = response['deleted']
+        logger.info("Deleted {} orphans from Search index with message: {}".format(spec, response))
         return orphan_counter
 
     def get_more_like_this(self):

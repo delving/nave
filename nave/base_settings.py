@@ -691,7 +691,7 @@ FACET_CONFIG = [
     FacetConfig('dc_subject.raw', _("Subject")),
     FacetConfig('nave_province.raw', _("Province")),
     FacetConfig('edm_type.raw', _("Type")),
-    FacetConfig('edm_dataProvider.raw', _("Type")),
+    FacetConfig('edm_dataProvider.raw', _("Data Provider")),
     FacetConfig('legacy.delving_recordType.raw', _("Record Type")),
 ]
 
