@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+
 """ file: search/views.py
 
 The Django views used by the search module.
@@ -155,7 +155,7 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
     facets = settings.FACET_CONFIG
     filters = []
     hidden_filters = []
-    demote = None
+    demote = getattr(settings, 'DEMOTE', None)
     mapping_type = None
     paginate_by = None
     default_converter = None
@@ -236,14 +236,25 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
             query.build_query_from_request(request=request, raw_query_string=self.lookup_query_object.query)
         else:
             query.build_query_from_request(request)
-        if demote and 'q' in request.query_params:
-            for demote in demote:
-                demote_query, amount, _ = demote
-                query.query = query.query.demote(amount, demote_query)
-        elif demote:
-            sort_fields = [demote[2] for demote in demote]
-            sort_fields.extend(['_score'])
-            query.query = query.query.order_by(*sort_fields)
+        if demote:
+            for d in demote:
+                promote_query, demote_query, boost = d
+                query.query = query.query.query(
+                    {'boosting': {
+                        'positive': promote_query,
+                        'negative': demote_query,
+                        'negative_boost': boost
+                    }}
+                )
+        # TODO remove demote code
+        # if demote and 'q' in request.query_params:
+            # for demote in demote:
+                # demote_query, amount, _ = demote
+                # query.query = query.query.demote(amount, demote_query)
+        # elif demote:
+            # sort_fields = [demote[2] for demote in demote]
+            # sort_fields.extend(['_score'])
+            # query.query = query.query.order_by(*sort_fields)
         return query
 
     def get_queryset(self, cluster_geo=False, geo_query=False, acceptance=False, *args, **kwargs):
@@ -259,6 +270,7 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
             converter=self.get_converter(),
             acceptance=acceptance
         )
+
         response = NaveQueryResponse(query=query, api_view=self, converter=self.get_converter())
         wrapped_response = NaveQueryResponseWrapper(response)
         return wrapped_response
