@@ -28,7 +28,7 @@ class IndexApiProcessor:
 
     You can find more information on the Hub2 implementation here:
         https://github.com/delving/culture-hub/blob/1590d772d75bb6c004075af76e3653997fe2357d/modules/indexApi/app/controllers/api/Index.scala
-    """
+        """
 
     def __init__(self, payload):
         self.payload = payload
@@ -59,19 +59,13 @@ class IndexApiProcessor:
         """Return spec from index item."""
         return item['@itemType'].lower()
 
-    def get_record_type(self, item):
-        """Return the recordtype for index items."""
+    def get_doc_type(self, item):
+        """Return the doctype for index items."""
         return 'indexitem'
 
-    def get_doc_type(self, item):
-        """Return the doctype for Elasticsearch.
-
-        The doc_type for index items should be identical to the record type.
-
-        So index items are sub-divided into datasets that can be queried by
-        their spec.
-        """
-        return self.get_record_type(item)
+    def get_record_type(self, item):
+        """Return the record_type for Elasticsearch.  """
+        return self.get_spec(item)
 
     def create_delete_action(self, item):
         """Create delete action for Elasticsearch bulk API."""
