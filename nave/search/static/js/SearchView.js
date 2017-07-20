@@ -159,9 +159,11 @@ SearchView.initSearchTags = function() {
                 });
             }
         }
-        else {
+        // show other facet fields except min and max coordinates from the modal maps search
+        else if (!(/\bmin/i.test($param.attr('name')) || /\bmax/i.test($param.attr('name')))) {
             $input.tagsinput('add', {'text': $param.attr('data-text'), 'value': $param.attr('value'), 'name': $param.attr('name')});
         }
+        
     });
 
     $btnClear.removeClass('hidden');
