@@ -48,7 +48,8 @@ SearchView.processImages = function (fill) {
     $(".media").imgLiquid({
         fill: fillImage,
         horizontalAlign: "center",
-        verticalAlign: "center"
+        verticalAlign: "center",
+        useBackgroundSize: false
     });
 };
 
@@ -158,9 +159,11 @@ SearchView.initSearchTags = function() {
                 });
             }
         }
-        else {
+        // show other facet fields except min and max coordinates from the modal maps search
+        else if (!(/\bmin/i.test($param.attr('name')) || /\bmax/i.test($param.attr('name')))) {
             $input.tagsinput('add', {'text': $param.attr('data-text'), 'value': $param.attr('value'), 'name': $param.attr('name')});
         }
+        
     });
 
     $btnClear.removeClass('hidden');
@@ -227,32 +230,33 @@ SearchView.initGeo = function () {
     // init leaflet map
     tiles = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png',{maxZoom:22});
     map = L.map('ds-map',  { layers: [tiles] });
+    /*********
+    function buildMap(mapReceiver) {
+    $.getJSON("/search/?format=geojson&cluster.factor=1&" + queryStr, function (data) {
+        // first check if there is any data
+        if(data.features.length && data.features.length > 0){
+            var centerPoint = L.latLng(51.55, 0); // default should not be necessary
+            if (data.features.length == 1) {
+                var feature = data.features[0];
+                centerPoint = L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]);
+            }
+            //console.log("set view to center point", centerPoint);
+            map.setView([centerPoint.lat, centerPoint.lng], 5);
+            var featureGroup = new L.FeatureGroup();
+            featureGroup.addTo(map);
+            var markerClusterGroup = new L.MarkerClusterGroup();
+            markerClusterGroup.addTo(map);
+            mapReceiver(featureGroup, markerClusterGroup)
+        }
+        // if there is no data then hide geo functionality
+        else {
+            $('#tab-geo, #tab-grid').hide();
+        }
+        });
+    }********/
 
-    // function buildMap(mapReceiver) {
-    // $.getJSON("/search/?format=geojson&cluster.factor=1&" + queryStr, function (data) {
-    //     // first check if there is any data
-    //     if(data.features.length && data.features.length > 0){
-    //         var centerPoint = L.latLng(51.55, 0); // default should not be necessary
-    //         if (data.features.length == 1) {
-    //             var feature = data.features[0];
-    //             centerPoint = L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]);
-    //         }
-    //         //console.log("set view to center point", centerPoint);
-    //         map.setView([centerPoint.lat, centerPoint.lng], 5);
-    //         var featureGroup = new L.FeatureGroup();
-    //         featureGroup.addTo(map);
-    //         var markerClusterGroup = new L.MarkerClusterGroup();
-    //         markerClusterGroup.addTo(map);
-    //         mapReceiver(featureGroup, markerClusterGroup)
-    //     }
-    //     // if there is no data then hide geo functionality
-    //     else {
-    //         $('#tab-geo, #tab-grid').hide();
-    //     }
-    // });
-    // }
-
-    buildMap(function(featureGroup, markerClusterGroup) {
+    /*********
+   buildMap(function(featureGroup, markerClusterGroup) {
 
         map.on('moveend', queryForPoints);
         // hack: the map inside a tab pane is not sized properly when tab is opened.
@@ -356,4 +360,5 @@ SearchView.initGeo = function () {
             }
         }
     });
+   **********/
 };
