@@ -96,6 +96,11 @@ class OAIProvider(TemplateView):
         """
         raise NotImplementedError("implement me")
 
+    def sets(self, obj):
+        # the sets a given object belongs to
+        nesting = self.set_field.split('__')
+        return getattr(getattr(obj, nesting[0]), nesting[1])
+
     def get_items(self):
         raise NotImplementedError("implement me")
 
@@ -149,11 +154,6 @@ class OAIProvider(TemplateView):
         # oai identifier for a given object
         return getattr(obj, self.oai_identifier_field)
 
-    def sets(self, obj):
-        # the sets a given object belongs to
-        nesting = self.set_field.split('__')
-        return getattr(getattr(obj, nesting[0]), nesting[1])
-
     def render_to_response(self, context, **response_kwargs):
         # all OAI responses should be xml
         if 'content_type' not in response_kwargs:
@@ -206,7 +206,7 @@ class OAIProvider(TemplateView):
             item_info = {
                 'identifier': self.oai_identifier(i),
                 'last_modified': self.last_modified(i),
-                'sets': None  # todo: implement sets later [self.sets(i)]
+                'sets': [self.sets(i)]
             }
             identifiers.append(item_info)
         return self.render_to_response({
@@ -245,7 +245,7 @@ class OAIProvider(TemplateView):
         item_info = {
             'identifier': self.oai_identifier(item),
             'last_modified': self.last_modified(item),
-            'sets': [],  # [self.sets(item)], todo implement later
+            'sets': self.sets(item),
             'fields': converted_fields,
             'record': record,
             'ns': namespaces
@@ -400,6 +400,10 @@ class ElasticSearchOAIProvider(OAIProvider):
             query=self.convert_filters_to_query(self.filters),
             response=self.get_query_result()
         )
+
+    def sets(self, obj):
+        # the sets a given object belongs to
+        return [obj.get_spec_name()]
 
     def get_item(self, identifier):
         s = Search(using=self.client)
