@@ -407,8 +407,29 @@ class NaveESQuery(object):
                 )
                 facet_params.pop('hqf')
 
-        # combine all filters
-        filter_dict.update(hidden_filter_dict)
+        facet_bool_type_and = False
+        if "facetBoolType" in params:
+            facet_bool_type_and = params.get('facetBoolType').lower() in ['and']
+
+        # create hidden query filter filter on the ES query
+        hidden_facet_filter_dict = defaultdict(list)
+        hidden_filter_list = []
+        if hidden_filter_dict:
+            for key, values in list(hidden_filter_dict.items()):
+                hidden_facet_filter_list = hidden_facet_filter_dict[key]
+                for value in values:
+                    if key.startswith('-'):
+                        hidden_facet_filter_list.append(~Q('match', **{self.query_to_facet_key(key): value}))
+                    else:
+                        hidden_facet_filter_list.append(Q('match', **{self.query_to_facet_key(key): value}))
+                if facet_bool_type_and:
+                    q = Q('bool', must=hidden_facet_filter_list)
+                    hidden_filter_list.append(q)
+                else:
+                    q = Q('bool', should=hidden_facet_filter_list)
+                    hidden_filter_list.append(q)
+        query = query.filter('bool', must=hidden_filter_list)
+        # define applied filters
         self.applied_filters = filter_dict
         applied_facet_fields = []
 
@@ -433,10 +454,10 @@ class NaveESQuery(object):
                 label=facet
             )
         )
-        facet_bool_type_and = False
-        if "facetBoolType" in params:
-            facet_bool_type_and = params.get('facetBoolType').lower() in ['and']
         facet_filter_dict = defaultdict(list)
+        # this one should be used in the facets and exclude the field name.
+        all_filter_list = []
+        all_filter_dict = {}
         if filter_dict:
             applied_facet_fields = {key.lstrip('-+').replace('.raw', '') for key in filter_dict.keys()}
             all_filter_list = []
@@ -448,9 +469,12 @@ class NaveESQuery(object):
                     else:
                         facet_filter_list.append(Q('match', **{self.query_to_facet_key(key): value}))
                 if facet_bool_type_and:
-                    all_filter_list.append(Q('bool', must=facet_filter_list))
+                    q = Q('bool', must=facet_filter_list)
+                    all_filter_list.append(q)
                 else:
-                    all_filter_list.append(Q('bool', should=facet_filter_list))
+                    q = Q('bool', should=facet_filter_list, minimum_should_match=1)
+                    all_filter_list.append(q)
+                all_filter_dict[key] = q
             query = query.post_filter('bool', must=all_filter_list)
         # create facet_filter_dict with queries with key for each facet entry
         if facet_list:
@@ -459,17 +483,13 @@ class NaveESQuery(object):
                     self.facet_size = int(params.get('facet.size'))
                 # add .raw if not already there
                 # facet_list = ["{}.raw".format(facet.rstrip('.raw')) for facet in facet_list]
-                if facet_bool_type_and:
-                    facet_filter_list = list(itertools.chain.from_iterable(facet_filter_dict.values()))
                 for facet in facet_list:
                     if not facet_bool_type_and:
-                        or_filter_list = [filters for key, filters in facet_filter_dict.items() if not facet.startswith(key)]
-                        facet_filter_list = list(itertools.chain.from_iterable(or_filter_list))
-                        agg_dict = {'should': facet_filter_list}
+                        facet_filter_list = [filters for key, filters in all_filter_dict.items() if not facet.startswith(key)]
                     else:
-                        agg_dict = {'must': facet_filter_list}
+                        facet_filter_list = list(all_filter_dict.values())
                     a = aggs.Filter(
-                        Q('bool', **agg_dict)
+                        Q('bool', must=facet_filter_list)
                     )
                     a.bucket(
                         facet,
@@ -494,22 +514,12 @@ class NaveESQuery(object):
                     else:
                         or_filter_list = [filters for key, filters in facet_filter_dict.items() if not facet.startswith(key)]
                         facet_filter_list = list(itertools.chain.from_iterable(or_filter_list))
-                # a = aggs.Filter(
-                    # # Q('bool', must=facet_filter_list)
-                # )
                 a = A(
                     'geohash_grid',
                     field='point',
                     precision=factor
                 )
                 query.aggs.bucket('geo_clusters', a)
-                # ---- old
-                # filtered = bool(params.get('cluster.filtered')) if 'cluster.filtered' in params else True
-                # if 'cluster.factor' in params:
-                    # factor = float(params.get('cluster.factor'))
-                    # query = gis.facet_geocluster(query=query, factor=factor, filtered=filtered, filter_list=)
-                # else:
-                    # query = gis.facet_geocluster(query=query, filtered=filtered)
         # old solr style bounding box query
         bbox_filter = None
         if {'pt', 'd'}.issubset(list(params.keys())):
