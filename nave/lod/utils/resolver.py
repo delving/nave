@@ -1524,7 +1524,8 @@ class RDFRecord:
         """
         date_string.isoformat()"""
         # make sure you don't erase things from the same second
-        sleep(1)
+        client.indices.refresh(index)
+        sleep(3)
         orphan_query = {
             "query": {
                 "bool": {
@@ -1544,6 +1545,7 @@ class RDFRecord:
                 }
             }
         }
+        logger.info("Delete before: {}".format(timestamp))
         response = client.delete_by_query(index=index, body=orphan_query)
         orphan_counter = response['deleted']
         logger.info(
