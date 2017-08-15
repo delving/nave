@@ -1520,11 +1520,12 @@ class RDFRecord:
         return response
 
     @staticmethod
-    def remove_orphans(spec, timestamp):
+    def remove_orphans(spec, timestamp, index='{}'.format(settings.SITE_NAME)):
         """
         date_string.isoformat()"""
         # make sure you don't erase things from the same second
-        sleep(1)
+        client.indices.refresh(index)
+        sleep(3)
         orphan_query = {
             "query": {
                 "bool": {
@@ -1544,9 +1545,14 @@ class RDFRecord:
                 }
             }
         }
-        response = client.delete_by_query(index=index, body=query_string)
+        logger.info("Delete before: {}".format(timestamp))
+        response = client.delete_by_query(index=index, body=orphan_query)
         orphan_counter = response['deleted']
-        logger.info("Deleted {} orphans from Search index with message: {}".format(spec, response))
+        logger.info(
+            'Deleted {} orphans from Search index with message: {}'.format(
+                spec, response
+            )
+        )
         return orphan_counter
 
     def get_more_like_this(self):
