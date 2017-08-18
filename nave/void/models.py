@@ -319,7 +319,7 @@ class ProxyResource(TimeStampedModel):
         extractor = re.compile("http://.*?/dataset/(.*?)/(.*?)/(.*)")
         spec, search_label, label = extractor.findall(uri)[0]
         if not ds:
-            ds, _ = DataSet.objects.get_or_create(spec=spec, document_uri=)
+            ds, _ = DataSet.objects.get(spec=spec, document_uri=uri)
         proxy_field = ProxyResourceField.get_proxy_field(search_label, ds)
         resource_dict = {
             'proxy_uri': uri,
