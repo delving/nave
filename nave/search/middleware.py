@@ -52,6 +52,8 @@ class APILoggingMiddleware(object):
 
             entry = APIEntry() # query_params=request.GET.lists()
             entry.query_params = dict(request.GET.lists())
+            # switch between django response and DRF response
+            # entry.total_result = response.data.get('result')['pagination']['numFound']
             entry.raw_query = '{}'.format(request.GET.urlencode())
             entry.save()
 
