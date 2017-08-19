@@ -428,7 +428,7 @@ class NaveESQuery(object):
                 else:
                     q = Q('bool', should=hidden_facet_filter_list)
                     hidden_filter_list.append(q)
-        query = query.filter('bool', must=hidden_filter_list)
+            query = query.filter('bool', must=hidden_filter_list)
         # define applied filters
         self.applied_filters = filter_dict
         applied_facet_fields = []
