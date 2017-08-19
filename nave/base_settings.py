@@ -198,6 +198,7 @@ MIDDLEWARE = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.contrib.admindocs.middleware.XViewMiddleware',
     'nave.common.middleware.FallBackLanguageMiddleware',
+    'nave.search.middleware.APILoggingMiddleware',
 )
 
 AUTHENTICATION_BACKENDS = (
