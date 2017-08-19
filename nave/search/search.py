@@ -562,6 +562,39 @@ class NaveESQuery(object):
         query = self.build_query_from_request(request)
         return query
 
+    def get_geojson_generator(self, request, max=None):
+        """Return generator for Leaflet map clustering.
+
+        """
+        params = request.GET.copy()
+        # remove unnecessary keys
+        for key in ['start', 'page', 'facet']:
+            if key in params:
+                params.pop(key)
+        self.default_facets = []
+        if 'rows' in params:
+            params['rows'] = max
+        request.GET = params
+        self.rows = max
+        search = self.build_query_from_request(request)
+        # search.aggs = None
+        search = search.source(include=['wgs84_pos_lat', 'wgs84_pos_long'])
+        search = search.filter(
+            {'exists': {'field': 'wgs84_pos_lat'}}
+        ).filter(
+            {'exists': {'field': 'wgs84_pos_long'}}
+        )
+        res = search.scan()
+        yield 'var edmPoints = [\n'
+        for rec in res:
+            lat_long = zip(rec.wgs84_pos_lat, rec.wgs84_pos_long)
+            for lat, lon in lat_long:
+                if lat and lon:
+                    yield '[{}, {}, "{}"],\n'.format(
+                            lat.raw, lon.raw, rec.meta.id
+                    )
+        yield ']\n'
+
     def query_to_facet_key(self, facet_key):
         if facet_key.startswith('delving_spec'):
             facet_key = "system.spec.raw"

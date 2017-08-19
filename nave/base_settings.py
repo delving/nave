@@ -510,6 +510,8 @@ SERIALIZATION_MODULES = {
 # DataSet configuration #
 # ########################
 
+GEO_STREAMING_RESPONSE = 2500
+
 RDF_USE_LOCAL_GRAPH = True
 
 RDF_STORE_TRIPLES = False

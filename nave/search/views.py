@@ -331,6 +331,24 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
         response['Content-Disposition'] = 'attachment; filename="{}"'.format(file_name)
         return response
 
+    def stream_geosearch_results(self, request, max=1000, as_file=True):
+        """Return a streaming response with all geopoints"""
+        from django.http import StreamingHttpResponse
+
+        if hasattr(settings, 'GEO_STREAMING_RESPONSE'):
+            max = settings.GEO_STREAMING_RESPONSE
+        query_factory = NaveESQuery(index_name=settings.SITE_NAME)
+        generator = query_factory.get_geojson_generator(request=request)
+        response = StreamingHttpResponse(
+            generator,
+            content_type="application/json"
+        )
+        file_name = 'edmPoints.js'
+        # todo add streaming gzip of search results later
+        if as_file:
+            response['Content-Disposition'] = 'attachment; filename="{}"'.format(file_name)
+        return response
+
     def serialize_stream(self, es_item, format="json"):
         from elasticsearch_dsl.result import Result
         item = NaveESItem(es_item=Result(es_item), converter=self.get_converter())
@@ -351,8 +369,12 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
             params['q'] = " ".join(query)
             return redirect("{}?{}".format(request._request.path, params.urlencode()))
         result_as_zip = True if request.query_params.get('download', 'false').lower() == "true" else False
+        result_as_geo_stream = True if request.query_params.get('geostream', 'false').lower() == "true" else False
+        stream_to_file = True if request.query_params.get('filestream', 'false').lower() == "true" else False
         if result_as_zip:
             return self.stream_search_results(request=request)
+        elif result_as_geo_stream:
+            return self.stream_geosearch_results(request=request, as_file=stream_to_file)
         elif request.accepted_renderer.format == 'geojson-clustered':
             # todo replace with normal geojson output as feature collection
             return Response(self.get_clustered_geojson(request))
