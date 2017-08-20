@@ -181,25 +181,32 @@ SearchView.initSearchTags = function() {
     $input.on('beforeItemRemove', function(event) {
         event.preventDefault();
         var _value = event.item.value;
+        var valToRemove = event.item.value;
         $queryForm.find(':input').each(function(){
             var _this = $(this);
+            console.log(_this.attr('name'));
+            console.log("passed value: ", _value);
+            console.log("checked value: ", _this.val());
             // no special actions needed for facet just remove
             if( _this.val() == _value && _this.attr('name') == 'qf[]' || _this.attr('name') == 'qf' ){
                 _this.remove();
+                return;
             }
-            if ( _this.attr('name') == 'q' && _this.val() == _value ) {
-                // be kinds and always trim
-                _q = _this.val().trim();
-                // nr of terms in the query
-                _nrTerms = _q.split(/\s+/).length;
-                // remove one query term from within string of multiple terms
-                if ( _nrTerms > 1 && _q.toLowerCase().indexOf(_value.toLowerCase()) >= 0 ) {
-                    _this.val(_this.val().replace(_value,''));
-
-                }
-                // remove the single query term
-                else if ( _nrTerms == 1 ) {
+            if ( _this.attr('name') == 'q' ) {
+                // query = value so just remove
+                if( _this.val() == _value){
                     _this.remove();
+                }
+                else {
+                    // be kinds and always trim
+                    var _q = _this.val().trim();
+                    // nr of terms in the query
+                    var _nrTerms = _q.split(/\s+/).length;
+                    // remove one query term from within string of multiple terms
+                    if ( _nrTerms > 1 && _q.toLowerCase().indexOf(_value.toLowerCase()) >= 0 ) {
+                        _this.val(_this.val().replace(_value,''));
+
+                    }
                 }
             }
         });
