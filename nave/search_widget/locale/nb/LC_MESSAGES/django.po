@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-05-26 14:38+0200\n"
+"POT-Creation-Date: 2017-06-01 15:23+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,84 +18,84 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: templates/search-widget-base.html:4
+#: nave/search_widget/templates/search-widget-base.html:4
 msgid "Create a search widget"
 msgstr ""
 
-#: templates/search-widget-base.html:14
+#: nave/search_widget/templates/search-widget-base.html:14
 msgid "Home"
 msgstr ""
 
-#: templates/search-widget-base.html:17
+#: nave/search_widget/templates/search-widget-base.html:17
 msgid "Search widget"
 msgstr ""
 
-#: templates/search-widget-base.html:25
+#: nave/search_widget/templates/search-widget-base.html:25
 msgid "Search-widget configuration"
 msgstr ""
 
-#: templates/search-widget-base.html:26
+#: nave/search_widget/templates/search-widget-base.html:26
 msgid ""
 "Configure a search widget for use on your own website. Copy the generated "
 "code and paste in your own blog or website."
 msgstr ""
 
-#: templates/search-widget-base.html:34
+#: nave/search_widget/templates/search-widget-base.html:34
 msgid "Short text"
 msgstr ""
 
-#: templates/search-widget-base.html:36
+#: nave/search_widget/templates/search-widget-base.html:36
 msgid "A short text that will appear above the search input field"
 msgstr ""
 
-#: templates/search-widget-base.html:40
+#: nave/search_widget/templates/search-widget-base.html:40
 msgid "Placeholder text"
 msgstr ""
 
-#: templates/search-widget-base.html:42
+#: nave/search_widget/templates/search-widget-base.html:42
 msgid "Default text to appear inside the search input box"
 msgstr ""
 
-#: templates/search-widget-base.html:46
+#: nave/search_widget/templates/search-widget-base.html:46
 msgid "Button text"
 msgstr ""
 
-#: templates/search-widget-base.html:48
+#: nave/search_widget/templates/search-widget-base.html:48
 msgid "Text that will appear on the search button"
 msgstr ""
 
-#: templates/search-widget-base.html:52
+#: nave/search_widget/templates/search-widget-base.html:52
 msgid "Update preview"
 msgstr ""
 
-#: templates/search-widget-base.html:54
+#: nave/search_widget/templates/search-widget-base.html:54
 msgid "Create widget code"
 msgstr ""
 
-#: templates/search-widget-base.html:59
+#: nave/search_widget/templates/search-widget-base.html:59
 msgid "Preview"
 msgstr ""
 
-#: templates/search-widget-base.html:72
+#: nave/search_widget/templates/search-widget-base.html:71
 msgid "Enter a search term here"
 msgstr ""
 
-#: templates/search-widget-base.html:73
+#: nave/search_widget/templates/search-widget-base.html:72
 msgid "Search"
 msgstr ""
 
-#: templates/search-widget-base.html:132
+#: nave/search_widget/templates/search-widget-base.html:131
 msgid "Widget code"
 msgstr ""
 
-#: templates/search-widget-base.html:138
+#: nave/search_widget/templates/search-widget-base.html:137
 msgid "Widget code copied to clipboard"
 msgstr ""
 
-#: templates/search-widget-base.html:139
+#: nave/search_widget/templates/search-widget-base.html:138
 msgid "Close"
 msgstr ""
 
-#: templates/search-widget-base.html:140
+#: nave/search_widget/templates/search-widget-base.html:139
 msgid "Copy to clipboard"
 msgstr ""
