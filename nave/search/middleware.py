@@ -48,6 +48,9 @@ class APILoggingMiddleware(object):
         response = self.get_response(request)
 
         # Only log information for subclass of 'SearchListAPIView'
+        if not hasattr(response, 'render_context'):
+            return response
+
         if issubclass(response.renderer_context['view'].__class__, SearchListAPIView):
 
             entry = APIEntry() # query_params=request.GET.lists()
