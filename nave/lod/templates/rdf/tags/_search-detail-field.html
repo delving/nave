@@ -113,26 +113,26 @@
                     {{ field.value|truncatewords:word_limit }}
                 {% endif %}
             {% else %}
-                <span class="field-html">
+
                 {% if not word_limit %}
-                    {{ field.value|safe }}
+                    <span class="field-html">{{ field.value|safe }} </span>
                 {% else %}
-                    {{ field.value|truncatewords:word_limit|safe }}
+                    <span class="field-html">{{ field.value|truncatewords:word_limit|safe }}</span>
                 {% endif %}
-                </span>
+
             {% endif %}
-            <div class="field-tools">
-                {% if new_facet_query %}
+
+                {% if new_facet_query %}<div class="field-tools">
                     <a href="{% url 'results-list' %}?qf={{ fieldname|urlencode }}:{{ field.value }}" class="label label-info" title="{% trans fieldname %}">
                         <i class="fa fa-search"></i>
-                    </a>
+                    </a></div>
                 {% endif %}
-                {% if new_query %}
+                {% if new_query %}<div class="field-tools">
                     <a href="{% url 'results-list' %}?q={{ field.value|urlencode }}" class="label label-success" title="{% trans 'Free text' %}">
                         <i class="fa fa-search"></i>
-                    </a>
+                    </a></div>
                 {% endif %}
-            </div>
+
             {% if surround %}
                 </{{ surround }}>
             {% endif %}
