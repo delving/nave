@@ -5,17 +5,17 @@
 
             {% for value in values %}
                 {# TODO: check for deepzoom, video audio and render html accordingly #}
-                {% if value.value %}
-                    {% if fullscreen %}
-                        <a href="{{ value.value }}" class="fullscreen" rel="nofollow">
-                    {% else %}
-                        <a href="{{ uri }}" rel="canonical">
-                    {% endif %}
-                        <img src="{{ value.value }}" alt="{% for a in alt %}{{ a }}{% endfor %}" />
-                        </a>
-                {% else %}
-                    <img  src="{% static 'img/media-placeholder.svg' %}"/>
-                {% endif %}
+{#                {% if value.value %}#}
+{#                    {% if fullscreen %}#}
+{#                        <a href="{{ value.value }}" class="fullscreen" rel="nofollow">#}
+{#                    {% else %}#}
+{#                        <a href="{{ uri }}" rel="canonical">#}
+{#                    {% endif %}#}
+{#                        <img src="{{ value.value }}" alt="{% for a in alt %}{{ a }}{% endfor %}" />#}
+{#                        </a>#}
+{#                {% else %}#}
+                    <img  src="{% static 'img/media-placeholder.svg' %}" id="placeholder-image"/>
+{#                {% endif %}#}
             {% endfor %}
 
     {% elif values %}
