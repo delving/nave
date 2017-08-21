@@ -292,11 +292,12 @@ class NaveESQuery(object):
         value_list = param[1]
         return [(key, value) for value in value_list]
 
-    def create_filter_query(self, field, values, operator='OR'):
+    def create_filter_query(self, field, values, operator='OR', negative=False):
         """Build a filter query"""
         formatter = '" {} "'.format(operator)
         query = '"{}"'.format(formatter.join(values))
-        return Q('query_string', default_field=field, query=query)
+        q = Q('query_string', default_field=field, query=query)
+        return q if not negative else ~q
 
     def build_query_from_request(self, request, raw_query_string=None):
 
@@ -472,7 +473,12 @@ class NaveESQuery(object):
                 facet_filter_list = facet_filter_dict[key]
                 facet_key = self.query_to_facet_key(key)
                 operator = 'OR' if not facet_bool_type_and else 'AND'
-                filter_query = self.create_filter_query(facet_key, values, operator)
+                filter_query = self.create_filter_query(
+                    facet_key,
+                    values,
+                    operator,
+                    key.startswith('-')
+                )
                 all_filter_list.append(filter_query)
                 all_filter_dict[key] = filter_query
             query = query.post_filter('bool', must=all_filter_list)
