@@ -350,7 +350,7 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
         if hasattr(settings, 'GEO_STREAMING_RESPONSE'):
             max = settings.GEO_STREAMING_RESPONSE
         query_factory = NaveESQuery(index_name=settings.SITE_NAME)
-        generator = query_factory.get_geojson_generator(request=request)
+        generator = query_factory.get_geojson_generator(request=request, max=max)
         response = StreamingHttpResponse(
             generator,
             content_type="application/json"

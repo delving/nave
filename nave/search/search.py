@@ -584,6 +584,7 @@ class NaveESQuery(object):
         ).filter(
             {'exists': {'field': 'wgs84_pos_long'}}
         )
+        search = search[:max]
         res = search.scan()
         yield 'var edmPoints = [\n'
         for rec in res:
