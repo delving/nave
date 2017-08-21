@@ -187,19 +187,25 @@ SearchView.initSearchTags = function() {
             if( _this.val() == _value && _this.attr('name') == 'qf[]' || _this.attr('name') == 'qf' ){
                 _this.remove();
             }
-            if ( _this.attr('name') == 'q' && _this.val() == _value ) {
-                // be kinds and always trim
-                _q = _this.val().trim();
-                // nr of terms in the query
-                _nrTerms = _q.split(/\s+/).length;
-                // remove one query term from within string of multiple terms
-                if ( _nrTerms > 1 && _q.toLowerCase().indexOf(_value.toLowerCase()) >= 0 ) {
-                    _this.val(_this.val().replace(_value,''));
-
-                }
-                // remove the single query term
-                else if ( _nrTerms == 1 ) {
+            if ( _this.attr('name') == 'q' ) {
+                // query = value so just remove
+                if( _this.val() == _value){
                     _this.remove();
+                }
+                else {
+                    // be kinds and always trim
+                    var _q = _this.val().trim();
+                    // nr of terms in the query
+                    var _nrTerms = _q.split(/\s+/).length;
+                    // remove one query term from within string of multiple terms
+                    if ( _nrTerms > 1 && _q.toLowerCase().indexOf(_value.toLowerCase()) >= 0 ) {
+                        _this.val(_this.val().replace(_value,''));
+
+                    }
+                    // remove the single query term
+                    else if ( _nrTerms == 1 ) {
+                        _this.remove();
+                    }
                 }
             }
         });
