@@ -12,7 +12,7 @@ from django.conf import settings
 from django.core.paginator import Paginator, Page, EmptyPage, PageNotAnInteger
 from django.http import QueryDict
 from elasticsearch_dsl import Search, aggs, A
-from elasticsearch_dsl.query import Q
+from elasticsearch_dsl.query import Q, Match
 from elasticsearch_dsl.result import Result
 from rest_framework.request import Request
 import six
@@ -292,6 +292,12 @@ class NaveESQuery(object):
         value_list = param[1]
         return [(key, value) for value in value_list]
 
+    def create_filter_query(self, field, values, operator='OR'):
+        """Build a filter query"""
+        formatter = '" {} "'.format(operator)
+        query = '"{}"'.format(formatter.join(values))
+        return Q('query_string', default_field=field, query=query)
+
     def build_query_from_request(self, request, raw_query_string=None):
 
         @contextmanager
@@ -418,10 +424,11 @@ class NaveESQuery(object):
             for key, values in list(hidden_filter_dict.items()):
                 hidden_facet_filter_list = hidden_facet_filter_dict[key]
                 for value in values:
+                    facet_key = self.query_to_facet_key(key)
                     if key.startswith('-'):
-                        hidden_facet_filter_list.append(~Q('match', **{self.query_to_facet_key(key): value}))
+                        hidden_facet_filter_list.append(~Match(**{facet_key: {'query': value, 'type': 'phrase'}}))
                     else:
-                        hidden_facet_filter_list.append(Q('match', **{self.query_to_facet_key(key): value}))
+                        hidden_facet_filter_list.append(Match(**{facet_key: {'query': value, 'type': 'phrase'}}))
                 if facet_bool_type_and:
                     q = Q('bool', must=hidden_facet_filter_list)
                     hidden_filter_list.append(q)
@@ -463,18 +470,11 @@ class NaveESQuery(object):
             all_filter_list = []
             for key, values in list(filter_dict.items()):
                 facet_filter_list = facet_filter_dict[key]
-                for value in values:
-                    if key.startswith('-'):
-                        facet_filter_list.append(~Q('match', **{self.query_to_facet_key(key): value}))
-                    else:
-                        facet_filter_list.append(Q('match', **{self.query_to_facet_key(key): value}))
-                if facet_bool_type_and:
-                    q = Q('bool', must=facet_filter_list)
-                    all_filter_list.append(q)
-                else:
-                    q = Q('bool', should=facet_filter_list, minimum_should_match=1)
-                    all_filter_list.append(q)
-                all_filter_dict[key] = q
+                facet_key = self.query_to_facet_key(key)
+                operator = 'OR' if not facet_bool_type_and else 'AND'
+                filter_query = self.create_filter_query(facet_key, values, operator)
+                all_filter_list.append(filter_query)
+                all_filter_dict[key] = filter_query
             query = query.post_filter('bool', must=all_filter_list)
         # create facet_filter_dict with queries with key for each facet entry
         if facet_list:
