@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-05-25 14:12+0200\n"
+"POT-Creation-Date: 2017-06-01 15:23+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,502 +18,508 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: models.py:58
+#: nave/lod/models.py:59
 msgid "Author"
 msgstr ""
 
-#: models.py:59
+#: nave/lod/models.py:60
 msgid "The first creator of the object"
 msgstr ""
 
-#: models.py:66
+#: nave/lod/models.py:67
 msgid "Group"
 msgstr ""
 
-#: models.py:67
+#: nave/lod/models.py:68
 msgid "The groups that have access to this metadata record"
 msgstr ""
 
-#: models.py:92
+#: nave/lod/models.py:93
 msgid "title"
 msgstr ""
 
-#: models.py:93
+#: nave/lod/models.py:94
 msgid "description"
 msgstr "Beskrivelse"
 
-#: models.py:109 models.py:110
+#: nave/lod/models.py:110 nave/lod/models.py:111
 msgid "RDF Subject LookUp"
 msgstr ""
 
-#: models.py:140
+#: nave/lod/models.py:141
 msgid "hub id"
 msgstr ""
 
-#: models.py:143
+#: nave/lod/models.py:144
 msgid "legacy culture hubId for documents"
 msgstr ""
 
-#: models.py:146
+#: nave/lod/models.py:147
 msgid "slug"
 msgstr ""
 
-#: models.py:151
+#: nave/lod/models.py:152
 msgid "document_uri"
 msgstr ""
 
-#: models.py:153
+#: nave/lod/models.py:154
 msgid "The document uri or cache uri "
 msgstr ""
 
-#: models.py:156
+#: nave/lod/models.py:157
 msgid "named_graph"
 msgstr ""
 
-#: models.py:157
+#: nave/lod/models.py:158
 msgid "The named graph that this record belongs to"
 msgstr ""
 
-#: models.py:160
+#: nave/lod/models.py:161
 msgid "local identifier"
 msgstr ""
 
-#: models.py:162
+#: nave/lod/models.py:163
 msgid "The local identifier supplied by the provider"
 msgstr ""
 
-#: models.py:165
+#: nave/lod/models.py:166
 msgid "uuid"
 msgstr ""
 
-#: models.py:166
+#: nave/lod/models.py:167
 msgid "The unique uuid created on first save"
 msgstr ""
 
-#: models.py:169
+#: nave/lod/models.py:170
 msgid "source uri"
 msgstr ""
 
-#: models.py:172
+#: nave/lod/models.py:173
 msgid ""
 "If the item is cached this is the original uri where this object is found. "
 "It is also saved in the graph as owl:sameAs"
 msgstr ""
 
-#: models.py:176
+#: nave/lod/models.py:177
 msgid "acceptance rdf"
 msgstr ""
 
-#: models.py:178 models.py:198
+#: nave/lod/models.py:179 nave/lod/models.py:199
 msgid "The rdf stored in the ntriples (nt) format. "
 msgstr ""
 
-#: models.py:181
+#: nave/lod/models.py:182
 msgid "acceptance hash"
 msgstr ""
 
-#: models.py:186 models.py:206
+#: nave/lod/models.py:187 nave/lod/models.py:207
 msgid "The sha1 content has of the stored ntriples."
 msgstr ""
 
-#: models.py:189
+#: nave/lod/models.py:190
 msgid "acceptance update date"
 msgstr ""
 
-#: models.py:193
+#: nave/lod/models.py:194
 msgid "The date the acceptance source was updated"
 msgstr ""
 
-#: models.py:196
+#: nave/lod/models.py:197
 msgid "production rdf"
 msgstr ""
 
-#: models.py:201
+#: nave/lod/models.py:202
 msgid "source hash"
 msgstr ""
 
-#: models.py:209
+#: nave/lod/models.py:210
 msgid "production update date"
 msgstr ""
 
-#: models.py:213
+#: nave/lod/models.py:214
 msgid "The date the source was updated"
 msgstr ""
 
-#: models.py:216
+#: nave/lod/models.py:217
 msgid "has store error"
 msgstr ""
 
-#: models.py:218
+#: nave/lod/models.py:219
 msgid "If post save actions have thrown an error."
 msgstr ""
 
-#: models.py:221
+#: nave/lod/models.py:222
 msgid "error message"
 msgstr ""
 
-#: models.py:746
+#: nave/lod/models.py:227
+msgid "Allow Linked Open Data"
+msgstr ""
+
+#: nave/lod/models.py:728
 msgid "RDF source URI"
 msgstr ""
 
-#: models.py:749
+#: nave/lod/models.py:731
 msgid "External link"
 msgstr ""
 
-#: models.py:752 models.py:880
+#: nave/lod/models.py:734 nave/lod/models.py:861
 msgid "name"
 msgstr ""
 
-#: models.py:758
+#: nave/lod/models.py:740
 msgid "short description"
 msgstr ""
 
-#: models.py:764
+#: nave/lod/models.py:746
 msgid "content_type"
 msgstr ""
 
-#: models.py:768
+#: nave/lod/models.py:750
 msgid "The content type of the link, e.g. wikipedia or youtube."
 msgstr ""
 
-#: models.py:771
+#: nave/lod/models.py:753
 msgid "html summary"
 msgstr ""
 
-#: models.py:774
+#: nave/lod/models.py:756
 msgid "Contains the unfurled HTML from the saved link"
 msgstr ""
 
-#: models.py:777
+#: nave/lod/models.py:759
 msgid "published"
 msgstr ""
 
-#: models.py:779
+#: nave/lod/models.py:761
 msgid "Should the UGC be published to unauthorised users."
 msgstr ""
 
-#: models.py:784 models.py:785
+#: nave/lod/models.py:766 nave/lod/models.py:767
 msgid "User Generated Content"
 msgstr ""
 
-#: models.py:802
+#: nave/lod/models.py:784
 msgid "prefix"
 msgstr ""
 
-#: models.py:803
+#: nave/lod/models.py:785
 msgid "prefix url"
 msgstr ""
 
-#: models.py:806
+#: nave/lod/models.py:788
 msgid "RDF Prefix"
 msgstr ""
 
-#: models.py:807
+#: nave/lod/models.py:789
 msgid "RDF Prefixes"
 msgstr ""
 
-#: models.py:828 models.py:851
+#: nave/lod/models.py:810 nave/lod/models.py:832
 msgid "prefixes"
 msgstr ""
 
-#: models.py:832 models.py:852
+#: nave/lod/models.py:813 nave/lod/models.py:833
 msgid "SPARQL query"
 msgstr ""
 
-#: models.py:835
+#: nave/lod/models.py:816
 msgid "SPARQL Query"
 msgstr ""
 
-#: models.py:836
+#: nave/lod/models.py:817
 msgid "SPARQL Queries"
 msgstr ""
 
-#: models.py:853
+#: nave/lod/models.py:834
 msgid "active"
 msgstr ""
 
-#: models.py:853
+#: nave/lod/models.py:834
 msgid "If the SPARQL update query is scheduled for periodic execution."
 msgstr ""
 
-#: models.py:857
+#: nave/lod/models.py:838
 msgid "SPARQL Update Query"
 msgstr ""
 
-#: models.py:858
+#: nave/lod/models.py:839
 msgid "SPARQL Update Queries"
 msgstr ""
 
-#: models.py:882
+#: nave/lod/models.py:863
 msgid "The name of the remote resource"
 msgstr ""
 
-#: models.py:885
+#: nave/lod/models.py:866
 msgid "base_url"
 msgstr ""
 
-#: models.py:887
+#: nave/lod/models.py:868
 msgid "The base url of the LoD target"
 msgstr ""
 
-#: models.py:890
+#: nave/lod/models.py:871
 msgid "sparql endpoint"
 msgstr ""
 
-#: models.py:893
+#: nave/lod/models.py:874
 msgid "The sparql endpoint"
 msgstr ""
 
-#: models.py:896
+#: nave/lod/models.py:877
 msgid "ontology url"
 msgstr ""
 
-#: models.py:899
+#: nave/lod/models.py:880
 msgid "The link to an RDF version of the Ontology"
 msgstr ""
 
-#: models.py:929
+#: nave/lod/models.py:910
 msgid "stored"
 msgstr ""
 
-#: templates/rdf/content_detail/gn_feature.html:5
-#: templates/rdf/content_foldout/gn_feature.html:4
-#: templates/rdf/include/enrichment_link_form.html:18
-#: templates/rdf/include/enrichment_link_form.html:19
+#: nave/lod/templates/rdf/content_detail/gn_feature.html:5
+#: nave/lod/templates/rdf/content_foldout/gn_feature.html:4
+#: nave/lod/templates/rdf/include/enrichment_link_form.html:18
+#: nave/lod/templates/rdf/include/enrichment_link_form.html:19
 msgid "Name"
 msgstr ""
 
-#: templates/rdf/content_detail/gn_feature.html:6
+#: nave/lod/templates/rdf/content_detail/gn_feature.html:6
 msgid "Country Code"
 msgstr ""
 
-#: templates/rdf/content_detail/ore_aggregation.html:5
-#: templates/rdf/lod_detail.html:213
+#: nave/lod/templates/rdf/content_detail/ore_aggregation.html:22
+#: nave/lod/templates/rdf/lod_detail.html:201
 msgid "dc_title"
 msgstr "Tittel"
 
-#: templates/rdf/content_detail/ore_aggregation.html:6
-#: templates/rdf/content_foldout/lod-detail-foldout.html:33
-#: templates/rdf/lod_detail.html:217
+#: nave/lod/templates/rdf/content_detail/ore_aggregation.html:23
+#: nave/lod/templates/rdf/content_foldout/lod-detail-foldout.html:34
+#: nave/lod/templates/rdf/lod_detail.html:205
 msgid "dc_creator"
 msgstr "Opphavsperson"
 
-#: templates/rdf/content_detail/ore_aggregation.html:7
-#: templates/rdf/content_detail/ore_aggregation.html:19
-#: templates/rdf/content_foldout/lod-detail-foldout.html:34
+#: nave/lod/templates/rdf/content_detail/ore_aggregation.html:24
+#: nave/lod/templates/rdf/content_detail/ore_aggregation.html:38
+#: nave/lod/templates/rdf/content_foldout/lod-detail-foldout.html:35
 msgid "dc_date"
 msgstr "Dato"
 
-#: templates/rdf/content_detail/ore_aggregation.html:8
-#: templates/rdf/content_foldout/lod-detail-foldout.html:42
+#: nave/lod/templates/rdf/content_detail/ore_aggregation.html:25
+#: nave/lod/templates/rdf/content_foldout/lod-detail-foldout.html:41
 msgid "nave_material"
 msgstr "Materiale"
 
-#: templates/rdf/content_detail/ore_aggregation.html:9
-#: templates/rdf/content_foldout/lod-detail-foldout.html:43
+#: nave/lod/templates/rdf/content_detail/ore_aggregation.html:26
+#: nave/lod/templates/rdf/content_foldout/lod-detail-foldout.html:42
 msgid "nave_technique"
 msgstr "Teknikk"
 
-#: templates/rdf/content_detail/ore_aggregation.html:10
+#: nave/lod/templates/rdf/content_detail/ore_aggregation.html:27
 msgid "dc_format"
 msgstr "Format"
 
-#: templates/rdf/content_detail/ore_aggregation.html:11
-#: templates/rdf/content_foldout/lod-detail-foldout.html:36
-#: templates/rdf/lod_detail.html:72
+#: nave/lod/templates/rdf/content_detail/ore_aggregation.html:28
+#: nave/lod/templates/rdf/content_foldout/lod-detail-foldout.html:37
 msgid "dc_description"
 msgstr "Beskrivelse"
 
-#: templates/rdf/content_detail/ore_aggregation.html:12
-#: templates/rdf/content_foldout/lod-detail-foldout.html:35
+#: nave/lod/templates/rdf/content_detail/ore_aggregation.html:29
+#: nave/lod/templates/rdf/content_foldout/lod-detail-foldout.html:36
 msgid "dc_subject"
 msgstr "Emne"
 
-#: templates/rdf/content_detail/ore_aggregation.html:13
-#: templates/rdf/content_foldout/lod-detail-foldout.html:40
+#: nave/lod/templates/rdf/content_detail/ore_aggregation.html:30
+#: nave/lod/templates/rdf/content_foldout/lod-detail-foldout.html:39
 msgid "dc_type"
 msgstr "Ressurstype"
 
-#: templates/rdf/content_detail/ore_aggregation.html:14
-#: templates/rdf/content_foldout/lod-detail-foldout.html:37
+#: nave/lod/templates/rdf/content_detail/ore_aggregation.html:31
+#: nave/lod/templates/rdf/content_foldout/lod-detail-foldout.html:38
 msgid "dc_identifier"
 msgstr "Identifikator"
 
-#: templates/rdf/content_detail/ore_aggregation.html:15
+#: nave/lod/templates/rdf/content_detail/ore_aggregation.html:32
 msgid "dc_relation"
 msgstr "Relasjon"
 
-#: templates/rdf/content_detail/ore_aggregation.html:16
+#: nave/lod/templates/rdf/content_detail/ore_aggregation.html:33
 msgid "dc_provenance"
 msgstr "Proveniens"
 
-#: templates/rdf/content_detail/ore_aggregation.html:17
+#: nave/lod/templates/rdf/content_detail/ore_aggregation.html:36
 msgid "nave_collection"
 msgstr "Samling"
 
-#: templates/rdf/content_detail/ore_aggregation.html:18
+#: nave/lod/templates/rdf/content_detail/ore_aggregation.html:37
 msgid "nave_collectionPart"
 msgstr "Innsamling del"
 
-#: templates/rdf/content_detail/ore_aggregation.html:20
-#: templates/rdf/content_foldout/lod-detail-foldout.html:41
+#: nave/lod/templates/rdf/content_detail/ore_aggregation.html:39
+#: nave/lod/templates/rdf/content_foldout/lod-detail-foldout.html:40
 msgid "edm_dataProvider"
 msgstr "Tilbyder"
 
-#: templates/rdf/content_detail/ore_aggregation.html:21
+#: nave/lod/templates/rdf/content_detail/ore_aggregation.html:40
 msgid "dc_contributor"
 msgstr "Bidragsyter"
 
-#: templates/rdf/content_detail/ore_aggregation.html:22
+#: nave/lod/templates/rdf/content_detail/ore_aggregation.html:41
 msgid "dc_source"
 msgstr "Kilde"
 
-#: templates/rdf/content_detail/ore_aggregation.html:23
+#: nave/lod/templates/rdf/content_detail/ore_aggregation.html:42
 msgid "nave_province"
 msgstr "Provins"
 
-#: templates/rdf/content_detail/ore_aggregation.html:24
+#: nave/lod/templates/rdf/content_detail/ore_aggregation.html:43
 msgid "nave_musipMuseumUri"
 msgstr ""
 
-#: templates/rdf/content_detail/ore_aggregation.html:25
+#: nave/lod/templates/rdf/content_detail/ore_aggregation.html:44
 msgid "edm_isShownAt"
 msgstr "Ekstern landingsside"
 
-#: templates/rdf/content_detail/ore_aggregation.html:26
-#: templates/rdf/content_foldout/lod-detail-foldout.html:45
-#: templates/rdf/lod_detail.html:221
+#: nave/lod/templates/rdf/content_detail/ore_aggregation.html:45
+#: nave/lod/templates/rdf/content_foldout/lod-detail-foldout.html:44
+#: nave/lod/templates/rdf/lod_detail.html:209
 msgid "dc_rights"
 msgstr "Rettighetshaver"
 
-#: templates/rdf/content_detail/ore_aggregation.html:27
-#: templates/rdf/content_foldout/lod-detail-foldout.html:46
+#: nave/lod/templates/rdf/content_detail/ore_aggregation.html:46
+#: nave/lod/templates/rdf/content_foldout/lod-detail-foldout.html:45
 msgid "edm_rights"
 msgstr "Rettigheter"
 
-#: templates/rdf/content_detail/ore_aggregation.html:28
+#: nave/lod/templates/rdf/content_detail/ore_aggregation.html:47
 msgid "coordinate"
 msgstr "Koordinere"
 
-#: templates/rdf/content_foldout/lod-detail-foldout.html:44
+#: nave/lod/templates/rdf/content_foldout/lod-detail-foldout.html:43
 msgid "dcterms_isReferencedBy"
 msgstr "Er referert av"
 
-#: templates/rdf/content_foldout/lod-detail-foldout.html:50
+#: nave/lod/templates/rdf/content_foldout/lod-detail-foldout.html:47
 msgid "View details"
 msgstr "Vis detaljer"
 
-#: templates/rdf/include/enrichment_link_form.html:14
-#: templates/rdf/include/enrichment_link_form.html:15
+#: nave/lod/templates/rdf/include/enrichment_link_form.html:14
+#: nave/lod/templates/rdf/include/enrichment_link_form.html:15
 msgid "Type"
 msgstr ""
 
-#: templates/rdf/include/enrichment_link_form.html:22
-#: templates/rdf/include/enrichment_link_form.html:23
+#: nave/lod/templates/rdf/include/enrichment_link_form.html:22
+#: nave/lod/templates/rdf/include/enrichment_link_form.html:23
 msgid "Short description"
 msgstr ""
 
-#: templates/rdf/include/enrichment_link_form.html:26
+#: nave/lod/templates/rdf/include/enrichment_link_form.html:26
 msgid "URL/Link"
 msgstr ""
 
-#: templates/rdf/include/enrichment_link_form.html:27
+#: nave/lod/templates/rdf/include/enrichment_link_form.html:27
 msgid "Link"
 msgstr ""
 
-#: templates/rdf/include/enrichment_link_form.html:30
+#: nave/lod/templates/rdf/include/enrichment_link_form.html:30
 msgid "Published"
 msgstr ""
 
-#: templates/rdf/include/enrichment_link_form.html:34
+#: nave/lod/templates/rdf/include/enrichment_link_form.html:34
 msgid "Save"
 msgstr ""
 
-#: templates/rdf/lod_detail.html:24
+#: nave/lod/templates/rdf/lod_detail.html:26
 msgid "Home"
 msgstr ""
 
-#: templates/rdf/lod_detail.html:29 templates/rdf/lod_detail.html.py:32
+#: nave/lod/templates/rdf/lod_detail.html:31
+#: nave/lod/templates/rdf/lod_detail.html:34
 msgid "Search"
 msgstr ""
 
-#: templates/rdf/lod_detail.html:52
+#: nave/lod/templates/rdf/lod_detail.html:57
 msgid "Return to results"
-msgstr "Gå tilbake til resultatene"
+msgstr "Tilbake til trefflista"
 
-#: templates/rdf/lod_detail.html:58
+#: nave/lod/templates/rdf/lod_detail.html:62
 msgid "Return to previous object"
 msgstr "Gå tilbake til forrige objekt"
 
-#: templates/rdf/lod_detail.html:81
+#: nave/lod/templates/rdf/lod_detail.html:72
 msgid "Content"
 msgstr "Innhold"
 
-#: templates/rdf/lod_detail.html:85 templates/rdf/lod_detail.html.py:115
+#: nave/lod/templates/rdf/lod_detail.html:76
+#: nave/lod/templates/rdf/lod_detail.html:110
 msgid "Properties"
 msgstr "Egenskaper"
 
-#: templates/rdf/lod_detail.html:89
+#: nave/lod/templates/rdf/lod_detail.html:80
 msgid "Statistics"
 msgstr "Statistikk"
 
-#: templates/rdf/lod_detail.html:93
+#: nave/lod/templates/rdf/lod_detail.html:84
 msgid "Media"
 msgstr "Media"
 
-#: templates/rdf/lod_detail.html:96
+#: nave/lod/templates/rdf/lod_detail.html:87
 msgid "Map"
 msgstr "Kart"
 
-#: templates/rdf/lod_detail.html:99
+#: nave/lod/templates/rdf/lod_detail.html:90
 msgid "Related"
 msgstr "Relatert"
 
-#: templates/rdf/lod_detail.html:118
+#: nave/lod/templates/rdf/lod_detail.html:112
 msgid "Display predicate uris"
 msgstr "Vis predikat uris"
 
-#: templates/rdf/lod_detail.html:263
+#: nave/lod/templates/rdf/lod_detail.html:251
 msgid "Add enrichment link"
 msgstr ""
 
-#: templates/rdf/lod_detail.html:266
+#: nave/lod/templates/rdf/lod_detail.html:254
 msgid "Add/Edit enrichment link"
 msgstr ""
 
-#: templates/rdf/tags/_rdf_properties.html:21
-#: templates/rdf/tags/_search-detail-field.html:51
+#: nave/lod/templates/rdf/tags/_rdf_properties.html:23
+#: nave/lod/templates/rdf/tags/_search-detail-field.html:27
+#: nave/lod/templates/rdf/tags/_search-detail-field.html:35
+#: nave/lod/templates/rdf/tags/_search-detail-field.html:46
+#: nave/lod/templates/rdf/tags/_search-detail-field.html:54
 msgid "Opens in new window"
 msgstr "Åpner i nytt vindu"
 
-#: templates/rdf/tags/_rdf_properties.html:38
-#: templates/rdf/tags/_rdf_properties.html:39
-#: templates/rdf/tags/_rdf_properties.html:53
-#: templates/rdf/tags/_rdf_properties.html:54
+#: nave/lod/templates/rdf/tags/_rdf_properties.html:40
+#: nave/lod/templates/rdf/tags/_rdf_properties.html:41
+#: nave/lod/templates/rdf/tags/_rdf_properties.html:55
+#: nave/lod/templates/rdf/tags/_rdf_properties.html:56
 msgid "Show more"
 msgstr "Vis mer"
 
-#: templates/rdf/tags/_rdf_properties.html:38
-#: templates/rdf/tags/_rdf_properties.html:53
+#: nave/lod/templates/rdf/tags/_rdf_properties.html:40
+#: nave/lod/templates/rdf/tags/_rdf_properties.html:55
 msgid "Show less"
 msgstr "Vis mindre"
 
-#: templates/rdf/tags/_search-detail-field.html:47
+#: nave/lod/templates/rdf/tags/_search-detail-field.html:73
 msgid "Definition"
 msgstr ""
 
-#: templates/rdf/tags/_search-detail-field.html:61
+#: nave/lod/templates/rdf/tags/_search-detail-field.html:82
+#: nave/lod/templates/rdf/tags/_search-detail-field.html:131
 msgid "Free text"
 msgstr ""
 
-#: templates/rdf/tags/_search-detail-media-preview.html:15
-msgid "no preview available"
-msgstr ""
-
-#: templates/rdf/tags/_search-detail-media-preview.html:70
+#: nave/lod/templates/rdf/tags/_search-detail-media-preview.html:71
+#: nave/lod/templates/rdf/tags/_webresource.html:72
 msgid "No preview available"
 msgstr ""
 
-#: templates/snorql/properties.html:70
+#: nave/lod/templates/snorql/properties.html:70
 msgid "More properties"
 msgstr "Flere eiendommer"
