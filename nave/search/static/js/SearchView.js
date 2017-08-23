@@ -181,16 +181,22 @@ SearchView.initSearchTags = function() {
     $input.on('beforeItemRemove', function(event) {
         event.preventDefault();
         var _value = event.item.value;
+        var valToRemove = event.item.value;
         $queryForm.find(':input').each(function(){
             var _this = $(this);
+            // console.log(_this.attr('name'));
+            // console.log("passed value: ", _value);
+            // console.log("checked value: ", _this.val());
             // no special actions needed for facet just remove
             if( _this.val() == _value && _this.attr('name') == 'qf[]' || _this.attr('name') == 'qf' ){
                 _this.remove();
+                return;
             }
             if ( _this.attr('name') == 'q' ) {
                 // query = value so just remove
                 if( _this.val() == _value){
                     _this.remove();
+                    return false;
                 }
                 else {
                     // be kinds and always trim
@@ -201,10 +207,6 @@ SearchView.initSearchTags = function() {
                     if ( _nrTerms > 1 && _q.toLowerCase().indexOf(_value.toLowerCase()) >= 0 ) {
                         _this.val(_this.val().replace(_value,''));
 
-                    }
-                    // remove the single query term
-                    else if ( _nrTerms == 1 ) {
-                        _this.remove();
                     }
                 }
             }
