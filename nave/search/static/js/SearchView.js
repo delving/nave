@@ -123,7 +123,6 @@ SearchView.initSearchTags = function() {
     var $queryForm = $('#form-query-fields');
     var $input = $('div#qtags');
     var $btnClear = $('#btn-clear-simple-search');
-    var cookieJar = $(".bootstrap-tagsinput input");
     $input.tagsinput({
         itemText:'text',
         itemValue:'value',
@@ -156,17 +155,29 @@ SearchView.initSearchTags = function() {
                 $qTerms = $param.attr('value').replace(/^\s+|\s+$/gm,'').split(' ');
                 // add each element in the array
                 $qTerms.forEach(function(element){
-                    $input.tagsinput('add', {'text': element, 'value': element, 'name': $param.attr('name')});
+                    $input.tagsinput('add', {
+                        'text': element,
+                        'value': element,
+                        'name': $param.attr('name')
+                    });
                 });
             }
         }
         // show other facet fields except min and max coordinates from the modal maps search
         else if (!(/\bmin/i.test($param.attr('name')) || /\bmax/i.test($param.attr('name')))) {
             var text = $param.attr('data-text');
-            var test = text.toString().toLowerCase();
-            if(test && test != 'true' && test != 'false' ){
-                $input.tagsinput('add', {'text': $param.attr('data-text'), 'value': $param.attr('value'), 'name': $param.attr('name')});
+            var value =  $param.attr('value');
+            var name =  $param.attr('name');
+            //todo: internationalize
+            var re = /((hasDigitalObject)|(hasCoordinate))/;
+            if(re.test(value)){
+                text = value.replace(/nave_hasDigitalObject/g, "Digital Object").replace(/nave_hasCoordinates/g, "Coordinates");
             }
+            $input.tagsinput('add', {
+                'text': text,
+                'value': value,
+                'name': name
+            });
         }
     });
 
@@ -180,10 +191,6 @@ SearchView.initSearchTags = function() {
             $queryForm.submit();
         });
     });
-
-    // if(cookieJar.length == 0){
-    //     $(".query-tags").hide();
-    // }
 
     // remove a specific item from the hidden form for a new query
     $input.on('beforeItemRemove', function(event) {
@@ -214,7 +221,6 @@ SearchView.initSearchTags = function() {
                 }
             }
         });
-
         $queryForm.submit();
     });
 };
