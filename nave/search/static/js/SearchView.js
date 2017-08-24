@@ -123,6 +123,7 @@ SearchView.initSearchTags = function() {
     var $queryForm = $('#form-query-fields');
     var $input = $('div#qtags');
     var $btnClear = $('#btn-clear-simple-search');
+    var cookieJar = $(".bootstrap-tagsinput input");
     $input.tagsinput({
         itemText:'text',
         itemValue:'value',
@@ -161,9 +162,12 @@ SearchView.initSearchTags = function() {
         }
         // show other facet fields except min and max coordinates from the modal maps search
         else if (!(/\bmin/i.test($param.attr('name')) || /\bmax/i.test($param.attr('name')))) {
-            $input.tagsinput('add', {'text': $param.attr('data-text'), 'value': $param.attr('value'), 'name': $param.attr('name')});
+            var text = $param.attr('data-text');
+            var test = text.toString().toLowerCase();
+            if(test != 'true' && test != 'false' ){
+                $input.tagsinput('add', {'text': $param.attr('data-text'), 'value': $param.attr('value'), 'name': $param.attr('name')});
+            }
         }
-        
     });
 
     $btnClear.removeClass('hidden');
@@ -177,20 +181,19 @@ SearchView.initSearchTags = function() {
         });
     });
 
+    if(cookieJar.length == 0){
+        $(".query-tags").hide();
+    }
+
     // remove a specific item from the hidden form for a new query
     $input.on('beforeItemRemove', function(event) {
         event.preventDefault();
         var _value = event.item.value;
-        var valToRemove = event.item.value;
         $queryForm.find(':input').each(function(){
             var _this = $(this);
-            // console.log(_this.attr('name'));
-            // console.log("passed value: ", _value);
-            // console.log("checked value: ", _this.val());
-            // no special actions needed for facet just remove
             if( _this.val() == _value && _this.attr('name') == 'qf[]' || _this.attr('name') == 'qf' ){
                 _this.remove();
-                return;
+                return false;
             }
             if ( _this.attr('name') == 'q' ) {
                 // query = value so just remove
@@ -211,6 +214,7 @@ SearchView.initSearchTags = function() {
                 }
             }
         });
+
         $queryForm.submit();
     });
 };
