@@ -164,7 +164,7 @@ SearchView.initSearchTags = function() {
         else if (!(/\bmin/i.test($param.attr('name')) || /\bmax/i.test($param.attr('name')))) {
             var text = $param.attr('data-text');
             var test = text.toString().toLowerCase();
-            if(test != 'true' && test != 'false' ){
+            if(test && test != 'true' && test != 'false' ){
                 $input.tagsinput('add', {'text': $param.attr('data-text'), 'value': $param.attr('value'), 'name': $param.attr('name')});
             }
         }
@@ -181,9 +181,9 @@ SearchView.initSearchTags = function() {
         });
     });
 
-    if(cookieJar.length == 0){
-        $(".query-tags").hide();
-    }
+    // if(cookieJar.length == 0){
+    //     $(".query-tags").hide();
+    // }
 
     // remove a specific item from the hidden form for a new query
     $input.on('beforeItemRemove', function(event) {
