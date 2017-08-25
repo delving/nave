@@ -15,13 +15,55 @@ logger = logging.getLogger(__name__)
 
 
 class APIEntry(DocType):
-    """Persistence entry for API logging to ElasticSearch."""
+    """Persistence entry for API logging to ElasticSearch.
+    created_at =
+    host =
+    nave_version =
+    hub3_project hash =
+    request_path =
+    request_type = detail or search
+
+
+    Requestor:
+        ip
+        google analytics meta
+        google analytics request id
+
+    Request:
+        meta:
+            paging: boolean
+            filtered: boolean
+            fielded_query: boolean
+            geosearch: boolean
+        query_params:
+            request dict
+        facet:
+            facet_field
+            facet_value
+        query_string
+
+    Response:
+        records found
+        dataprovider => list (loop)
+        contentprovider => list (loop)
+        spec => name
+        europeana type
+        dc_subject => list
+        has image
+        has point
+
+    oauth protection same as narthex via nginx
+
+    """
 
     created_at = Date()
     # paging = Boolean()
     raw_query = Text()
 
     query_params = Nested()
+    requestor = Nested()
+    request = Nested()
+    response = Nested()
 
     class Meta:
         index = "{}_apilog".format(settings.SITE_NAME)
