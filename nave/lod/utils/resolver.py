@@ -54,16 +54,6 @@ NAVE = Namespace('http://schemas.delving.eu/nave/terms/')
 
 
 def get_geo_points(graph, only_geohash=False):
-    if only_geohash:
-        geohashes = graph.objects(predicate=NAVE.geoHash)
-        points = []
-        for geohash in geohashes:
-            lat, lon = geohash.split(',')
-            if lat and lon:
-                lat = float(str(lat.strip()))
-                lon = float(str(lon.strip()))
-                points.append([lat, lon])
-        return points
     try:
         lat_list = [float(str(lat)) for lat in
                     graph.objects(predicate=URIRef("http://www.w3.org/2003/01/geo/wgs84_pos#lat"))]
@@ -73,9 +63,17 @@ def get_geo_points(graph, only_geohash=False):
         logger.error("Unable to get geopoints because of {}".format(ve.args))
         return []
     zipped = zip(lat_list, lon_list)
-    if not lat_list and not lon_list:
+    if (not lat_list and not lon_list) or only_geohash:
+        geohashes = graph.objects(predicate=NAVE.geoHash)
+        points = []
+        for geohash in geohashes:
+            lat, lon = geohash.split(',')
+            if lat and lon:
+                lat = float(str(lat.strip()))
+                lon = float(str(lon.strip()))
+                points.append([lat, lon])
         return []
-    return [list(elem) for elem in list(zipped)]
+    return list(list(elem) for elem in list(zipped))
 
 
 def get_cache_url(uri):
@@ -302,7 +300,7 @@ class GraphBindings:
         return False
 
     def has_geo(self):
-        points = get_geo_points(self._graph, only_geohash=True)
+        points = get_geo_points(self._graph, only_geohash=False)
         return True if points else False
 
     @staticmethod
@@ -418,7 +416,7 @@ class GraphBindings:
         # index_doc['rdf']['graph'] = self._graph.serialize(format='json-ld', context=context_dict).decode('utf-8')
 
         index_doc['about']['language'] = [{'@type': "Literal", 'value': lang, 'raw': lang} for lang in languages]
-        points = ["{},{}".format(lat, lon) for lat, lon in get_geo_points(self._graph, only_geohash=True)]
+        points = ["{},{}".format(lat, lon) for lat, lon in get_geo_points(self._graph, only_geohash=False)]
         index_doc['about']['point'] = points
         index_doc['point'] = points
         captions = self.get_about_caption
@@ -456,7 +454,7 @@ class GraphBindings:
                              prop in properties]
         # add languages
         about['language'] = [{'@type': "Literal", 'value': lang, 'raw': lang} for lang in languages]
-        about['point'] = ["{},{}".format(lat, lon) for lat, lon in get_geo_points(self._graph, only_geohash=True)]
+        about['point'] = ["{},{}".format(lat, lon) for lat, lon in get_geo_points(self._graph, only_geohash=False)]
         caption = self.get_about_caption
         #  todo fix issue with lang being null
         about['caption'] = [
@@ -615,7 +613,9 @@ class RDFResource:
         return self._objects
 
     def has_geo(self):
-        return NAVE.geoHash in self.get_predicates()
+        points = get_geo_points(self._graph, only_geohash=False)
+        has_geoHash = NAVE.geoHash in self.get_predicates()
+        return True if points or has_geoHash else False
 
     def has_content(self):
         return len(self.get_items()) > 0

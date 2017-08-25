@@ -195,13 +195,17 @@ class LoDDataView(View):
                 logger.warn("Unable to find graph for: {}".format(resolved_uri))
                 raise UnknownGraph("URI {} is not known in our graph store".format(resolved_uri))
             mode = self.get_mode(request)
-            if mode in ['context', 'api', 'api-flat']:
+            if mode in ['context', 'api', 'api-flat', 'es-action']:
                 # get_graph(with_mappings=True, include_mapping_target=True, acceptance=acceptance)
                 graph = local_object.get_context_graph(with_mappings=True, include_mapping_target=True)
                 if mode in ['api', 'api-flat']:
                     bindings = GraphBindings(about_uri=resolved_uri, graph=graph)
                     index_doc = bindings.to_index_doc() if mode == 'api' else bindings.to_flat_index_doc()
                     content = json.dumps(index_doc)
+                    rdf_format = 'json-ld'
+                elif mode in ['es-action']:
+                    es_action = local_object.create_es_action(doc_type='test', record_type='test')
+                    content = json.dumps(es_action)
                     rdf_format = 'json-ld'
                 else:
                     content = graph.serialize(format=rdf_format)
