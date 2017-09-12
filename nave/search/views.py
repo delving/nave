@@ -236,16 +236,16 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
             query.build_query_from_request(request=request, raw_query_string=self.lookup_query_object.query)
         else:
             query.build_query_from_request(request)
-        if demote:
-            for d in demote:
-                promote_query, demote_query, boost = d
-                query.query = query.query.query(
-                    {'boosting': {
-                        'positive': promote_query,
-                        'negative': demote_query,
-                        'negative_boost': boost
-                    }}
-                )
+        # if demote:
+            # for d in demote:
+                # promote_query, demote_query, boost = d
+                # query.query = query.query.query(
+                    # {'boosting': {
+                        # 'positive': promote_query,
+                        # 'negative': demote_query,
+                        # 'negative_boost': boost
+                    # }}
+                # )
         # TODO remove demote code
         # if demote and 'q' in request.query_params:
             # for demote in demote:

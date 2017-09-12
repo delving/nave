@@ -547,9 +547,26 @@ class NaveESQuery(object):
                     )
         if self.geo_query:
             query = query.filter({"match": {"delving_hasGeoHash": True}})
+        if 'sortBy' in params:
+            sort_key = params.get('sortBy')
+            seed = None
+            random_sort = {'random_score': {}}
+            if sort_key.startswith('random_'):
+                seed = sort_key.split('_')[-1]
+                random_sort['random_score']['seed'] = seed
+            query = query.query({'function_score': random_sort})
+        if hasattr(settings, 'DEMOTE'):
+            query = query.query(
+                Q('boosting',
+                    positive=Q(),
+                    negative=Q("match", **settings.DEMOTE),
+                    negative_boost=0.1
+                  )
+            )
         self.query = query
         self.facet_params = facet_params
         self.base_params = params
+
         import json
         logger.debug(json.dumps(query.to_dict()))
         return query
