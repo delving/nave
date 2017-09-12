@@ -1181,7 +1181,7 @@ class NaveESItem(object):
             fields = self._es_item
         if '_source' in fields:
             fields = fields['_source']
-        if self._converter and self._doc_type == "void_edmrecord":
+        if self._converter and self._doc_type in ['void_edmrecord', 'indexitem']:
             fields = self._converter(es_result_fields=fields).convert()
         items = sorted(fields.items())
         return collections.OrderedDict(items)

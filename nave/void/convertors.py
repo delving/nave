@@ -179,7 +179,7 @@ class BaseConverter(object):
         inline_links = defaultdict(list)
         if self.about_uri:
             about_uri = URIRef(self.about_uri)
-            about_base = re.search("(.*?/resource/aggregation/).*", self.about_uri).groups()[0]
+            about_base = re.search("(.*?/resource/.*?/).*", self.about_uri).groups()[0]
             for pred, link in self.graph.predicate_objects():
                 if link.startswith(about_base) and link != about_uri:
                     inline_links[pred].append(str(link))
@@ -404,6 +404,7 @@ class TIBConverter(BaseConverter):
             "tib_imageCopyright": "nave_imageCopyright",
             "tib_imageCreator": "nave_imageCreator",
         }
+
         return mapping
 
 
