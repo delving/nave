@@ -82,8 +82,8 @@ class IndexApiProcessor:
 
     def get_source_uri(self, item, as_uri=False):
         """Get the RDF source uri."""
-        source_uri = '{}/resource/{}/{}/{}'.format(
-            settings.RDF_BASE_URL,
+        source_uri = 'http://{}/resource/{}/{}/{}'.format(
+            settings.RDF_BASE_URL.replace('http://', ''),
             self.get_doc_type(item),
             self.get_spec(item),
             self.get_local_id(item)
