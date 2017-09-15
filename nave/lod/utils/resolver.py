@@ -21,6 +21,7 @@ from collections import namedtuple, OrderedDict
 import itertools
 from datetime import datetime
 from time import sleep
+from operator import itemgetter
 from urllib.error import HTTPError
 
 import elasticsearch
@@ -253,11 +254,13 @@ class GraphBindings:
                     return o.value
         return None
 
-    def get_list(self, search_label):
+    def get_list(self, search_label, lexsort=True):
         if not self._search_label_dict:
             for rdf_object in self.get_all_items():
                 self._search_label_dict[rdf_object.predicate.search_label].append(rdf_object)
-        return self._search_label_dict.get(search_label, [])
+        if not lexsort:
+            return self._search_label_dict.get(search_label, [])
+        return sorted(self._search_label_dict.get(search_label, []), key=lambda k: k.value)
 
     def get_resources(self):
         if not self._resources:
@@ -433,6 +436,10 @@ class GraphBindings:
         del index_doc['rdf']
         for obj in self.get_all_items():
             index_doc[obj.predicate.search_label].append(obj.to_index_entry(nested=False))
+        for key, val in index_doc.items():
+            if isinstance(val, list):
+                if all(isinstance(l, dict) for l in val):
+                    index_doc[key] = sorted(val, key=itemgetter('raw'))
         return index_doc
 
     def to_index_doc(self):
@@ -591,6 +598,9 @@ class RDFResource:
         if len(self._items) == 0:
             self._generate_rdf_objects_from_graph()
         items = self._items
+        for key, val in items.items():
+            if isinstance(val, list):
+                items[key] = sorted(val, key=lambda k: k.value)
         if sort:
             items = OrderedDict(sorted(list(items.items()), key=lambda t: t[0]))
         if include_list:
@@ -663,8 +673,11 @@ class RDFResource:
         entries = defaultdict(list)
         entries['rdf_type'] = self.get_types_as_index_entries()
         for predicate, rdf_objects in self.get_items().items():
+            obj_list = []
             for obj in rdf_objects:
-                entries[predicate.search_label].append(obj.to_index_entry())
+                obj_list.append(obj.to_index_entry())
+            obj_list = sorted(obj_list)
+            entries[predicate.search_label] = obj_list
         return entries
 
 
@@ -917,6 +930,10 @@ class RDFObject:
             else:
                 entry['inline'] = self._bindings.get_resource(uri_ref=self.id, obj=self).to_index_entry()
         return entry
+
+    def __lt__(self, other):
+        """Sort function for RDFObjects."""
+        return self.value < self.value
 
 
 class RDFRecord:
