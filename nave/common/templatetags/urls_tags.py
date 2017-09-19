@@ -95,8 +95,12 @@ def form_hidden_fields(request, exclude=[]):
             # extract the facet string value from after the first occurrence of ":"
             # only relevant to qf but will return correct value for "q=term" as well
             if len(field):
-                text = field.split(':', 1)[-1]
-                html = html + '<input type="hidden" name="'+param+'" value="'+field.strip()+'" data-text="'+text.strip()+'"/>'
+                # text = field.replace('"','&quot;').split(':', 1)[-1]
+                if param != 'q':
+                    text = field.split(':', 1)[-1]
+                else:
+                    text = field.replace('"', '&quot;')
+                html = html + '<input type="hidden" name="'+param+'" value="'+field.strip().replace('"', '&quot;')+'" data-text="'+text.strip().replace('"', '')+'"/>'
     return mark_safe(html)
 
 

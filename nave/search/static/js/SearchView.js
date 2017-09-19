@@ -149,19 +149,34 @@ SearchView.initSearchTags = function() {
     $queryForm.find('input:hidden').each(function() {
         var $param = $(this);
         var $qTerms = [];
+        var regexQuotes = ".*?";
         if ($param.attr('name') == 'q') {
+            // console.log($param.val());
             if ($param.val().length > 0){
-                // first trim whitespace then split into array
-                $qTerms = $param.attr('value').replace(/^\s+|\s+$/gm,'').split(' ');
-                // add each element in the array
-                $qTerms.forEach(function(element){
+                var qTerm = $param.attr('value');
+                // check if it is a quoted string
+                console.log(qTerm);
+                if(qTerm.startsWith("\"") || qTerm.startsWith("\'") && qTerm.endsWith("\"") || qTerm.endsWith("\'")){
                     $input.tagsinput('add', {
-                        'text': element,
-                        'value': element,
+                        'text': qTerm,
+                        'value': qTerm,
                         'name': $param.attr('name')
                     });
-                });
+                }
+                else {
+                    // first trim whitespace then split into array
+                    $qTerms = $param.attr('value').replace(/^\s+|\s+$/gm,'').split(' ');
+                    // add each element in the array
+                    $qTerms.forEach(function(element){
+                        $input.tagsinput('add', {
+                            'text': element,
+                            'value': element,
+                            'name': $param.attr('name')
+                        });
+                    });
+                }
             }
+
         }
         // show other facet fields except min and max coordinates from the modal maps search
         else if (!(/\bmin/i.test($param.attr('name')) || /\bmax/i.test($param.attr('name')))) {
