@@ -400,6 +400,7 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
             view = request.GET.get('view', request.COOKIES.get('view', 'grid'))
             rows = request.GET.get('rows', settings.ES_ROWS)
             serializer_context = {
+                'slug': kwargs.get('slug', None),
                 'data': queryset.data,
                 'rows': str(rows),
                 'view': view,
