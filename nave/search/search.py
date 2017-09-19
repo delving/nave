@@ -704,7 +704,7 @@ class FacetCountLink(object):
             if facet_params:
                 link = "{}&qf[]={}".format(
                     facet_params.urlencode().replace('qf=', 'qf[]='),
-                    self._filter_query.replace(":", "%3A").replace("&", "%26")
+                    self._filter_query.replace(":", "%3A").replace("&", "%26").replace(';', '%3B')
                 )
             else:
                 link = "qf[]={}".format(
