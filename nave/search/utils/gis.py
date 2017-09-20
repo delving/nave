@@ -75,8 +75,8 @@ def get_lat_long_bounding_box(boundingbox_params):
         bounding_box = {key: float(value) for key, value in list(boundingbox_params.items())}
     elif all('.' not in coor for coor in list(boundingbox_params.values())):
         # converting rd to lat long
-        min_y, min_x = gis.rd_to_wgs84(boundingbox_params.get('min_x'), boundingbox_params.get('min_y'))
-        max_y, max_x = gis.rd_to_wgs84(boundingbox_params.get('max_x'), boundingbox_params.get('max_y'))
+        min_y, min_x = rd_to_wgs84(boundingbox_params.get('min_x'), boundingbox_params.get('min_y'))
+        max_y, max_x = rd_to_wgs84(boundingbox_params.get('max_x'), boundingbox_params.get('max_y'))
         bounding_box['min_x'] = min_x
         bounding_box['min_y'] = min_y
         bounding_box['max_x'] = max_x

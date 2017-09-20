@@ -21,6 +21,7 @@ from collections import namedtuple, OrderedDict
 import itertools
 from datetime import datetime
 from time import sleep
+from operator import itemgetter
 from urllib.error import HTTPError
 
 import elasticsearch
@@ -54,16 +55,6 @@ NAVE = Namespace('http://schemas.delving.eu/nave/terms/')
 
 
 def get_geo_points(graph, only_geohash=False):
-    if only_geohash:
-        geohashes = graph.objects(predicate=NAVE.geoHash)
-        points = []
-        for geohash in geohashes:
-            lat, lon = geohash.split(',')
-            if lat and lon:
-                lat = float(str(lat.strip()))
-                lon = float(str(lon.strip()))
-                points.append([lat, lon])
-        return points
     try:
         lat_list = [float(str(lat)) for lat in
                     graph.objects(predicate=URIRef("http://www.w3.org/2003/01/geo/wgs84_pos#lat"))]
@@ -73,9 +64,17 @@ def get_geo_points(graph, only_geohash=False):
         logger.error("Unable to get geopoints because of {}".format(ve.args))
         return []
     zipped = zip(lat_list, lon_list)
-    if not lat_list and not lon_list:
+    if (not lat_list and not lon_list) or only_geohash:
+        geohashes = graph.objects(predicate=NAVE.geoHash)
+        points = []
+        for geohash in geohashes:
+            lat, lon = geohash.split(',')
+            if lat and lon:
+                lat = float(str(lat.strip()))
+                lon = float(str(lon.strip()))
+                points.append([lat, lon])
         return []
-    return [list(elem) for elem in list(zipped)]
+    return list(list(elem) for elem in list(zipped))
 
 
 def get_cache_url(uri):
@@ -255,11 +254,13 @@ class GraphBindings:
                     return o.value
         return None
 
-    def get_list(self, search_label):
+    def get_list(self, search_label, lexsort=True):
         if not self._search_label_dict:
             for rdf_object in self.get_all_items():
                 self._search_label_dict[rdf_object.predicate.search_label].append(rdf_object)
-        return self._search_label_dict.get(search_label, [])
+        if not lexsort:
+            return self._search_label_dict.get(search_label, [])
+        return sorted(self._search_label_dict.get(search_label, []), key=lambda k: k.value)
 
     def get_resources(self):
         if not self._resources:
@@ -302,7 +303,7 @@ class GraphBindings:
         return False
 
     def has_geo(self):
-        points = get_geo_points(self._graph, only_geohash=True)
+        points = get_geo_points(self._graph, only_geohash=False)
         return True if points else False
 
     @staticmethod
@@ -418,7 +419,7 @@ class GraphBindings:
         # index_doc['rdf']['graph'] = self._graph.serialize(format='json-ld', context=context_dict).decode('utf-8')
 
         index_doc['about']['language'] = [{'@type': "Literal", 'value': lang, 'raw': lang} for lang in languages]
-        points = ["{},{}".format(lat, lon) for lat, lon in get_geo_points(self._graph, only_geohash=True)]
+        points = ["{},{}".format(lat, lon) for lat, lon in get_geo_points(self._graph, only_geohash=False)]
         index_doc['about']['point'] = points
         index_doc['point'] = points
         captions = self.get_about_caption
@@ -435,6 +436,10 @@ class GraphBindings:
         del index_doc['rdf']
         for obj in self.get_all_items():
             index_doc[obj.predicate.search_label].append(obj.to_index_entry(nested=False))
+        for key, val in index_doc.items():
+            if isinstance(val, list):
+                if all(isinstance(l, dict) for l in val):
+                    index_doc[key] = sorted(val, key=itemgetter('raw'))
         return index_doc
 
     def to_index_doc(self):
@@ -456,7 +461,7 @@ class GraphBindings:
                              prop in properties]
         # add languages
         about['language'] = [{'@type': "Literal", 'value': lang, 'raw': lang} for lang in languages]
-        about['point'] = ["{},{}".format(lat, lon) for lat, lon in get_geo_points(self._graph, only_geohash=True)]
+        about['point'] = ["{},{}".format(lat, lon) for lat, lon in get_geo_points(self._graph, only_geohash=False)]
         caption = self.get_about_caption
         #  todo fix issue with lang being null
         about['caption'] = [
@@ -593,6 +598,9 @@ class RDFResource:
         if len(self._items) == 0:
             self._generate_rdf_objects_from_graph()
         items = self._items
+        for key, val in items.items():
+            if isinstance(val, list):
+                items[key] = sorted(val, key=lambda k: k.value)
         if sort:
             items = OrderedDict(sorted(list(items.items()), key=lambda t: t[0]))
         if include_list:
@@ -615,7 +623,9 @@ class RDFResource:
         return self._objects
 
     def has_geo(self):
-        return NAVE.geoHash in self.get_predicates()
+        points = get_geo_points(self._graph, only_geohash=False)
+        has_geoHash = NAVE.geoHash in self.get_predicates()
+        return True if points or has_geoHash else False
 
     def has_content(self):
         return len(self.get_items()) > 0
@@ -663,8 +673,11 @@ class RDFResource:
         entries = defaultdict(list)
         entries['rdf_type'] = self.get_types_as_index_entries()
         for predicate, rdf_objects in self.get_items().items():
+            obj_list = []
             for obj in rdf_objects:
-                entries[predicate.search_label].append(obj.to_index_entry())
+                obj_list.append(obj.to_index_entry())
+            obj_list = sorted(obj_list)
+            entries[predicate.search_label] = obj_list
         return entries
 
 
@@ -917,6 +930,10 @@ class RDFObject:
             else:
                 entry['inline'] = self._bindings.get_resource(uri_ref=self.id, obj=self).to_index_entry()
         return entry
+
+    def __lt__(self, other):
+        """Sort function for RDFObjects."""
+        return self.value < self.value
 
 
 class RDFRecord:
@@ -1524,7 +1541,8 @@ class RDFRecord:
         """
         date_string.isoformat()"""
         # make sure you don't erase things from the same second
-        sleep(1)
+        client.indices.refresh(index)
+        sleep(3)
         orphan_query = {
             "query": {
                 "bool": {
@@ -1544,6 +1562,7 @@ class RDFRecord:
                 }
             }
         }
+        logger.info("Delete before: {}".format(timestamp))
         response = client.delete_by_query(index=index, body=orphan_query)
         orphan_counter = response['deleted']
         logger.info(

@@ -12,7 +12,7 @@ from django.conf import settings
 from django.core.paginator import Paginator, Page, EmptyPage, PageNotAnInteger
 from django.http import QueryDict
 from elasticsearch_dsl import Search, aggs, A
-from elasticsearch_dsl.query import Q
+from elasticsearch_dsl.query import Q, Match
 from elasticsearch_dsl.result import Result
 from rest_framework.request import Request
 import six
@@ -292,6 +292,13 @@ class NaveESQuery(object):
         value_list = param[1]
         return [(key, value) for value in value_list]
 
+    def create_filter_query(self, field, values, operator='OR', negative=False):
+        """Build a filter query"""
+        formatter = '" {} "'.format(operator)
+        query = '"{}"'.format(formatter.join(values))
+        q = Q('query_string', default_field=field, query=query)
+        return q if not negative else ~q
+
     def build_query_from_request(self, request, raw_query_string=None):
 
         @contextmanager
@@ -418,17 +425,18 @@ class NaveESQuery(object):
             for key, values in list(hidden_filter_dict.items()):
                 hidden_facet_filter_list = hidden_facet_filter_dict[key]
                 for value in values:
+                    facet_key = self.query_to_facet_key(key)
                     if key.startswith('-'):
-                        hidden_facet_filter_list.append(~Q('match', **{self.query_to_facet_key(key): value}))
+                        hidden_facet_filter_list.append(~Match(**{facet_key: {'query': value, 'type': 'phrase'}}))
                     else:
-                        hidden_facet_filter_list.append(Q('match', **{self.query_to_facet_key(key): value}))
+                        hidden_facet_filter_list.append(Match(**{facet_key: {'query': value, 'type': 'phrase'}}))
                 if facet_bool_type_and:
                     q = Q('bool', must=hidden_facet_filter_list)
                     hidden_filter_list.append(q)
                 else:
                     q = Q('bool', should=hidden_facet_filter_list)
                     hidden_filter_list.append(q)
-        query = query.filter('bool', must=hidden_filter_list)
+            query = query.filter('bool', must=hidden_filter_list)
         # define applied filters
         self.applied_filters = filter_dict
         applied_facet_fields = []
@@ -463,18 +471,16 @@ class NaveESQuery(object):
             all_filter_list = []
             for key, values in list(filter_dict.items()):
                 facet_filter_list = facet_filter_dict[key]
-                for value in values:
-                    if key.startswith('-'):
-                        facet_filter_list.append(~Q('match', **{self.query_to_facet_key(key): value}))
-                    else:
-                        facet_filter_list.append(Q('match', **{self.query_to_facet_key(key): value}))
-                if facet_bool_type_and:
-                    q = Q('bool', must=facet_filter_list)
-                    all_filter_list.append(q)
-                else:
-                    q = Q('bool', should=facet_filter_list, minimum_should_match=1)
-                    all_filter_list.append(q)
-                all_filter_dict[key] = q
+                facet_key = self.query_to_facet_key(key)
+                operator = 'OR' if not facet_bool_type_and else 'AND'
+                filter_query = self.create_filter_query(
+                    facet_key,
+                    values,
+                    operator,
+                    key.startswith('-')
+                )
+                all_filter_list.append(filter_query)
+                all_filter_dict[key] = filter_query
             query = query.post_filter('bool', must=all_filter_list)
         # create facet_filter_dict with queries with key for each facet entry
         if facet_list:
@@ -541,9 +547,26 @@ class NaveESQuery(object):
                     )
         if self.geo_query:
             query = query.filter({"match": {"delving_hasGeoHash": True}})
+        if 'sortBy' in params:
+            sort_key = params.get('sortBy')
+            seed = None
+            random_sort = {'random_score': {}}
+            if sort_key.startswith('random_'):
+                seed = sort_key.split('_')[-1]
+                random_sort['random_score']['seed'] = seed
+            query = query.query({'function_score': random_sort})
+        if hasattr(settings, 'DEMOTE'):
+            query = query.query(
+                Q('boosting',
+                    positive=Q(),
+                    negative=Q("match", **settings.DEMOTE),
+                    negative_boost=0.1
+                  )
+            )
         self.query = query
         self.facet_params = facet_params
         self.base_params = params
+
         import json
         logger.debug(json.dumps(query.to_dict()))
         return query
@@ -561,6 +584,40 @@ class NaveESQuery(object):
         request.GET = params
         query = self.build_query_from_request(request)
         return query
+
+    def get_geojson_generator(self, request, max=None):
+        """Return generator for Leaflet map clustering.
+
+        """
+        params = request.GET.copy()
+        # remove unnecessary keys
+        for key in ['start', 'page', 'facet']:
+            if key in params:
+                params.pop(key)
+        self.default_facets = []
+        request.GET = params
+        search = self.build_query_from_request(request)
+        # search.aggs = None
+        search = search.source(include=['wgs84_pos_lat', 'wgs84_pos_long'])
+        search = search.filter(
+            {'exists': {'field': 'wgs84_pos_lat'}}
+        ).filter(
+            {'exists': {'field': 'wgs84_pos_long'}}
+        )
+        res = search.scan()
+        seen = 0
+        yield 'var edmPoints = [\n'
+        for rec in res:
+            lat_long = zip(rec.wgs84_pos_lat, rec.wgs84_pos_long)
+            for lat, lon in lat_long:
+                if lat and lon:
+                    seen += 1
+                    yield '[{}, {}, "{}"],\n'.format(
+                            lat.raw, lon.raw, rec.meta.id
+                    )
+            if max and seen > max:
+                break
+        yield ']\n'
 
     def query_to_facet_key(self, facet_key):
         if facet_key.startswith('delving_spec'):
@@ -646,8 +703,8 @@ class FacetCountLink(object):
             # todo: later replace the replace statements with urlencode() as well for query filters
             if facet_params:
                 link = "{}&qf[]={}".format(
-                    facet_params.urlencode(),
-                    self._filter_query.replace(":", "%3A").replace("&", "%26")
+                    facet_params.urlencode().replace('qf=', 'qf[]='),
+                    self._filter_query.replace(":", "%3A").replace("&", "%26").replace(';', '%3B')
                 )
             else:
                 link = "qf[]={}".format(
@@ -1124,7 +1181,7 @@ class NaveESItem(object):
             fields = self._es_item
         if '_source' in fields:
             fields = fields['_source']
-        if self._converter and self._doc_type == "void_edmrecord":
+        if self._converter and self._doc_type in ['void_edmrecord', 'indexitem']:
             fields = self._converter(es_result_fields=fields).convert()
         items = sorted(fields.items())
         return collections.OrderedDict(items)

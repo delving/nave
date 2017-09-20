@@ -179,7 +179,7 @@ class BaseConverter(object):
         inline_links = defaultdict(list)
         if self.about_uri:
             about_uri = URIRef(self.about_uri)
-            about_base = re.search("(.*?/resource/aggregation/).*", self.about_uri).groups()[0]
+            about_base = re.search("(.*?/resource/.*?/).*", self.about_uri).groups()[0]
             for pred, link in self.graph.predicate_objects():
                 if link.startswith(about_base) and link != about_uri:
                     inline_links[pred].append(str(link))
@@ -294,8 +294,7 @@ class BaseConverter(object):
         if 'europeana_object' in output_doc:
             if 'delving_thumbnail' in output_doc:
                 output_doc['delving_thumbnail'].extend(output_doc.get('europeana_object'))
-            else:
-                output_doc["delving_thumbnail"] = output_doc.get('europeana_object')
+            output_doc["delving_thumbnail"] = output_doc.get('europeana_object')
         output_doc["delving_hasGeoHash"] = ['delving_geoHash' in output_doc]
         output_doc["delving_hasLandingPage"] = ['europeana_isShownAt' in output_doc]
         if 'europeana_isShownAt' in output_doc:
@@ -402,7 +401,10 @@ class TIBConverter(BaseConverter):
             "tib_pages": "nave_pages",
             "tib_vindplaats": "nave_vindplaats",
             "tib_location": "nave_location",
+            "tib_imageCopyright": "nave_imageCopyright",
+            "tib_imageCreator": "nave_imageCreator",
         }
+
         return mapping
 
 

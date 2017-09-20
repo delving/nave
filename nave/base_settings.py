@@ -198,6 +198,7 @@ MIDDLEWARE = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.contrib.admindocs.middleware.XViewMiddleware',
     'nave.common.middleware.FallBackLanguageMiddleware',
+    # 'nave.search.middleware.APILoggingMiddleware',
 )
 
 AUTHENTICATION_BACKENDS = (
@@ -509,6 +510,8 @@ SERIALIZATION_MODULES = {
 # ########################
 # DataSet configuration #
 # ########################
+
+GEO_STREAMING_RESPONSE = 2500
 
 RDF_USE_LOCAL_GRAPH = True
 

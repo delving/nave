@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 CUSTOM_NS = Namespace(settings.RDF_SUPPORTED_PREFIXES.get('custom')[0])
 EDM = Namespace('http://www.europeana.eu/schemas/edm/')
 NAVE = Namespace('http://schemas.delving.eu/nave/terms/')
+DELVING = Namespace('http://schemas.delving.eu/')
 
 class IndexApiProcessor:
     """Process JSON from the index API and index as RDF in Elasticsearch.
@@ -82,8 +83,8 @@ class IndexApiProcessor:
 
     def get_source_uri(self, item, as_uri=False):
         """Get the RDF source uri."""
-        source_uri = '{}/resource/{}/{}/{}'.format(
-            settings.RDF_BASE_URL,
+        source_uri = 'http://{}/resource/{}/{}/{}'.format(
+            settings.RDF_BASE_URL.replace('http://', ''),
             self.get_doc_type(item),
             self.get_spec(item),
             self.get_local_id(item)
