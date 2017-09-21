@@ -19,9 +19,10 @@ TURTLE_MIME = "text/turtle"
 RDFXML_MIME = "application/rdf+xml"
 NTRIPLES_MIME = "application/n-triples"
 JSONLD_MIME = "application/json"
+NQUADS_MIME = "application/n-quads"
 
 EXTENSION_TO_MIME_TYPE = {"rdf": RDFXML_MIME, "n3": N3_MIME, "nt": NTRIPLES_MIME, "turtle": TURTLE_MIME,
-                          "ttl": TURTLE_MIME, "json-ld": JSONLD_MIME, "json": JSONLD_MIME}
+                          "ttl": TURTLE_MIME, "json-ld": JSONLD_MIME, "json": JSONLD_MIME, 'nquads': NQUADS_MIME}
 MIME_TYPE_TO_EXTENSION = dict(list(map(
         reversed,
         [(ext, mime) for ext, mime in list(EXTENSION_TO_MIME_TYPE.items()) if ext not in ['ttl', 'json']]
@@ -46,6 +47,8 @@ def extension_to_mime(extension):
         extension = 'turtle'
     if extension == 'json':
         extension = 'json-ld'
+    if extension == 'nq':
+        extension = 'nquads'
     if extension in EXTENSION_TO_MIME_TYPE:
         return extension, EXTENSION_TO_MIME_TYPE[extension]
     return "xml", RDFXML_MIME
