@@ -510,6 +510,7 @@ SERIALIZATION_MODULES = {
 # ########################
 # DataSet configuration #
 # ########################
+ES_ACTION_SIZE = 500
 
 LEGACY_ORPHAN_CONTROL = False
 

@@ -30,7 +30,7 @@ class Command(BaseCommand):
                 if action.startswith('{"_op_type":'):
                     buffer.append(json.loads(action))
                     lines += 1
-                if lines % 500 == 0:
+                if lines % settings.ES_ACTION_SIZE == 0:
                     try:
                         self.stdout.write('proccessed {} lines'.format(lines))
                         helpers.bulk(
