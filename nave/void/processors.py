@@ -52,7 +52,7 @@ class IndexApiProcessor:
         """Rerun hubId from index item."""
         return "{}_{}_{}".format(
             settings.ORG_ID,
-            self.get_spec(item),
+            self.get_spec(item).lower(),
             self.get_local_id(item)
         )
 
@@ -66,7 +66,7 @@ class IndexApiProcessor:
 
     def get_record_type(self, item):
         """Return the record_type for Elasticsearch.  """
-        return self.get_spec(item)
+        return item['@itemType']
 
     def create_delete_action(self, item):
         """Create delete action for Elasticsearch bulk API."""
@@ -86,7 +86,7 @@ class IndexApiProcessor:
         source_uri = 'http://{}/resource/{}/{}/{}'.format(
             settings.RDF_BASE_URL.replace('http://', ''),
             self.get_doc_type(item),
-            self.get_spec(item),
+            self.get_spec(item).lower(),
             self.get_local_id(item)
         )
         if as_uri:
@@ -199,7 +199,7 @@ class IndexApiProcessor:
             source_uri=self.get_source_uri(item),
             named_graph_uri=self.get_named_graph(item),
             graph=graph,
-            spec=self.get_spec(item)
+            spec=self.get_spec(item).lower()
         )
         return record.create_es_action(
             doc_type=self.get_doc_type(item),

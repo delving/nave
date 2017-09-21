@@ -304,6 +304,7 @@ class BaseConverter(object):
             legacy = index_doc.get('legacy')
             self.get_non_null('delving_collection', legacy, output_doc)
             self.get_non_null('delving_title', legacy, output_doc)
+            self.get_non_null('delving_recordType', legacy, output_doc)
             self.get_non_null('delving_creator', legacy, output_doc)
             legacy.get('delving_description', output_doc)
             self.get_non_null('delving_owner', legacy, output_doc)
