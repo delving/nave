@@ -4,10 +4,10 @@
 {#############################################################}
 {% if data.user_query.num_found > 0 %}
     <div class="facets-horizontal">
-        <ul class="nav nav-pills nav-justified">
+        <ul class="nav nav-pills">
             {% for facet in data.facet_list %}
                 {% if facet.facet_link.links %}
-                    <li class="dropdown">
+                    <li class="dropdown facet-container" id="{{ facet.facet_link.name }}">
                         <a class="btn btn-facets dropdown-toggle {% if forloop.first %}first{% endif %} {% if forloop.last %}last{% endif %}" type="button" id="{{ facet.facet_link.name }}" data-toggle="dropdown" aria-expanded="true" rel="nofollow">
                             <span>{{ facet.label }}</span><i class="fa fa-chevron-down"></i>
                         </a>
