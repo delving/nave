@@ -1542,6 +1542,7 @@ class RDFRecord:
         date_string.isoformat()"""
         # make sure you don't erase things from the same second
         client.indices.refresh(index)
+        return 0
         sleep(3)
         orphan_query = {
             "query": {
