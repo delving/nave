@@ -511,6 +511,8 @@ SERIALIZATION_MODULES = {
 # DataSet configuration #
 # ########################
 
+LEGACY_ORPHAN_CONTROL = False
+
 GEO_STREAMING_RESPONSE = 2500
 
 RDF_USE_LOCAL_GRAPH = True

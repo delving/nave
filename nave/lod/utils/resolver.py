@@ -1541,8 +1541,9 @@ class RDFRecord:
         """
         date_string.isoformat()"""
         # make sure you don't erase things from the same second
+        if not settings.LEGACY_ORPHAN_CONTROL:
+            return 0
         client.indices.refresh(index)
-        return 0
         sleep(3)
         orphan_query = {
             "query": {
