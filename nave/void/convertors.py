@@ -81,6 +81,7 @@ class BaseConverter(object):
     def shared_field_dict(self):
         mapping = {
             "dc_title": "dc_title",
+            "dc_Title": "dc_Title",
             "dc_creator": "dc_creator",
             "dc_subject": "dc_subject",
             "dc_description": "dc_description",
@@ -260,6 +261,10 @@ class BaseConverter(object):
             index_doc = self.bindings().to_flat_index_doc()
         else:
             raise ValueError("Unable to convert due to missing bindings or es_fields")
+        # add custom fields
+        for k in index_doc.keys():
+            if k.startswith('custom_'):
+                mapping[k] = k
         for key, index_doc_key in mapping.items():
             if isinstance(index_doc_key, str):
                 values = index_doc.get(index_doc_key)
