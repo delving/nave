@@ -30,6 +30,12 @@ def replace_string(value, args):
 
 
 @register.assignment_tag(takes_context=True)
+def get_resources_by_rdftype(context, rdf_type, local_bindings=None):
+    if not local_bindings:
+        local_bindings = context['resources']
+    return local_bindings.get_resources_by_rdftype(rdf_type)
+
+@register.assignment_tag(takes_context=True)
 def get_resource_fields(context, fieldname, local_bindings=None):
     if not local_bindings:
         local_bindings = context['resources']
@@ -226,6 +232,15 @@ def banner_field(field_name, item, class_name, html_tag):
         "html_tag": html_tag
     }
 
+@register.inclusion_tag('rdf/tags/type_templates/_skos_concept.html', takes_context=True)
+def render_skos_concept(context, local_bindings):
+    if not local_bindings:
+        local_bindings = context['resources']
+    return {
+        'resources': local_bindings,
+        'local_bindings': local_bindings,
+        'request': context['request']
+    }
 
 #  ######### result detail return field value only  for media item ######################
 @register.inclusion_tag('rdf/tags/_search-detail-field.html', takes_context=True)

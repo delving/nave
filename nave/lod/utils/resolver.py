@@ -184,6 +184,7 @@ class GraphBindings:
         self._graph = graph
         self._about_uri = URIRef(about_uri)
         self._resources = self._create_resources()
+        self._resources_by_type = None
         self._inlined_resources = []
         self._call_queue = defaultdict(list)
         self._items = None
@@ -353,6 +354,16 @@ class GraphBindings:
     @property
     def get_available_resources_types(self):
         return set([resource.get_type().qname for resource in self.get_resource_list])
+
+    def get_resources_by_rdftype(self, search_label):
+        """Return a list of RDFResources by their RDF.type"""
+        if not self._resources_by_type:
+            type_dict = defaultdict(list)
+            for resource in self.get_resource_list:
+                search_label = resource.get_type().search_label
+                type_dict[search_label].append(resource)
+            self._resources_by_type = type_dict
+        return self._resources_by_type.get(search_label, None)
 
     @property
     def label_properties(self):
