@@ -147,6 +147,9 @@ mappings = {
                     "delving_geohash": {
                         "type": "geo_point"
                     },
+                    "delving_geoHash": {
+                        "type": "geo_point"
+                    },
                     "system": {
                         'properties': {'about_uri': {'fields': {'raw': {
                             'index': 'not_analyzed',
