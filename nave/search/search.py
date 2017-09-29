@@ -173,6 +173,16 @@ class NaveESQuery(object):
             query_string = re.sub("([&?])q=", "\\1query=", query_string)
         else:
             query_string = re.sub("([&?])query=", "\\1q=", query_string)
+        if '=delving_recordType' in query_string:
+            query_string = query_string.replace(
+                '=delving_recordType',
+                '=legacy.delving_recordType'
+            )
+        if 'delving_recordType:' in query_string:
+            query_string = query_string.replace(
+                'delving_recordType:',
+                'delving_recordType_facet:'
+            )
         if as_query_dict:
             return QueryDict(query_string)
         return query_string
