@@ -73,7 +73,7 @@ def get_geo_points(graph, only_geohash=False):
                 lat = float(str(lat.strip()))
                 lon = float(str(lon.strip()))
                 points.append([lat, lon])
-        return []
+        return points
     return list(list(elem) for elem in list(zipped))
 
 

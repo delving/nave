@@ -147,6 +147,8 @@ class IndexApiProcessor:
                     obj = Literal(text)
             else:
                 obj = Literal(text)
+            if predicate in [NAVE.resourceUri]:
+                triples.append((EDM.object, obj))
             triples.append((predicate, obj))
             return triples
         except KeyError as ke:
