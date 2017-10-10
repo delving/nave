@@ -3,12 +3,12 @@
 {# todo add <schema> later #}
 
 {% block content %}
-  <ListMetadataformats>
+  <ListMetadataFormats>
     {% for prefix, namespace in items %}
         <metadataFormat>
             <metadataPrefix>{{ prefix }}</metadataPrefix>
             <metadataNamespace>{{ namespace }}</metadataNamespace>
         </metadataFormat>
     {% endfor %}
-  </ListMetadataformats>
+  </ListMetadataFormats>
 {% endblock %}
