@@ -134,7 +134,7 @@ class IndexApiProcessor:
             # todo add switches for fieldType
             # string, location, int, single, text, date, link
             if not system_field:
-                field_type = field['@fieldType']
+                field_type = field.get('@fieldType')
                 if field_type in ['link']:
                     obj = URIRef(text)
                 elif field_type in ['location']:
@@ -346,7 +346,7 @@ class BulkApiProcessor:
                 DataSet.objects.filter(spec=self.spec).delete()
                 logger.info("Deleted dataset {} from index. ".format(self.spec))
                 # print("Deleted dataset {} from index. ".format(self.spec))
-            else:
+            elif process_verb in ['index']:
                 record_graph_uri = action['graphUri']
                 graph_ntriples = action['graph']
                 acceptance_mode = action.get('acceptanceMode', "false")
