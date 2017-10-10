@@ -265,6 +265,9 @@ class BaseConverter(object):
         for k in index_doc.keys():
             if k.startswith('custom_'):
                 mapping[k] = k
+            if k.startswith('nave_'):
+                if '_resource' in k or '_location' in k:
+                    mapping[k.replace('nave_', 'delving_')] = k
         for key, index_doc_key in mapping.items():
             if isinstance(index_doc_key, str):
                 values = index_doc.get(index_doc_key)
@@ -295,11 +298,15 @@ class BaseConverter(object):
         output_doc['delving_pmhId'] = [hub_id]
         output_doc['delving_spec'] = [spec]
         output_doc['europeana_uri'] = ["/".join(hub_id.split('_')[1:])]
+        if 'delving_resourceUri' in output_doc:
+            output_doc['europeana_object'] = output_doc['delving_resourceUri']
         output_doc["delving_hasDigitalObject"] = ['europeana_object' in output_doc]
         if 'europeana_object' in output_doc:
             if 'delving_thumbnail' in output_doc:
                 output_doc['delving_thumbnail'].extend(output_doc.get('europeana_object'))
             output_doc["delving_thumbnail"] = output_doc.get('europeana_object')
+        if 'delving_locationLatLong' in output_doc:
+            output_doc['delving_geoHash'] = output_doc['delving_locationLatLong']
         output_doc["delving_hasGeoHash"] = ['delving_geoHash' in output_doc]
         output_doc["delving_hasLandingPage"] = ['europeana_isShownAt' in output_doc]
         if 'europeana_isShownAt' in output_doc:
