@@ -510,6 +510,8 @@ SERIALIZATION_MODULES = {
 # ########################
 # DataSet configuration #
 # ########################
+INDEX_POST_HOOKS = []
+
 ES_ACTION_SIZE = 500
 
 LEGACY_ORPHAN_CONTROL = False

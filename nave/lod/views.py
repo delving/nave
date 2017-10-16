@@ -195,7 +195,7 @@ class LoDDataView(View):
                 logger.warn("Unable to find graph for: {}".format(resolved_uri))
                 raise UnknownGraph("URI {} is not known in our graph store".format(resolved_uri))
             mode = self.get_mode(request)
-            if mode in ['context', 'api', 'api-flat', 'es-action']:
+            if mode in ['context', 'api', 'api-flat', 'es-action', 'posthook']:
                 # get_graph(with_mappings=True, include_mapping_target=True, acceptance=acceptance)
                 graph = local_object.get_context_graph(with_mappings=True, include_mapping_target=True)
                 if mode in ['api', 'api-flat']:
@@ -208,6 +208,9 @@ class LoDDataView(View):
                     content = json.dumps(es_action)
                     rdf_format = 'json-ld'
                 else:
+                    if mode in ['posthook']:
+                        for hook in settings.INDEX_POST_HOOKS:
+                            hook(graph=graph)
                     content = graph.serialize(format=rdf_format)
             else:
                 graph = local_object.get_graph()
