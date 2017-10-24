@@ -3,6 +3,7 @@
 from collections import defaultdict, namedtuple
 from enum import Enum
 
+import ast
 import os
 import requests
 from dateutil import parser
@@ -383,6 +384,23 @@ class ElasticSearchOAIProvider(OAIProvider):
         super(ElasticSearchOAIProvider, self).__init__(**kwargs)
         self.query = query
         self.spec = spec
+        self.sort_key = None
+
+    def get_next_search_cursor(self):
+        return {'search_after': ast.literal_eval(self.sort_key)}
+
+    def get_next_cursor(self):
+        return self.cursor + self.records_returned
+
+    def create_filters_from_token(self, token):
+        filters = dict([entry.strip().split('=') for entry in token.strip().split("::")])
+        filters.update(self.record_access_filter)
+        self.metadataPrefix = filters.pop('prefix')
+        self.list_size = int(filters.pop('list_size'))
+        self.cursor = int(filters.pop('cursor'))
+        self.sort_key = filters.pop('sort_key')
+        self.filters = filters
+        return filters
 
     def get_query_result(self):
         if not self._es_response:
@@ -392,6 +410,18 @@ class ElasticSearchOAIProvider(OAIProvider):
 
     def get_list_size(self):
         return self.get_query_result().hits.total
+
+    def get_sort_key(self):
+        return self.get_query_result().hits[-1].meta.sort
+
+    def generate_resumption_token(self):
+        if self.cursor + self.records_returned >= self.list_size:
+            return None
+        token_dict = {'prefix': self.metadataPrefix, 'cursor': self.get_next_cursor(),
+                      'list_size': self.list_size, 'sort_key': self.get_sort_key()}
+        token_dict.update(**self.filters)
+        token_dict.pop(list(self.record_access_filter.keys())[0])
+        return "::".join(["{}={}".format(key, value) for key, value in list(token_dict.items())])
 
     def get_items(self):
         if self.get_list_size() == 0:
@@ -416,7 +446,7 @@ class ElasticSearchOAIProvider(OAIProvider):
             response=response)[0]
 
     def convert_filters_to_query(self, filters):
-        s = Search(using=self.client)
+        s = Search(using=self.client, index=settings.ORG_ID)
         spec = filters.get("dataset__spec", None)
         modified_from = filters.get('modified__gt', None)
         modified_until = filters.get('modified__lt', None)
@@ -433,8 +463,15 @@ class ElasticSearchOAIProvider(OAIProvider):
             s = s.filter("range", **{"system.modified_at": {"gte": modified_from}})
         if modified_until:
             s = s.filter("range", **{"system.modified_at": {"lte": modified_until}})
-        s = s.sort({"system.modified_at": {"order": "asc"}})
-        return s[self.cursor: self.get_next_cursor()]
+        s = s.sort({"system.modified_at": {"order": "asc"}, "legacy.delving_hubId": {"order": "desc"}})
+        # todo change to scroll
+        # slice_query = s[self.cursor: self.get_next_cursor()]
+        # TODO retrieve this from the resumption token
+        slice_query = s.extra(size=self.records_returned)
+        if 'resumptionToken' in self.request.GET:
+            slice_query = slice_query.extra(**self.get_next_search_cursor())
+        print(slice_query.to_dict())
+        return slice_query
 
     def get_dataset_list(self):
         s = Search(using=self.client)
