@@ -7,6 +7,7 @@ import ast
 import os
 import requests
 from dateutil import parser
+from urllib import parse
 from django.conf import settings
 from django.views.generic import TemplateView
 from elasticsearch_dsl import Search, A
@@ -387,7 +388,7 @@ class ElasticSearchOAIProvider(OAIProvider):
         self.sort_key = None
 
     def get_next_search_cursor(self):
-        return {'search_after': ast.literal_eval(self.sort_key)}
+        return {'search_after': ast.literal_eval(self.sort_key.replace('%20', ' '))}
 
     def get_next_cursor(self):
         return self.cursor + self.records_returned
@@ -417,11 +418,16 @@ class ElasticSearchOAIProvider(OAIProvider):
     def generate_resumption_token(self):
         if self.cursor + self.records_returned >= self.list_size:
             return None
-        token_dict = {'prefix': self.metadataPrefix, 'cursor': self.get_next_cursor(),
-                      'list_size': self.list_size, 'sort_key': self.get_sort_key()}
+        token_dict = {
+            'prefix': self.metadataPrefix,
+            'cursor': self.get_next_cursor(),
+            'list_size': self.list_size,
+            'sort_key': self.get_sort_key(),
+        }
         token_dict.update(**self.filters)
         token_dict.pop(list(self.record_access_filter.keys())[0])
-        return "::".join(["{}={}".format(key, value) for key, value in list(token_dict.items())])
+        token = "::".join(["{}={}".format(key, value) for key, value in list(token_dict.items())])
+        return token.replace(' ', '%20')
 
     def get_items(self):
         if self.get_list_size() == 0:
@@ -474,8 +480,12 @@ class ElasticSearchOAIProvider(OAIProvider):
         return slice_query
 
     def get_dataset_list(self):
-        s = Search(using=self.client)
-        datasets = A("terms", field="delving_spec.raw")
+        s = Search(using=self.client, index=settings.ORG_ID)
+        datasets = A(
+            'terms',
+            field='delving_spec.raw',
+            size=500
+        )
         if self.query:
             s = s.filter(self.query.get('filter'))
         elif self.spec:
@@ -483,7 +493,8 @@ class ElasticSearchOAIProvider(OAIProvider):
         s.aggs.bucket("dataset-list", datasets)
         response = s.execute()
         specs = response.aggregations['dataset-list'].buckets
-        return [self.ESDataSet(spec.key, None, None, spec.doc_count, None) for spec in specs]
+        ds_list = [self.ESDataSet(spec.key, None, None, spec.doc_count, None) for spec in specs]
+        return sorted(ds_list, key=lambda ds: ds.spec)
 
     def last_modified(self, obj):
         return obj.last_modified()
