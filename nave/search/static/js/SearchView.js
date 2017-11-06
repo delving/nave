@@ -154,8 +154,13 @@ SearchView.initSearchTags = function() {
             // console.log($param.val());
             if ($param.val().length > 0){
                 var qTerm = $param.attr('value');
+                // first check for prefix!!!
+                var parts = qTerm.split(":");
+                // remove the prefix (like dc_title:....)
+                if (parts.length > 1){
+                    qTerm = parts[1];
+                }
                 // check if it is a quoted string
-                console.log(qTerm);
                 if(qTerm.startsWith("\"") || qTerm.startsWith("\'") && qTerm.endsWith("\"") || qTerm.endsWith("\'")){
                     $input.tagsinput('add', {
                         'text': qTerm,
