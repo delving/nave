@@ -282,6 +282,7 @@ THIRD_PARTY_APPS = (
     'raven.contrib.django.raven_compat',
     'rest_framework',
     'rest_framework.authtoken',
+    'djgeojson',
     'reversion',
     'rosetta',  # for translation
     'taggit',

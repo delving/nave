@@ -7,7 +7,7 @@ django-downloadview==1.9
 django-extensions==1.7.9
 django-import-export==0.5.1
 django-jsonfield==1.0.1
-django-geojson==2.9.1
+django-geojson==2.10.0
 django-leaflet==0.22.0
 django-modelcluster==3.1
 django-oauth-toolkit==1.0.0
