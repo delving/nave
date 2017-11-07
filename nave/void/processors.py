@@ -138,10 +138,10 @@ class IndexApiProcessor:
                 if field_type in ['link']:
                     obj = URIRef(text)
                 elif field_type in ['location']:
-                    triples.append(
-                        (NAVE.geoHash, Literal(text))
-                    )
                     obj = Literal(text)
+                    triples.append(
+                        (NAVE.geoHash, obj)
+                    )
                 # todo: support data after v2 internal storage is available
                 else:
                     obj = Literal(text)
