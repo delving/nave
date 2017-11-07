@@ -9,6 +9,34 @@ try:
 except ImportError:
     from distutils.core import setup
 
+
+from cx_Freeze import setup, Executable
+
+# Dependencies are automatically detected, but it might need fine tuning.
+build_exe_options = {
+    'packages': [
+        'os', 'encodings', 'asyncio', 'requests', 'idna', 'django', 'eventlet',
+        'raven'
+   ],
+    'include_files': ['/lib64/libc.so.6'],
+    'excludes': ['tkinter'],
+}
+
+# GUI applications require a different base on Windows (the default is for a
+# console application).
+base = None
+if sys.platform == "win32":
+    base = "Win32GUI"
+
+executables = [
+    Executable(
+        'server.py',
+        base=base,
+        targetName='hub3_nave.exe'
+    )
+]
+
+
 from nave.common import version
 version = version.__version__
 
@@ -44,6 +72,7 @@ setup(
         'nave',
     ],
     include_package_data=True,
+    executables=executables,
     install_requires=[],
     license='BSD 3-Clause License',
     zip_safe=False,
