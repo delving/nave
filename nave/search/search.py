@@ -363,6 +363,10 @@ class NaveESQuery(object):
                 self.page = page
                 start = (page - 1) * self.size if page > 0 else 0
                 end = start + self.size
+                if end >= 10000:
+                    logger.warn("Switching to search after regular paging will break on this result window.")
+                    # TODO add .extra search after
+                # else:
                 query = query[start:end]
         elif 'start' in params and 'page' not in params:
             with robust('start'):
@@ -371,6 +375,10 @@ class NaveESQuery(object):
                 if page > 0:
                     self.page = page
                 end = start + self.size
+                if end >= 10000:
+                    logger.warn("Switching to search after regular paging will break on this result window.")
+                    # TODO add .extra search after
+                # else:
                 query = query[start:end]
         else:
             query = query[:self.size]
@@ -565,6 +573,13 @@ class NaveESQuery(object):
                 seed = sort_key.split('_')[-1]
                 random_sort['random_score']['seed'] = seed
             query = query.query({'function_score': random_sort})
+            # TODO: implement normal sorting
+        else:
+            query = query.sort({
+                "_score": {"order": "desc"},
+                "system.modified_at": {"order": "desc"},
+                "legacy.delving_hubId": {"order": "desc"}
+            })
         if hasattr(settings, 'DEMOTE'):
             query = query.query(
                 Q('boosting',
