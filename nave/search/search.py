@@ -112,7 +112,7 @@ class NaveESQuery(object):
                 key = key.replace('_facet', '').replace('_string', '').replace('_text', '')
                 if key.startswith('delving_') and key not in self.non_legacy_keys:
                     key = "legacy.{}".format(key)
-                filter_dict[key].add(":".join(value))
+                filter_dict[key].add(":".join(value).replace("\"", "'"))
             else:
                 # add support for query based filters
                 filter_dict['query'].add(filt)

@@ -211,10 +211,16 @@ class GraphBindings:
         return os.path.join(uri, label)
 
     def get_all_items(self):
+        """Return all RDFResources as a list.
+
+        This list is sorted by nave:resourceSortOrder. This way field access
+        is sorted correctly.
+        """
         if not self._items:
             resources = [resource.get_items().values() for uri, resource in self.get_resources().items() if
                          uri not in self._inlined_resources]
             objects = list(itertools.chain.from_iterable(resources))
+            # TODO add resourceSortOrder sorting
             self._items = list(set(itertools.chain.from_iterable(objects)))
         return self._items
 
@@ -576,6 +582,14 @@ class RDFResource:
     def get_type(self):
         return self.get_types()[0]
 
+    def is_web_resource(self):
+        """Returns boolean if RDFResource is an edm:webresource"""
+        return RDFPredicate(EDM.WebResource) in self.get_types()
+
+    def get_sort_key(self):
+        """Return the nave:resourceSortOrder key."""
+        return self.get_first('nave_resourceSortOrder')
+
     def get_list(self, search_label):
         if not self._search_label_dict:
             for predicate, rdf_objects in self.get_items().items():
@@ -693,6 +707,7 @@ class RDFResource:
 
 
 class RDFPredicate():
+
     def __init__(self, uri):
         self._uri = uri
         self._manager = namespace_manager
@@ -931,7 +946,8 @@ class RDFObject:
         entry = {"@type": self.object_type}
         if self.is_uri:
             entry['id'] = self.id
-        entry['value'] = entry['raw'] = str(self.value)
+        entry['value'] = str(self.value)
+        entry['raw'] = str(self.value).replace("\"", "'")
         if self.language:
             entry['lang'] = self.language
         if self.has_resource and nested:
