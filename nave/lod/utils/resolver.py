@@ -598,7 +598,10 @@ class RDFResource:
 
     def get_sort_key(self):
         """Return the nave:resourceSortOrder key."""
-        return str(self.get_first('nave_resourceSortOrder').value)
+        order = self.get_first('nave_resourceSortOrder')
+        if order:
+            return str(order.value)
+        return 0
 
     def get_list(self, search_label):
         if not self._search_label_dict:
