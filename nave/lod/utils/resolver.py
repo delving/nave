@@ -217,15 +217,22 @@ class GraphBindings:
         is sorted correctly.
         """
         if not self._items:
-            resources = [resource.get_items().values() for uri, resource in self.get_resources().items() if
-                         uri not in self._inlined_resources]
+            webresources = []
+            resources = []
+            for uri, resource in self.get_resources().items():
+                if resource.is_web_resource():
+                    webresources.append(resource)
+                elif uri not in self._inlined_resources:
+                    resources.append(resource.get_items().values())
             objects = list(itertools.chain.from_iterable(resources))
-            # TODO add resourceSortOrder sorting
             self._items = list(set(itertools.chain.from_iterable(objects)))
+            webresources = sorted(webresources, key=lambda wr: wr.get_sort_key())
+            for wr in webresources:
+                self._items.extend(itertools.chain.from_iterable(wr.get_items().values()))
         return self._items
 
     def get_all_skos_links(self):
-        linked_skos_query =  """
+        linked_skos_query = """
         select ?s {
             ?s a <http://www.w3.org/2004/02/skos/core#Concept>.
             Filter exists {?s2 <http://www.w3.org/2004/02/skos/core#exactMatch> ?s}
@@ -456,7 +463,10 @@ class GraphBindings:
         for key, val in index_doc.items():
             if isinstance(val, list):
                 if all(isinstance(l, dict) for l in val):
-                    index_doc[key] = sorted(val, key=itemgetter('raw'))
+                    if key in ['nave_deepZoomUrl', 'nave_thumbSmall', 'nave_thumbLarge', 'nave_thumbnail']:
+                        index_doc[key] = val
+                    else:
+                        index_doc[key] = sorted(val, key=itemgetter('raw'))
         return index_doc
 
     def to_index_doc(self):
@@ -588,7 +598,7 @@ class RDFResource:
 
     def get_sort_key(self):
         """Return the nave:resourceSortOrder key."""
-        return self.get_first('nave_resourceSortOrder')
+        return str(self.get_first('nave_resourceSortOrder').value)
 
     def get_list(self, search_label):
         if not self._search_label_dict:
