@@ -60,6 +60,7 @@ try:
         sniff_on_connection_fail=True,
         sniffer_timeout=60,
         maxsize=25,  # default value 10
+        retry_on_timeout=True,
         timeout=ES_TIMEOUT,
     )
 except (ConnectionError, TransportError) as ce:
