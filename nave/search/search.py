@@ -9,6 +9,7 @@ from collections import defaultdict, namedtuple
 from contextlib import contextmanager
 
 from django.conf import settings
+from django.core.cache import caches
 from django.core.paginator import Paginator, Page, EmptyPage, PageNotAnInteger
 from django.http import QueryDict
 from elasticsearch_dsl import Search, aggs, A
@@ -19,6 +20,7 @@ import six
 
 from nave.void.convertors import BaseConverter
 from nave.search.utils import gis
+from nave.search import paging_cache
 
 
 logger = logging.getLogger(__name__)
@@ -365,6 +367,9 @@ class NaveESQuery(object):
                 end = start + self.size
                 if end >= 10000:
                     logger.warn("Switching to search after regular paging will break on this result window.")
+                    # import pdb; pdb.set_trace()
+                    # build new key from params and get cache
+                    # if not not found got to page 1000*10 set cache key and start paging
                     # TODO add .extra search after
                 # else:
                 query = query[start:end]
@@ -376,6 +381,8 @@ class NaveESQuery(object):
                     self.page = page
                 end = start + self.size
                 if end >= 10000:
+                    # build new key from params and get cache
+                    # if not not found got to page 1000*10 set cache key and start paging
                     logger.warn("Switching to search after regular paging will break on this result window.")
                     # TODO add .extra search after
                 # else:
@@ -577,8 +584,8 @@ class NaveESQuery(object):
         else:
             query = query.sort({
                 "_score": {"order": "desc"},
+                "legacy.delving_hubId": {"order": "desc"},
                 "system.modified_at": {"order": "desc"},
-                "legacy.delving_hubId": {"order": "desc"}
             })
         if hasattr(settings, 'DEMOTE'):
             query = query.query(
@@ -1355,6 +1362,15 @@ class NaveQueryResponse(object):
         self._geojson_clusters = None
         self._paginator = None
         self._rows = self._query.size
+
+    def set_cache_page(self):
+       """Set the seach_after key for ElasticSearch."""
+       sort_key = self._result.hits[-1].meta.sort
+       # todo implement the rest
+       # get all params replace start or page append __ number
+       page_key = ''
+       page_cache.set(page_key, str(sort_key), 300)
+
 
     @property
     def query(self):
