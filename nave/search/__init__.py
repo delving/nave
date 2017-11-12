@@ -16,6 +16,7 @@ from collections import namedtuple
 import sys
 
 from django.conf import settings
+from django.core.cache import caches
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl.connections import connections
 from elasticsearch.exceptions import ConnectionError, TransportError
@@ -28,6 +29,8 @@ default_app_config = 'nave.search.apps.SearchConfig'
 
 LayoutItem = namedtuple("LayoutItem", ["name", "i18n"])
 
+# todo later set a custom cache for the paging
+paging_cache = caches
 
 def get_settings(setting_name, default_value):
     """Utility function for getting values from the settings.py.
