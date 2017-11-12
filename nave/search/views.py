@@ -624,6 +624,7 @@ class NaveDocumentTemplateView(TemplateView):
         )
         context['resources'] = bindings
         context['absolute_uri'] = RDFRecord.get_external_rdf_url(target_uri, self.request)
+        context['query'] = self.request.GET.get('q')
         if record:
             context['about_spec'] = record.get_spec_name()
         else:
