@@ -516,7 +516,7 @@ class NaveESQuery(object):
                 # facet_list = ["{}.raw".format(facet.rstrip('.raw')) for facet in facet_list]
                 for facet in facet_list:
                     if not facet_bool_type_and:
-                        facet_filter_list = [filters for key, filters in all_filter_dict.items() if not facet.startswith(key)]
+                        facet_filter_list = [filters for key, filters in all_filter_dict.items() if not self.check_facet_key(facet, key)]
                     else:
                         facet_filter_list = list(all_filter_dict.values())
                     a = aggs.Filter(
@@ -543,7 +543,7 @@ class NaveESQuery(object):
                     if facet_bool_type_and:
                         facet_filter_list = list(itertools.chain.from_iterable(facet_filter_dict.values()))
                     else:
-                        or_filter_list = [filters for key, filters in facet_filter_dict.items() if not facet.startswith(key)]
+                        or_filter_list = [filters for key, filters in facet_filter_dict.items() if not self.check_facet_key(facet, key)]
                         facet_filter_list = list(itertools.chain.from_iterable(or_filter_list))
                 a = A(
                     'geohash_grid',
@@ -587,12 +587,12 @@ class NaveESQuery(object):
                 "legacy.delving_hubId": {"order": "desc"},
                 "system.modified_at": {"order": "desc"},
             })
-        if hasattr(settings, 'DEMOTE'):
+        if hasattr(settings, 'DEMOTE') and hasattr(settings, 'NEGATIVE_BOOST'):
             query = query.query(
                 Q('boosting',
                     positive=Q(),
                     negative=Q("match", **settings.DEMOTE),
-                    negative_boost=0.1
+                    negative_boost=settings.NEGATIVE_BOOST
                   )
             )
         self.query = query
@@ -602,6 +602,11 @@ class NaveESQuery(object):
         import json
         logger.debug(json.dumps(query.to_dict()))
         return query
+
+    def check_facet_key(self, facet, key):
+        """Check if the key and facet match."""
+        clean_facet = facet.split('.', maxsplit=1)[0]
+        return clean_facet == key
 
     def build_geo_query(self, request):
         """ build a query for geo clustering only """
