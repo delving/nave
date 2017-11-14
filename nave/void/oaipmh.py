@@ -314,10 +314,13 @@ class OAIProvider(TemplateView):
                 # rename set to spec
                 if self.oai_verb not in ["ListSets", "ListMetadataFormats"] and 'set' in filters:
                     filters[self.dataset_search_key] = filters.pop('set')
+                fmt = '%Y-%m-%dT%H:%M:%S%z'  # '%Y-%m-%d %H:%M:%S %Z%z'
                 if 'from' in filters:
-                    filters["modified__gt"] = parser.parse(timestr=filters.pop('from'))
+                    from_date=parser.parse(timestr=filters.pop('from'))
+                    filters["modified__gt"] = from_date.strftime(fmt)
                 if 'until' in filters:
-                    filters["modified__lt"] = parser.parse(filters.pop('until'))
+                    until_date = parser.parse(filters.pop('until'))
+                    filters["modified__lt"] = until_date.strftime(fmt)
                 filters.update(self.record_access_filter)
                 self.filters = filters
 
