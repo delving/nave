@@ -9,7 +9,7 @@ Assuming you have brew install already you can execute the following command
 
     brew upgrade
     
-    brew install python postgresql postgis ] elasticsearch rabbitmq virtualenvwrapper
+    brew install python postgresql postgis elasticsearch rabbitmq virtualenvwrapper
 
 
 Setting up the virtual environments for each project
@@ -20,7 +20,7 @@ Steps to setup a virtualenv for a project. A project contains its own theme and 
 You must run the command from the same directory where your manage.py is.
 
 
-    mkvirtualenv -r ../requirements/base.txt -a . --python=/usr/local/bin/python2.7 {name of the project}
+    mkvirtualenv -r ../requirements/base.txt -a . --python=/usr/local/bin/python3 {name of the project}
 
 
 This will install the virtual_env, install the requirements, and route to the current dir when you execute `workon`
@@ -28,7 +28,7 @@ This will install the virtual_env, install the requirements, and route to the cu
 The next step is to set the environment settings in ~/.virtualenvs/{name of the project}/bin/postactivate. Open the
 file in an editor of your choice and add
 
-    export DJANGO_SETTINGS_MODULE="projects.{name of the project}.settings"
+    export DJANGO_SETTINGS_MODULE="nave.projects.{name of the project}.settings"
 
 
 Next to the settings file in your project folder you have a local_settings.py.template. Copy this to *local_settings.py*

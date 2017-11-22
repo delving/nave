@@ -5,7 +5,6 @@ Setting up a virtual env for a nave project, general idea is to have one virtual
 This doc only lists virtualenvwrapper specifics, for the general instructions about your dev environ see dev_setup.rst
 
 
-
 Initial setup of virtualenvwrapper
 ----------------------------------
 
@@ -27,34 +26,29 @@ Start new terminal to ensure this environ is set. If virtualenvwrapper.sh fails 
 
 Setting up a virtualenv for a specific project
 ----------------------------------------------
-Lets use culturebroker as a sample, if working on another project replace culturebroker below with your project name
+Lets use demo as a sample, if working on another project replace demo below with your project name
 
 ::
 
-  mkvirtualenv --python=/usr/local/bin/python3.5 nave_culturebrokers
-  git clone git@github.com:delving/nave.git
-  echo 'export DJANGO_SETTINGS_MODULE="projects.culturebrokers.settings"' >> $VIRTUAL_ENV/bin/postactivate
-  echo "cd nave/nave" >> $VIRTUAL_ENV/bin/postactivate
-  pip install -r nave/requirements/base.txt
-
-The wheel builds are failing ATM (2016-01-28) this is a minor issue, if you rerun the pip install with no errors your fine.
+  mkvirtualenv --python=/usr/local/bin/python3.5 nave_demo
+  git clone git@github.com:delving/nave.git nave_app
+  echo 'export DJANGO_SETTINGS_MODULE="nave.projects.demo.settings"' >> $VIRTUAL_ENV/bin/postactivate
+  echo "cd nave_app" >> $VIRTUAL_ENV/bin/postactivate
+  pip install -r nave_app/requirements/base.txt
 
 Checking out the specific project files
-
-  
 
 ::
 
   cd nave/nave/projects
-  git clone git@github.com:delving/hub3_culturebrokers.git culturebrokers
-  deactivate # then go back in with a workong nave_norvegiana in order to get the environ properly setup
-
+  git clone git@github.com:delving/hub3_demo.git demo
+  deactivate 
 
 Working on a virtualenv then leaving it
 ---------------------------------------
 ::
 
-  workon nave_culturebroker
+  workon nave_demo
   git pull  # Could be added to $VIRTUAL_ENV/bin/postactivate for convenience
   ...
   deactivate
