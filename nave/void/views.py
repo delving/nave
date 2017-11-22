@@ -195,7 +195,7 @@ class DataSetStatistics:
 
     def get_indexed_datasets(self):
         from elasticsearch_dsl import Search, A
-        from nave.search import get_es_client
+        from nave.search.connector import get_es_client
         client = get_es_client()
         s = Search(using=client)
         a = A('terms', field='delving_spec.raw', size=500)

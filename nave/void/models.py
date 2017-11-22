@@ -46,7 +46,7 @@ logger = logging.getLogger(__name__)
 fmt = '%Y-%m-%d %H:%M:%S%z'  # '%Y-%m-%d %H:%M:%S %Z%z'
 
 def get_es():
-    from nave.search import get_es_client
+    from nave.search.connector import get_es_client
     return get_es_client()
 
 

@@ -20,7 +20,7 @@ import six
 
 from nave.void.convertors import BaseConverter
 from nave.search.utils import gis
-from nave.search import paging_cache
+from nave.search.connector import paging_cache
 
 
 logger = logging.getLogger(__name__)
@@ -1311,7 +1311,7 @@ class NaveItemResponse(object):
             # todo: remove this later.
             doc_type = self.item.doc_type
             doc_id = self.item.doc_id
-            from . import get_es_client
+            from .connector import get_es_client
             s = Search(index=self._index)
             mlt_query = s.query(
                     'more_like_this',

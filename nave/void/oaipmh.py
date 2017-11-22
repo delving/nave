@@ -17,7 +17,7 @@ from nave.lod.utils.resolver import RDFRecord, ElasticSearchRDFRecord
 from nave.void import REGISTERED_CONVERTERS
 from nave.void.models import DataSet, OaiPmhPublished, EDMRecord
 
-from nave.search import get_es_client
+from nave.search.connector import get_es_client
 
 
 class OaiVerb(Enum):

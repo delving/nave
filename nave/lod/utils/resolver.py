@@ -41,7 +41,7 @@ from rdflib.namespace import RDF, SKOS, RDFS, DC, FOAF
 from nave.lod import namespace_manager
 from nave.lod.utils import rdfstore
 
-from nave.search import get_es_client
+from nave.search.connector import get_es_client
 
 logger = logging.getLogger(__file__)
 client = get_es_client()
@@ -229,6 +229,7 @@ class GraphBindings:
             webresources = sorted(webresources, key=lambda wr: wr.get_sort_key())
             for wr in webresources:
                 self._items.extend(itertools.chain.from_iterable(wr.get_items().values()))
+            # sort hasView by sortOrder where relevant
         return self._items
 
     def get_all_skos_links(self):
@@ -1400,6 +1401,8 @@ class RDFRecord:
             with_webresource = settings.RESOLVE_WEBRESOURCES_VIA_RDF
         if hasattr(settings, "RESOLVE_CONTEXT_VIA_RDF") and isinstance(settings.RESOLVE_CONTEXT_VIA_RDF, bool):
             with_sparql_context = settings.RESOLVE_CONTEXT_VIA_RDF
+        if hasattr(settings, "RESOLVE_WEBRESOURCES_VIA_MEDIAMANAGER") and isinstance(settings.RESOLVE_WEBRESOURCES_VIA_MEDIAMANAGER, bool):
+            with_mediamanager = settings.RESOLVE_WEBRESOURCES_VIA_MEDIAMANAGER
         graph = self.get_graph()
         if with_mappings:
             from django.apps import apps
@@ -1411,6 +1414,29 @@ class RDFRecord:
                 proxy_resources, graph = proxy_resource_model.update_proxy_resource_uris(ds, graph)
                 for proxy_resource in proxy_resources:
                     graph = graph + proxy_resource.to_graph(include_mapping_target=include_mapping_target)
+        # todo add code for retrieving info from media manager
+        if with_mediamanager:
+            # use media manager
+            webresource_graph = None
+            for wr in graph.subjects(predicate=RDF.type, object=EDM.WebResource):
+                if str(wr).startswith('urn:'):
+                    full_url = '{}/api/webresource/{}/{}'.format(
+                        settings.MEDIAMANAGER_URL,
+                        settings.ORG_ID,
+                        str(wr)
+                    )
+                    try:
+                        #webresource_graph.parse(full_url)
+                        pass
+                    except Exception as ex:
+                        logger.error("Unable to parse {} because of {}".format(
+                            full_url,
+                            ex
+                        ))
+            if webresource_graph:
+                graph, _ = self.reduce_duplicates(graph)
+                # add EDM.IsShownBy EDM.Object first from graph
+                graph = graph + webresource_graph
         if with_webresource:
             webresource_graph = RDFRecord.get_webresource_context_graph(target_uri=self.source_uri)
             if webresource_graph:
@@ -1581,6 +1607,7 @@ class RDFRecord:
         """
         date_string.isoformat()"""
         # make sure you don't erase things from the same second
+        logger.info("Timestamp for orphan deletion: {}".format(timestamp))
         if not settings.LEGACY_ORPHAN_CONTROL:
             return 0
         client.indices.refresh(index)

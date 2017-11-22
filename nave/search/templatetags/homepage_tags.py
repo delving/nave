@@ -3,7 +3,7 @@ import logging
 from django import template
 from django.conf import settings
 
-from nave.search import get_es_client
+from nave.search.connector import get_es_client
 from nave.void.models import DataSet
 
 register = template.Library()

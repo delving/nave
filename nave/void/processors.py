@@ -12,7 +12,7 @@ from rdflib.plugins.parsers.ntriples import ParseError
 
 from nave.lod.utils import rdfstore
 from nave.lod.utils.resolver import RDFRecord
-from nave.search import get_es_client
+from nave.search.connector import get_es_client
 from nave.void.models import DataSet
 
 from nave.lod import tasks

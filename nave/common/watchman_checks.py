@@ -9,7 +9,7 @@ import traceback
 from django.conf import settings
 from watchman.decorators import check
 
-from nave.search import get_es_client
+from nave.search.connector import get_es_client
 
 @check
 def nave_version():

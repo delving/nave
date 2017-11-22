@@ -12,7 +12,7 @@ from celery.utils.log import get_task_logger
 from django.conf import settings
 from elasticsearch.helpers import scan
 
-from nave.search import es_client as es
+from nave.search.connector import es_client as es
 from nave.search.search import NaveESItemList
 
 logger = get_task_logger(__name__)

@@ -9,7 +9,7 @@ from django.conf import settings
 from django.core.management import BaseCommand
 from elasticsearch import helpers
 
-from nave.search import es_client
+from nave.search.connector import es_client
 
 
 class Command(BaseCommand):
