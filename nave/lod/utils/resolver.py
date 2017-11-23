@@ -266,7 +266,7 @@ class GraphBindings:
                 elif o.datatype == URIRef('http://www.w3.org/2001/XMLSchema#integer'):
                     return int(o.value)
                 else:
-                    return o.value
+                    return o.value if not len(o.value) > 32766 else o.value[:32700]
         return None
 
     def get_list(self, search_label, lexsort=True):
@@ -629,7 +629,7 @@ class RDFResource:
                 elif o.datatype == URIRef('http://www.w3.org/2001/XMLSchema#integer'):
                     return int(o.value)
                 else:
-                    return o.value
+                    return o.value if not len(o.value) > 32766 else o.value[:32700]
         return None
 
     def get_items(self, sort=True, exclude_list=None, include_list=None, as_tuples=False):
@@ -876,7 +876,10 @@ class RDFObject:
                     self._lang = label.language
                 return label
             else:
-                return str(self._rdf_object)
+                literal_string = str(self._rdf_object)
+                if len(literal_string) > 32766:
+                    literal_string = literal_string[:32700]
+                return literal_string
         elif self.is_uri:
             return self.get_label(self._rdf_object)
         return None
@@ -960,8 +963,15 @@ class RDFObject:
         entry = {"@type": self.object_type}
         if self.is_uri:
             entry['id'] = self.id
-        entry['value'] = str(self.value)
-        entry['raw'] = str(self.value).replace("\"", "'")
+        clean_value = str(self.value)
+        if len(clean_value) > 32765:
+            entry['value'] = str(self.value)[:32700]
+        else:
+            entry['value'] = str(self.value)
+        raw_value = str(self.value)
+        if len(raw_value) > 256:
+            raw_value = raw_value[:256]
+        entry['raw'] = str(raw_value).replace("\"", "'")
         if self.language:
             entry['lang'] = self.language
         if self.has_resource and nested:
@@ -1577,7 +1587,7 @@ class RDFRecord:
             'delving_collection': dataset_name,
             'delving_title': bindings.get_first_literal(DC.title),
             'delving_creator': bindings.get_first_literal(DC.creator),
-            'delving_description': bindings.get_first_literal(DC.description),
+            # 'delving_description': bindings.get_first_literal(DC.description),
             'delving_provider': bindings.get_first_literal(EDM.provider),
             'delving_hasGeoHash': "true" if bindings.has_geo() else "false",
             'delving_hasDigitalObject': "true" if thumbnail else "false",
