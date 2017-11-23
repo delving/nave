@@ -745,7 +745,7 @@ class FacetCountLink(object):
                 )
             else:
                 link = "qf[]={}".format(
-                    self._filter_query.replace(":", "%3A").replace("&", "%26")
+                    self._filter_query.replace(":", "%3A").replace("&", "%26").replace(';', '%3B')
                 )
             if self.is_selected:
                 selected_facets = [facet for facet in selected_facets if facet != self._filter_query]
