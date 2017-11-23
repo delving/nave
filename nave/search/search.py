@@ -408,7 +408,7 @@ class NaveESQuery(object):
             if "&quot;" in query_string:
                 query_string = query_string.replace('&quot;', '"')
             for hq in hidden_queries:
-                query_string = "{} {}".format(query_string, hq)
+                query_string = "({}) AND ({})".format(query_string, hq)
             query = query.query(self._create_query_string(query_string))
         # add lod_filtering support
         # elif "lod_id" in params:
@@ -417,7 +417,7 @@ class NaveESQuery(object):
             # query = query.query(
             #         **{'rdf.object.id': lod_uri, "must": True}).filter(~Q(**{'system.about_uri': lod_uri}))
         elif hidden_queries:
-            query = query.query_raw(self._create_query_string(" ".join(hidden_queries)))
+            query = query.query(self._create_query_string(" ".join(hidden_queries)))
         else:
             query = query.query()
 
