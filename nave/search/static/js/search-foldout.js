@@ -43,7 +43,10 @@ $(function(){
         });
         // append the foldout html to the last elem in the row
         var dataTarget = $('.result-item-detail');
-        dataTarget.load(fo_endpoint+doc_type+"/"+slug+"?mode="+acceptance_mode+"&q="+query_string);
+
+        $.get( fo_endpoint+doc_type+"/"+slug+"?mode="+acceptance_mode+"&q="+query_string, function( data ) {
+          dataTarget.html( data );
+        });
 
         // scroll up above the fold
         var offset = dataTarget.offset().top;
