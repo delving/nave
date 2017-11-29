@@ -52,7 +52,6 @@ APPEND_SLASH = True
 ADMINS = (
     ('Sjoerd Siebinga', 'sjoerd@delving.eu'),
     ('Eric van der Meulen', 'eric@delving.eu'),
-    ('Jacob Lundqvist', 'jacob@delving.eu'),
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#managers
