@@ -14,6 +14,9 @@ register = template.Library()
 
 logger = logging.getLogger(__name__)
 
+@register.assignment_tag
+def define(val=None):
+  return val
 
 @register.filter(name='lookup')
 def get_binding(value, arg):
