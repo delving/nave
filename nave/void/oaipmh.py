@@ -404,6 +404,15 @@ class ElasticSearchOAIProvider(OAIProvider):
         self.cursor = int(filters.pop('cursor'))
         self.sort_key = filters.pop('sort_key')
         self.filters = filters
+        fmt = '%Y-%m-%dT%H:%M:%S%z'  # '%Y-%m-%d %H:%M:%S %Z%z'
+        until_date = filters.get('modified__lt')
+        from_date = filters.get('modified__gt')
+        if from_date and ' ' in from_date:
+            from_date=parser.parse(timestr=filters.pop('modified__gt'))
+            filters["modified__gt"] = from_date.strftime(fmt)
+        if until_date and ' ' in until_date:
+            until_date=parser.parse(timestr=filters.pop('modified__lt'))
+            filters["modified__lt"] = until_date.strftime(fmt)
         return filters
 
     def get_query_result(self):
