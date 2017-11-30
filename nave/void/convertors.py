@@ -478,10 +478,15 @@ class EDMStrictConverter(BaseConverter):
 
     @staticmethod
     def uri_to_namespaced_tag(uri):
-        elements = uri.split('/')
+        if '#' in uri:
+            elements = uri.split('#')
+            split_key = '#'
+        else:
+            elements = uri.split('/')
+            split_key = '/'
         label = elements[-1]
         prefix = "/".join(elements[:-1])
-        return "{{{}/}}{}".format(prefix, label)
+        return "{{{}{}}}{}".format(prefix, split_key, label)
 
     def make_rdf_xml_serialization_europeana_proof(self, rdf_xml_string):
         record = ET.fromstring(rdf_xml_string)
@@ -500,10 +505,11 @@ class EDMStrictConverter(BaseConverter):
                     description.remove(aggr)
                 if type_tag:
                     rdf_about = description.attrib.get('{http://www.w3.org/1999/02/22-rdf-syntax-ns#}about')
-                    new_description_tag = ET.SubElement(record, self.uri_to_namespaced_tag(type_tag))
-                    new_description_tag.attrib['{http://www.w3.org/1999/02/22-rdf-syntax-ns#}about'] = rdf_about
-                    for child in description.getchildren():
-                        new_description_tag.append(child)
+                    if rdf_about:
+                        new_description_tag = ET.SubElement(record, self.uri_to_namespaced_tag(type_tag))
+                        new_description_tag.attrib['{http://www.w3.org/1999/02/22-rdf-syntax-ns#}about'] = rdf_about
+                        for child in description.getchildren():
+                            new_description_tag.append(child)
             record.remove(description)
         return ET.tostring(record, encoding="utf-8", pretty_print=True)
 
