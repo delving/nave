@@ -52,6 +52,7 @@ Object = namedtuple('Object', ['value', 'is_uriref', 'is_resource', 'datatype', 
 
 EDM = Namespace('http://www.europeana.eu/schemas/edm/')
 NAVE = Namespace('http://schemas.delving.eu/nave/terms/')
+ORE = Namespace('http://www.openarchives.org/ore/terms/')
 
 
 def get_geo_points(graph, only_geohash=False):
@@ -219,18 +220,28 @@ class GraphBindings:
         if not self._items:
             webresources = []
             resources = []
+            webresources = self.get_sorted_webresources()
             for uri, resource in self.get_resources().items():
+                if resource.is_ore_aggregation():
+                    if RDFPredicate(EDM.hasView) in resource.get_items():
+                        resource.get_items()[RDFPredicate(EDM.hasView)] = webresources
                 if resource.is_web_resource():
-                    webresources.append(resource)
+                    pass
                 elif uri not in self._inlined_resources:
                     resources.append(resource.get_items().values())
             objects = list(itertools.chain.from_iterable(resources))
-            self._items = list(set(itertools.chain.from_iterable(objects)))
-            webresources = sorted(webresources, key=lambda wr: wr.get_sort_key())
+            self._items = list(itertools.chain.from_iterable(objects))
             for wr in webresources:
                 self._items.extend(itertools.chain.from_iterable(wr.get_items().values()))
-            # sort hasView by sortOrder where relevant
         return self._items
+
+    def get_sorted_webresources(self, webresources=None):
+        if not webresources:
+            webresources = []
+            for uri, resource in self.get_resources().items():
+                if resource.is_web_resource():
+                    webresources.append(resource)
+        return sorted(webresources, key=lambda wr: wr.get_sort_key())
 
     def get_all_skos_links(self):
         linked_skos_query = """
@@ -464,7 +475,7 @@ class GraphBindings:
         for key, val in index_doc.items():
             if isinstance(val, list):
                 if all(isinstance(l, dict) for l in val):
-                    if key in ['nave_deepZoomUrl', 'nave_thumbSmall', 'nave_thumbLarge', 'nave_thumbnail']:
+                    if key in ['nave_deepZoomUrl', 'nave_thumbSmall', 'nave_thumbLarge', 'nave_thumbnail', 'edm_hasView']:
                         index_doc[key] = val
                     else:
                         index_doc[key] = sorted(val, key=itemgetter('raw'))
@@ -597,11 +608,15 @@ class RDFResource:
         """Returns boolean if RDFResource is an edm:webresource"""
         return RDFPredicate(EDM.WebResource) in self.get_types()
 
+    def is_ore_aggregation(self):
+        """Returns boolean if RDFResource is an ore:aggregation"""
+        return RDFPredicate(ORE.Aggregation) in self.get_types()
+
     def get_sort_key(self):
         """Return the nave:resourceSortOrder key."""
         order = self.get_first('nave_resourceSortOrder')
         if order:
-            return str(order.value)
+            return int(str(order.value))
         return 0
 
     def get_list(self, search_label):
@@ -639,7 +654,10 @@ class RDFResource:
         items = self._items
         for key, val in items.items():
             if isinstance(val, list):
-                items[key] = sorted(val, key=lambda k: k.value)
+                if key in [URIRef('http://www.europeana.eu/schemas/edm/hasView')]:
+                    items[key] = sorted(val, key=lambda k: k.get_resource.get_sort_key())
+                else:
+                    items[key] = sorted(val, key=lambda k: k.value)
         if sort:
             items = OrderedDict(sorted(list(items.items()), key=lambda t: t[0]))
         if include_list:
@@ -1201,7 +1219,7 @@ class RDFRecord:
         if predicates is None:
             predicates = [
                 EDM.isShownBy, EDM.object, NAVE.thumbSmall, NAVE.thumbLarge,
-                NAVE.thumbnail, NAVE.deepZoomUrl
+                NAVE.thumbnail, NAVE.deepZoomUrl, EDM.hasView
             ]
         for predicate in predicates:
             entries = list(graph.subject_objects(predicate=predicate))
@@ -1245,7 +1263,7 @@ class RDFRecord:
         return graph
 
     @staticmethod
-    def resolve_webresource_uris(graph, source_check=True):
+    def resolve_webresource_uris(graph, source_check=True, bindings=None):
         """Add DeepZoom, and thumbnail derivatives to WebResource."""
         from rdflib.namespace import RDF
         web_resources = graph.subjects(
@@ -1279,6 +1297,12 @@ class RDFRecord:
         if wr_list and has_api_call:
             # remove all others
             RDFRecord.reduce_duplicates(graph)
+        elif wr_list:
+            RDFRecord.reduce_duplicates(
+                graph=graph,
+                leave=0,
+                predicates=[EDM.hasView]
+            )
         for wr in wr_list:
             api_call = str(wr).startswith('urn:')
             if api_call and about_uri:
@@ -1368,6 +1392,15 @@ class RDFRecord:
                             about_uri,
                             EDM.object,
                             URIRef(thumb_small)
+                        ))
+            else:
+                if bindings:
+                    web_resources = bindings.get_sorted_webresources()
+                    for wr in web_resources:
+                        graph.add((
+                            about_uri,
+                            EDM.hasView,
+                            wr.subject_uri
                         ))
         return wr_list, graph
 
@@ -1460,7 +1493,9 @@ class RDFRecord:
                 graph = graph + context_graph
 
         _, graph = self.resolve_webresource_uris(
-            graph, source_check=source_check)
+            graph,
+            source_check=source_check,
+            bindings=self.get_bindings())
         # reduce edm duplicates to one each
         graph, _ = self.reduce_duplicates(graph=graph, leave=1, predicates=[EDM.isShownBy, EDM.object, EDM.isShownAt])
         # create direct link to DeepZoom image
