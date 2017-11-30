@@ -675,13 +675,13 @@ CELERY_ALWAYS_EAGER = False  # production should be false
 
 CELERY_ACKS_LATE = True
 
-CELERYBEAT_SCHEDULE = {
-    'add-every-60-seconds': {
-        'task': 'nave.webresource.tasks.create_webresource_dirs',
-        'schedule': timedelta(seconds=60),
-        'args': None
-    },
-}
+# CELERYBEAT_SCHEDULE = {
+    # 'add-every-60-seconds': {
+        # 'task': 'nave.webresource.tasks.create_webresource_dirs',
+        # 'schedule': timedelta(seconds=60),
+        # 'args': None
+    # },
+# }
 
 
 class FacetConfig(object):
