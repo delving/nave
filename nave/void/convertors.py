@@ -309,8 +309,13 @@ class BaseConverter(object):
             output_doc['delving_geoHash'] = output_doc['delving_locationLatLong']
         output_doc["delving_hasGeoHash"] = ['delving_geoHash' in output_doc]
         if 'europeana_isShownAt' in output_doc:
-            if output_doc.get('europeana_isShownAt').startswith("file:///opt"):
-                del output_doc['europeana_isShownAt']
+            shown_at = output_doc.get('europeana_isShownAt')
+            if isinstance(shown_at, list):
+                if any(e.startswith('file:///opt') for e in shown_at):
+                    del output_doc['europeana_isShownAt']
+            elif isinstance(shown_at, str):
+                if shown_at.startswith('file:///opt'):
+                    del output_doc['europeana_isShownAt']
             else:
                 output_doc["delving_landingpage"] = output_doc.get('europeana_isShownAt')
         output_doc["delving_hasLandingPage"] = ['europeana_isShownAt' in output_doc]
