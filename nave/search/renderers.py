@@ -1,6 +1,7 @@
 import geobuf as geobuf
 from collections import OrderedDict, defaultdict
 from datetime import datetime
+import unicodedata
 
 import geojson
 import six
@@ -218,6 +219,10 @@ class XMLRenderer(BaseRenderer):
     def _create_inner_tag_name(key):
         return key.lower() if not key.endswith('s') else key.lower()[:-1]
 
+    @staticmethod
+    def remove_control_characters(s):
+        return "".join(ch for ch in s if unicodedata.category(ch)[0]!="C")
+
     def _to_xml(self, xml, data, tag_name=item_tag_name):
         if isinstance(data, (list, tuple)):
             for item in data:
@@ -300,7 +305,10 @@ class XMLRenderer(BaseRenderer):
             pass
 
         else:
-            xml.characters(smart_text(data))
+            if isinstance(data, str):
+                xml.characters(smart_text(self.remove_control_characters(data)))
+            else:
+                xml.characters(smart_text(data))
 
 
 class RDFBaseRenderer(renderers.BaseRenderer):
