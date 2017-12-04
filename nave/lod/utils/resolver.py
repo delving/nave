@@ -656,7 +656,8 @@ class RDFResource:
         items = self._items
         for key, val in items.items():
             if isinstance(val, list):
-                if key in [URIRef('http://www.europeana.eu/schemas/edm/hasView')]:
+                are_resources = all(v.get_resource for v in val )
+                if key in [URIRef('http://www.europeana.eu/schemas/edm/hasView')] and are_resources:
                     items[key] = sorted(val, key=lambda k: k.get_resource.get_sort_key())
                 else:
                     items[key] = sorted(val, key=lambda k: k.value)
