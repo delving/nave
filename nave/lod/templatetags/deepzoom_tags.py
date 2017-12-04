@@ -9,11 +9,15 @@ def deepzoom_js(
         show_navigator=False,
         navigator_position="TOP_LEFT",
         toolbar_id="zoom_navigation",
+        https=False,
         viewer_id="zoom_viewer"):
     """
     get zoom url count and values
     :return: count as integer and urls as array
     """
+    if settings.DEEPZOOM_VIA_HTTPS:
+        from django.utils.safestring import SafeText
+        deepzoom_urls = SafeText(deepzoom_urls.replace('http:', 'https:'))
 
     return {
         'deepzoom_count': deepzoom_count,

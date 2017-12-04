@@ -18,6 +18,12 @@ logger = logging.getLogger(__name__)
 def define(val=None):
   return val
 
+
+@register.filter
+def to_https(value):
+    return value.replace('http:', 'https:')
+
+
 @register.filter(name='lookup')
 def get_binding(value, arg):
     return value[arg]
