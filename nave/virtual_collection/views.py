@@ -73,7 +73,7 @@ class VirtualCollectionPmhProvider(ElasticSearchOAIProvider):
             doc_types=[],
             hidden_filters=hidden_query_filters
         )
-        self.query = query.build_query_from_request(request=request).build_search()
+        self.query = query.build_query_from_request(request=request)
         return super(VirtualCollectionPmhProvider, self).get(request, *args, **kwargs)
 
 

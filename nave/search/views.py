@@ -309,7 +309,7 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
         )
         downloader = scan(
             client=get_es_client(),
-            query=query.query.build_search(),
+            query=query.query,
             index=self.get_index_name,
         )
 
@@ -328,7 +328,7 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
         generator = streaming_generator()
         ##
         # async_task_id = download_all_search_results.delay(
-        #     query_dict=query.query.build_search(),
+        #     query_dict=query.query,
         #     response_format=self.request.GET.get('format', 'json'),
         #     converter=self.get_converter(),
         #     index_name=self.get_index_name,

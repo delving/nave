@@ -77,7 +77,7 @@ class GeoSearch(Search):
 #         }
 #         query = self.query()
 #         if filtered:
-#             filt = query.build_search().get('filter')
+#             filt = query.get('filter')
 #             filtered = {'facet_filter': filt}
 #             filtered.update(cluster_config)
 #             cluster_config = filtered
