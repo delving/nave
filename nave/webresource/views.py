@@ -93,7 +93,7 @@ class DeepZoomRedirectView(RedirectView):
             wr = WebResource(uri=urn, spec=spec, domain=domain)
             if domain not in settings.ALLOWED_HOSTS:
                 return wr.get_deepzoom_uri
-            return wr.get_deepzoom_redirect()
+            return wr.get_mm_deepzoom_uri
 
 
 def webresource_docs(request):

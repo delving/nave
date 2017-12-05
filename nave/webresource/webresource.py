@@ -436,6 +436,19 @@ class WebResource:
         )
 
     @property
+    def get_mm_deepzoom_uri(self):
+        """Get fully qualified deepzoom URI for redirection to the MediaManager."""
+        return os.path.join(
+            self.domain,
+            "deepzoom",
+            self.settings.ORG_ID,
+            self.get_relative_spec_dir,
+            "{}.tif.dzi".format(
+                self.get_derivative_base_path(kind=DEEPZOOM_DIR)
+            )
+        )
+
+    @property
     def get_source_uri(self):
         """Get the fully qualified path to the source digital object."""
         return os.path.join(
