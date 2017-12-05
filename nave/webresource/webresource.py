@@ -89,6 +89,8 @@ class WebResource:
             self._domain = self.settings.RDF_BASE_URL
         if "://" not in self._domain:
             self._domain = "http://{}".format(self._domain)
+        if self.settings.DEEPZOOM_VIA_HTTPS:
+            self._domain = self._domain.replace('http:', 'https:')
         return self._domain
 
     @property
