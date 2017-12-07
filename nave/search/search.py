@@ -327,6 +327,8 @@ class NaveESQuery(object):
                 #     raise
                 raise
 
+
+
         query = self.query
         if isinstance(request, Request):
             request = request._request
@@ -341,8 +343,15 @@ class NaveESQuery(object):
         params = self._clean_params(query_dict.copy())
         facet_params = self._clean_params(query_dict.copy())
 
+        if 'facet.limit' in params and params['facet.limit']:
+            try:
+                self.facet_size = int(params['facet.limit'])
+            except ValueError as ve:
+                logger.warn("Unable to use facet.limit: {}".format(params['facet.limit']))
+
         if 'facet.reset' in params:
             self.default_facets = []
+
 
         # build id based query
         query = self.build_item_query(query, params)
