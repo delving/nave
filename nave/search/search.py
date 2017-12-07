@@ -341,6 +341,9 @@ class NaveESQuery(object):
         params = self._clean_params(query_dict.copy())
         facet_params = self._clean_params(query_dict.copy())
 
+        if 'facet.reset' in params:
+            self.default_facets = []
+
         # build id based query
         query = self.build_item_query(query, params)
         if self._is_item_query:
@@ -732,7 +735,7 @@ class FacetCountLink(object):
             facet_params = self._facet_params.copy()
             for key, value in list(facet_params.items()):
                 if key in ['start', 'page', 'rows', 'format', 'diw-version', 'lang', 'callback', 'query', 'q',
-                           'facet.limit', 'facetBoolType', 'facet']:
+                           'facet.limit', 'facetBoolType', 'facet', 'facet.reset']:
                     del facet_params[key]
                 if not value and key in facet_params:
                     del facet_params[key]
@@ -889,7 +892,8 @@ class NaveFacets(object):
             facet_order = settings.FACET_CONFIG
         ordered_dict = collections.OrderedDict()
         for facet in facet_order:
-            ordered_dict[facet.es_field] = facets[facet.es_field]
+            if facet.es_field in facets:
+                ordered_dict[facet.es_field] = facets[facet.es_field]
         return ordered_dict
 
     def _create_facet_query_links(self):
