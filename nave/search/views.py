@@ -372,8 +372,15 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
         if 'id' in request.query_params:
             params = request.query_params.copy()
             id = params.pop('id')[0]
-            if '/' in id and settings.ORG_ID not in id:
-                    id = 'brabantcloud_helmond-hub0_{}'.format(id.split('/', maxsplit=1)[-1])
+            if '/' in id:
+                # get hub_id and redirect
+                from elasticsearch_dsl import Search
+                from .connector import get_es_client
+                res = Search(index=settings.SITE_NAME).using(get_es_client()).query("match", **{'dc_identifier.value': id}).execute()
+                if res.hits:
+                    id = res.hits[0].meta.id
+                else:
+                    return 404
             path = request._request.path.rstrip('/')
             return redirect("{}/{}?{}".format(path, id, params.urlencode()))
         if 'qr' in request.query_params:
