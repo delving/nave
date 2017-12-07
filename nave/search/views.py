@@ -372,6 +372,8 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
         if 'id' in request.query_params:
             params = request.query_params.copy()
             id = params.pop('id')[0]
+            if '/' in id and settings.ORG_ID not in id:
+                    id = 'brabantcloud_helmond-hub0_{}'.format(id.split('/', maxsplit=1)[-1])
             path = request._request.path.rstrip('/')
             return redirect("{}/{}?{}".format(path, id, params.urlencode()))
         if 'qr' in request.query_params:
