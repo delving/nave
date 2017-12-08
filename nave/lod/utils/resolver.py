@@ -1540,6 +1540,47 @@ class RDFRecord:
             sparql_update = """DROP SILENT GRAPH <{graph_uri}>;""".format(graph_uri=self.named_graph)
         return sparql_update
 
+    @staticmethod
+    def is_spec_whitelist(spec, request):
+        """Check if spec is whitelisted to be shown."""
+        request_ip = RDFRecord.get_client_ip(request)
+        ip_dict = settings.IP_SPEC_WHITE_LIST
+        if spec not in ip_dict:
+            return True
+        if request_ip in ip_dict[spec]:
+            return True
+        return False
+
+    @staticmethod
+    def get_client_ip(request):
+        """Get remote ip from request object."""
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip
+
+
+    @staticmethod
+    def get_filters_by_ip(request):
+        """Get hidden query filters by ip."""
+        request_ip = RDFRecord.get_client_ip(request)
+        ip_dict = settings.IP_SPEC_WHITE_LIST
+        ip_spec = defaultdict(list)
+        if not ip_dict:
+            return []
+        for spec, ips in ip_dict.items():
+            for ip in ips:
+                ip_spec[ip].append(spec)
+        from itertools import chain
+        restricted_spec = set(chain.from_iterable(ip_spec.values()))
+        if not request_ip in ip_spec:
+            return restricted_spec
+        else:
+            whitelisted_specs = ip_spec[request_ip]
+            return [spec for spec in restricted_spec if not spec in whitelisted_specs]
+
     def create_es_action(self, doc_type, record_type, action="index",
                          index=settings.SITE_NAME, store=None,
                          context=True, flat=True, exclude_fields=None,

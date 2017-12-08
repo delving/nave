@@ -706,6 +706,10 @@ FACET_CONFIG = [
     FacetConfig('legacy.delving_recordType.raw', _("Record Type")),
 ]
 
+IP_SPEC_WHITE_LIST = {
+    # 'niw-fotoarchief': [""]
+}
+
 
 # CELERY_TASK_RESULT_EXPIRES = 18000
 

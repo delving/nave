@@ -307,6 +307,14 @@ class LoDHTMLView(TemplateView):
         context['about_label'] = target_uri.split('/')[-1]
         context['about_spec'] = target_uri.split('/')[-2]
 
+        is_white_listed = RDFRecord.is_spec_whitelist(
+            context['about_spec'],
+            self.request
+        )
+        if not is_white_listed:
+            context['unknown_graph'] = True
+            return context
+
         context['cached'] = cached
 
         # special query for skos

@@ -402,6 +402,13 @@ class NaveESQuery(object):
         else:
             query = query[:self.size]
 
+        # add ip based filters to hidden filters
+        from nave.lod.utils.resolver import RDFRecord
+        ip_filters = RDFRecord.get_filters_by_ip(request)
+        if ip_filters:
+            for spec in ip_filters:
+                self.hidden_filters.append('-delving_spec:{}'.format(spec))
+
         # add hidden filters
         exclude_filter_list = params.getlist("pop.filterkey")
         hidden_filter_dict = self._filters_as_dict(
@@ -467,7 +474,7 @@ class NaveESQuery(object):
                         hidden_facet_filter_list.append(~Match(**{facet_key: {'query': value, 'type': 'phrase'}}))
                     else:
                         hidden_facet_filter_list.append(Match(**{facet_key: {'query': value, 'type': 'phrase'}}))
-                if facet_bool_type_and:
+                if facet_bool_type_and or key.startswith('-'):
                     q = Q('bool', must=hidden_facet_filter_list)
                     hidden_filter_list.append(q)
                 else:
