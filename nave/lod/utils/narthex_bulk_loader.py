@@ -25,10 +25,15 @@ class NarthexBulkLoader:
     """
     Load EDM records processed by Narthex directly into Nave.
     """
-    narthex_base = "~/NarthexFiles"
 
-    def __init__(self, org_id=settings.ORG_ID):
+    def __init__(
+            self,
+            org_id=settings.ORG_ID,
+            index=settings.SITE_NAME,
+            narthex_base="~/NarthexFiles"
+        ):
         self._org_id = org_id
+        self.narthex_base = narthex_base
 
     @staticmethod
     def is_line_marker(line):
@@ -80,7 +85,8 @@ class NarthexBulkLoader:
                     lines, records = self.process_narthex_file(
                         spec=spec,
                         path=os.path.join(self.spec_processed_path(spec), fname),
-                        console=True
+                        console=True,
+                        index=self.index
                     )
                     total_lines += lines
                     total_records += records
@@ -89,7 +95,10 @@ class NarthexBulkLoader:
                 print("Problem with spec {} and file {}, with error: \n {}".format(spec, fname, ex))
         return processed_specs
 
-    def process_narthex_file(self, spec, store=None, acceptance=False, path=None, console=False, index=settings.SITE_NAME):
+    def process_narthex_file(self, spec, store=None, acceptance=False, path=None, console=False, index=None):
+
+        if not index and not self.index:
+            index = settings.SITE_NAME
 
         start = datetime.now()
 
