@@ -14,6 +14,7 @@ admin.autodiscover()
 urlpatterns = [
     url(r'^', include('nave.void.urls')),
     url(r'^version/$', views.nave_version),
+    url(r'^whoami/$', views.whoami),
     url(r'^', include('nave.webresource.urls')),
     url(r'^crossdomain.xml$', TemplateView.as_view(template_name='crossdomain.xml')),
     url(r'^robots.txt$', TemplateView.as_view(template_name='robots.txt')),

@@ -6,6 +6,19 @@ from django.views.generic import RedirectView
 
 from . import version
 
+def whoami(request):
+    x_forwarded = request.META.get('HTTP_X_FORWARDED_FOR')
+    content = """
+        - forwarded = {}
+        - forward_chain = {}
+        - remote address = {}
+    """.format(
+        x_forwarded,
+        x_forwarded.split(',')[0] if x_forwarded else None,
+        request.META.get('REMOTE_ADDR'),
+    )
+    return HttpResponse(content_type='text/plain', content=content)
+
 
 def nave_version(request):
     project_path = os.path.join(settings.PROJECT_ROOT)
