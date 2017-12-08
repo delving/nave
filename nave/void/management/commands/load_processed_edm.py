@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django.conf import settings
 from django.core.management.base import BaseCommand
 
 
@@ -15,10 +16,17 @@ class Command(BaseCommand):
             type=str,
             help='The full path to the narthex processed xml file.'
         )
+        parser.add_argument(
+            '--index',
+            default=settings.SITE_NAME,
+            help='index to be used.'
+        )
+
 
     def handle(self, *args, **options):
         spec = options['spec']
         processed_xml = options['processed_xml']
+        index = options['index']
 
         self.stdout.write('Starting to loading EDM for spec {}'.format(spec))
         from nave.lod.utils.narthex_bulk_loader import NarthexBulkLoader
@@ -26,7 +34,8 @@ class Command(BaseCommand):
         load_results = loader.process_narthex_file(
             spec=spec,
             path=processed_xml,
-            console=True
+            console=True,
+            index=index
         )
         self.stdout.write("result bulkloading: {}".format(load_results))
         self.stdout.write('Finished to loading EDM for spec {}'.format(spec))

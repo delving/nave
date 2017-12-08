@@ -89,7 +89,7 @@ class NarthexBulkLoader:
                 print("Problem with spec {} and file {}, with error: \n {}".format(spec, fname, ex))
         return processed_specs
 
-    def process_narthex_file(self, spec, store=None, acceptance=False, path=None, console=False):
+    def process_narthex_file(self, spec, store=None, acceptance=False, path=None, console=False, index=settings.SITE_NAME):
 
         start = datetime.now()
 
@@ -123,7 +123,12 @@ class NarthexBulkLoader:
                     record = ElasticSearchRDFRecord(rdf_string=triples, spec=spec)
                     try:
                         record.from_rdf_string(named_graph=named_graph, rdf_string=triples, input_format="xml")
-                        es_actions.append(record.create_es_action(doc_type="void_edmrecord", record_type="mdr", context=True))
+                        es_actions.append(record.create_es_action(
+                            doc_type="void_edmrecord",
+                            record_type="mdr",
+                            context=True,
+                            index=index
+                        ))
                     except Exception as ex:
                         if console:
                             print("problem with {} for spec {} caused by {}".format(triples, spec, ex))

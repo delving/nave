@@ -48,7 +48,7 @@ ES_DISABLED = settings.ES_DISABLED
 
 ES_INDEXES = get_settings('ES_INDEXES', {
     'default': '{}_v1'.format(settings.SITE_NAME),
-    'acceptance': '{}_acceptance_v1'.format(settings.SITE_NAME),
+    'acceptance': '{}_v2'.format(settings.SITE_NAME),
 })
 
 ES_TIMEOUT = settings.ES_TIMEOUT
@@ -348,5 +348,5 @@ if not es_client:
     for index, name in list(ES_INDEXES.items()):
         create_index(
             index_name=name,
-            aliases=name.replace('_v1', '')
+            aliases=name.replace('_v1', '') if '_v1' in name else None
         )
