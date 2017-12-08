@@ -33,6 +33,7 @@ class NarthexBulkLoader:
             narthex_base="~/NarthexFiles"
         ):
         self._org_id = org_id
+        self.index = index
         self.narthex_base = narthex_base
 
     @staticmethod
