@@ -1359,8 +1359,8 @@ class NaveItemResponse(object):
     @property
     def item(self):
         if not self._item:
-            if len(self._results.results) > 0:
-                es_item = self._results.results[0]
+            if self._results.hits.total > 0:
+                es_item = self._results.hits[0]
                 self._item = NaveESItem(es_item)
         return self._item
 

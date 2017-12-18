@@ -458,13 +458,13 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
             mlt=mlt,
             mlt_count=mlt_count,
             mlt_filter_query=mlt_fq_dict,
-            # rdf_record=record
         )
         if response._results.hits.total == 0:
             return HttpResponseNotFound()
         clean_pk = response._results[0].meta.id
         record = ElasticSearchRDFRecord(hub_id=clean_pk)
         record.get_graph_by_id(hub_id=clean_pk)
+        response._rdf_record = record
         renderer_format = request.accepted_renderer.format
         if renderer_format in list(EXTENSION_TO_MIME_TYPE.keys()) and renderer_format not in ['xml', 'json']:
             graph = record.get_graph()
