@@ -706,6 +706,8 @@ FACET_CONFIG = [
     FacetConfig('legacy.delving_recordType.raw', _("Record Type")),
 ]
 
+ID_QUERY_CASE_INSENSITIVE = False
+
 IP_SPEC_WHITE_LIST = {
     # 'niw-fotoarchief': [""]
 }

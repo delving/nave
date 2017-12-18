@@ -292,7 +292,10 @@ class NaveESQuery(object):
             elif self.hub_id_pattern.findall(clean_id):
                 from nave.lod.utils.resolver import RDFRecord
                 clean_id = RDFRecord.clean_local_id(clean_id, is_hub_id=True)
-                query = query.query.query(Q("ids", values=[clean_id]))
+                if settings.ID_QUERY_CASE_INSENSITIVE:
+                    query = query.query.query(self._create_query_string("nave_id.value:{}".format(clean_id)))
+                else:
+                    query = query.query.query(Q("ids", values=[clean_id]))
                 self._is_item_query = True
             else:
                 raise ValueError("unknown clean_id type: {}".format(clean_id))

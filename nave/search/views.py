@@ -12,7 +12,7 @@ from collections import OrderedDict
 
 import requests
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed, JsonResponse
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed, JsonResponse, HttpResponseNotFound
 from django.shortcuts import redirect
 from django.utils.translation import ugettext_lazy as _, activate
 from django.views.generic import ListView, DetailView, RedirectView, View, TemplateView
@@ -451,8 +451,6 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
             if ":" in fq:
                 k, v = fq.split(":", maxsplit=1)
                 mlt_fq_dict[k] = v
-        record = ElasticSearchRDFRecord(hub_id=pk)
-        record.get_graph_by_id(hub_id=pk)
         response = NaveItemResponse(
             query,
             self,
@@ -460,8 +458,13 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
             mlt=mlt,
             mlt_count=mlt_count,
             mlt_filter_query=mlt_fq_dict,
-            rdf_record=record
+            # rdf_record=record
         )
+        if response._results.hits.total == 0:
+            return HttpResponseNotFound()
+        clean_pk = response._results[0].meta.id
+        record = ElasticSearchRDFRecord(hub_id=clean_pk)
+        record.get_graph_by_id(hub_id=clean_pk)
         renderer_format = request.accepted_renderer.format
         if renderer_format in list(EXTENSION_TO_MIME_TYPE.keys()) and renderer_format not in ['xml', 'json']:
             graph = record.get_graph()
@@ -475,7 +478,6 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
             store = rdfstore.get_rdfstore()
             graph, _ = RDFModel.get_context_graph(store, named_graph=record.named_graph)
         if not graph:
-            from django.http import HttpResponseNotFound
             return HttpResponseNotFound()
         mode = get_mode(self.default_converter)
         bindings = GraphBindings(about_uri=target_uri, graph=graph)

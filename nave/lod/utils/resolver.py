@@ -1624,6 +1624,12 @@ class RDFRecord:
              'raw': self.get_spec_name(),
              'lang': None}
         ]
+        index_doc["nave_id"] = [
+            {'@type': "Literal",
+             'value': self.hub_id,
+             'raw': self.hub_id,
+             'lang': None}
+        ]
         logger.debug(index_doc)
         mapping = {
             '_op_type': action,
