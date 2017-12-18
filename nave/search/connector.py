@@ -346,7 +346,11 @@ if not es_client:
         )
         sys.exit(1)
     for index, name in list(ES_INDEXES.items()):
+        if name in [settings.SITE_NAME] and es_client.indices.get_alias(name=name):
+            alias = None
+        else:
+            alias = name.replace('_v1', '') if '_v1' in name else None
         create_index(
             index_name=name,
-            aliases=name.replace('_v1', '') if '_v1' in name else None
+            aliases=alias
         )
