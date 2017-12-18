@@ -13,7 +13,7 @@ urlpatterns = [
     url(r'^vc/(?P<slug>([^/]*?))/search/$', views.VirtualCollectionSearchView.as_view({'get': 'get'}),
          name="virtual_collection_search"),
     # todo test if this search api returns the right information
-    url(r'^vc/(?P<slug>([^/]*?))/api/$', views.V1SearchListApiView.as_view({'get': 'list'}),
+    url(r'^vc/(?P<slug>([^/]*?))/api/$', views.V1SearchListApiView.as_view({'get': 'get'}),
         name="virtual_collection_api"),
     url(r'^vc/(?P<slug>([^/]*?))/$', views.VirtualCollectionDetailView.as_view(),
         name="virtual_collection_detail"),
