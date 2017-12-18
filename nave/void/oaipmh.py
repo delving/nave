@@ -390,6 +390,9 @@ class ElasticSearchOAIProvider(OAIProvider):
         self.spec = spec
         self.sort_key = None
 
+    def get(self, request, *args, **kwargs):
+        return super(ElasticSearchOAIProvider, self).get(request, *args, **kwargs)
+
     def get_next_search_cursor(self):
         return {'search_after': ast.literal_eval(self.sort_key.replace('%20', ' '))}
 
@@ -473,10 +476,11 @@ class ElasticSearchOAIProvider(OAIProvider):
         if self.spec:
             s = s.query("match", **{'system.spec.raw': self.spec})
         if self.query:
-            if 'query' in self.query:
-                s = s.query(self.query.get('query'))
-            if 'filter' in self.query:
-                s = s.query(self.query.get('filter'))
+            query_dict = self.query.to_dict()
+            if 'query' in query_dict:
+                s = s.query(query_dict.get('query'))
+            if 'filter' in query_dict:
+                s = s.filter(query_dict.get('filter'))
         if modified_from:
             s = s.filter("range", **{"system.modified_at": {"gte": modified_from}})
         if modified_until:

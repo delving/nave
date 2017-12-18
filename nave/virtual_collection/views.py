@@ -75,6 +75,3 @@ class VirtualCollectionPmhProvider(ElasticSearchOAIProvider):
         )
         self.query = query.build_query_from_request(request=request)
         return super(VirtualCollectionPmhProvider, self).get(request, *args, **kwargs)
-
-
-
