@@ -402,15 +402,18 @@ class RDFModel(TimeStampedModel, GroupOwned):
             else:
                 values = [value]
             for value in values:
-                if type(value) in [str, float, int, bool] and value:
+                if type(value) in [str, float, int] and value:
                     if isinstance(value, str) and any([value.startswith(uri_prefix) for uri_prefix in ["http", "urn"]]):
                         value = URIRef(value)
                     else:
                         value = Literal(value)
+                elif type(value) in [bool]:
+                        value = Literal(value)
                 elif type(value) in [Literal, URIRef]:
                     value = value
                 else:
-                    logger.warn("Unsupported datatype {} for value {}".format(type(value), value))
+                    if value != None:
+                        logger.warn("Unsupported datatype {} for value {} in {}".format(type(value), value, predicate))
                     value = None
                 if value:
                     graph.add((subject, predicate, value))
