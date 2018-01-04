@@ -1266,6 +1266,17 @@ class RDFRecord:
         return graph
 
     @staticmethod
+    def has_webresource_api_call(wr_list):
+        if not settings.RESOLVE_WEBRESOURCES_VIA_RDF:
+            return False
+        if not settings.RESOLVE_WEBRESOURCES_VIA_MEDIAMANAGER:
+            return False
+        if not settings.LOCAL_RESOLVE_WEBRESOURCES_VIA_MEDIAMANAGER:
+            return False
+        return any(str(wr).startswith('urn:') for wr in wr_list)
+
+
+    @staticmethod
     def resolve_webresource_uris(graph, source_check=True, bindings=None):
         """Add DeepZoom, and thumbnail derivatives to WebResource."""
         from rdflib.namespace import RDF
@@ -1295,7 +1306,8 @@ class RDFRecord:
                     graph.remove((wr, p, o))
             else:
                 wr_list.append(wr)
-        has_api_call = any(str(wr).startswith('urn:') for wr in wr_list)
+
+        has_api_call = RDFRecord.has_webresource_api_call(wr_list)
 
         if wr_list and has_api_call:
             # remove all others
@@ -1306,9 +1318,10 @@ class RDFRecord:
                 leave=0,
                 predicates=[EDM.hasView]
             )
+
         for wr in wr_list:
-            api_call = str(wr).startswith('urn:')
-            if api_call and about_uri:
+            api_call = RDFRecord.has_webresource_api_call([str(wr)])
+            if api_call and about_uri and settings.LOCAL_RESOLVE_WEBRESOURCES_VIA_MEDIAMANAGER:
                 uri = str(wr)
                 spec = uri.split('/')[0].replace('urn:', '')
                 from nave.webresource.webresource import WebResource
@@ -1396,15 +1409,16 @@ class RDFRecord:
                             EDM.object,
                             URIRef(thumb_small)
                         ))
-            else:
-                if bindings:
-                    web_resources = bindings.get_sorted_webresources()
-                    for wr in web_resources:
-                        graph.add((
-                            about_uri,
-                            EDM.hasView,
-                            wr.subject_uri
-                        ))
+            # elif api_call and about_uri and not settings.RESOLVE_WEBRESOURCES_VIA_MEDIAMANAGER:
+                # pass
+            if bindings:
+                web_resources = bindings.get_sorted_webresources()
+                for wr in web_resources:
+                    graph.add((
+                        about_uri,
+                        EDM.hasView,
+                        wr.subject_uri
+                    ))
         return wr_list, graph
 
     @staticmethod
@@ -1463,7 +1477,7 @@ class RDFRecord:
         # todo add code for retrieving info from media manager
         if with_mediamanager:
             # use media manager
-            webresource_graph = None
+            webresource_graph = Graph()
             for wr in graph.subjects(predicate=RDF.type, object=EDM.WebResource):
                 if str(wr).startswith('urn:'):
                     full_url = '{}/api/webresource/{}/{}'.format(
@@ -1472,13 +1486,16 @@ class RDFRecord:
                         str(wr)
                     )
                     try:
-                        #webresource_graph.parse(full_url)
-                        pass
+                        webresource_graph.parse(full_url)
+                        # todo
+                        print(webresource_graph.serialize())
+                        # pass
                     except Exception as ex:
                         logger.error("Unable to parse {} because of {}".format(
                             full_url,
                             ex
                         ))
+                        break
             if webresource_graph:
                 graph, _ = self.reduce_duplicates(graph)
                 # add EDM.IsShownBy EDM.Object first from graph
@@ -1494,7 +1511,6 @@ class RDFRecord:
             context_graph, nr_levels = self.get_context_graph_via_query(target_uri=self.source_uri)
             if context_graph:
                 graph = graph + context_graph
-
         _, graph = self.resolve_webresource_uris(
             graph,
             source_check=source_check,
@@ -1618,12 +1634,13 @@ class RDFRecord:
         if exclude_fields:
             index_doc = {k: v for k, v in index_doc.items() if k not in exclude_fields}
         # add delving spec for default searchability
-        index_doc["delving_spec"] = [
-            {'@type': "Literal",
-             'value': self.get_spec_name(),
-             'raw': self.get_spec_name(),
-             'lang': None}
-        ]
+        if not 'delving_spec' in index_doc:
+            index_doc["delving_spec"] = [
+                {'@type': "Literal",
+                'value': self.get_spec_name(),
+                'raw': self.get_spec_name(),
+                'lang': None}
+            ]
         index_doc["nave_id"] = [
             {'@type': "Literal",
              'value': self.hub_id,
