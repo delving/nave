@@ -1347,10 +1347,6 @@ class RDFRecord:
                         api_call,
                         settings.WEB_RESOURCE_THUMB_LARGE
                     )
-                    source_download = "{}&docType=thumbnail&width={}".format(
-                        api_call,
-                        settings.WEB_RESOURCE_MAX_SIZE
-                    )
                     graph.add((
                         wr,
                         NAVE.thumbSmall,
@@ -1366,19 +1362,6 @@ class RDFRecord:
                         NAVE.thumbnail,
                         Literal(thumb_small)
                     ))
-                    allow_source_download = graph.objects(
-                        subject=wr,
-                        predicate=NAVE.allowSourceDownload
-                    )
-                    add_source_download = all(
-                        str(o).lower() == 'true' for o in allow_source_download
-                    )
-                    if add_source_download:
-                        graph.add((
-                            wr,
-                            NAVE.sourceDownload,
-                            Literal(source_download)
-                        ))
                     deepzoom = reverse(
                         'webresource_deepzoom_resolve',
                         kwargs={'webresource': str(wr).replace('urn:', '')}
@@ -1409,6 +1392,21 @@ class RDFRecord:
                             EDM.object,
                             URIRef(thumb_small)
                         ))
+            allow_source_download = graph.objects(
+                subject=wr,
+                predicate=NAVE.allowSourceDownload
+            )
+            add_source_download = all(
+                str(o).lower() == 'true' for o in allow_source_download
+            )
+            if add_source_download:
+                large_thumb = bindings.get_first('nave_thumbLarge')
+                if large_thumb:
+                    graph.add((
+                        wr,
+                        NAVE.sourceDownload,
+                        large_thumb.value
+                    ))
             # elif api_call and about_uri and not settings.RESOLVE_WEBRESOURCES_VIA_MEDIAMANAGER:
                 # pass
             if bindings:
