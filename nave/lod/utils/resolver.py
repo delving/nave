@@ -889,7 +889,7 @@ class RDFObject:
         """ give back the value if the object_type is a literal """
         if self.is_literal:
             return self._rdf_object
-        elif self.is_bnode:
+        elif self.is_bnode and self.get_resource:
             label = self.get_resource.get_label()
             if label:
                 label = label[0]
