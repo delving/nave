@@ -1,6 +1,6 @@
 {% load staticfiles %}
 
-jQuery(document).ready(function($) {
+jQuery(document).ready(function ($) {
     jQuery(document).delvingInstant({
         endPoint: "{{ endpoint }}",
         orgId: "{{ org_id }}",
