@@ -34,6 +34,7 @@ from django.conf import settings
 from django.urls import reverse
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search, Q
+from natsort import natsorted
 from rdflib import ConjunctiveGraph
 from rdflib import Graph, URIRef, BNode, Literal, Namespace
 from rdflib.namespace import RDF, SKOS, RDFS, DC, FOAF
@@ -410,7 +411,8 @@ class GraphBindings:
 
         thumbnail = None
         for thumb in self.get_thumbnail_fields():
-            thumbnails = list(self._graph.objects(predicate=thumb))
+            print(self._graph.serialize(format='nt'))
+            thumbnails = [o for o in self._graph.objects(predicate=thumb)]
             if len(thumbnails) == 0:
                 continue
             else:
@@ -480,7 +482,7 @@ class GraphBindings:
                     if key in ['nave_deepZoomUrl', 'nave_thumbSmall', 'nave_thumbLarge', 'nave_thumbnail', 'edm_hasView']:
                         index_doc[key] = val
                     else:
-                        index_doc[key] = sorted(val, key=itemgetter('raw'))
+                        index_doc[key] = natsorted(val, key=itemgetter('raw'))
         return index_doc
 
     def to_index_doc(self):
@@ -618,7 +620,7 @@ class RDFResource:
         """Return the nave:resourceSortOrder key."""
         order = self.get_first('nave_resourceSortOrder')
         if order:
-            return int(str(order.value))
+            return int(str(order[0].value))
         return 0
 
     def get_list(self, search_label):
@@ -660,7 +662,7 @@ class RDFResource:
                 if key in [URIRef('http://www.europeana.eu/schemas/edm/hasView')] and are_resources:
                     items[key] = sorted(val, key=lambda k: k.get_resource.get_sort_key())
                 else:
-                    items[key] = sorted(val, key=lambda k: k.value)
+                    items[key] = natsorted(val, key=lambda k: k.value)
         if sort:
             items = OrderedDict(sorted(list(items.items()), key=lambda t: t[0]))
         if include_list:
@@ -1162,8 +1164,8 @@ class RDFRecord:
             self._hub_id = self._hub_id.replace(':', '-')
         return self._hub_id
 
-    def get_bindings(self, graph=None):
-        if not self._bindings:
+    def get_bindings(self, graph=None, force=False):
+        if not self._bindings or force:
             if graph is None:
                 graph = self.get_graph()
             if graph:
@@ -1476,6 +1478,7 @@ class RDFRecord:
         if with_mediamanager:
             # use media manager
             webresource_graph = Graph()
+            wr_subjects = []
             for wr in graph.subjects(predicate=RDF.type, object=EDM.WebResource):
                 if str(wr).startswith('urn:'):
                     full_url = '{}/api/webresource/{}/{}'.format(
@@ -1485,8 +1488,10 @@ class RDFRecord:
                     )
                     try:
                         webresource_graph.parse(full_url)
+                        if str(wr).endswith('__'):
+                            graph.remove((wr, RDF.type, EDM.WebResource))
                         # todo
-                        print(webresource_graph.serialize())
+                        # print(webresource_graph.serialize())
                         # pass
                     except Exception as ex:
                         logger.error("Unable to parse {} because of {}".format(
@@ -1496,6 +1501,7 @@ class RDFRecord:
                         break
             if webresource_graph:
                 graph, _ = self.reduce_duplicates(graph)
+                    # graph.remove((wr, RDF.type, EDM.WebResource))
                 # add EDM.IsShownBy EDM.Object first from graph
                 graph = graph + webresource_graph
         if with_webresource:
@@ -1627,7 +1633,7 @@ class RDFRecord:
             self._graph = graph
             self._rdf_string = None
 
-        bindings = self.get_bindings(graph=graph)
+        bindings = self.get_bindings(graph=graph, force=True)
         index_doc = bindings.to_flat_index_doc() if flat else bindings.to_index_doc()
         if exclude_fields:
             index_doc = {k: v for k, v in index_doc.items() if k not in exclude_fields}
@@ -1654,6 +1660,9 @@ class RDFRecord:
             '_source': index_doc
         }
         thumbnail = bindings.get_about_thumbnail
+        print("bla bla", thumbnail)
+        print(graph.serialize(format='nt'))
+        print(list(graph.objects(predicate=URIRef('http://schemas.delving.eu/nave/terms/thumbLarge'))))
         mapping['_source']['system'] = {
             'slug': self.hub_id,
             'spec': self.get_spec_name(),
