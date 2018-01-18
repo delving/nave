@@ -411,7 +411,7 @@ class GraphBindings:
 
         thumbnail = None
         for thumb in self.get_thumbnail_fields():
-            print(self._graph.serialize(format='nt'))
+            # print(self._graph.serialize(format='nt'))
             thumbnails = [o for o in self._graph.objects(predicate=thumb)]
             if len(thumbnails) == 0:
                 continue
@@ -1660,9 +1660,9 @@ class RDFRecord:
             '_source': index_doc
         }
         thumbnail = bindings.get_about_thumbnail
-        print("bla bla", thumbnail)
-        print(graph.serialize(format='nt'))
-        print(list(graph.objects(predicate=URIRef('http://schemas.delving.eu/nave/terms/thumbLarge'))))
+        # print("bla bla", thumbnail)
+        # print(graph.serialize(format='nt'))
+        # print(list(graph.objects(predicate=URIRef('http://schemas.delving.eu/nave/terms/thumbLarge'))))
         mapping['_source']['system'] = {
             'slug': self.hub_id,
             'spec': self.get_spec_name(),
