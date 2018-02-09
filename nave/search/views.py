@@ -371,7 +371,7 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
         # if has id redirect to detail view
         if 'id' in request.query_params:
             params = request.query_params.copy()
-            id = params.pop('id')[0]
+            id = params.pop('id')[0].rstrip('/')
             if '/' in id:
                 # get hub_id and redirect
                 from elasticsearch_dsl import Search
