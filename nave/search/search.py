@@ -1348,6 +1348,9 @@ class NaveItemResponse(object):
                         "_id": doc_id
                     }]
             )[:self._mlt_count]
+            if self._mlt_filter_query:
+                for k, v in self._mlt_filter_query.items():
+                    mlt_query = mlt_query.filter("term", **{k: v})
             hits = mlt_query.execute()
             items = []
             for item in hits:
