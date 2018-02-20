@@ -22,7 +22,7 @@ services:
     environment:
       - ADMIN_PASSWORD=pw123
   postgresql:
-    image: postgres:9.3.21
+    image: mdillon/postgis:9.3
     restart: always
     ports:
       - "5432:5432"
