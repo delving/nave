@@ -328,6 +328,8 @@ class ProxyResource(TimeStampedModel):
             'frequency': 0,
             'label': original_label if original_label is not None else label
         }
+        if len(resource_dict['label']) > 199:
+            resource_dict['label'] = resource_dict['label'][:199]
         proxy_resource, created = ProxyResource.objects.update_or_create(**resource_dict)
         return proxy_resource
 
