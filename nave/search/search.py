@@ -1342,9 +1342,9 @@ class NaveItemResponse(object):
                     min_term_freq=1,
                     max_query_terms=12,
                     include=False,
-                    docs=[{
+                    like=[{
                         "_index": self._index,
-                        "_type": doc_type,
+                        # "_type": doc_type,
                         "_id": doc_id
                     }]
             )[:self._mlt_count]

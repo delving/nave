@@ -1900,9 +1900,9 @@ class ElasticSearchRDFRecord(RDFRecord):
             min_term_freq=1,
             max_query_terms=12,
             include=False,
-            docs=[{
+            like=[{
                 "_index": store_name,
-                "_type": doc_type,
+                # "_type": doc_type,
                 "_id": hub_id
             }]
         )[:mlt_count]
