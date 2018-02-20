@@ -116,9 +116,9 @@ class ProxyResourceField(TimeStampedModel):
     The goal of the ProxyResource is to function as the anker point for mappings from Thesauri or other enrichments.
     """
 
-    property_uri = models.URLField()
-    search_label = models.CharField(max_length=56)
-    dataset_uri = models.URLField()
+    property_uri = models.URLField(max_length=2000)
+    search_label = models.CharField(max_length=500)
+    dataset_uri = models.URLField(max_length=2000)
     dataset = models.ForeignKey('DataSet', blank=True, null=True)
 
     class Meta:
@@ -171,8 +171,8 @@ class ProxyResourceField(TimeStampedModel):
 
 class ProxyMapping(TimeStampedModel):
     user_uri = models.URLField()
-    proxy_resource_uri = models.URLField()
-    skos_concept_uri = models.URLField()
+    proxy_resource_uri = models.URLField(max_length=2000)
+    skos_concept_uri = models.URLField(max_length=2000)
 
     user = models.ForeignKey(User, blank=True, null=True)
     proxy_resource = models.ForeignKey('ProxyResource', blank=True, null=True)
@@ -227,7 +227,7 @@ class ProxyMapping(TimeStampedModel):
 
 
 class ProxyResource(TimeStampedModel):
-    proxy_uri = models.URLField(unique=True, blank=False, null=False)
+    proxy_uri = models.URLField(unique=True, blank=False, null=False, max_length=2000)
     proxy_field = models.ForeignKey(ProxyResourceField)
     dataset = models.ForeignKey('DataSet')
     frequency = models.IntegerField(default=0)
