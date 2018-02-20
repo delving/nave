@@ -362,9 +362,10 @@ class DefaultAPIV2Converter(BaseConverter):
             if k.startswith("narthex_"):
                 del output_doc[k]
                 continue
-            for values in output_doc[k]:
-                if 'raw' in values:
-                    del values['raw']
+            if isinstance(k, list):
+                for values in output_doc[k]:
+                    if 'raw' in values:
+                        del values['raw']
         return collections.OrderedDict(sorted(output_doc.items()))
 
 
