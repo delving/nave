@@ -1478,6 +1478,7 @@ class RDFRecord:
         if with_mediamanager:
             # use media manager
             webresource_graph = Graph()
+            webresource_graph.namespace_manager = namespace_manager
             wr_subjects = []
             for wr in graph.subjects(predicate=RDF.type, object=EDM.WebResource):
                 if str(wr).startswith('urn:'):
@@ -1490,19 +1491,14 @@ class RDFRecord:
                         webresource_graph.parse(full_url)
                         if str(wr).endswith('__'):
                             graph.remove((wr, RDF.type, EDM.WebResource))
-                        # todo
-                        # print(webresource_graph.serialize())
-                        # pass
                     except Exception as ex:
                         logger.error("Unable to parse {} because of {}".format(
                             full_url,
                             ex
                         ))
-                        break
             if webresource_graph:
                 graph, _ = self.reduce_duplicates(graph)
-                    # graph.remove((wr, RDF.type, EDM.WebResource))
-                # add EDM.IsShownBy EDM.Object first from graph
+                # TODO: add EDM.IsShownBy EDM.Object first from graph
                 graph = graph + webresource_graph
         if with_webresource:
             webresource_graph = RDFRecord.get_webresource_context_graph(target_uri=self.source_uri)
