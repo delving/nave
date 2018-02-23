@@ -450,7 +450,7 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
         for fq in mlt_filter_queries:
             if ":" in fq:
                 k, v = fq.split(":", maxsplit=1)
-                if not key.endswith(".raw"):
+                if not k.endswith(".raw"):
                     k = "{}.raw".format(k)
                 mlt_fq_dict[k] = v
         response = NaveItemResponse(
