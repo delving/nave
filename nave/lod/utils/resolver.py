@@ -1898,12 +1898,14 @@ class ElasticSearchRDFRecord(RDFRecord):
             include=False,
             like=[{
                 "_index": store_name,
-                # "_type": doc_type,
+                "_type": doc_type,
                 "_id": hub_id
             }]
         )[:mlt_count]
         if filter_query:
             for k, v in filter_query.items():
+                if not k.endswith('.raw'):
+                    k = "{}.raw".format(k)
                 mlt_query = mlt_query.filter("term", **{k: v})
         hits = mlt_query.execute()
         items = []

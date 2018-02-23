@@ -1344,12 +1344,14 @@ class NaveItemResponse(object):
                     include=False,
                     like=[{
                         "_index": self._index,
-                        # "_type": doc_type,
+                        "_type": doc_type,
                         "_id": doc_id
                     }]
             )[:self._mlt_count]
             if self._mlt_filter_query:
                 for k, v in self._mlt_filter_query.items():
+                    if not k.endswith('.raw'):
+                        k = "{}.raw".format(k)
                     mlt_query = mlt_query.filter("term", **{k: v})
             hits = mlt_query.execute()
             items = []
