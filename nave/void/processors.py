@@ -299,12 +299,12 @@ class BulkApiProcessor:
         if self.es_actions:
             es_actions, sparql_updates = self.diff_by_content_hash()
             self.bulk_index(es_actions)
-            if sparql_updates and settings.RDF_STORE_TRIPLES:
-                tasks.process_sparql_updates.apply_async(
-                    (sparql_updates, None),
-                    routing_key=settings.RECORD_QUEUE,
-                    queue=settings.RECORD_QUEUE
-                )
+            # if sparql_updates and settings.RDF_STORE_TRIPLES:
+                # tasks.process_sparql_updates.apply_async(
+                    # (sparql_updates, None),
+                    # routing_key=settings.RECORD_QUEUE,
+                    # queue=settings.RECORD_QUEUE
+                # )
 
         logger.info("Done Processing with {} graphs from {}.".format(self.records_stored, len(self.api_requests)))
         return self._processing_statistics()
@@ -357,7 +357,8 @@ class BulkApiProcessor:
                 from nave.lod.utils.resolver import ElasticSearchRDFRecord
                 record = ElasticSearchRDFRecord(spec=self.spec, rdf_string=graph_ntriples)
                 try:
-                    rdf_format = record.DEFAULT_RDF_FORMAT if "<rdf:RDF" not in graph_ntriples else "xml"
+                    # rdf_format = record.DEFAULT_RDF_FORMAT if "<rdf:RDF" not in graph_ntriples else "xml"
+                    rdf_format = settings.RDF_BULK_FORMAT
                     record.from_rdf_string(
                         rdf_string=graph_ntriples,
                         named_graph=record_graph_uri,

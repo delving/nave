@@ -530,6 +530,8 @@ RDF_DYNAMIC_CACHE = True
 
 RDF_DEFAULT_FORMAT = 'nt'
 
+RDF_BULK_FORMAT = 'json-ld'
+
 RDF_SUPPORTED_NAMESPACES = {
     'http://purl.org/abm/sen': 'abm',
     'http://www.europeana.eu/schemas/ese/': 'europeana',
