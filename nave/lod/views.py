@@ -207,14 +207,15 @@ class LoDDataView(View):
                     es_action = local_object.create_es_action(doc_type='test', record_type='test')
                     content = json.dumps(es_action)
                     rdf_format = 'json-ld'
+                elif mode in ['posthook']:
+                    for hook in settings.INDEX_POST_HOOKS:
+                        content = hook(graph=graph)
+                        rdf_format = 'json-ld'
                 else:
-                    if mode in ['posthook']:
-                        for hook in settings.INDEX_POST_HOOKS:
-                            hook(graph=graph)
-                    content = graph.serialize(format=rdf_format)
+                    content = graph.serialize(format=rdf_format, context=settings.JSON_LD_CONTEXT)
             else:
                 graph = local_object.get_graph()
-                content = graph.serialize(format=rdf_format)
+                content = graph.serialize(format=rdf_format, context=settings.JSON_LD_CONTEXT)
         elif self.store.ask(uri=resolved_uri):
             target_uri = resolved_uri
             content = self.get_content(target_uri, rdf_format, request)

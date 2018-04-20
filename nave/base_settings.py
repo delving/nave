@@ -512,6 +512,8 @@ SERIALIZATION_MODULES = {
 # ########################
 INDEX_POST_HOOKS = []
 
+SAVE_POST_HOOKS = []
+
 ES_ACTION_SIZE = 500
 
 LEGACY_ORPHAN_CONTROL = False
@@ -521,6 +523,8 @@ GEO_STREAMING_RESPONSE = 2500
 RDF_USE_LOCAL_GRAPH = True
 
 RDF_STORE_TRIPLES = False
+
+ES_BULK_PROCESSOR = False
 
 RDF_DYNAMIC_CACHE = True
 
@@ -565,6 +569,13 @@ for ns, prefix in RDF_SUPPORTED_NAMESPACES.items():
        if not ns.endswith('#'):
             ns = '{}/'.format(ns)
     RDF_SUPPORTED_PREFIXES[prefix].append(ns)
+
+JSON_LD_CONTEXT = defaultdict(str)
+for ns, prefix in RDF_SUPPORTED_NAMESPACES.items():
+    if not ns.endswith('/'):
+       if not ns.endswith('#'):
+            ns = '{}/'.format(ns)
+    RDF_SUPPORTED_PREFIXES[prefix] = ns
 
 RDF_EXCLUDED_PROPERTIES = [
     "http://schemas.delving.eu/narthex/terms/datasetMapToPrefix",
