@@ -203,7 +203,10 @@ class XMLRenderer(BaseRenderer):
             prefix, *label = search_label.split('_')
             uri = settings.RDF_SUPPORTED_PREFIXES.get(prefix, None)
             if uri:
-                uri = uri[0].rstrip('/')
+                if isinstance(uri, list):
+                    uri = uri[0].rstrip('/')
+                else:
+                    uri = uri.rstrip('/')
             else:
                 return None
             return prefix, uri, "_".join(label)
