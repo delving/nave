@@ -376,7 +376,7 @@ class LoDHTMLView(TemplateView):
         context['alt'] = ""
         context['points'] = RDFModel.get_geo_points(graph)
         # DEEPZOOM VALUE(S)
-        zooms = graph_bindings.get_list('nave_deepZoomUrl')
+        zooms = graph_bindings.get_list('nave_deepZoomUrl', False)
         if zooms:
             context['deepzoom_count'] = len(zooms)
             context['deepzoom_urls'] = [zoom.value.value for zoom in zooms]
