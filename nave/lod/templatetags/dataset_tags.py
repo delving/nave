@@ -50,6 +50,12 @@ def get_resource_fields(context, fieldname, local_bindings=None):
         local_bindings = context['resources']
     return local_bindings.get_list(fieldname)
 
+@register.assignment_tag(takes_context=True)
+def get_unsorted_resource_fields(context, fieldname, local_bindings=None):
+    if not local_bindings:
+        local_bindings = context['resources']
+    return local_bindings.get_list(fieldname, False)
+
 
 @register.simple_tag(takes_context=True)
 def get_resolved_uri(context, uri):
