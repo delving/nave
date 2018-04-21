@@ -1100,7 +1100,7 @@ class RDFRecord:
         g = ConjunctiveGraph(identifier=graph_identifier)
         from nave.lod import namespace_manager
         g.namespace_manager = namespace_manager
-        if rdf_string.startswith("<"):
+        if rdf_string.startswith('<') or rdf_string.startswith('_:'):
             input_format = 'nt'
         else:
             input_format = 'json-ld'
