@@ -10,16 +10,19 @@ from . import version
 
 def whoami(request):
     x_forwarded = request.META.get('HTTP_X_FORWARDED_FOR')
+    ip_filters = RDFRecord.get_filters_by_ip(request)
     content = """
         - forwarded = {}
         - forward_chain = {}
         - remote address = {}
         - ip_filter = {}
+        - filters = []
     """.format(
         x_forwarded,
         x_forwarded.split(',')[0] if x_forwarded else None,
         request.META.get('REMOTE_ADDR'),
-        RDFRecord.get_client_ip(request)
+        RDFRecord.get_client_ip(request),
+        ip_filters
     )
     return HttpResponse(content_type='text/plain', content=content)
 
