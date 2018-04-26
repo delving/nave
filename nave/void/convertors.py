@@ -318,6 +318,8 @@ class BaseConverter(object):
                     del output_doc['europeana_isShownAt']
             else:
                 output_doc["delving_landingpage"] = output_doc.get('europeana_isShownAt')
+        if 'dc_title' in output_doc:
+            output_doc['delving_title'] = output_doc.get('dc_title')
         output_doc["delving_hasLandingPage"] = ['europeana_isShownAt' in output_doc]
         output_doc["europeana_collectionName"] = [spec]
         if 'legacy' in index_doc:
