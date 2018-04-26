@@ -4,6 +4,8 @@ from django.conf import settings
 from django.http.response import HttpResponse
 from django.views.generic import RedirectView
 
+from nave.lod.utils.resolver import RDFRecord
+
 from . import version
 
 def whoami(request):
@@ -12,10 +14,12 @@ def whoami(request):
         - forwarded = {}
         - forward_chain = {}
         - remote address = {}
+        - ip_filter = {}
     """.format(
         x_forwarded,
         x_forwarded.split(',')[0] if x_forwarded else None,
         request.META.get('REMOTE_ADDR'),
+        RDFRecord.get_client_ip(request)
     )
     return HttpResponse(content_type='text/plain', content=content)
 
