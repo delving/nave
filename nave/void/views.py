@@ -197,7 +197,7 @@ class DataSetStatistics:
         from elasticsearch_dsl import Search, A
         from nave.search.connector import get_es_client
         client = get_es_client()
-        s = Search(using=client)
+        s = Search(using=client).index(settings.ORG_ID)
         a = A('terms', field='delving_spec.raw', size=500)
         s.aggs.bucket('delving_spec', a)
         response = s.execute()
