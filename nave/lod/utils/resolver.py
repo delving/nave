@@ -1013,7 +1013,7 @@ class RDFObject:
 class RDFRecord:
     """"""
 
-    DEFAULT_RDF_FORMAT = "nt" if not settings.RDF_DEFAULT_FORMAT else settings.RDF_DEFAULT_FORMAT
+    DEFAULT_RDF_FORMAT = "json-ld" if not settings.RDF_DEFAULT_FORMAT else settings.RDF_DEFAULT_FORMAT
 
     def __init__(self, hub_id=None, source_uri=None,
                  spec=None, rdf_string=None,
@@ -1100,7 +1100,9 @@ class RDFRecord:
         g = ConjunctiveGraph(identifier=graph_identifier)
         from nave.lod import namespace_manager
         g.namespace_manager = namespace_manager
-        if rdf_string.startswith('<') or rdf_string.startswith('_:'):
+        if rdf_string.startswith('<rdf:RDF'):
+            input_format = 'xml'
+        elif rdf_string.startswith('<') or rdf_string.startswith('_:'):
             input_format = 'nt'
         else:
             input_format = 'json-ld'
@@ -1599,7 +1601,8 @@ class RDFRecord:
             return restricted_spec
         else:
             whitelisted_specs = ip_spec[request_ip]
-            return [spec for spec in restricted_spec if not spec in whitelisted_specs]
+            spec_filters = [spec for spec in restricted_spec if not spec in whitelisted_specs]
+            return spec_filters
 
     def create_es_action(self, doc_type, record_type, action="index",
                          index=settings.SITE_NAME, store=None,
