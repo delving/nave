@@ -623,6 +623,7 @@ class NaveESQuery(object):
 
         import json
         logger.debug(json.dumps(query.to_dict()))
+        # print(json.dumps(query.to_dict(), indent=4, sort_keys=True))
         return query
 
     def check_facet_key(self, facet, key):
