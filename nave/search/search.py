@@ -3,6 +3,7 @@ import collections
 import itertools
 import logging
 import re
+import copy
 import urllib.error
 import urllib.parse
 from collections import defaultdict, namedtuple
@@ -335,6 +336,14 @@ class NaveESQuery(object):
         query = self.query
         if isinstance(request, Request):
             request = request._request
+
+        # add ip based filters to hidden filters
+        from nave.lod.utils.resolver import RDFRecord
+        ip_filters = RDFRecord.get_filters_by_ip(request)
+        if ip_filters:
+            for spec in ip_filters:
+                self.hidden_filters.append('-delving_spec:{}'.format(spec))
+
         query_string = raw_query_string if raw_query_string else request.META['QUERY_STRING']
         if self.converter is not None:
             query_dict = self.apply_converter_rules(query_string, self.converter)
@@ -405,12 +414,6 @@ class NaveESQuery(object):
         else:
             query = query[:self.size]
 
-        # add ip based filters to hidden filters
-        from nave.lod.utils.resolver import RDFRecord
-        ip_filters = RDFRecord.get_filters_by_ip(request)
-        if ip_filters:
-            for spec in ip_filters:
-                self.hidden_filters.append('-delving_spec:{}'.format(spec))
 
         # add hidden filters
         exclude_filter_list = params.getlist("pop.filterkey")
