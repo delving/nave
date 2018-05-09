@@ -208,8 +208,10 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
     def get_query(self, request, index_name, doc_types, facet_config_list, filters, demote, hidden_filters=None,
                   cluster_geo=False, geo_query=False, converter=None, acceptance=False, *args, **kwargs):
 
-        if hidden_filters is None:
+        if hidden_filters is None and self.hidden_filters:
             hidden_filters = self.hidden_filters
+        else:
+            hidden_filters = []
 
         if hasattr(settings, 'ES_ROWS'):
             s_rows = settings.ES_ROWS
