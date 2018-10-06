@@ -895,7 +895,7 @@ class RDFObject:
             label = self.get_resource.get_label()
             if label:
                 label = label[0]
-                if label.language:
+                if hasattr(label, 'language') and label.language:
                     self._lang = label.language
                 return label
             else:
@@ -914,7 +914,7 @@ class RDFObject:
             default=[("raw", Literal(str(rdf_object)))]
         )
         label = label[0][1]
-        if label.language:
+        if hasattr(label, 'language') and label.language:
             self._lang = label.language
         return label
 
