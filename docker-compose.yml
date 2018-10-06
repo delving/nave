@@ -25,6 +25,13 @@ services:
     image: mdillon/postgis:9.3
     restart: always
     ports:
-      - "5432:5432"
+      - "5433:5432"
     environment:
       POSTGRES_PASSWORD: pw123
+  #app:
+    ##build: .
+    #image: delving/nave:latest
+    #ports:
+        #- "8000:8000"
+    #environment:
+        #- DJANGO_SETTINGS_MODULE=nave.projects.brabantcloud.settings
