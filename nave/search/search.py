@@ -274,7 +274,10 @@ class NaveESQuery(object):
 
     def build_query(self):
         if self.default_facets:
-            self.query = self.query.facet(*self._as_list(self.facet_list), size=self.facet_size)
+            for facet in self.facet_list:
+                fsize = facet.facet_size
+                self.query = self.query.facet(facet, size=fsize)
+            # self.query = self.query.facet(*self._as_list(self.facet_list), size=self.facet_size)
         if self.default_filters:
             self.query = self.query.filter(*self._as_list(self.default_filters))
         return self.query
@@ -509,7 +512,8 @@ class NaveESQuery(object):
             from nave.base_settings import FacetConfig
             self.default_facets.append(FacetConfig(
                 es_field=facet,
-                label=facet
+                label=facet,
+                size=facet.facet_size
             )
         )
         facet_filter_dict = defaultdict(list)
@@ -533,13 +537,14 @@ class NaveESQuery(object):
                 all_filter_dict[key] = filter_query
             query = query.post_filter('bool', must=all_filter_list)
         # create facet_filter_dict with queries with key for each facet entry
-        if facet_list:
+        if self.default_facets:
             with robust('facet'):
                 if 'facet.size' in params:
                     self.facet_size = int(params.get('facet.size'))
                 # add .raw if not already there
                 # facet_list = ["{}.raw".format(facet.rstrip('.raw')) for facet in facet_list]
-                for facet in facet_list:
+                for facet_config in self.default_facets:
+                    facet = facet_config.es_field
                     if not facet_bool_type_and:
                         facet_filter_list = [filters for key, filters in all_filter_dict.items() if not self.check_facet_key(facet, key)]
                     else:
@@ -547,11 +552,14 @@ class NaveESQuery(object):
                     a = aggs.Filter(
                         Q('bool', must=facet_filter_list)
                     )
+                    lsize = self.facet_size
+                    if 'facet.size' in params:
+                        lsize = self.facet_size
                     a.bucket(
                         facet,
                         'terms',
                         field=facet,
-                        size=self.facet_size,
+                        size=lsize,
                     )
                     # create an aggregation
                     # add it as a bucket
