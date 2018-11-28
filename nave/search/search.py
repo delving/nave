@@ -599,19 +599,29 @@ class NaveESQuery(object):
             query = query.filter({"match": {"delving_hasGeoHash": True}})
         if 'sortBy' in params:
             sort_key = params.get('sortBy')
-            seed = None
-            random_sort = {'random_score': {}}
             if sort_key.startswith('random_'):
+                seed = None
+                random_sort = {'random_score': {}}
                 seed = sort_key.split('_')[-1]
                 random_sort['random_score']['seed'] = seed
-            query = query.query({'function_score': random_sort})
-            # TODO: implement normal sorting
+                query = query.query({'function_score': random_sort})
+            else:
+                if not sort_key.endswith(".raw"):
+                    sort_key = sort_key + ".raw"
+                sort_order = params.get('sortOrder')
+                order = "desc" if sort_order and sort_order.lower() != "asc" else "asc"
+                query = query.sort({
+                    sort_key: {"order": order},
+                    "legacy.delving_hubId": {"order": "desc"},
+                    "system.modified_at": {"order": "desc"},
+                })
         else:
             query = query.sort({
                 "_score": {"order": "desc"},
                 "legacy.delving_hubId": {"order": "desc"},
                 "system.modified_at": {"order": "desc"},
             })
+
         if hasattr(settings, 'DEMOTE') and hasattr(settings, 'NEGATIVE_BOOST'):
             query = query.query(
                 Q('boosting',
