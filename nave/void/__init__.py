@@ -5,7 +5,7 @@ from .convertors import ICNConverter, TIBConverter, ABMConverter, \
 
 REGISTERED_CONVERTERS = {
     "icn": ICNConverter,
-    "tib": TIBConverter,
+    # "tib": TIBConverter,
     "abm": ABMConverter,
     "ese": ESEConverter,
     "edm": EDMConverter,
