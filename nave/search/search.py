@@ -552,7 +552,7 @@ class NaveESQuery(object):
                     a = aggs.Filter(
                         Q('bool', must=facet_filter_list)
                     )
-                    lsize = self.facet_size
+                    lsize = facet_config.size
                     if 'facet.size' in params:
                         lsize = self.facet_size
                     a.bucket(
