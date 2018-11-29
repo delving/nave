@@ -593,7 +593,7 @@ class RDFResource:
             self.add_item(
                 predicate_uri=predicate,
                 rdf_object=RDFObject(rdf_object, self.graph, RDFPredicate(predicate),
-                                     bindings=self._bindings)
+                                     bindings=self._bindings, subject=self.subject_uri)
             )
 
     def get_types(self):
@@ -798,7 +798,7 @@ class RDFPredicate():
 
 
 class RDFObject:
-    def __init__(self, rdf_object, graph, predicate, bindings=None):
+    def __init__(self, rdf_object, graph, predicate, subject, bindings=None):
         self._predicate = predicate
         self._rdf_object = rdf_object
         self._graph = graph
@@ -808,6 +808,7 @@ class RDFObject:
         self._is_normalised = False
         self._lang = None
         self._resource = None
+        self._subject = subject
         self._inline_enrichment_link()
 
     def _inline_enrichment_link(self):
@@ -950,6 +951,9 @@ class RDFObject:
         try:
             about_uri = str(self._bindings.about_uri())
             if self.is_uri and URIRef(self.id) == about_uri:
+                return False
+            if self.is_uri and URIRef(self.id) == self._subject:
+                # print("do not allow recursing on self")
                 return False
             elif self.predicate.uri in not_follow_list:
                 return False
