@@ -518,7 +518,7 @@ class NaveESQuery(object):
             self.default_facets.append(FacetConfig(
                 es_field=facet,
                 label=facet,
-                size=facet.facet_size
+                size=self.facet_size
             )
         )
         facet_filter_dict = defaultdict(list)
