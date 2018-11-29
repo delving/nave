@@ -243,7 +243,14 @@ class GraphBindings:
                 if resource.is_web_resource():
                     webresources.append(resource)
         if webresources:
-            return sorted(webresources, key=lambda wr: wr.get_sort_key())
+            webresources = sorted(webresources, key=lambda wr: wr.get_sort_key())
+            for wr in webresources:
+                self._graph.add((
+                    self.about_uri(),
+                    EDM.hasView,
+                    wr.subject_uri
+                ))
+            return webresources
         return []
 
     def get_all_skos_links(self):
