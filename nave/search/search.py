@@ -403,6 +403,11 @@ class NaveESQuery(object):
         elif 'start' in params and 'page' not in params:
             with robust('start'):
                 start = int(params.get('start'))
+                diw_version = params.get("diw-version")
+                if diw_version and not diw_version.startswith("1.4"):
+                    start = start - 1
+                    if start < 1:
+                        start = 0
                 page = int(start / self.size) + 1
                 if page > 0:
                     self.page = page
