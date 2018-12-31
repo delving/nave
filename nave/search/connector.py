@@ -46,10 +46,11 @@ ES_URLS = settings.ES_URLS
 
 ES_DISABLED = settings.ES_DISABLED
 
-ES_INDEXES = get_settings('ES_INDEXES', {
-    'default': '{}_v1'.format(settings.SITE_NAME),
-    'acceptance': '{}_v2'.format(settings.SITE_NAME),
-})
+# TODO remove when all indexing code is removed
+# ES_INDEXES = get_settings('ES_INDEXES', {
+    # 'default': '{}'.format(settings.SITE_NAME),
+    # 'acceptance': '{}_v2'.format(settings.SITE_NAME),
+# })
 
 ES_TIMEOUT = settings.ES_TIMEOUT
 
@@ -57,11 +58,11 @@ ORG_ID = settings.ORG_ID
 
 es_client = None
 
-# check if all the indexes are created and if not create with the right mappings
+# # check if all the indexes are created and if not create with the right mappings
 try:
     connections.create_connection(
         hosts=ES_URLS,
-        sniff_on_start=True,
+        sniff_on_start=False,
         sniff_on_connection_fail=True,
         sniffer_timeout=60,
         maxsize=25,  # default value 10
@@ -78,7 +79,7 @@ except (ConnectionError, TransportError) as ce:
 def get_es_client():
     return Elasticsearch(
         hosts=ES_URLS,
-        sniff_on_start=True,
+        sniff_on_start=False,
         sniff_on_connection_fail=True,
         sniffer_timeout=60,
         maxsize=25,  # default value 10
@@ -339,19 +340,24 @@ def create_index(index_name, aliases=None, mapping=None, force_create=False):
 if not es_client:
     es_client = get_es_client()
     # test connection
-    try:
-        es_client.ping()
-    except (ConnectionError, TransportError) as ce:
-        logger.error(
-            "Unable to connect to Elasticsearch hosts: {}".format(ES_URLS)
-        )
-        sys.exit(1)
-    for index, name in list(ES_INDEXES.items()):
-        if name in [settings.SITE_NAME] and es_client.indices.get_alias(name=name):
-            alias = None
-        else:
-            alias = name.replace('_v1', '') if '_v1' in name else None
-        create_index(
-            index_name=name,
-            aliases=alias
-        )
+
+    # no longer create indexes.
+    # try:
+        # es_client.ping()
+    # except (ConnectionError, TransportError) as ce:
+        # logger.error(
+            # "Unable to connect to Elasticsearch hosts: {}".format(ES_URLS)
+        # )
+        # sys.exit(1)
+    # for index, name in list(ES_INDEXES.items()):
+        # print(index, name)
+        # if name in [settings.SITE_NAME] and es_client.indices.get_alias(name=name):
+            # alias = None
+        # else:
+            # alias = name.replace('_v1', '') if '_v1' in name else None
+        # if alias == name:
+            # alias = None
+        # create_index(
+            # index_name=name,
+            # aliases=alias
+        # )
