@@ -63,9 +63,9 @@ try:
     connections.create_connection(
         hosts=ES_URLS,
         sniff_on_start=False,
-        sniff_on_connection_fail=True,
+        sniff_on_connection_fail=False,
         sniffer_timeout=60,
-        maxsize=25,  # default value 10
+        maxsize=10,  # default value 10
         retry_on_timeout=True,
         timeout=ES_TIMEOUT,
     )
@@ -80,7 +80,7 @@ def get_es_client():
     return Elasticsearch(
         hosts=ES_URLS,
         sniff_on_start=False,
-        sniff_on_connection_fail=True,
+        sniff_on_connection_fail=False,
         sniffer_timeout=60,
         maxsize=25,  # default value 10
         retry_on_timeout=True,
@@ -340,8 +340,7 @@ def create_index(index_name, aliases=None, mapping=None, force_create=False):
 if not es_client:
     es_client = get_es_client()
     # test connection
-
-    # no longer create indexes.
+    # no
     # try:
         # es_client.ping()
     # except (ConnectionError, TransportError) as ce:

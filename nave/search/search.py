@@ -15,7 +15,6 @@ from django.core.paginator import Paginator, Page, EmptyPage, PageNotAnInteger
 from django.http import QueryDict
 from elasticsearch_dsl import Search, aggs, A
 from elasticsearch_dsl.query import Q, Match
-from elasticsearch_dsl.result import Result
 from rest_framework.request import Request
 import six
 
@@ -1367,7 +1366,6 @@ class NaveItemResponse(object):
             # todo: remove this later.
             doc_type = self.item.doc_type
             doc_id = self.item.doc_id
-            from .connector import get_es_client
             s = Search(index=self._index)
             mlt_query = s.query(
                     'more_like_this',
