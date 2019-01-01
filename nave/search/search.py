@@ -618,6 +618,12 @@ class NaveESQuery(object):
                 seed = sort_key.split('_')[-1]
                 random_sort['random_score']['seed'] = seed
                 query = query.query({'function_score': random_sort})
+            elif sort_key.startswith('random'):
+                from random import randint
+                seed = randint(0, 100)
+                random_sort = {'random_score': {}}
+                random_sort['random_score']['seed'] = seed
+                query = query.query({'function_score': random_sort})
             else:
                 if not sort_key.endswith(".raw"):
                     sort_key = sort_key + ".raw"

@@ -104,7 +104,7 @@ class NaveESFieldSerializer(serializers.BaseSerializer):
 class NaveESItemSerializer(serializers.Serializer):
     doc_id = serializers.CharField()
     doc_type = serializers.CharField()
-    # ToDO maybe add custom field serializer later
+    # TODO maybe add custom field serializer later
     fields = NaveESFieldSerializer()
 
 
@@ -130,7 +130,7 @@ class LayoutWrapperSerializer(serializers.Serializer):
 class NaveQueryResponseSerializer(serializers.Serializer):
     query = UserQuerySerializer(source='user_query')
     pagination = QueryPaginationSerializer()
-    layout = LayoutWrapperSerializer(many=False)
+    # layout = LayoutWrapperSerializer(many=False)
     items = NaveESItemWrapperSerializer(many=True)
     facets = FacetLinkSerializer(source='facet_query_links', many=True)
 
