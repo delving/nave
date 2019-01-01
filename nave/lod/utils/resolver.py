@@ -745,7 +745,7 @@ class RDFResource:
             obj_list = []
             for obj in rdf_objects:
                 obj_list.append(obj.to_index_entry())
-            obj_list = sorted(obj_list)
+                obj_list = sorted(obj_list, lambda k: k['value'])
             entries[predicate.search_label] = obj_list
         return entries
 
