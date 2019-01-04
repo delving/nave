@@ -109,6 +109,8 @@ class NaveESQuery(object):
                 continue
             elif not filt:
                 continue
+            elif filt.startswith('('):
+                filter_dict['query'].add(filt)
             elif ":" in filt:
                 key, *value = filt.split(":")
                 key = key.replace('_facet', '').replace('_string', '').replace('_text', '')
