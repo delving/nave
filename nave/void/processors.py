@@ -19,7 +19,7 @@ from nave.lod import tasks
 
 logger = logging.getLogger(__name__)
 
-CUSTOM_NS = Namespace(settings.RDF_SUPPORTED_PREFIXES.get('custom')[0])
+CUSTOM_NS = Namespace(settings.RDF_SUPPORTED_PREFIXES.get('custom'))
 EDM = Namespace('http://www.europeana.eu/schemas/edm/')
 NAVE = Namespace('http://schemas.delving.eu/nave/terms/')
 DELVING = Namespace('http://schemas.delving.eu/')
@@ -120,7 +120,7 @@ class IndexApiProcessor:
                     namespace = NAVE
                 else:
                     namespace = settings.RDF_SUPPORTED_PREFIXES.get(ns_prefix)
-                    namespace = Namespace(namespace[0])
+                    namespace = Namespace(namespace)
                 if namespace:
                     predicate = namespace[ns_label]
                 else:
@@ -161,6 +161,7 @@ class IndexApiProcessor:
         s = URIRef(self.get_source_uri(item))
         g = Graph(identifier=named_graph)
         g.add((s, RDF.type, CUSTOM_NS.IndexItem))
+
         if not 'field' in item:
             raise ValueError('"field" needs to exist and be a list.')
         extracted_fields = []
@@ -203,6 +204,7 @@ class IndexApiProcessor:
             graph=graph,
             spec=self.get_spec(item).lower()
         )
+
         return record.create_es_action(
             doc_type=self.get_doc_type(item),
             record_type=self.get_record_type(item),

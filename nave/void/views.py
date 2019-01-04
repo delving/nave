@@ -51,7 +51,7 @@ def index_api(request):
     """Entrypoint for the hub2 index-api."""
     if request.method in ['PUT', 'POST']:
         content = request.data
-        logger.debug(content)
+        # logger.debug(content)
         processor = IndexApiProcessor(payload=content)
         response_list = processor.process()
         return Response({'indexResponse': response_list})
