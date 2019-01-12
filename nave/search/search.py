@@ -650,12 +650,20 @@ class NaveESQuery(object):
                     negative_boost=settings.NEGATIVE_BOOST
                   )
             )
+        if hasattr(settings, 'PROMOTE') and hasattr(settings, 'NEGATIVE_BOOST'):
+            query = query.query(
+                Q('boosting',
+                    negative=Q(),
+                    positive=Q("exists", field=settings.PROMOTE),
+                    negative_boost=settings.NEGATIVE_BOOST
+                  )
+            )
         self.query = query
         self.facet_params = facet_params
         self.base_params = params
 
         import json
-        logger.debug(json.dumps(query.to_dict()))
+        # logger.debug(json.dumps(query.to_dict()))
         # print(json.dumps(query.to_dict(), indent=4, sort_keys=True))
         return query
 
