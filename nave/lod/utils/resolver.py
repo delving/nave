@@ -292,8 +292,15 @@ class GraphBindings:
 
     def get_list(self, search_label, lexsort=True):
         if not self._search_label_dict:
+            allowed_languages = settings.RDF_ALLOWED_LANGS
+            if not allowed_languages:
+                allowed_languages = []
             for rdf_object in self.get_all_items():
-                self._search_label_dict[rdf_object.predicate.search_label].append(rdf_object)
+                if rdf_object.language and allowed_languages:
+                    if rdf_object.language in allowed_languages:
+                        self._search_label_dict[rdf_object.predicate.search_label].append(rdf_object)
+                else:
+                    self._search_label_dict[rdf_object.predicate.search_label].append(rdf_object)
         if not lexsort:
             return self._search_label_dict.get(search_label, [])
         return sorted(self._search_label_dict.get(search_label, []), key=lambda k: k.value)
