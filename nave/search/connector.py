@@ -63,6 +63,7 @@ try:
     connections.create_connection(
         hosts=ES_URLS,
         retry_on_timeout=True,
+        max_retries=3,
         timeout=ES_TIMEOUT,
     )
 except (ConnectionError, TransportError) as ce:
@@ -76,6 +77,7 @@ def get_es_client():
     return Elasticsearch(
         hosts=ES_URLS,
         retry_on_timeout=True,
+        max_retries=3,
         timeout=ES_TIMEOUT,
     )
 
