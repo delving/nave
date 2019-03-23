@@ -301,9 +301,15 @@ class GraphBindings:
                         self._search_label_dict[rdf_object.predicate.search_label].append(rdf_object)
                 else:
                     self._search_label_dict[rdf_object.predicate.search_label].append(rdf_object)
+        fields = []
+        seen = []
+        for field in self._search_label_dict.get(search_label, []):
+            if field.value not in seen:
+                seen.append(field.value)
+                fields.append(field)
         if not lexsort:
-            return self._search_label_dict.get(search_label, [])
-        return sorted(self._search_label_dict.get(search_label, []), key=lambda k: k.value)
+            return fields
+        return sorted(fields, key=lambda k: k.value)
 
     def get_resources(self):
         if not self._resources:
