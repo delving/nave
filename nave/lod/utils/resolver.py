@@ -951,7 +951,8 @@ class RDFObject:
         if not self.resource_is_concept:
             return False
         resource = self._bindings.get_resource(self._rdf_object)
-        return RDFPredicate(SKOS.definition) in resource.get_predicates()
+        skos_content = [RDFPredicate(SKOS.definition, SKOS.scopeNote)]
+        return any(pred in skos_content for pred in resource.get_predicates())
 
     def get_resource_field_value(self, field_name_uri):
         if not self.has_resource:
