@@ -385,11 +385,17 @@ class NaveESQuery(object):
         # implement size
         if 'rows' in params:
             with robust('rows'):
-                self.size = int(params.get('rows'))
+                try:
+                    self.size = int(params.get('rows'))
+                except ValueError as ve:
+                    logger.warn("invalid row value: {}".format(ve))
         # implement paging
         if 'page' in params:
             with robust('page'):
-                page = int(params.get('page'))
+                page_param = params.get('page')
+                if page_param.endswith("'A=0"):
+                    page_param = page_param.replace("'A=0", "")
+                page = int(page_param)
                 self.page = page
                 start = (page - 1) * self.size if page > 0 else 0
                 end = start + self.size

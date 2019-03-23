@@ -219,8 +219,10 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
             s_rows = 12
         # clean callback url
         self._clean_callback(request)
-
-        rows = int(request.query_params.get('rows', s_rows))
+        try:
+            rows = int(request.query_params.get('rows', s_rows))
+        except ValueError as ve:
+            rows = s_rows
         query = NaveESQuery(
             index_name=index_name,
             doc_types=doc_types,
