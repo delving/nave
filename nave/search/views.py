@@ -1,4 +1,3 @@
-
 """ file: search/views.py
 
 The Django views used by the search module.
@@ -8,7 +7,7 @@ The Django views used by the search module.
 import inspect
 import logging
 import sys
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 
 import requests
 from django.conf import settings
@@ -450,13 +449,13 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
         mlt_filter_queries = request.query_params.getlist('mlt.qf', [])
         if not mlt_filter_queries and 'mlt.filterkey' in request.query_params:
             mlt_filter_queries = request.query_params.getlist('mlt.filterkey', [])
-        mlt_fq_dict = {}
+        mlt_fq_dict = defaultdict(list)
         for fq in mlt_filter_queries:
             if ":" in fq:
                 k, v = fq.split(":", maxsplit=1)
                 if not k.endswith(".raw"):
                     k = "{}.raw".format(k)
-                mlt_fq_dict[k] = v
+                mlt_fq_dict[k].append(v)
         response = NaveItemResponse(
             query,
             self,

@@ -1396,10 +1396,14 @@ class NaveItemResponse(object):
                     }]
             )[:self._mlt_count]
             if self._mlt_filter_query:
+                mlt_filter_list = []
                 for k, v in self._mlt_filter_query.items():
                     if not k.endswith('.raw'):
                         k = "{}.raw".format(k)
-                    mlt_query = mlt_query.filter("term", **{k: v})
+                    for filt in v:
+                        mlt_filter_list.append(Match(**{k: filt}))
+                if mlt_filter_list:
+                    mlt_query = mlt_query.filter("bool", should=mlt_filter_list)
             hits = mlt_query.execute()
             items = []
             for item in hits:
