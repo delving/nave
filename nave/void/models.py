@@ -318,7 +318,7 @@ class ProxyResource(TimeStampedModel):
     def create_proxy_resource_from_uri(uri: str, original_label: str = None, ds=None):
         extractor = re.compile("http://.*?/dataset/(.*?)/(.*?)/(.*)")
         parts = extractor.findall(uri)
-        if not parts:
+        if not parts or len(parts) != 3:
             return None
         spec, search_label, label = parts
         if not ds:
