@@ -1,7 +1,7 @@
 colorific==0.3
 dj.choices==0.11.0
 django-cors-headers==2.0.2
-django==1.10.6
+django==1.10.8
 django-downloadview==1.9
 django-extensions==1.7.9
 django-import-export==0.5.1
@@ -17,7 +17,7 @@ django-suit-ckeditor==0.0.2
 django-taggit==0.20
 djangorestframework==3.5.3
 djangorestframework-jsonp==1.0.2
-elasticsearch-dsl==5.3.0
+elasticsearch-dsl>=6.0.0,<7.0.0
 fastkml==0.11
 filemagic==1.6
 geobuf==1.1.0

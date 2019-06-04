@@ -14,7 +14,7 @@ from django.core.cache import caches
 from django.core.paginator import Paginator, Page, EmptyPage, PageNotAnInteger
 from django.http import QueryDict
 from elasticsearch_dsl import Search, aggs, A
-from elasticsearch_dsl.query import Q, Match
+from elasticsearch_dsl.query import Q, Match, MatchPhrase
 from rest_framework.request import Request
 import six
 
@@ -346,6 +346,8 @@ class NaveESQuery(object):
         ip_filters = RDFRecord.get_filters_by_ip(request)
         if ip_filters:
             for spec in ip_filters:
+                if not self.hidden_filters:
+                    self.hidden_filters = []
                 self.hidden_filters.append('-delving_spec:{}'.format(spec))
 
         query_string = raw_query_string if raw_query_string else request.META['QUERY_STRING']
@@ -492,9 +494,9 @@ class NaveESQuery(object):
                 for value in values:
                     facet_key = self.query_to_facet_key(key)
                     if key.startswith('-'):
-                        hidden_facet_filter_list.append(~Match(**{facet_key: {'query': value, 'type': 'phrase'}}))
+                        hidden_facet_filter_list.append(~MatchPhrase(**{facet_key: {'query': value}}))
                     else:
-                        hidden_facet_filter_list.append(Match(**{facet_key: {'query': value, 'type': 'phrase'}}))
+                        hidden_facet_filter_list.append(MatchPhrase(**{facet_key: {'query': value}}))
                 if facet_bool_type_and or key.startswith('-'):
                     q = Q('bool', must=hidden_facet_filter_list)
                     hidden_filter_list.append(q)
@@ -668,7 +670,7 @@ class NaveESQuery(object):
         self.facet_params = facet_params
         self.base_params = params
 
-        import json
+        # import json
         # logger.debug(json.dumps(query.to_dict()))
         # print(json.dumps(query.to_dict(), indent=4, sort_keys=True))
         return query
