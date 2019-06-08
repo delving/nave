@@ -214,7 +214,7 @@ class NaveESQuery(object):
             query = {
                 "query_string": {
                     "default_field": "_all",
-                    "type": "phrase",
+                    # "type": "phrase",
                     "query": query_string,
                 }
             }
@@ -223,7 +223,7 @@ class NaveESQuery(object):
                 "query_string": {
                     "default_field": "_all",
                     "query": query_string,
-                    "type": "phrase",
+                    # "type": "phrase",
                     # "default_operator": "AND",
                     "minimum_should_match": "2<50%"
                 }
