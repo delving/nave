@@ -74,12 +74,13 @@
                             </div>
                         {% endif %}
                         {% if new_facet_query %}
-                            <a href="{% url 'results-list' %}?qf={{ fieldname|urlencode }}:{{ field.value }}" class="label label-info" data-toggle="tooltip" title="{% trans fieldname %}">
+                        {{facet_label}} 
+                            <a href="{% url 'results-list' %}?qf={{ facet_label }}:{{ field.value }}" class="label label-info" data-toggle="tooltip" title="{% trans facet_label %}">
                                 <i class="fa fa-search"></i>
                             </a>
                         {% endif %}
                         {% if new_query %}
-                            <a href="{% url 'results-list' %}?q={{ field.value|urlencode }}" class="label label-success" data-toggle="tooltip" title="{% trans 'Free text' %}">
+                            <a href="{% url 'results-list' %}?q={{ fieldvalue|urlencode }}" class="label label-success" data-toggle="tooltip" title="{% trans 'Free text' %}">
                                 <i class="fa fa-search"></i>
                             </a>
                         {% endif %}
@@ -123,7 +124,7 @@
             {% endif %}
 
                 {% if new_facet_query %}<div class="field-tools">
-                    <a href="{% url 'results-list' %}?qf={{ fieldname|urlencode }}:{{ field.value }}" class="label label-info" title="{% trans fieldname %}">
+                    <a href="{% url 'results-list' %}?qf={{ facet_label|urlencode }}:{{ field.value }}" class="label label-info" title="{% trans facet_label%}">
                         <i class="fa fa-search"></i>
                     </a></div>
                 {% endif %}

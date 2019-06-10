@@ -278,6 +278,7 @@ def detail_field(
         predicate_uri=None,
         local_bindings=None,
         rdf_object=None,
+        facet_label=None,
         value_only=False):
     """
     show a detail field value
@@ -289,6 +290,8 @@ def detail_field(
     request = context['request']
     fields = None
     predicate = None
+    if not facet_label:
+        facet_label = fieldname
 
     try:
         if not predicate_uri and not rdf_object:
@@ -316,6 +319,7 @@ def detail_field(
         'is_inline_data': is_inline_data,
         'new_query': new_query,
         'new_facet_query': new_facet_query,
+        'facet_label': facet_label,
         'predicate': predicate,
         'show_predicate': show_predicate,
         'word_limit': word_limit,
