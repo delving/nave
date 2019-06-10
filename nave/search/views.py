@@ -433,8 +433,8 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
             from urllib.parse import unquote
             clean_pk = unquote(unquote(pk))
             if clean_pk.startswith('?'):
-                path = request._request.path.replace("pk", "")
-                return redirect("{}{}".format(path, clean_pk))
+                path = request._request.path.replace(pk, "")
+                return redirect("{}{}".format(path.rstrip("/"), clean_pk))
         query = NaveESQuery(
             index_name=self.get_index_name,
             doc_types=self.doc_types,
