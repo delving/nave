@@ -274,7 +274,8 @@ class BaseConverter(object):
                 if values:
                     for entry in values:
                         if isinstance(entry, dict):
-                            output_doc[key].append(entry['value'])
+                            if 'value' in entry:
+                                output_doc[key].append(entry['value'])
                         else:
                             output_doc[key].append(entry)
         if add_delving_fields:
