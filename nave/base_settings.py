@@ -565,6 +565,8 @@ RDF_SUPPORTED_NAMESPACES = {
     'http://creativecommons.org/ns#': 'cc',
     'http://www.geonames.org/ontology#': 'gn',
     'http://rdvocab.info/ElementsGr2/': 'rda',
+    'http://www.cidoc-crm.org/cidoc-crm/': 'crm',
+    'http://www.rdaregistry.info/Elements/u/': 'rdau',
 }
 
 RDF_SUPPORTED_PREFIXES = defaultdict(list)
