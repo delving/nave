@@ -42,3 +42,10 @@ do_compilemessages.sh
 enable_users.py
 /tags
 .venv
+
+# misc
+_scratch
+_data
+_scripts
+_jupyter
+locale
