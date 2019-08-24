@@ -197,6 +197,7 @@ MIDDLEWARE = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.contrib.admindocs.middleware.XViewMiddleware',
     'nave.common.middleware.FallBackLanguageMiddleware',
+    'elasticapm.contrib.django.middleware.TracingMiddleware',
     # 'nave.search.middleware.APILoggingMiddleware',
 )
 
@@ -279,6 +280,7 @@ THIRD_PARTY_APPS = (
     'leaflet',
     'oauth2_provider',
     'raven.contrib.django.raven_compat',
+    'elasticapm.contrib.django',
     'rest_framework',
     'rest_framework.authtoken',
     'djgeojson',
@@ -286,6 +288,7 @@ THIRD_PARTY_APPS = (
     'rosetta',  # for translation
     'taggit',
     'watchman',
+
 )
 
 # Apps specific for this project go here.
@@ -372,6 +375,10 @@ LOGGING = {
             'level': 'ERROR',
             'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
         },
+        'elasticapm': {
+            'level': 'WARNING',
+            'class': 'elasticapm.contrib.django.handlers.LoggingHandler',
+        },
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
@@ -409,6 +416,17 @@ LOGGING = {
         },
         'sentry.errors': {
             'level': 'DEBUG',
+            'handlers': ['console'],
+            'propagate': False,
+        },
+        'nave-apm': {
+            'level': 'WARNING',
+            'handlers': ['elasticapm'],
+            'propagate': False,
+        },
+        # Log errors from the Elastic APM module to the console (recommended)
+        'elasticapm.errors': {
+            'level': 'ERROR',
             'handlers': ['console'],
             'propagate': False,
         },
@@ -565,6 +583,7 @@ RDF_SUPPORTED_NAMESPACES = {
     'http://creativecommons.org/ns#': 'cc',
     'http://www.geonames.org/ontology#': 'gn',
     'http://rdvocab.info/ElementsGr2/': 'rda',
+    # 'http://www.rdaregistry.info/Elements/u/': 'rda',
     'http://www.cidoc-crm.org/cidoc-crm/': 'crm',
     'http://www.rdaregistry.info/Elements/u/': 'rdau',
 }
