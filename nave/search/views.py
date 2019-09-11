@@ -605,6 +605,15 @@ class NaveDocumentTemplateView(TemplateView):
         if "detail/foldout/" in target_uri:
             slug = self.kwargs.get('slug')
             record = ElasticSearchRDFRecord(hub_id=slug)
+            spec = record.get_spec_name()
+
+            is_white_listed = RDFRecord.is_spec_whitelist(
+                spec,
+                self.request
+            )
+            if not is_white_listed:
+                raise UnknownGraph("URI {} is not known in our graph store".format(target_uri))
+
             graph = record.get_graph_by_id(self.kwargs.get('slug'))
             if graph is not None:
                 target_uri = record.source_uri
