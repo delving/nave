@@ -605,7 +605,7 @@ class NaveDocumentTemplateView(TemplateView):
         if "detail/foldout/" in target_uri:
             slug = self.kwargs.get('slug')
             record = ElasticSearchRDFRecord(hub_id=slug)
-            spec = record.get_spec_name()
+            spec = slug.split('_')[1]
 
             is_white_listed = RDFRecord.is_spec_whitelist(
                 spec,
