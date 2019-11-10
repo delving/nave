@@ -480,7 +480,7 @@ class EDMStrictConverter(BaseConverter):
         "http://www.europeana.eu/schemas/edm/Agent",
         "http://www.europeana.eu/schemas/edm/TimeSpan",
         "http://www.europeana.eu/schemas/edm/Organisation",
-        "http://www.europeana.eu/schemas/edm/WebResource",
+        # "http://www.europeana.eu/schemas/edm/WebResource",
         "http://www.w3.org/2004/02/skos/core#Concept",
     ]
 
@@ -515,6 +515,8 @@ class EDMStrictConverter(BaseConverter):
                         type_tag = val
                 for aggr in description.findall('{http://www.openarchives.org/ore/terms/}aggregates'):
                     description.remove(aggr)
+                for hasView in description.findall('{http://www.europeana.eu/schemas/edm/}hasView'):
+                    description.remove(hasView)
                 if type_tag:
                     rdf_about = description.attrib.get('{http://www.w3.org/1999/02/22-rdf-syntax-ns#}about')
                     if rdf_about:
