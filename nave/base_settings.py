@@ -298,6 +298,7 @@ LOCAL_APPS = (
     'nave.search',
     'nave.webresource',
     'nave.virtual_collection',
+    'nave.virtual_website',
 )
 
 # ########################
