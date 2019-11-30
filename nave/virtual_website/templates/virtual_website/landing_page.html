@@ -1,0 +1,53 @@
+<!doctype html>
+{% load static %}
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=100" >
+	<meta name="author" content="Delving B.V. http://www.delving.eu" />
+    <meta name="theme-color" content="#049adb">    
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{{vw.title}}</title>
+    <link type="text/css" rel="stylesheet" href="{% static 'vw/css/bootstrap.min.css' %}">
+    <link type="text/css" rel="stylesheet" href="{% static 'vw/css/leaflet.css' %}">
+    <link type="text/css" rel="stylesheet" href="{% static 'vw/css/diw-core.css' %}">
+    <link type="text/css" rel="stylesheet" href="diw.css">
+</head>
+<body>
+    <noscript>Your browser does not support JavaScript!</noscript>
+    <header id="dw-header" role="banner">
+        {% autoescape off %}
+            {{ vw.diw_header}}
+        {% endautoescape %}
+    </header>
+    <div class="container" id="diw-container">
+        <div id="diw-search"><!-- autogen form here --></div>
+        <div id="diw-advanced-search"><!-- autogen advanced search here --></div>
+        <div id="diw-geo-search"><!-- autogen geo search here --></div>
+        <div id="diw-query-info"><!-- autogen query info here --></div>
+        <div id="diw-breadcrumbs"><!-- autogen breadcrumbs here --></div>
+        <div class="diw-pagination"><!-- autogen top pagination here --></div>
+        <div id="diw-results-container" class="row">
+            <div id="diw-results" class="col-9"><!-- autogen search results here --></div>
+            <div id="diw-facets" class="col-3"><!-- autogen facets here --></div>
+        </div>
+        <div id="diw-item-container">
+            <div id="diw-item-media"><!-- autogen item image/deepzoom here --></div>
+            <div id="diw-item-data"><!-- autogen item metadatafields here --></div>
+            <div id="diw-item-related"><!-- autogen related items here --></div>
+        </div>
+        <div class="diw-pagination bottom"><!-- autogen bottom pagination here --></div>
+    </div>
+    <script type="text/javascript" src="{% static 'vw/js/jquery.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'vw/js/diw-dependencies.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'vw/js/diw-core.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'vw/js/bootstrap.bundle.min.js' %}"></script>
+    <script type="text/javascript" src="diw-config.js"></script>
+</body>
+    <footer id="dw-footer" role="banner">
+        {% autoescape off %}
+            {{ vw.diw_footer}}
+        {% endautoescape %}
+    </footer>
+</html>
+

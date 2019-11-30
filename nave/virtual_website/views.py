@@ -3,7 +3,7 @@ import logging
 from django.conf import settings
 from django.http import QueryDict
 from django.shortcuts import get_object_or_404
-from django.views.generic import DetailView, TemplateView
+from django.views.generic import DetailView, TemplateView, ListView
 from rest_framework.renderers import TemplateHTMLRenderer, JSONRenderer
 from rest_framework_jsonp.renderers import JSONPRenderer
 
@@ -47,6 +47,12 @@ class V1SearchListApiView(SearchListAPIView):
     doc_types = []
 
     def get(self, request, *args, **kwargs):
+        hub_id = kwargs.get('id', None)
+        if hub_id:
+            params = request.GET.copy()
+            params['id'] = hub_id
+            request.GET = params
+            return super().retrieve(request, hub_id, format=None, *args, **kwargs)
         slug = kwargs.get('slug', None)
         virtual_website = get_object_or_404(VirtualWebsite, slug=slug)
 
@@ -76,42 +82,43 @@ class VirtualWebsitePageView(DetailView):
     context_object_name = 'vwp'
     model = VirtualWebsitePage
 
-    def get_context_data(self, **kwargs):
-        # Call the base implementation first to get a context
-        context = super(VirtualWebsitePageView, self).get_context_data(**kwargs)
-        return context
+    # def get_context_data(self, **kwargs):
+        # # Call the base implementation first to get a context
+        # context = super(VirtualWebsitePageView, self).get_context_data(**kwargs)
+        # return context
 
-# TODO add correct mime-type
 class VirtualWebsitePages(DetailView):
     template_name = 'virtual_website/pages.json'
     context_object_name = 'vw'
     model = VirtualWebsite
+    content_type = 'text/javascript'
 
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
-        context = super(VirtualWebsiteDetailView, self).get_context_data(**kwargs)
+        context = super(VirtualWebsitePages, self).get_context_data(**kwargs)
         return context
 
 
-# TODO add correct mime-type
 class VirtualWebsiteCSS(DetailView):
     template_name = 'virtual_website/diw.css'
     context_object_name = 'vw'
     model = VirtualWebsite
+    content_type = 'text/css'
 
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
-        context = super(VirtualWebsiteDetailView, self).get_context_data(**kwargs)
+        context = super(VirtualWebsiteCSS, self).get_context_data(**kwargs)
         return context
 
 
-# TODO add correct mime-type
 class VirtualWebsiteConfig(DetailView):
-    template_name = 'virtual_website/diw-config.js'
+    template_name = 'virtual_website/diw-config.html'
     context_object_name = 'vw'
     model = VirtualWebsite
+    content_type = 'text/javascript'
+
 
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
-        context = super(VirtualWebsiteDetailView, self).get_context_data(**kwargs)
+        context = super(VirtualWebsiteConfig, self).get_context_data(**kwargs)
         return context

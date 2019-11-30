@@ -119,7 +119,7 @@ class VirtualWebsitePage(TimeStampedModel, GroupOwned):
         max_length=512
     )
     slug = AutoSlugField(
-            populate_from=['virtual_website__title', 'title']
+            populate_from=['diw__title', 'title']
     )
     page_body = models.TextField(
         _("page body"),

@@ -16,6 +16,8 @@ urlpatterns = [
     # todo test if this search api returns the right information
     url(r'^vw/(?P<slug>([^/]*?))/api/$', views.V1SearchListApiView.as_view({'get': 'get'}),
         name="virtual_website_api"),
+    url(r'^vw/(?P<slug>([^/]*?))/api/(?P<id>([^/]*?))/$', views.V1SearchListApiView.as_view({'get': 'get'}),
+        name="virtual_website_api"),
     url(r'^vw/(?P<slug>([^/]*?))/$', views.VirtualWebsiteDetailView.as_view(),
         name="virtual_website_detail"),
     # url(r'', include(vc_router.urls), name='vc_routers'),
@@ -27,6 +29,6 @@ urlpatterns = [
         name="virtual_website_config"),
     url(r'^vw/(?P<slug>([^/]*?))/pages.json$', views.VirtualWebsitePages.as_view(),
         name="virtual_website_pages"),
-    url(r'^vw/pages/$(?P<slug>([^/]*?))', views.VirtualWebsitePageView.as_view(),
+    url(r'^vw/[^/]*?/(?P<slug>([^/]*?))$', views.VirtualWebsitePageView.as_view(),
         name="virtual_website_pages")
 ]

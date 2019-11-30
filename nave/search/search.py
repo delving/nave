@@ -1295,7 +1295,7 @@ class NaveESItem(object):
             self._score = self._es_item.get('_score')
         else:
             self._doc_id = self._es_item.meta.id
-            self._doc_type = self._es_item.meta.doc_type
+            self._doc_type = "void_edmrecord"
             self._index = self._es_item.meta.index
             self._score = self._es_item.meta.score
 

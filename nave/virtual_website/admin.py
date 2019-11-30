@@ -3,6 +3,7 @@ from django.forms import ModelForm
 
 import reversion
 from suit_ckeditor.widgets import CKEditorWidget
+from suit.widgets import AutosizedTextarea
 
 from .models import VirtualWebsite, VirtualWebsitePage
 
@@ -12,7 +13,9 @@ class VirtualWebsiteForm(ModelForm):
         widgets = {
             'body': CKEditorWidget(editor_options={'startupFocus': True}),
             'diw_header': CKEditorWidget(editor_options={'startupFocus': False}),
-            'diw_footer': CKEditorWidget(editor_options={'startupFocus': False})
+            'diw_footer': CKEditorWidget(editor_options={'startupFocus': False}),
+            'diw_css': AutosizedTextarea(attrs={'rows': 40, 'class': 'input-xlarge', 'colls': 120}),
+            'diw_config': AutosizedTextarea
         }
 
 class VirtualWebsitePageForm(ModelForm):

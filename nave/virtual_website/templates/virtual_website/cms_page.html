@@ -12,7 +12,7 @@
     <div id="diw-header">
         <header class="diw-branding" role="banner">
             {% autoescape off %}
-                {{ vwp.virtual_website__header}}
+                {{ vwp.diw.diw_header }}
             {% endautoescape %}
 
         </header>
@@ -20,13 +20,13 @@
 
     <div class="diw-body">
         {% autoescape off %}
-            {{ vwp.body }}
+            {{ vwp.page_body }}
         {% endautoescape %}
     </div>
     <div id="diw-footer">
         <footer class="diw-branding" role="banner">
             {% autoescape off %}
-                {{ vwp.virtual_website__header}}
+                {{ vwp.diw.diw_footer }}
             {% endautoescape %}
         </footer>
     </div>

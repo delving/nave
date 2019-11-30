@@ -1,1 +1,0 @@
-{{vw.diw_config}}
