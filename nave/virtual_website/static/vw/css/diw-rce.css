@@ -1,0 +1,198 @@
+/* Rijksoverheid fonts *************************/
+@font-face {
+  font-family: "RijksSans";
+  src: url("../fonts/rce/ROsanswebtextregular.eot") format("embedded-opentype"), url("../fonts/rce/ROsanswebtextregular.woff") format("opentype");
+  font-style: normal;
+  font-weight: normal; }
+@font-face {
+  font-family: "RijksSans";
+  src: url("../fonts/rce/ROsanswebtextitalic.eot") format("embedded-opentype"), url("../fonts/rce/ROsanswebtextitalic.woff") format("opentype");
+  font-style: italic;
+  font-weight: normal; }
+@font-face {
+  font-family: "RijksSans";
+  src: url("../fonts/rce/ROsanswebtextbold.eot") format("embedded-opentype"), url("../fonts/rce/ROsanswebtextbold.woff") format("opentype");
+  font-weight: bold;
+  font-style: normal; }
+@font-face {
+  font-family: "RijksSerif";
+  src: url("../fonts/rce/ROserifwebregular.eot") format("embedded-opentype"), url("../fonts/rce/ROserifwebregular.woff") format("opentype");
+  font-style: normal;
+  font-weight: normal; }
+@font-face {
+  font-family: "RijksSerif";
+  src: url("../fonts/rce/ROserifwebitalic.eot") format("embedded-opentype"), url("../fonts/rce/ROserifwebitalic.woff") format("opentype");
+  font-style: italic;
+  font-weight: normal; }
+@font-face {
+  font-family: "RijksSerif";
+  src: url("../fonts/rce/ROserifwebbold.eot") format("embedded-opentype"), url("../fonts/rce/ROserifwebbold.woff") format("opentype");
+  font-weight: bold;
+  font-style: normal; }
+/* typography ***********************************/
+body {
+  background: #e9e9e9;
+  color: #000;
+  height: 100%;
+  line-height: 1.5rem; }
+
+body, input, textarea, select, blockquote, p, cite {
+  font-family: "RijksSerif", "Georgia", sans-serif; }
+
+.shadowed, #diw-results-container .diw-results-item-inner,
+#diw-results-container .media {
+  position: relative;
+  min-height: 20px;
+  background-color: #FFF;
+  -webkit-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(128, 128, 128, 0.1) inset;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(128, 128, 128, 0.1) inset; }
+
+.shadowed:after, #diw-results-container .diw-results-item-inner:after,
+#diw-results-container .media:after, .shadowed:before, #diw-results-container .diw-results-item-inner:before,
+#diw-results-container .media:before {
+  content: "";
+  position: absolute;
+  z-index: -2; }
+
+.lifted:after, #diw-results-container .diw-results-item-inner:after,
+#diw-results-container .media:after, .lifted:before, #diw-results-container .diw-results-item-inner:before,
+#diw-results-container .media:before {
+  bottom: 15px;
+  width: 50%;
+  height: 20%;
+  max-width: 300px;
+  max-height: 100px;
+  -webkit-box-shadow: 0 15px 10px rgba(31, 31, 31, 0.5);
+  box-shadow: 0 15px 10px rgba(31, 31, 31, 0.5); }
+
+.lifted:before, #diw-results-container .diw-results-item-inner:before,
+#diw-results-container .media:before {
+  left: 10px;
+  -webkit-transform: rotate(-4deg);
+  -ms-transform: rotate(-4deg);
+  transform: rotate(-4deg); }
+
+.lifted:after, #diw-results-container .diw-results-item-inner:after,
+#diw-results-container .media:after {
+  right: 10px;
+  -webkit-transform: rotate(4deg);
+  -ms-transform: rotate(4deg);
+  transform: rotate(4deg); }
+
+a.diw-button, button.diw-button, select.diw-button {
+  background-color: #000;
+  color: #fff;
+  font-style: italic; }
+
+.btn.disabled,
+.btn:disabled,
+.diw-button.disabled, .diw-button:disabled,
+a.diw-button.disabled, button.diw-button.disabled {
+  opacity: .35; }
+
+#diw-search-form button, #diw-search-form .btn,
+#diw-advanced-search-form button,
+#diw-advanced-search-form .btn {
+  background-color: #000;
+  color: #fff; }
+#diw-search-form #diw-as-remove-row,
+#diw-search-form #diw-as-add-row,
+#diw-advanced-search-form #diw-as-remove-row,
+#diw-advanced-search-form #diw-as-add-row {
+  font-family: Verdana;
+  font-style: normal; }
+
+#diw-query-crumbs {
+  background: #fff; }
+
+.diw-pagination {
+  font-family: "RijksSans"; }
+  .diw-pagination li.diw-page a {
+    margin: 0 1px;
+    background: #fff; }
+    .diw-pagination li.diw-page a.current {
+      background: #000; }
+  .diw-pagination.bottom {
+    margin-top: 1rem; }
+  .diw-detail .diw-pagination {
+    margin-bottom: 0px; }
+
+#diw-results-container .diw-results-items a {
+  color: #000;
+  text-decoration: none; }
+#diw-results-container .diw-results-item-inner,
+#diw-results-container .media {
+  margin-bottom: 30px; }
+  #diw-results-container .diw-results-item-inner:hover,
+  #diw-results-container .media:hover {
+    background-color: #e9e9e9; }
+#diw-results-container .caption {
+  padding: 5px 10px;
+  line-height: 1.5rem; }
+  #diw-results-container .caption label {
+    margin-bottom: 0px; }
+#diw-results-container .diw-title {
+  color: #000;
+  font-size: 1.1rem;
+  font-style: italic;
+  font-weight: normal; }
+#diw-results-container .diw-data[name=dc_date] {
+  color: #333; }
+#diw-results-container label[for=europeana_dataProvider],
+#diw-results-container .diw-data[name=europeana_dataProvider] {
+  color: #888; }
+
+.diw-view-switch {
+  background-color: #fff !important;
+  width: 32px;
+  height: 32px;
+  padding: 4px;
+  background-position: center center !important;
+  border: 1px solid #888;
+  opacity: 35%; }
+  .diw-view-switch.active {
+    opacity: 100%; }
+
+.diw-facet-container {
+  font-style: italic; }
+  .diw-facet-container .header {
+    font-family: "RijksSerif";
+    font-size: 1.25rem;
+    font-style: italic;
+    font-weight: normal;
+    margin-top: 1rem; }
+  .diw-facet-container .facet-tools .sort {
+    background-color: #fff;
+    font-style: normal; }
+
+#diw-carousel {
+  background-color: transparent; }
+
+.diw-zoom-viewer {
+  background-color: transparent;
+  margin-bottom: 0px; }
+
+#diw-item-media,
+#diw-thumbnail-nav,
+#diw-item-data,
+#diw-item-related,
+#diw-zoom-viewer {
+  background-color: #fff; }
+
+#diw-item-data,
+#diw-item-related {
+  padding: 10px; }
+
+.diw-block {
+  font-family: "RijksSans";
+  font-style: italic; }
+  .diw-block .diw-field {
+    border-bottom: 1px solid #ccc; }
+    .diw-block .diw-field .diw-label {
+      font-weight: bold; }
+
+.diw-zoom-link.active img,
+.diw-carousel-link.active img {
+  border-bottom: 4px solid #000; }
+
+/*# sourceMappingURL=diw-rce.css.map */
