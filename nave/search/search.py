@@ -52,6 +52,7 @@ class NaveESQuery(object):
         self.query = self._create_query()
         self.base_params = None
         self.facet_params = None
+        self.facet_full = False
         self._is_item_query = False
         self.page = 1
         self.converter = converter
@@ -379,7 +380,7 @@ class NaveESQuery(object):
         # remove non filter keys
         for key, value in list(facet_params.items()):
             if key in ['start', 'page', 'rows', 'format', 'diw-version', 'lang', 'callback',
-                       'facetBoolType', 'facet.limit']:
+                       'facetBoolType', 'facet.limit', 'facet.full']:
                 del facet_params[key]
             if not value and key in facet_params:
                 del facet_params[key]
@@ -551,6 +552,18 @@ class NaveESQuery(object):
                 all_filter_dict[key] = filter_query
             query = query.post_filter('bool', must=all_filter_list)
         # create facet_filter_dict with queries with key for each facet entry
+        if 'facet.full' in params:
+            facet = params.get('facet.full')
+            from nave.base_settings import FacetConfig
+            self.default_facets = []
+            self.default_facets.append(FacetConfig(
+                es_field=facet,
+                label=facet,
+                size=2000
+            ))
+            if 'facet.size' in params:
+                del params['facet.size']
+            self.facet_full = True
         if self.default_facets:
             with robust('facet'):
                 if 'facet.size' in params:
@@ -1470,6 +1483,8 @@ class NaveQueryResponse(object):
 
     @property
     def user_query(self):
+        if self._query.facet_full:
+            return None
         if not self._user_query:
             self._user_query = UserQuery(self._query, self.num_found)
         return self._user_query
@@ -1488,6 +1503,8 @@ class NaveQueryResponse(object):
 
     @property
     def pagination(self):
+        if self._query.facet_full:
+            return None
         if not self._pagination:
             self._pagination = QueryPagination(
                     self.paginator,
@@ -1500,6 +1517,8 @@ class NaveQueryResponse(object):
         """
         :return: a list of result items
         """
+        if self._query.facet_full:
+            return None
         if not self._items:
             self._items = NaveESItemList(
                     results=self._results.hits.hits,
@@ -1546,6 +1565,8 @@ class NaveQueryResponse(object):
 
     @property
     def layout(self):
+        if self._query.facet_full:
+            return None
         converter = self._converter
         if not converter and settings.DEFAULT_V1_CONVERTER is not None:
             from nave.void import REGISTERED_CONVERTERS
