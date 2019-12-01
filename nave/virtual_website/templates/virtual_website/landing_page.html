@@ -38,16 +38,16 @@
         </div>
         <div class="diw-pagination bottom"><!-- autogen bottom pagination here --></div>
     </div>
+    <footer id="dw-footer" role="banner">
+        {% autoescape off %}
+            {{ vw.diw_footer}}
+        {% endautoescape %}
+    </footer>
     <script type="text/javascript" src="{% static 'vw/js/jquery.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'vw/js/diw-dependencies.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'vw/js/diw-core.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'vw/js/bootstrap.bundle.min.js' %}"></script>
     <script type="text/javascript" src="diw-config.js"></script>
 </body>
-    <footer id="dw-footer" role="banner">
-        {% autoescape off %}
-            {{ vw.diw_footer}}
-        {% endautoescape %}
-    </footer>
 </html>
 
