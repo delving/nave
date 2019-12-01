@@ -24,7 +24,12 @@
         <div id="diw-search"><!-- autogen form here --></div>
         <div id="diw-advanced-search"><!-- autogen advanced search here --></div>
         <div id="diw-geo-search"><!-- autogen geo search here --></div>
-        <div id="diw-query-info"><!-- autogen query info here --></div>
+        <div id="diw-query-info">
+            <!-- autogen query info here; body will be replaced on load. -->
+            {% autoescape off %}
+                {{ vw.body }}
+            {% endautoescape %}
+        </div>
         <div id="diw-breadcrumbs"><!-- autogen breadcrumbs here --></div>
         <div class="diw-pagination"><!-- autogen top pagination here --></div>
         <div id="diw-results-container" class="row">

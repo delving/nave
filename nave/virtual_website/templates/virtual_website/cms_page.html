@@ -2,35 +2,48 @@
 <!DOCTYPE html>
 <html>
 
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">
-    <title>{{vwp.title}}</title>
-    <link type="text/css" rel="stylesheet" href="diw.css">
-</head>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width">
+        <title>{{vwp.title}}</title>
+        <link type="text/css" rel="stylesheet" href="{% static 'vw/css/bootstrap.min.css' %}">
+        <link type="text/css" rel="stylesheet" href="{% static 'vw/css/diw-core.css' %}">
+        <link type="text/css" rel="stylesheet" href="diw.css">
+    </head>
 
-<body>
-    <div id="diw-header">
-        <header class="diw-branding" role="banner">
-            {% autoescape off %}
+    <body>
+        <div id="diw-header">
+            <header class="diw-branding" role="banner">
+                {% autoescape off %}
                 {{ vwp.diw.diw_header }}
-            {% endautoescape %}
+                {% endautoescape %}
 
-        </header>
-    </div>
+            </header>
+        </div>
 
-    <div class="diw-body">
-        {% autoescape off %}
-            {{ vwp.page_body }}
-        {% endautoescape %}
-    </div>
-    <div id="diw-footer">
-        <footer class="diw-branding" role="banner">
+        {% if vwp.show_search %}
+            <div class="container" id="diw-container">
+                <div id="diw-search">
+                    <form action="." method="get" id="diw-search-form" class="form-inline">
+                        <input type="text" name="query" id="diw-query-term" class="form-control" value="" placeholder="">
+                        <button type="submit" id="diw-query-submit" class="btn btn-default diw-button">Zoeken</button>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="diw-body">
             {% autoescape off %}
-                {{ vwp.diw.diw_footer }}
+            {{ vwp.page_body }}
             {% endautoescape %}
-        </footer>
-    </div>
-</body>
+        </div>
+        <div id="diw-footer">
+            <footer class="diw-branding" role="banner">
+                {% autoescape off %}
+                {{ vwp.diw.diw_footer }}
+                {% endautoescape %}
+            </footer>
+        </div>
+    </body>
 
 </html>
