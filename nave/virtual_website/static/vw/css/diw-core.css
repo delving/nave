@@ -48,7 +48,8 @@ select.diw-button {
   font-weight: 700;
   color: #000;
   text-shadow: 0 1px 0 #fff;
-  opacity: .5; }
+  opacity: .5;
+  filter: alpha(opacity=50); }
 
 /* search forms ***********************************/
 .btn,
@@ -78,6 +79,7 @@ select.diw-button {
 #diw-as-toggle[disabled="true"],
 #diw-geo-toggle[disabled="true"] {
   opacity: 0.5;
+  filter: alpha(opacity=50);
   pointer-events: none; }
 
 #diw-as-remove-row,
@@ -247,7 +249,6 @@ select.diw-button {
 
 #diw-exploded-facet-list {
   transition: height .25s ease;
-  overflow: hidden;
   background-color: #f8f9fa;
   border-right: 1px solid #e9ecef;
   padding: 10px;
@@ -256,10 +257,14 @@ select.diw-button {
   top: 0px;
   left: 0px;
   margin-bottom: 0 !important; }
+  #diw-exploded-facet-list #exploded-facet-list {
+    overflow-x: none;
+    overflow-y: scroll;
+    height: 100%; }
   #diw-exploded-facet-list .facet-filter-form {
     margin: 10px 0; }
   #diw-exploded-facet-list .diw-facet-list {
-    max-height: none; }
+    max-height: 100%; }
 
 #diw-exploded-facet-list:not(.active) {
   transition: height .25s ease;

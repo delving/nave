@@ -88,7 +88,8 @@ a.diw-button, button.diw-button, select.diw-button {
 .btn:disabled,
 .diw-button.disabled, .diw-button:disabled,
 a.diw-button.disabled, button.diw-button.disabled {
-  opacity: .35; }
+  opacity: .35;
+  filter: alpha(opacity=40); }
 
 #diw-search-form button, #diw-search-form .btn,
 #diw-advanced-search-form button,
@@ -149,9 +150,11 @@ a.diw-button.disabled, button.diw-button.disabled {
   padding: 4px;
   background-position: center center !important;
   border: 1px solid #888;
-  opacity: 35%; }
+  opacity: .35;
+  filter: alpha(opacity=30); }
   .diw-view-switch.active {
-    opacity: 100%; }
+    opacity: 1;
+    filter: alpha(opacity=100); }
 
 .diw-facet-container {
   font-style: italic; }
@@ -161,7 +164,7 @@ a.diw-button.disabled, button.diw-button.disabled {
     font-style: italic;
     font-weight: normal;
     margin-top: 1rem; }
-  .diw-facet-container .facet-tools .sort {
+  .diw-facet-container .facet-tools .sort, .diw-facet-container .facet-tools .explode {
     background-color: #fff;
     font-style: normal; }
 
