@@ -1,6 +1,7 @@
 /**
- * Store will save in either the local sessionStorage or in a session cookie
+ * Store will save in either the local sessionStorage or in a session cookie 
  */
+
 var Store = (function () {
     'use strict';
     var Global = (typeof window !== 'undefined' ? window : document);
