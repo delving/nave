@@ -380,6 +380,10 @@ class LoDHTMLView(TemplateView):
         if zooms:
             context['deepzoom_count'] = len(zooms)
             context['deepzoom_urls'] = [zoom.value.value for zoom in zooms]
+        # spin urls
+        spins = graph_bindings.get_list('nave_spinUrl', False)
+        if spins:
+            context['nave_3d'] = spins[0].value
         # EXPERT MODE
         expert_mode = self.request.COOKIES.get('NAVE_DETAIL_EXPERT_MODE', False)
         if expert_mode:
