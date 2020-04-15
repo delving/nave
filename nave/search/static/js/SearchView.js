@@ -266,3 +266,26 @@ SearchView.checkGeoCount = function (queryStr) {
 SearchView.initGeo = function () {
 
 };
+
+/***********************************************************************************/
+// SearchView.createNavStack
+/***********************************************************************************/
+SearchView.createNavStack = function (last_page) {
+    if(!Store){return;} // this function depends on vs.store.js in common/static/js    
+    // console.log('createNavStack')
+    var elems = document.querySelectorAll("[data-detail-uri]");
+    var lastPage = last_page || null;
+    var navTree = [];
+    var resultsQuery = window.btoa(window.location);
+    Array.prototype.forEach.call(elems, function(el){
+        var uri = el.attributes["data-detail-uri"].value;
+        var re = /\/aggregation\/(.*)/g;
+        var path = re.exec(uri);       
+        if (path){
+            navTree.push(path[1]);
+        }            
+    });
+    Store.set('itemNavTree', JSON.stringify(navTree));
+    Store.set('itemNavLastPage', lastPage);
+    Store.set('itemNavResultsQuery', resultsQuery);
+};

@@ -118,20 +118,28 @@ class BaseConverter(object):
             "dcterms_temporal": "dcterms_temporal",
             "dcterms_provenance": "dcterms_provenance",
             "dcterms_rightsHolder": "dcterms_rightsHolder",
-            "europeana_isShownBy": "edm_isShownBy",
-            "europeana_rights": "edm_rights",
-            "europeana_isShownAt": "edm_isShownAt",
-            "europeana_unstored": "edm_unstored",
-            "europeana_object": "edm_object",
-            "europeana_provider": "edm_provider",
-            "europeana_dataProvider": "edm_dataProvider",
-            "europeana_type": "edm_type",
-            "europeana_uri": "edm_uri",
-            "europeana_language": "edm_language",
-            "europeana_country": "edm_country",
+            "europeana_aggregatedCHO": "edm_aggregatedCHO",
+            "europeana_begin": "edm_begin",
             "europeana_collectionName": "edm_collectionName",
             "europeana_collectionTitle": "edm_collectionTitle",
+            "europeana_country": "edm_country",
+            "europeana_currentLocation": "edm_currentLocation",
+            "europeana_dataProvider": "edm_dataProvider",
+            "europeana_end": "edm_end",
+            "europeana_hasMet": "edm_hasMet",
+            "europeana_hasView": "edm_hasView",
+            "europeana_isRelatedTo": "edm_isRelatedTo",
+            "europeana_isRepresentationOf": "edm_isRepresentationOf",
+            "europeana_isShownAt": "edm_isShownAt",
+            "europeana_isShownBy": "edm_isShownBy",
+            "europeana_language": "edm_language",
+            "europeana_object": "edm_object",
+            "europeana_provider": "edm_provider",
+            "europeana_rights": "edm_rights",
             "europeana_source": "edm_source",
+            "europeana_type": "edm_type",
+            "europeana_unstored": "edm_unstored",
+            "europeana_uri": "edm_uri"
         }
         return mapping
 
@@ -530,7 +538,7 @@ class EDMStrictConverter(BaseConverter):
     def convert(self, output_format="json", add_delving_fields=True):
         graph = self.bindings()._graph
         graph.namespace_manager = namespace_manager
-        if output_format is 'xml':
+        if output_format == 'xml':
             output = graph.serialize(format="xml")
             output = self.make_rdf_xml_serialization_europeana_proof(output)
             return output
@@ -563,7 +571,7 @@ class EDMConverter(BaseConverter):
 
     def convert(self, output_format="json", add_delving_fields=True):
         graph = self.bindings()._graph
-        if output_format is 'xml':
+        if output_format == 'xml':
             output = graph.serialize(format="xml").decode('utf-8')
             return output
         else:

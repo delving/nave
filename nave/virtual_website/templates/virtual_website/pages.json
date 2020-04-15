@@ -1,0 +1,11 @@
+[
+    "title": "{{vw.title}}",
+    "pages": {
+        {% for page in vw.pages.all %}
+            { 
+                "slug": "{{page.slug}}",
+                "title": "{{page.title}}"
+            },
+        {% endfor %}
+    }
+]

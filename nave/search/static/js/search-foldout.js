@@ -20,7 +20,9 @@ $(function(){
         // first reset everything: remove the foldout
         $('.result-item-foldout').remove();
         // remove the current row classes
-        fo_container.children().removeClass('active-row current last active');
+        if(typeof(fo_children) !== undefined){
+            fo_container.children().removeClass('active-row current last active');
+        }   
         // set the current grandparent container to 'current'
         $(this).parent().parent().addClass('current');
         // get index from html data attr.

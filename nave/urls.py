@@ -42,6 +42,7 @@ urlpatterns += i18n_patterns(
     url(r'^', include('nave.projects.{}.urls'.format(settings.SITE_NAME))),
     url(r'^', include('nave.search.urls')),
     url(r'^', include('nave.virtual_collection.urls')),
+    url(r'^', include('nave.virtual_website.urls')),
     url(r'^', include('nave.lod.urls')),
     url(r'^', include('nave.search_widget.urls')),
     # template and data from nave.void app
