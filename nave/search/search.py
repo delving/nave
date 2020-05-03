@@ -14,6 +14,7 @@ from django.core.cache import caches
 from django.core.paginator import Paginator, Page, EmptyPage, PageNotAnInteger
 from django.http import QueryDict
 from elasticsearch_dsl import Search, aggs, A
+from elasticsearch_dsl.utils import AttrDict
 from elasticsearch_dsl.query import Q, Match, MatchPhrase
 from rest_framework.request import Request
 import six
@@ -197,12 +198,12 @@ class NaveESQuery(object):
         if not self.index_name:
             logger.warn("There should always we a index name defined.")
             return None
-        if self.acceptance and self.index_name == settings.SITE_NAME:
-            return "{}_acceptance".format(settings.SITE_NAME)
+        if self.acceptance and self.index_name == settings.INDEX_NAME:
+            return "{}_acceptance".format(settings.INDEX_NAME)
         return self.index_name
 
     def _create_query(self):
-        query = Search()
+        query = Search().extra(track_total_hits=True)
         if self.get_index_name:
             query = query.index(*self._as_list(self.get_index_name))
         if self.doc_types:
@@ -737,7 +738,7 @@ class NaveESQuery(object):
                 if lat and lon:
                     seen += 1
                     yield '[{}, {}, "{}"],\n'.format(
-                            lat.raw, lon.raw, rec.meta.id
+                            lat.raw, lon.raw, rec._id
                     )
             if max and seen > max:
                 break
@@ -1288,16 +1289,10 @@ class NaveESItem(object):
         pass
 
     def _create_meta(self):
-        if isinstance(self._es_item, dict):
-            self._doc_id = self._es_item.get('_id')
-            self._doc_type = self._es_item.get('_type')
-            self._index = self._es_item.get('_index')
-            self._score = self._es_item.get('_score')
-        else:
-            self._doc_id = self._es_item.meta.id
-            self._doc_type = "void_edmrecord"
-            self._index = self._es_item.meta.index
-            self._score = self._es_item.meta.score
+        self._doc_id = self._es_item._id
+        self._doc_type = "void_edmrecord"
+        self._index = self._es_item._index
+        self._score = self._es_item._score
 
     def _create_item(self):
         if not isinstance(self._es_item, dict):
@@ -1432,7 +1427,7 @@ class NaveItemResponse(object):
     @property
     def item(self):
         if not self._item:
-            if self._results.hits.total > 0:
+            if self._results.hits.total.value > 0:
                 es_item = self._results.hits[0]
                 self._item = NaveESItem(es_item)
         return self._item
@@ -1492,7 +1487,7 @@ class NaveQueryResponse(object):
     @property
     def num_found(self):
         if not self._num_found:
-            self._num_found = self.es_results.hits.total
+            self._num_found = self.es_results.hits.total.value
         return self._num_found
 
     @property

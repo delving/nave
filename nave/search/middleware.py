@@ -66,7 +66,7 @@ class APIEntry(DocType):
     response = Nested()
 
     class Meta:
-        index = "{}_apilog".format(settings.SITE_NAME)
+        index = "{}_apilog".format(settings.ORG_ID)
 
     def save(self, ** kwargs):
         self.created_at = datetime.now()

@@ -45,7 +45,6 @@ from nave.lod.utils import rdfstore
 from nave.search.connector import get_es_client
 
 logger = logging.getLogger(__file__)
-client = get_es_client()
 
 
 Predicate = namedtuple('Predicate', ['uri', 'label', 'ns', 'prefix'])
@@ -1630,7 +1629,7 @@ class RDFRecord:
             return spec_filters
 
     def create_es_action(self, doc_type, record_type, action="index",
-                         index=settings.SITE_NAME, store=None,
+                         index=settings.INDEX_NAME, store=None,
                          context=True, flat=True, exclude_fields=None,
                          acceptance=False, content_hash=None):
 
@@ -1734,7 +1733,7 @@ class RDFRecord:
         return mapping
 
     @staticmethod
-    def delete_from_index(spec, index='{}'.format(settings.SITE_NAME)):
+    def delete_from_index(spec, index='{}'.format(settings.INDEX_NAME)):
         """Delete all dataset records from the Search Index. """
         query_string = {
             "query": {
@@ -1745,19 +1744,19 @@ class RDFRecord:
                 }
             }
         }
-        response = client.delete_by_query(index=index, body=query_string)
+        response = get_es_client().delete_by_query(index=index, body=query_string)
         logger.info("Deleted {} from Search index with message: {}".format(spec, response))
         return response
 
     @staticmethod
-    def remove_orphans(spec, timestamp, index='{}'.format(settings.SITE_NAME)):
+    def remove_orphans(spec, timestamp, index='{}'.format(settings.INDEX_NAME)):
         """
         date_string.isoformat()"""
         # make sure you don't erase things from the same second
         logger.info("Timestamp for orphan deletion: {}".format(timestamp))
         if not settings.LEGACY_ORPHAN_CONTROL:
             return 0
-        client.indices.refresh(index)
+        get_es_client().indices.refresh(index)
         sleep(3)
         orphan_query = {
             "query": {
@@ -1779,7 +1778,7 @@ class RDFRecord:
             }
         }
         logger.info("Delete before: {}".format(timestamp))
-        response = client.delete_by_query(index=index, body=orphan_query)
+        response = get_es_client().delete_by_query(index=index, body=orphan_query)
         orphan_counter = response['deleted']
         logger.info(
             'Deleted {} orphans from Search index with message: {}'.format(
@@ -1823,21 +1822,21 @@ class ElasticSearchRDFRecord(RDFRecord):
         self._rdf_string = system_fields['source_graph']
         self._named_graph = system_fields['graph_name']
         self._source_uri = system_fields['source_uri']
-        self._spec = system_fields.get('delving_spec')
-        self._hub_id = system_fields.get('slug')
-        self._modified_at = system_fields.get('modified_at')
+        self._spec = system_fields['spec']
+        self._hub_id = system_fields['slug']
+        self._modified_at = system_fields['modified_at']
         return self
 
     def query_for_graph(self, query_type=None, query=None, store_name=None, as_bindings=False, raw_query=None):
         if store_name is None:
-            store_name = settings.SITE_NAME
+            store_name = settings.INDEX_NAME
         if raw_query:
-            s = Search(index=store_name).using(client).query(raw_query)
+            s = Search(index=store_name).using(get_es_client()).query(raw_query).extra(track_total_hits=True)
         else:
-            s = Search(index=store_name).using(client).query(query_type, **query)
+            s = Search(index=store_name).using(get_es_client()).query(query_type, **query).extra(track_total_hits=True)
         # s = s[:1] # todo use terminate after later
         response = s.execute()
-        if response.hits.total != 1:
+        if response.hits.total.value != 1:
             return None
         self.set_defaults_from_query_result(response.hits.hits[0])
         if as_bindings:
@@ -1880,11 +1879,11 @@ class ElasticSearchRDFRecord(RDFRecord):
     def get_raw_related(self, query_fields, filter_query, graph_bindings, store_name=None):
         """Return a List of Nave items based on  the values from the query_fields extracted from the GraphBindings."""
         if store_name is None:
-            store_name = settings.SITE_NAME
+            store_name = settings.INDEX_NAME
         query_list =  self.get_query_value_query_list(query_fields, graph_bindings)
         if not query_list:
             return []
-        s = Search(using=client, index=store_name)
+        s = Search(using=get_es_client(), index=store_name)
         must_not_list = []
         if self.hub_id:
             must_not_list.append(Q("match", _id=self.hub_id))
@@ -1915,13 +1914,13 @@ class ElasticSearchRDFRecord(RDFRecord):
                          store_name=None, mlt_count=5, filter_query=None,
                          wrapped=True, converter=None):
         if store_name is None:
-            store_name = settings.SITE_NAME
+            store_name = settings.INDEX_NAME
         if mlt_fields is None or not isinstance(mlt_fields, list):
             mlt_fields = getattr(settings, "MLT_FIELDS", None)
             if mlt_fields is None:
                 logger.warn("MLT_FIELDS should be defined for MLT functionality.")
                 return ""
-        s = Search(using=client, index=store_name)
+        s = Search(using=get_es_client(), index=store_name)
         mlt_query = s.query(
             'more_like_this',
             fields=mlt_fields,

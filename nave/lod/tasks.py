@@ -144,7 +144,7 @@ def process_sparql_updates(sparql_updates, store=None):
 
 @task()
 def remove_rdf_from_index(
-    app_label, model_name, record_id, index=settings.SITE_NAME, store=None
+    app_label, model_name, record_id, index=settings.INDEX_NAME, store=None
     ):
     """Remove RDF for Django Record from the GraphStore."""
     obj = get_model_record(app_label, model_name, record_id)
@@ -165,7 +165,7 @@ def remove_rdf_from_index(
 
 @task()
 def update_rdf_in_index(app_label, model_name, record_id,
-                        index=settings.SITE_NAME, store=None):
+                        index=settings.INDEX_NAME, store=None):
     obj = get_model_record(app_label, model_name, record_id)
     if obj and issubclass(obj.__class__, RDFModel):
         nr, errors = helpers.bulk(get_es(), [obj.create_es_action(index=index, store=store, context=False)])

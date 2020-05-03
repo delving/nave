@@ -17,7 +17,7 @@ django-suit-ckeditor==0.0.2
 django-taggit==0.20
 djangorestframework==3.5.3
 djangorestframework-jsonp==1.0.2
-elasticsearch-dsl>=6.0.0,<7.0.0
+elasticsearch-dsl>=7.0.0,<8.0.0
 fastkml==0.11
 filemagic==1.6
 geobuf==1.1.0

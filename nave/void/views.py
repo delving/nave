@@ -197,11 +197,11 @@ class DataSetStatistics:
         from elasticsearch_dsl import Search, A
         from nave.search.connector import get_es_client
         client = get_es_client()
-        s = Search(using=client).index(settings.ORG_ID)
+        s = Search(using=client).index(settings.INDEX_NAME)
         a = A('terms', field='delving_spec.raw', size=500)
         s.aggs.bucket('delving_spec', a)
         response = s.execute()
-        self.total_records = response.hits.total
+        self.total_records = response.hits.total.value
         return response.aggregations.delving_spec.buckets
 
     def get_spec_list(self, include_deleted=True):

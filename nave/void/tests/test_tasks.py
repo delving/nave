@@ -224,7 +224,7 @@ class TestNarthexSynchronisation(TestCase):
         del_response = client.delete_by_query(index=self.index_name, q="*:*")
         es_response = s.execute()
         self.assertEquals(
-            es_response.hits.total,
+            es_response.hits.total.value,
             0
         )
         self.assertEquals(
@@ -253,7 +253,7 @@ class TestNarthexSynchronisation(TestCase):
         time.sleep(2)
         es_response = s.execute()
         self.assertEquals(
-            es_response.hits.total,
+            es_response.hits.total.value,
             1,
             "there should be one record in the test index"
         )
@@ -278,7 +278,7 @@ class TestNarthexSynchronisation(TestCase):
         ds.delete_from_index(self.index_name)
         es_response = s.execute()
         self.assertEquals(
-            es_response.hits.total,
+            es_response.hits.total.value,
             0,
             "there should be no records in the test index after the dataset is deleted"
         )

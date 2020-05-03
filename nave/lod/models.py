@@ -641,7 +641,7 @@ class RDFModel(TimeStampedModel, GroupOwned):
         return response
 
     def create_es_action(self, action="index", record_type=None,
-                         index=settings.SITE_NAME, store=None, doc_type=None,
+                         index=settings.INDEX_NAME, store=None, doc_type=None,
                          context=True, flat=True, exclude_fields=None,
                          acceptance=False):
         if doc_type is None:

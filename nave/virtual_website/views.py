@@ -70,7 +70,7 @@ class VirtualWebsitePmhProvider(ElasticSearchOAIProvider):
         virtual_website = get_object_or_404(VirtualWebsite, slug=slug)
         hidden_query_filters = [hqf.strip('"') for hqf in virtual_website.query.split(";;;")]
         query = NaveESQuery(
-            index_name=settings.SITE_NAME,
+            index_name=settings.INDEX_NAME,
             doc_types=[],
             hidden_filters=hidden_query_filters
         )

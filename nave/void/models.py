@@ -644,7 +644,7 @@ class DataSet(TimeStampedModel, GroupOwned):
         store.update(query="\n".join(update_switch))
         return None
 
-    def delete_from_index(self, index='{}'.format(settings.SITE_NAME)):
+    def delete_from_index(self, index='{}'.format(settings.INDEX_NAME)):
         """Delete all dataset records from the Search Index. """
         # TODO: use nested query for this to delete by spec and not only for the unfielded spec name
         response = es.delete_by_query(index=index, q="system.spec.raw:\"{}\"".format(self.spec))

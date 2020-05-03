@@ -33,12 +33,12 @@ USE_EDM_BINDINGS = False
 RDF_STORE_DB = None
 
 try:
-    RDF_STORE_DB = settings.SITE_NAME
+    RDF_STORE_DB = settings.ORG_ID
 except AttributeError as e:
     try:
         RDF_STORE_DB = settings.RDF_STORE_DB
     except AttributeError as e:
-        raise AttributeError("""Variable 'SITE_NAME' or RDF_STORE_DB must be defined in the settings.py """)
+        raise AttributeError("""Variable 'ORG_ID' or RDF_STORE_DB must be defined in the settings.py """)
 
 try:
     # The hostname were the triple store is running

@@ -29,7 +29,7 @@ class NarthexBulkLoader:
     def __init__(
             self,
             org_id=settings.ORG_ID,
-            index=settings.SITE_NAME,
+            index=settings.INDEX_NAME,
             narthex_base="~/NarthexFiles"
         ):
         self._org_id = org_id
@@ -99,7 +99,7 @@ class NarthexBulkLoader:
     def process_narthex_file(self, spec, store=None, acceptance=False, path=None, console=False, index=None):
 
         if not index and not self.index:
-            index = settings.SITE_NAME
+            index = settings.INDEX_NAME
 
         start = datetime.now()
 

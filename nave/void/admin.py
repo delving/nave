@@ -101,7 +101,7 @@ logger = logging.getLogger(__name__)
 # def stop_celery_task_by_id(self, request, queryset):
     # """Stop a running Dataset synchronisation task in celery."""
     # # find app in settings module
-    # celery_app = importlib.import_module("projects.{}.celeryapp".format(settings.SITE_NAME))
+    # celery_app = importlib.import_module("projects.{}.celeryapp".format(settings.INDEX_NAME))
     # app = celery_app.app
     # for ds in queryset:
         # if ds.process_key:

@@ -44,7 +44,7 @@ def project_version():
     return {
         'version_project': {
             'ok': True,
-            'name': settings.SITE_NAME,
+            'name': settings.INDEX_NAME,
             'sha': sha,
             'short_sha': short_sha,
         }
@@ -79,13 +79,13 @@ def check_es_status():
     message = ""
     try:
         es = get_es_client()
-        es.indices.exists(settings.SITE_NAME)
+        es.indices.exists(settings.INDEX_NAME)
     except Exception as e:
         message = e
     return {
         'elasticsearch': [
             {
-                settings.SITE_NAME: {
+                settings.INDEX_NAME: {
                     'ok': ok_status,
                     'message': message,
                 }

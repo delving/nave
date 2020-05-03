@@ -20,7 +20,7 @@ def data_counts():
 
     try:
         dataset_count = DataSet.objects.count()
-        object_count = get_es_client().count(index=settings.SITE_NAME, doc_type="void_edmrecord")['count']
+        object_count = get_es_client().count(index=settings.INDEX_NAME, doc_type="void_edmrecord")['count']
 
         return {'datasets': dataset_count, 'objects': object_count}
     except:

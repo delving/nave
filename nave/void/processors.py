@@ -72,7 +72,7 @@ class IndexApiProcessor:
         """Create delete action for Elasticsearch bulk API."""
         return {
             '_op_type': 'delete',
-            '_index': settings.SITE_NAME,
+            '_index': settings.INDEX_NAME,
             '_type': self.get_doc_type(item),
             '_id': self.create_hub_id(item)
         }
@@ -281,7 +281,7 @@ class BulkApiProcessor:
         ids = [{"_id": key[0]} for key in self.es_actions.keys()]
         mget_ids = get_es_client().mget(
             body={"docs": ids},
-            index=settings.SITE_NAME,
+            index=settings.INDEX_NAME,
             _source_include=['system.content_hash']
         )
         index_sets = {

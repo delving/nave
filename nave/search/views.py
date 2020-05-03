@@ -100,7 +100,7 @@ class LegacyAPIRedirectView(RedirectView):
 
 class ClusterGeoJsonView(ListView):
     def get(self, request, *args, **kwargs):
-        query_factory = NaveESQuery(index_name=settings.SITE_NAME)
+        query_factory = NaveESQuery(index_name=settings.INDEX_NAME)
         query = query_factory.build_geo_query(request)
         results = query.execute()
         geo_json = gis.get_geojson(gis.get_feature_collection(results.aggregations))
@@ -148,7 +148,7 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
                         # rdf renders
                         N3Renderer, JSONLDRenderer, RDFRenderer, NTRIPLESRenderer, TURTLERenderer)
     registered_converters = REGISTERED_CONVERTERS
-    index_name = settings.SITE_NAME
+    index_name = settings.INDEX_NAME
     doc_types = []
     template_name = "search/search-results.html"
     facets = settings.FACET_CONFIG
@@ -352,7 +352,7 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
 
         if hasattr(settings, 'GEO_STREAMING_RESPONSE'):
             max = settings.GEO_STREAMING_RESPONSE
-        query_factory = NaveESQuery(index_name=settings.SITE_NAME)
+        query_factory = NaveESQuery(index_name=settings.INDEX_NAME)
         generator = query_factory.get_geojson_generator(request=request, max=max)
         response = StreamingHttpResponse(
             generator,
@@ -379,7 +379,8 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
                 # get hub_id and redirect
                 from elasticsearch_dsl import Search
                 from .connector import get_es_client
-                res = Search(index=settings.SITE_NAME).using(get_es_client()).query("match", **{'dc_identifier.value': id}).execute()
+                s = Search(index=settings.INDEX_NAME).using(get_es_client()).extra(track_total_hits=True).query("match", **{'dc_identifier.value': id})
+                res = s.execute()
                 if res.hits:
                     id = res.hits[0].meta.id
                 else:
@@ -469,7 +470,7 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
             mlt_count=mlt_count,
             mlt_filter_query=mlt_fq_dict,
         )
-        if response._results.hits.total == 0:
+        if response._results.hits.total.value == 0:
             return HttpResponseNotFound()
         clean_pk = response._results[0].meta.id
         record = ElasticSearchRDFRecord(hub_id=clean_pk)

@@ -31,7 +31,7 @@ logger = get_task_logger(__name__)
 
 
 def get_index_name(acceptance=False):
-    return settings.SITE_NAME if not acceptance else "{}_acceptance".format(settings.SITE_NAME)
+    return settings.INDEX_NAME if not acceptance else "{}_acceptance".format(settings.INDEX_NAME)
 
 
 @task(bind=True, default_retry_delay=300, max_retries=5)

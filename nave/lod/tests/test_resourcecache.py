@@ -115,7 +115,7 @@ class TestResourceCache(TestCase):
         del_response = client.delete_by_query(index='test', q="*:*")
         es_response = s.execute()
         self.assertEquals(
-            es_response.hits.total,
+            es_response.hits.total.value,
             0
         )
         assert CacheResource.objects.count() == 0
@@ -136,7 +136,7 @@ class TestResourceCache(TestCase):
         assert CacheResource.objects.count() == 1
         es_response = s.execute()
         self.assertEquals(
-            es_response.hits.total,
+            es_response.hits.total.value,
             1
         )
         record = es_response.hits[0]

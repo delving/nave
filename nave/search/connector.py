@@ -17,7 +17,7 @@ import sys
 
 from django.conf import settings
 from django.core.cache import caches
-from elasticsearch import Elasticsearch
+from elasticsearch import Elasticsearch, RequestsHttpConnection
 from elasticsearch_dsl.connections import connections
 from elasticsearch.exceptions import ConnectionError, TransportError
 
@@ -48,23 +48,32 @@ ES_DISABLED = settings.ES_DISABLED
 
 # TODO remove when all indexing code is removed
 # ES_INDEXES = get_settings('ES_INDEXES', {
-    # 'default': '{}'.format(settings.SITE_NAME),
-    # 'acceptance': '{}_v2'.format(settings.SITE_NAME),
+    # 'default': '{}'.format(settings.INDEX_NAME),
+    # 'acceptance': '{}_v2'.format(settings.INDEX_NAME),
 # })
 
 ES_TIMEOUT = settings.ES_TIMEOUT
 
 ORG_ID = settings.ORG_ID
 
-es_client = None
+es_client = Elasticsearch(
+    hosts=ES_URLS,
+    retry_on_timeout=False,
+    connection_class=RequestsHttpConnection,
+    max_retries=0,
+    timeout=15,
+    #  retry_on_timeout=False,
+    #  timeout=ES_TIMEOUT,
+)
 
 # # check if all the indexes are created and if not create with the right mappings
 try:
     connections.create_connection(
         hosts=ES_URLS,
-        retry_on_timeout=True,
-        max_retries=3,
-        timeout=ES_TIMEOUT,
+        retry_on_timeout=False,
+        connection_class=RequestsHttpConnection,
+        max_retries=0,
+        timeout=15,
     )
 except (ConnectionError, TransportError) as ce:
     msg = "Unable to connect to Elasticsearch hosts: {}".format(ES_URLS)
@@ -74,12 +83,7 @@ except (ConnectionError, TransportError) as ce:
 
 
 def get_es_client():
-    return Elasticsearch(
-        hosts=ES_URLS,
-        retry_on_timeout=True,
-        max_retries=3,
-        timeout=ES_TIMEOUT,
-    )
+    return es_client
 
 
 
@@ -344,7 +348,7 @@ if not es_client:
         # sys.exit(1)
     # for index, name in list(ES_INDEXES.items()):
         # print(index, name)
-        # if name in [settings.SITE_NAME] and es_client.indices.get_alias(name=name):
+        # if name in [settings.INDEX_NAME] and es_client.indices.get_alias(name=name):
             # alias = None
         # else:
             # alias = name.replace('_v1', '') if '_v1' in name else None

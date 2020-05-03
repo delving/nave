@@ -22,7 +22,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
 
         actions_file = options['path']
-        index = settings.SITE_NAME
+        index = settings.INDEX_NAME
         lines = 0
         buffer = []
         with open(actions_file, 'r') as es_actions:

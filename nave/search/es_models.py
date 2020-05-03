@@ -48,7 +48,7 @@ class RDFIndexRecord(DocType):
     # )
 
     class Meta:
-        index = settings.SITE_NAME
+        index = settings.INDEX_NAME
 
     # def add_comment(self, author, content):
     #     self.comments.append(

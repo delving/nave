@@ -18,7 +18,7 @@ class Command(BaseCommand):
         )
         parser.add_argument(
             '--index',
-            default=settings.SITE_NAME,
+            default=settings.INDEX_NAME,
             help='index to be used.'
         )
 

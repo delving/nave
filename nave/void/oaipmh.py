@@ -177,7 +177,7 @@ class OAIProvider(TemplateView):
         """
         self.template_name = 'oaipmh/identify.xml'
         identify_data = {
-            'name': 'OAI-PMH repository for {}'.format(settings.SITE_NAME),
+            'name': 'OAI-PMH repository for {}'.format(settings.ORG_ID),
             # perhaps an oai_admins method with default logic settings.admins?
             'admins': (email for name, email in settings.ADMINS),
             'earliest_date': '1990-02-01T12:00:00Z',  # placeholder
@@ -192,7 +192,7 @@ class OAIProvider(TemplateView):
             'identifier_scheme': 'oai',
             'repository_identifier': "{}".format(RDFRecord.get_rdf_base_url(prepend_scheme=True)),
             'identifier_delimiter': '_',
-            'sample_identifier': '{}_spec_localId'.format(settings.SITE_NAME)
+            'sample_identifier': '{}_spec_localId'.format(settings.ORG_ID)
         }
         return self.render_to_response(identify_data)
 
@@ -425,7 +425,7 @@ class ElasticSearchOAIProvider(OAIProvider):
         return self._es_response
 
     def get_list_size(self):
-        return self.get_query_result().hits.total
+        return self.get_query_result().hits.total.value
 
     def get_sort_key(self):
         return self.get_query_result().hits[-1].meta.sort
@@ -457,24 +457,24 @@ class ElasticSearchOAIProvider(OAIProvider):
         return [obj.get_spec_name()]
 
     def get_item(self, identifier):
-        s = Search(using=self.client)
+        s = Search(using=self.client).extra(track_total_hits=True)
         s = s.query("match", **{"_id": identifier})
         response = s.execute()
-        if response.hits.total != 1:
+        if response.hits.total.value != 1:
             return None
         return ElasticSearchRDFRecord.get_rdf_records_from_query(
             query=s,
             response=response)[0]
 
     def convert_filters_to_query(self, filters):
-        s = Search(using=self.client, index=settings.ORG_ID)
+        s = Search(using=self.client, index=settings.INDEX_NAME).extra(track_total_hits=True)
         spec = filters.get("dataset__spec", None)
         modified_from = filters.get('modified__gt', None)
         modified_until = filters.get('modified__lt', None)
         if spec and not self.spec:
             self.spec = spec
         if self.spec:
-            s = s.query("match", **{'system.spec.raw': self.spec})
+            s = s.query("match", **{'system.spec': self.spec})
         if self.query:
             query_dict = self.query.to_dict()
             if 'query' in query_dict:
@@ -485,7 +485,7 @@ class ElasticSearchOAIProvider(OAIProvider):
             s = s.filter("range", **{"system.modified_at": {"gte": modified_from}})
         if modified_until:
             s = s.filter("range", **{"system.modified_at": {"lte": modified_until}})
-        s = s.sort({"system.modified_at": {"order": "asc"}, "legacy.delving_hubId": {"order": "desc"}})
+        s = s.sort({"system.modified_at": {"order": "asc"}, "_id": {"order": "desc"}})
         # todo change to scroll
         # slice_query = s[self.cursor: self.get_next_cursor()]
         # TODO retrieve this from the resumption token
@@ -496,7 +496,7 @@ class ElasticSearchOAIProvider(OAIProvider):
         return slice_query
 
     def get_dataset_list(self):
-        s = Search(using=self.client, index=settings.ORG_ID)
+        s = Search(using=self.client, index=settings.INDEX_NAME).extra(track_total_hits=True)
         datasets = A(
             'terms',
             field='delving_spec.raw',
@@ -505,7 +505,7 @@ class ElasticSearchOAIProvider(OAIProvider):
         if self.query:
             s = s.filter(self.query.get('filter'))
         elif self.spec:
-            s = s.query("match", **{'system.spec.raw': self.spec})
+            s = s.query("match", **{'system.spec': self.spec})
         s.aggs.bucket("dataset-list", datasets)
         response = s.execute()
         specs = response.aggregations['dataset-list'].buckets
