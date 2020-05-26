@@ -285,6 +285,7 @@ THIRD_PARTY_APPS = (
     'rosetta',  # for translation
     'taggit',
     'watchman',
+    'ddtrace.contrib.django',
 
 )
 
@@ -569,6 +570,7 @@ RDF_SUPPORTED_NAMESPACES = {
     # 'http://www.rdaregistry.info/Elements/u/': 'rda',
     'http://www.cidoc-crm.org/cidoc-crm/': 'crm',
     'http://www.rdaregistry.info/Elements/u/': 'rdau',
+    'http://www.ebu.ch/metadata/ontologies/ebucore/ebucore#': 'ebucore',
 }
 
 RDF_SUPPORTED_PREFIXES = defaultdict(list)

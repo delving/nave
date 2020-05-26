@@ -60,7 +60,7 @@ es_client = Elasticsearch(
     hosts=ES_URLS,
     retry_on_timeout=False,
     connection_class=RequestsHttpConnection,
-    max_retries=0,
+    max_retries=1,
     timeout=15,
     #  retry_on_timeout=False,
     #  timeout=ES_TIMEOUT,
@@ -72,7 +72,7 @@ try:
         hosts=ES_URLS,
         retry_on_timeout=False,
         connection_class=RequestsHttpConnection,
-        max_retries=0,
+        max_retries=1,
         timeout=15,
     )
 except (ConnectionError, TransportError) as ce:

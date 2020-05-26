@@ -1428,17 +1428,17 @@ class RDFRecord:
                 subject=wr,
                 predicate=NAVE.allowSourceDownload
             )
-            add_source_download = all(
-                str(o).lower() == 'true' for o in allow_source_download
-            )
-            if add_source_download:
-                large_thumb = bindings.get_first('nave_thumbLarge')
-                if large_thumb:
-                    graph.add((
-                        wr,
-                        NAVE.sourceDownload,
-                        large_thumb.value
-                    ))
+            #  add_source_download = all(
+                #  str(o).lower() == 'true' for o in allow_source_download
+            #  )
+            #  if add_source_download:
+                #  large_thumb = bindings.get_first('nave_thumbLarge')
+                #  if large_thumb:
+                    #  graph.add((
+                        #  wr,
+                        #  NAVE.sourceDownload,
+                        #  large_thumb.value
+                    #  ))
             # elif api_call and about_uri and not settings.RESOLVE_WEBRESOURCES_VIA_MEDIAMANAGER:
                 # pass
             if bindings:
