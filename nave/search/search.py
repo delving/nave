@@ -1289,10 +1289,16 @@ class NaveESItem(object):
         pass
 
     def _create_meta(self):
-        self._doc_id = self._es_item.meta.id
-        self._doc_type = "void_edmrecord"
-        self._index = self._es_item.meta.index
-        self._score = self._es_item.meta.score
+      if isinstance(self._es_item, dict):
+            self._doc_id = self._es_item.get('_id')
+            #  self._doc_type = self._es_item.get('_type')
+            self._index = self._es_item.get('_index')
+            self._score = self._es_item.get('_score')
+        else:
+            self._doc_id = self._es_item.meta.id
+            #  self._doc_type = "void_edmrecord"
+            self._index = self._es_item.meta.index
+            self._score = self._es_item.meta.score
 
     def _create_item(self):
         if not isinstance(self._es_item, dict):
