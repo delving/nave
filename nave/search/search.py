@@ -1289,7 +1289,7 @@ class NaveESItem(object):
         pass
 
     def _create_meta(self):
-      if isinstance(self._es_item, dict):
+        if isinstance(self._es_item, dict):
             self._doc_id = self._es_item.get('_id')
             #  self._doc_type = self._es_item.get('_type')
             self._index = self._es_item.get('_index')
