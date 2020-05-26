@@ -14,6 +14,7 @@ from django.core.cache import caches
 from django.core.paginator import Paginator, Page, EmptyPage, PageNotAnInteger
 from django.http import QueryDict
 from elasticsearch_dsl import Search, aggs, A
+from elasticsearch_dsl.response import Hit
 from elasticsearch_dsl.utils import AttrDict
 from elasticsearch_dsl.query import Q, Match, MatchPhrase
 from rest_framework.request import Request
@@ -1291,14 +1292,19 @@ class NaveESItem(object):
     def _create_meta(self):
         if isinstance(self._es_item, dict):
             self._doc_id = self._es_item.get('_id')
-            #  self._doc_type = self._es_item.get('_type')
+            self._doc_type = "void_edmrecord"
             self._index = self._es_item.get('_index')
             self._score = self._es_item.get('_score')
-        else:
+        elif isinstance(self._es_item, Hit):
             self._doc_id = self._es_item.meta.id
-            #  self._doc_type = "void_edmrecord"
+            self._doc_type = "void_edmrecord"
             self._index = self._es_item.meta.index
             self._score = self._es_item.meta.score
+        else:
+            self._doc_id = self._es_item._id
+            self._doc_type = "void_edmrecord"
+            self._index = self._es_item._index
+            self._score = self._es_item._score
 
     def _create_item(self):
         if not isinstance(self._es_item, dict):
