@@ -54,7 +54,16 @@ def get_resource_fields(context, fieldname, local_bindings=None):
 def get_unsorted_resource_fields(context, fieldname, local_bindings=None):
     if not local_bindings:
         local_bindings = context['resources']
-    return local_bindings.get_list(fieldname, False)
+    fields = local_bindings.get_list(fieldname, False)
+    if fieldname in ['edm_hasView']:
+        nonEmptyFields = []
+        for field in fields:
+            if field.has_resource and field.get_resource.get_first("nave_thumbLarge"):
+                nonEmptyFields.append(field)
+
+        return nonEmptyFields
+
+    return fields
 
 
 @register.simple_tag(takes_context=True)
