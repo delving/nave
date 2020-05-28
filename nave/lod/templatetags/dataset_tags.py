@@ -58,8 +58,10 @@ def get_unsorted_resource_fields(context, fieldname, local_bindings=None):
     if fieldname in ['edm_hasView']:
         nonEmptyFields = []
         for field in fields:
-            if field.has_resource and field.get_resource.get_first("nave_thumbLarge"):
-                nonEmptyFields.append(field)
+            if field.has_resource:
+                webrsc = field.get_resource
+                if webrsc.get_first("nave_thumbLarge") or webrsc.get_first("ebucore_hasMimeType"):
+                    nonEmptyFields.append(field)
 
         return nonEmptyFields
 
