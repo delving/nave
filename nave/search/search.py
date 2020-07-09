@@ -1415,7 +1415,7 @@ class NaveItemResponse(object):
                     include=False,
                     like=[{
                         "_index": self._index,
-                        "_type": doc_type,
+                        #  "_type": doc_type,
                         "_id": doc_id
                     }]
             )[:self._mlt_count]
