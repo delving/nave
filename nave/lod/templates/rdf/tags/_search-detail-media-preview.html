@@ -1,4 +1,4 @@
-{% load i18n static %}
+{% load i18n static dataset_tags %}
 {# todo: pass along metadata record values for: creator, title, date and collection to display in alt tag for image, perhaps custom image size (highres) for fullscreen viewing #}
 
     {% if values and values|length_is:"1" %}
@@ -7,11 +7,11 @@
                 {# TODO: check for deepzoom, video audio and render html accordingly #}
                 {% if value.value %}
                     {% if fullscreen %}
-                        <a href="{{ value.value }}" class="fullscreen" rel="nofollow">
+                        <a href="{{ value.value|to_https }}" class="fullscreen" rel="nofollow">
                     {% else %}
                         <a href="{{ uri }}" rel="canonical">
                     {% endif %}
-                        <img src="{{ value.value }}" alt="{% for a in alt %}{{ a }}{% endfor %}" />
+                        <img src="{{ value.value|to_https }}" alt="{% for a in alt %}{{ a }}{% endfor %}" />
                         </a>
                 {% else %}
                     <img  src="{% static 'img/media-placeholder.svg' %}" id="placeholder-image"/>
@@ -36,7 +36,7 @@
                         {% if fullscreen %}
                             <a href="{{ value.value }}" class="fullscreen" rel="nofollow">
                         {% endif %}
-                            <img src="{{ value.value }}" alt="{% for a in alt %}{{ a }}{% endfor %}" />
+                            <img src="{{ value.value|to_https }}" alt="{% for a in alt %}{{ a }}{% endfor %}" />
                         {% if fullscreen %}
                             </a>
                         {% endif %}
@@ -60,7 +60,7 @@
                     {% for value in values %}
                         <li data-target="#media-carousel" data-slide-to="{{ forloop.counter0 }}" class="{% if forloop.first %}active{% endif %}"
                             id="carousel-selector-{{ forloop.counter0 }}">
-                            <img src="{{ value.value }}" alt="{% for a in alt %}{{ a }}{% endfor %}" height="100" width="100"/>
+                            <img src="{{ value.value|to_https }}" alt="{% for a in alt %}{{ a }}{% endfor %}" height="100" width="100"/>
                         </li>
                     {% endfor %}
                 </ul>

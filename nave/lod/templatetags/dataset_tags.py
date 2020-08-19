@@ -67,7 +67,6 @@ def get_unsorted_resource_fields(context, fieldname, local_bindings=None):
 
     return fields
 
-
 @register.simple_tag(takes_context=True)
 def get_resolved_uri(context, uri):
     """Returns resolved uri, or Cached URI."""
@@ -146,7 +145,6 @@ def detail_webresource(context, alt="", indicators=False, thumbnail_nav=False, w
 
 
 MockRDFObject = namedtuple('MockRDFObject', ["value"])
-
 
 @register.inclusion_tag('rdf/tags/_search-detail-media-preview.html', takes_context=True)
 def detail_media_preview(context, fieldname, alt="", fullscreen=False, indicators=False, thumbnail_nav=False, uri="", webresources=""):
