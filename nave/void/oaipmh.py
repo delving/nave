@@ -416,12 +416,14 @@ class ElasticSearchOAIProvider(OAIProvider):
         if until_date and ' ' in until_date:
             until_date=parser.parse(timestr=filters.pop('modified__lt'))
             filters["modified__lt"] = until_date.strftime(fmt)
+
         return filters
 
     def get_query_result(self):
         if not self._es_response:
             s = self.convert_filters_to_query(self.filters)
             self._es_response = s.execute()
+
         return self._es_response
 
     def get_list_size(self):
@@ -474,7 +476,7 @@ class ElasticSearchOAIProvider(OAIProvider):
         if spec and not self.spec:
             self.spec = spec
         if self.spec:
-            s = s.query("match", **{'system.spec': self.spec})
+            s = s.query("match", **{'system.spec.raw': self.spec})
         if self.query:
             query_dict = self.query.to_dict()
             if 'query' in query_dict:
@@ -499,13 +501,13 @@ class ElasticSearchOAIProvider(OAIProvider):
         s = Search(using=self.client, index=settings.INDEX_NAME).extra(track_total_hits=True)
         datasets = A(
             'terms',
-            field='delving_spec.raw',
+            field='system.spec.raw',
             size=500
         )
         if self.query:
             s = s.filter(self.query.get('filter'))
         elif self.spec:
-            s = s.query("match", **{'system.spec': self.spec})
+            s = s.query("match", **{'system.spec.raw': self.spec})
         s.aggs.bucket("dataset-list", datasets)
         response = s.execute()
         specs = response.aggregations['dataset-list'].buckets
