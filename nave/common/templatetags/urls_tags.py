@@ -117,3 +117,7 @@ def has_cookie(context, cookie_name):
     value = request.COOKIES.get(cookie_name,'')
     return True if value else False
 
+
+@register.simple_tag
+def setvar(val=None):
+  return val

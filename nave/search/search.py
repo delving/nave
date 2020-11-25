@@ -36,7 +36,7 @@ class NaveESQuery(object):
 
     def __init__(self, index_name=None, doc_types=None, default_facets=None, size=16,
                  default_filters=None, hidden_filters=None, cluster_geo=False, geo_query=False, robust_params=True,
-                 facet_size=50, converter=None, acceptance=False):
+                 facet_size=50, converter=None, acceptance=False, mlt_fields=None):
         self.acceptance = acceptance
         self.index_name = index_name
         self.doc_types = doc_types
@@ -49,6 +49,7 @@ class NaveESQuery(object):
         self.facet_size = facet_size
         self.cluster_geo = cluster_geo
         self.geo_query = geo_query
+        self.mlt_fields = mlt_fields
         self.cluster_factor = 3
         self.error_messages = []
         self.query = self._create_query()
@@ -1531,6 +1532,10 @@ class NaveQueryResponse(object):
                     results=self._results.hits.hits,
                     converter=self._converter).items
         return self._items
+
+    @property
+    def image_proxy(self):
+        return settings.IMAGE_PROXY
 
     @property
     def facets(self):

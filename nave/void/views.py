@@ -11,7 +11,7 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
      renderer_classes
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.parsers import JSONParser
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
 from nave.search.renderers import XMLRenderer

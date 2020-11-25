@@ -627,7 +627,7 @@ class ICNConverter(BaseConverter):
             "icn_province": "nave_province",
             "icn_purchasePrice": "nave_purchasePrice",
             "icn_rijksCollection": "nave_rijksCollection",
-            "icn_subjectDepicted": "nave_subjectDepicted"
+            "icn_subjectDepicted": "nave_subjectDepicted",
             "icn_technique": "nave_technique",
             "icn_thumbLarge": "nave_thumbLarge",
             "icn_thumbSmall": "nave_thumbSmall",

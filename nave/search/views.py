@@ -11,17 +11,18 @@ from collections import OrderedDict, defaultdict
 
 import requests
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed, JsonResponse, HttpResponseNotFound
+
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed, JsonResponse, HttpResponseNotFound, Http404
 from django.shortcuts import redirect
 from django.utils.translation import ugettext_lazy as _, activate
 from django.views.generic import ListView, DetailView, RedirectView, View, TemplateView
 from rest_framework.decorators import list_route
 from rest_framework.generics import ListAPIView, RetrieveAPIView
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.renderers import TemplateHTMLRenderer, BrowsableAPIRenderer, JSONRenderer
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSetMixin
 from rest_framework_jsonp.renderers import JSONPRenderer
+from rest_framework import permissions
 
 from nave.base_settings import FacetConfig
 from nave.lod import EXTENSION_TO_MIME_TYPE
@@ -129,6 +130,23 @@ class BigDownloadView(View):
         return JsonResponse(resp)
 
 
+class BetaUser(permissions.BasePermission):
+
+  def has_permission(self, request, view):
+      if not settings.BETA_AUTHENTICATED and request.method in permissions.SAFE_METHODS:
+          return True
+
+      is_authenticated = request.user.is_authenticated()
+      for p in settings.BETA_PATHS:
+          if p in request.path and not is_authenticated:
+              return False
+
+      return bool(
+            request.method in permissions.SAFE_METHODS or
+            request.user and
+            request.user.is_authenticated
+        )
+
 class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
     """
     An APIView for returning ES search results.
@@ -141,7 +159,7 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
 
     The API query documentation can be found here: http://culture-hub-api-documentation.readthedocs.org/en/latest/
     """
-    permission_classes = (IsAuthenticatedOrReadOnly,)
+    permission_classes = (BetaUser,)
     serializer_class = NaveQueryResponseWrapperSerializer
     renderer_classes = (BrowsableAPIRenderer, TemplateHTMLRenderer, JSONRenderer, JSONPRenderer, XMLRenderer,
                         GeoJsonRenderer, KMLRenderer, GeoBufRenderer,
@@ -442,6 +460,7 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
             default_facets=self.facets,
             cluster_geo=False,
             size=1,
+            mlt_fields=self.mlt_fields,
             converter=self.get_converter()
         )
         try:
@@ -593,6 +612,9 @@ class NaveDocumentTemplateView(TemplateView):
     context_object_name = 'detail'
 
     def get(self, request, *args, **kwargs):
+        if not BetaUser().has_permission(request, None):
+            raise Http404
+
         absolute_uri = request.build_absolute_uri()
         if absolute_uri.endswith("/"):
             redirect(absolute_uri.rstrip('/'))

@@ -27,7 +27,7 @@ from nave.lod.utils.mimetype import extension_to_mime, HTML_MIME, mime_to_extens
     result_extension_to_mime
 from nave.lod.utils.rdfstore import get_rdfstore, UnknownGraph
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from nave.search.views import SearchListAPIView, BetaUser
 
 from nave.lod.utils.resolver import ElasticSearchRDFRecord
 
@@ -162,6 +162,9 @@ class LoDDataView(View):
         return params.get('display', default)
 
     def get(self, request, *args, **kwargs):
+        if not BetaUser().has_permission(request, None):
+            raise Http404
+
         target_uri = os.path.splitext(request.build_absolute_uri())[0].replace('/data/', '/resource/')
         if not self.request.path.startswith("/data"):
             target_uri = re.sub('/[a-z]{2}/resource/', '/resource/', target_uri, count=1)
@@ -253,6 +256,9 @@ class LoDHTMLView(TemplateView):
 
     def get_content_type_template(self, about_type):
         return settings.RDF_CONTENT_DETAIL.get(about_type.lower(), None)
+
+    def get_content_type_mlt(self, about_type):
+        return settings.RDF_CONTENT_MLT.get(about_type.lower(), None)
 
     def get_absolute_request_url(self):
         """Return the canonical RDF resource url for this page."""
@@ -390,7 +396,14 @@ class LoDHTMLView(TemplateView):
             # do expert mode stuff like more like this
             context['expert_mode'] = True
             if settings.MLT_DETAIL_ENABLE and object_local_cache:
-                context['data'] = {'items': object_local_cache.get_more_like_this()}
+                mlt_fields = self.get_content_type_mlt(rdf_type.search_label)
+                context['data'] = {
+                        'items': object_local_cache.get_more_like_this(
+                            mlt_fields=mlt_fields,
+                            mlt_count=100,
+                            #  filter_query = {"delving_spec.raw":["nk", "rczaak"]}
+                            )
+                        }
         if settings.MLT_BANNERS and isinstance(settings.MLT_BANNERS, dict) and object_local_cache:
             from collections import OrderedDict
             context['data'] = {"mlt_banners": OrderedDict()}
@@ -420,6 +433,9 @@ class LoDHTMLView(TemplateView):
         return context
 
     def get(self, request, *args, **kwargs):
+        if not BetaUser().has_permission(request, None):
+            raise Http404
+
         context = self.get_context_data(**kwargs)
         if context.get('unknown_graph'):
             if context.get('cached'):
@@ -591,13 +607,13 @@ class EDMHTMLMockView(TemplateView):
 class UserGeneratedContentList(ListCreateAPIView):
     queryset = UserGeneratedContent.objects.all()
     serializer_class = UserGeneratedContentSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly,)
+    permission_classes = (BetaUser,)
 
 
 class UserGeneratedContentDetail(RetrieveUpdateDestroyAPIView):
     queryset = UserGeneratedContent.objects.all()
     serializer_class = UserGeneratedContentSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly,)
+    permission_classes = (BetaUser,)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request._user)

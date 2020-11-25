@@ -37,12 +37,21 @@ def replace_string(value, args):
     else:
         return value
 
+@register.assignment_tag(takes_context=True)
+def get_sorted_resources_by_rdftype(context, rdf_type, predicate, local_bindings=None):
+    if not local_bindings:
+        local_bindings = context['resources']
+    resources = local_bindings.get_resources_by_rdftype(rdf_type)
+    if not resources:
+        return resources
+    return sorted(resources, key=lambda r: r.get_first(predicate).value)
 
 @register.assignment_tag(takes_context=True)
 def get_resources_by_rdftype(context, rdf_type, local_bindings=None):
     if not local_bindings:
         local_bindings = context['resources']
     return local_bindings.get_resources_by_rdftype(rdf_type)
+
 
 @register.assignment_tag(takes_context=True)
 def get_resource_fields(context, fieldname, local_bindings=None):
@@ -215,6 +224,7 @@ def render_properties(context, resources, obj=None, items=None, predicate=None, 
             logger.error('Illegal call to render properties without obj_id or items')
             raise ValueError('Illegal call to render properties without obj_id or items')
         items = resources.get_resource(uri_ref=obj.id, obj=obj).get_items(as_tuples=True)
+        # TODO: add rdf type information here <19-11-20, Sjoerd Siebinga> #
     level += 1
     not_follow_list = [
         "ore:isAggregatedBy"

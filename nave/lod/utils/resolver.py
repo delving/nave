@@ -612,7 +612,8 @@ class RDFResource:
             self.add_item(
                 predicate_uri=predicate,
                 rdf_object=RDFObject(rdf_object, self.graph, RDFPredicate(predicate),
-                                     bindings=self._bindings, subject=self.subject_uri)
+                                     bindings=self._bindings, subject=self.subject_uri,
+                                     rdf_types=self.get_types())
             )
 
     def get_types(self):
@@ -817,7 +818,7 @@ class RDFPredicate():
 
 
 class RDFObject:
-    def __init__(self, rdf_object, graph, predicate, subject, bindings=None):
+    def __init__(self, rdf_object, graph, predicate, subject, bindings=None, rdf_types=None):
         self._predicate = predicate
         self._rdf_object = rdf_object
         self._graph = graph
@@ -828,7 +829,15 @@ class RDFObject:
         self._lang = None
         self._resource = None
         self._subject = subject
+        self._rdf_types = rdf_types
         self._inline_enrichment_link()
+
+    @property
+    def get_types(self):
+        if not self._rdf_types:
+            return []
+
+        return self._rdf_types
 
     def _inline_enrichment_link(self):
         """Inline empty enrichment links created by Narthex.
@@ -1937,7 +1946,11 @@ class ElasticSearchRDFRecord(RDFRecord):
             for k, v in filter_query.items():
                 if not k.endswith('.raw'):
                     k = "{}.raw".format(k)
-                mlt_query = mlt_query.filter("term", **{k: v})
+                if isinstance(v, list):
+                    for val in v:
+                        mlt_query = mlt_query.filter("term", **{k: val})
+                else:
+                    mlt_query = mlt_query.filter("term", **{k: v})
         hits = mlt_query.execute()
         items = []
         for item in hits.hits:

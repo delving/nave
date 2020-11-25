@@ -568,6 +568,7 @@ RDF_SUPPORTED_NAMESPACES = {
     'http://www.geonames.org/ontology#': 'gn',
     'http://rdvocab.info/ElementsGr2/': 'rda',
     # 'http://www.rdaregistry.info/Elements/u/': 'rda',
+    "http://data.collectienederland.nl/ns/nk/": 'nk',
     'http://www.cidoc-crm.org/cidoc-crm/': 'crm',
     'http://www.rdaregistry.info/Elements/u/': 'rdau',
     'http://www.ebu.ch/metadata/ontologies/ebucore/ebucore#': 'ebucore',
@@ -631,16 +632,19 @@ RDF_CONTENT_DETAIL = {
     "ore_aggregation": "rdf/content_detail/ore_aggregation.html",
     "narthex_record": "rdf/content_detail/ore_aggregation.html",
     "gn_feature": "rdf/content_detail/gn_feature.html",
-    "rce_rijksmonument": "rdf/content_detail/rce_RijksMonument.html",
+}
+RDF_CONTENT_MLT = {
+        "ore_aggregation": [ "dc_subject.value", "dc_title.value", "dc_description.value", "edm_dataProvider.value"],
 }
 
 # FOLDOUTS
 RDF_CONTENT_FOLDOUTS = {
     "ore_aggregation": "rdf/content_foldout/lod-detail-foldout.html",
     "gn_feature": "rdf/content_foldout/gn_feature.html",
-    "rce_rijksmonument": "rdf/content_foldout/rce_RijksMonument.html",
 }
 
+BETA_PATHS = []
+BETA_AUTHENTICATED = True
 
 DEFAULT_V1_CONVERTER = "icn"
 DEFAULT_V2_CONVERTER = "v2"
@@ -707,6 +711,7 @@ CELERY_ACKS_LATE = True
     # },
 # }
 
+IMAGE_PROXY = ""
 
 class FacetConfig(object):
     """
