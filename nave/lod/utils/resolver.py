@@ -407,8 +407,8 @@ class GraphBindings:
         if not self._resources_by_type:
             type_dict = defaultdict(list)
             for resource in self.get_resource_list:
-                search_label = resource.get_type().search_label
-                type_dict[search_label].append(resource)
+                for t in resource.get_types():
+                    type_dict[t.search_label].append(resource)
             self._resources_by_type = type_dict
         return self._resources_by_type.get(search_label, None)
 
@@ -831,6 +831,29 @@ class RDFObject:
         self._subject = subject
         self._rdf_types = rdf_types
         self._inline_enrichment_link()
+        self._source_tags = set()
+
+    @property
+    def get_source_tags(self):
+        if not self._source_tags:
+            self.generate_source_tags()
+
+        return self._source_tags
+
+    def add_source_tag(self, tags):
+        if isinstance(tags, set) or isinstance(tags, list):
+            self._source_tags.update(tags)
+        elif isinstance(tags, str):
+            self._source_tags.update([tags])
+
+    def generate_source_tags(self, source_tag=NAVE.sourceTag):
+        labels = self._graph.objects(
+            subject=self._subject,
+            predicate=source_tag
+        )
+        for v in labels:
+            if v:
+                self._source_tags.update([v.value])
 
     @property
     def get_types(self):
@@ -1946,10 +1969,6 @@ class ElasticSearchRDFRecord(RDFRecord):
             for k, v in filter_query.items():
                 if not k.endswith('.raw'):
                     k = "{}.raw".format(k)
-                if isinstance(v, list):
-                    for val in v:
-                        mlt_query = mlt_query.filter("term", **{k: val})
-                else:
                     mlt_query = mlt_query.filter("term", **{k: v})
         hits = mlt_query.execute()
         items = []

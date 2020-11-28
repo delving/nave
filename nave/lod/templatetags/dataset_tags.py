@@ -281,11 +281,15 @@ def render_skos_concept(context, local_bindings):
 def detail_field(
         context,
         fieldname,
+        rdf_type=None,
+        group_by_source=False,
+        source_badge='nave_sourceTag',
         allow_html=False,
         is_link=False,
         new_query=False,
         new_facet_query=False,
         label=None,
+        badge=None,
         show_predicate=True,
         multiple=False,
         separator='',
@@ -313,7 +317,28 @@ def detail_field(
         facet_label = fieldname
 
     try:
-        if not predicate_uri and not rdf_object:
+        if rdf_type:
+            fields = []
+            types = bindings.get_resources_by_rdftype(rdf_type)
+            source_badge = bindings.get_uri_from_search_label(source_badge)
+            if types:
+                for r in types:
+                    for f in r.get_list(fieldname):
+                        f.generate_source_tags(source_badge)
+                        fields.append(f)
+
+                if group_by_source:
+                    grouped = {}
+                    for field in fields:
+                        if field.value in grouped:
+                            f = grouped.get(field.value).add_source_tag(field.get_source_tags)
+                            continue
+
+                        grouped[field.value] = field
+
+                    fields = list(grouped.values())
+
+        elif not predicate_uri and not rdf_object:
             if not multiple:
                 field = bindings[fieldname]
                 if field:
@@ -322,10 +347,12 @@ def detail_field(
                 fields = bindings.get_list(fieldname)
         else:
             fields = rdf_object.get_resource_field_value(field_name_uri=predicate_uri)
+
         if fields:
             predicate = fields[0].predicate
     except Exception as err:
-        logger.debug(err, fields, predicate_uri, fieldname)
+        logger.debug(err, fields, predicate_uri, fieldname, rdf_type)
+        __import__('pdb').set_trace()
         fields = None
         predicate = None
 
@@ -350,6 +377,8 @@ def detail_field(
         'request': request,
         'nr_levels': 4,
         'value_only': value_only,
+        'group_by_source': group_by_source,
+        'source_badge': badge,
     }
 
 
