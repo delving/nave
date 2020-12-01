@@ -330,11 +330,12 @@ def detail_field(
                 if group_by_source:
                     grouped = {}
                     for field in fields:
-                        if field.value in grouped:
-                            f = grouped.get(field.value).add_source_tag(field.get_source_tags)
+                        field_key = field.value.__str__()
+                        if field_key in grouped:
+                            f = grouped.get(field_key).add_source_tag(field.get_source_tags)
                             continue
 
-                        grouped[field.value] = field
+                        grouped[field_key] = field
 
                     fields = list(grouped.values())
 
@@ -352,7 +353,8 @@ def detail_field(
             predicate = fields[0].predicate
     except Exception as err:
         logger.debug(err, fields, predicate_uri, fieldname, rdf_type)
-        __import__('pdb').set_trace()
+        #  if settings.DEBUG:
+            #  __import__('pdb').set_trace()
         fields = None
         predicate = None
 
