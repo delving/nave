@@ -9,6 +9,7 @@ import logging
 import sys
 from collections import OrderedDict, defaultdict
 
+import bleach
 import requests
 from django.conf import settings
 
@@ -434,7 +435,7 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
                 'slug': kwargs.get('slug', None),
                 'data': queryset.data,
                 'rows': str(rows),
-                'view': view,
+                'view': bleach.clean(view),
                 'acceptance': mode
             }
             return Response(serializer_context, template_name=self.template_name)
