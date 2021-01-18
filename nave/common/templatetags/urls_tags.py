@@ -3,6 +3,7 @@
 
 import urllib.request, urllib.parse, urllib.error
 
+import bleach
 from django import template
 from django.utils.safestring import mark_safe
 from ..helper import UrlHelper
@@ -78,7 +79,8 @@ def quote_param_plus(value, safe='/'):
 def form_hidden_field(request, field):
     html = ''
     if request.GET.get(field):
-        html = '<input type="hidden" name="'+field+'" value="'+request.GET.get(field)+'" />'
+        clean_field = bleach.clean(request.GET.get(field))
+        html = '<input type="hidden" name="'+field+'" value="'+clean_field+'" />'
     return mark_safe(html)
 
 
@@ -94,6 +96,7 @@ def form_hidden_fields(request, exclude=[]):
         for field in fields:
             # extract the facet string value from after the first occurrence of ":"
             # only relevant to qf but will return correct value for "q=term" as well
+            field = bleach.clean(field)
             if len(field):
                 # text = field.replace('"','&quot;').split(':', 1)[-1]
                 if param != 'q':
