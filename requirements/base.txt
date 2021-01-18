@@ -6,7 +6,7 @@ eventlet==0.25.2
 gunicorn==20.0.4
 puput==0.8
 python3-memcached==1.51
-wagtail==1.9
+wagtail==2.7.4
 django-watchman==0.12.0
 waitress==1.0.2
 celery[redis]==4.0.2 # no longer used
