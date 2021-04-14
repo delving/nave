@@ -38,13 +38,13 @@ def replace_string(value, args):
         return value
 
 @register.assignment_tag(takes_context=True)
-def get_sorted_resources_by_rdftype(context, rdf_type, predicate, local_bindings=None):
+def get_sorted_resources_by_rdftype(context, rdf_type, predicate, local_bindings=None, reverse=False):
     if not local_bindings:
         local_bindings = context['resources']
     resources = local_bindings.get_resources_by_rdftype(rdf_type)
     if not resources:
         return resources
-    return sorted(resources, key=lambda r: r.get_first(predicate).value)
+    return sorted(resources, key=lambda r: r.get_first(predicate).value, reverse=reverse)
 
 @register.assignment_tag(takes_context=True)
 def get_resources_by_rdftype(context, rdf_type, local_bindings=None):
@@ -57,6 +57,7 @@ def get_resources_by_rdftype(context, rdf_type, local_bindings=None):
 def get_resource_fields(context, fieldname, local_bindings=None):
     if not local_bindings:
         local_bindings = context['resources']
+
     return local_bindings.get_list(fieldname)
 
 @register.assignment_tag(takes_context=True)
@@ -156,18 +157,21 @@ def detail_webresource(context, alt="", indicators=False, thumbnail_nav=False, w
 MockRDFObject = namedtuple('MockRDFObject', ["value"])
 
 @register.inclusion_tag('rdf/tags/_search-detail-media-preview.html', takes_context=True)
-def detail_media_preview(context, fieldname, alt="", fullscreen=False, indicators=False, thumbnail_nav=False, uri="", webresources=""):
+def detail_media_preview(
+        context, fieldname, alt="", fullscreen=False, indicators=False,
+        thumbnail_nav=False, uri="", webresources="", local_bindings=None):
     """
     :param context: page context
     :param fieldname: DataSet.MetadataRecord field name
     :return: string
     """
-    bindings = context['resources']
-    values = bindings.get_list(fieldname)
-    rights = bindings.get_list('edm_rights')
+    if not local_bindings:
+        local_bindings = context['resources']
+    values = local_bindings.get_list(fieldname)
+    rights = local_bindings.get_list('edm_rights')
     if not values:
-        values = [MockRDFObject(bindings.get_about_thumbnail)]
-    alt = bindings[alt].value if bindings[alt] else []
+        values = [MockRDFObject(local_bindings.get_about_thumbnail)]
+    alt = local_bindings[alt].value if local_bindings[alt] else []
     fullscreen = fullscreen
     thumbnail_nav = thumbnail_nav
     indicators = indicators
