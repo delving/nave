@@ -6,6 +6,7 @@ from enum import Enum
 import ast
 import os
 import requests
+import base64
 from dateutil import parser
 from urllib import parse
 from django.conf import settings
@@ -56,6 +57,16 @@ PARAMS_WITH_VERBS = defaultdict(list)
 for verb, params in list(VERBS_WITH_PARAMS.items()):
     for param in params:
         PARAMS_WITH_VERBS[param].append(verb)
+
+def encodeToken(token):
+    encodedBytes = base64.b64encode(token.encode("utf-8"))
+    encodedStr = str(encodedBytes, "utf-8")
+    return encodedStr
+
+def decodeToken(token):
+    decodedBytes = base64.urlsafe_b64decode(token.strip())
+    decodedStr = str(decodedBytes, "utf-8")
+    return decodedStr
 
 class OAIException(Exception):
 
@@ -400,6 +411,7 @@ class ElasticSearchOAIProvider(OAIProvider):
         return self.cursor + self.records_returned
 
     def create_filters_from_token(self, token):
+        token = decodeToken(token)
         filters = dict([entry.strip().split('=') for entry in token.strip().split("::")])
         filters.update(self.record_access_filter)
         self.metadataPrefix = filters.pop('prefix')
@@ -444,7 +456,8 @@ class ElasticSearchOAIProvider(OAIProvider):
         token_dict.update(**self.filters)
         token_dict.pop(list(self.record_access_filter.keys())[0])
         token = "::".join(["{}={}".format(key, value) for key, value in list(token_dict.items())])
-        return token.replace(' ', '%20')
+        token = encodeToken(token)
+        return token
 
     def get_items(self):
         if self.get_list_size() == 0:
@@ -544,6 +557,7 @@ HarvestStep = namedtuple('HarvestStep', ['records_returned', 'total_records', 'r
 HarvestRequest = namedtuple('HarvestRequest', ['base_url', 'set_spec', 'metadata_prefix', 'verb'])
 
 
+
 class OAIHarvester:
 
     def __init__(self, base_url):
@@ -562,9 +576,10 @@ class OAIHarvester:
             uri = "{}?verb={}&resumptionToken={}".format(
                 harvest_request.base_url,
                 harvest_request.verb,
-                harvest_step.resumption_token
+                harvest_step.resumptionToken.encode("utf-8"),
             )
         return uri
+
 
     @staticmethod
     def clean_bad_namespaces(tn):
