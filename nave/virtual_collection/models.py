@@ -115,3 +115,40 @@ class VirtualCollectionFacet(models.Model):
         verbose_name = _("Facet")
         verbose_name_plural = _("Facets")
         ordering = ['position']
+
+class VirtualCollectionOrQuery(models.Model):
+    """
+    Or queries related to the main query
+    """
+    diw = models.ForeignKey(
+        VirtualCollection,
+        related_name="orqueries"
+    )
+    query = models.TextField(
+        _("query"),
+        blank=True,
+        null=True,
+        help_text=_("Additional or queries")
+    )
+    position = models.PositiveSmallIntegerField(
+        "Position",
+        default=0
+    )
+
+    def save(self, *args, **kwargs):
+        allowed_filters = ["qf=", 'hfq=', "q=", "hqf[]=", "qf[]="]
+        if any(key in self.query for key in allowed_filters):
+            # create the proper format string
+            filter_list = []
+            query_dict = QueryDict(query_string=self.query.split("?", maxsplit=1)[-1])
+            for k, v in query_dict.items():
+                if any([key.startswith(k) for key in allowed_filters]) and v:
+                    applied_filter = query_dict.getlist(k)
+                    filter_list.extend(applied_filter)
+            self.query = ";;;".join(["\"{}\"".format(k) for k in filter_list])
+        super(VirtualCollectionOrQuery, self).save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = _("Or Query")
+        verbose_name_plural = _("Or Queries")
+        ordering = ['position']

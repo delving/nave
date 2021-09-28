@@ -4,7 +4,7 @@ from django.forms import ModelForm
 import reversion
 from suit_ckeditor.widgets import CKEditorWidget
 
-from .models import VirtualCollection, VirtualCollectionFacet
+from .models import VirtualCollection, VirtualCollectionFacet, VirtualCollectionOrQuery
 
 
 class VirtualCollectionForm(ModelForm):
@@ -20,13 +20,18 @@ class FacetInline(admin.TabularInline):
     extra = 0
     max_num = 8
 
+class OrQueryInline(admin.TabularInline):
+    model = VirtualCollectionOrQuery
+    fields = ['query', 'position']
+    extra = 0
+    max_num = 8
 
 class VirtualCollectionAdmin(reversion.admin.VersionAdmin):
     list_filter = ['user', 'groups']
     filter_horizontal = ('groups',)
     list_display = ('title', 'user')
     form = VirtualCollectionForm
-    inlines = (FacetInline,)
+    inlines = (OrQueryInline, FacetInline,)
     fieldsets = [
         ('Description', {'classes': ('full-width',), 'fields': ('title',)}),
         ('Query', {'classes': ('full-width',), 'fields': ('query',)}),

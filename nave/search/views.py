@@ -173,6 +173,7 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
     facets = settings.FACET_CONFIG
     filters = []
     hidden_filters = []
+    hidden_or_filters = []
     demote = getattr(settings, 'DEMOTE', None)
     mapping_type = None
     paginate_by = None
@@ -184,6 +185,9 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
 
     def set_hidden_query_filters(self, filter_list):
         self.hidden_filters = [hqf.strip('"') for hqf in filter_list]
+
+    def append_hidden_or_query_filters(self, filter_list):
+        self.hidden_or_filters.append([hqf.strip('"') for hqf in filter_list])
 
     def set_facets(self, facet_config_list):
         self.facets = facet_config_list
@@ -223,13 +227,20 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
         record = model.objects.get(hub_id=doc_id)
         return record
 
-    def get_query(self, request, index_name, doc_types, facet_config_list, filters, demote, hidden_filters=None,
-                  cluster_geo=False, geo_query=False, converter=None, acceptance=False, *args, **kwargs):
+    def get_query(
+            self, request, index_name, doc_types, facet_config_list, filters, demote,
+            hidden_filters=None, hidden_or_filters=None, cluster_geo=False,
+            geo_query=False, converter=None, acceptance=False, *args, **kwargs):
 
         if hidden_filters is None and self.hidden_filters:
             hidden_filters = self.hidden_filters
         else:
             hidden_filters = []
+
+        if hidden_or_filters is None and self.hidden_or_filters:
+            hidden_or_filters = self.hidden_or_filters
+        else:
+            hidden_or_filters = []
 
         if hasattr(settings, 'ES_ROWS'):
             s_rows = settings.ES_ROWS
@@ -247,6 +258,7 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
             default_facets=facet_config_list,
             default_filters=filters,
             hidden_filters=hidden_filters,
+            hidden_or_filters=hidden_or_filters,
             cluster_geo=cluster_geo,
             geo_query=geo_query,
             size=rows,
@@ -325,6 +337,7 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
             facet_config_list=self.facets,
             filters=self.filters,
             hidden_filters=self.hidden_filters,
+            hidden_or_filters=self.hidden_or_filters,
             demote=self.demote,
             cluster_geo=False,
             converter=self.get_converter()
@@ -683,7 +696,6 @@ class NaveDocumentTemplateView(TemplateView):
             context['about_spec'] = record.get_spec_name()
         else:
             context['about_spec'] = target_uri.split("/")[-2]
-
         for rdf_type in bindings.get_about_resource().get_types():
             search_label = rdf_type.search_label.lower()
             content_template = settings.RDF_CONTENT_FOLDOUTS.get(search_label)

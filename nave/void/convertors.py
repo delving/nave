@@ -631,6 +631,13 @@ class ICNConverter(BaseConverter):
             "icn_technique": "nave_technique",
             "icn_thumbLarge": "nave_thumbLarge",
             "icn_thumbSmall": "nave_thumbSmall",
+            #
+            "icn_dimension": "nave_dimension",
+            "icn_material": "nave_material",
+            "icn_productionStart": "nave_productionStart",
+            "icn_productionEnd": "nave_productionEnd",
+            "icn_objectNumber": "nave_objectNumber",
+            "icn_objectSoort": "nave_objectSoort",
         }
         return mapping
 

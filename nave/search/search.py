@@ -35,7 +35,8 @@ class NaveESQuery(object):
     """
 
     def __init__(self, index_name=None, doc_types=None, default_facets=None, size=16,
-                 default_filters=None, hidden_filters=None, cluster_geo=False, geo_query=False, robust_params=True,
+                 default_filters=None, hidden_filters=None, hidden_or_filters=None, cluster_geo=False,
+                 geo_query=False, robust_params=True,
                  facet_size=50, converter=None, acceptance=False, mlt_fields=None):
         self.acceptance = acceptance
         self.index_name = index_name
@@ -44,6 +45,7 @@ class NaveESQuery(object):
         self.size = size
         self.default_filters = default_filters
         self.hidden_filters = hidden_filters
+        self.hidden_or_filters = hidden_or_filters
         self.applied_filters = None
         self.robust_params = robust_params
         self.facet_size = facet_size
@@ -114,6 +116,8 @@ class NaveESQuery(object):
             elif not filt:
                 continue
             elif filt.startswith('('):
+                filter_dict['query'].add(filt)
+            elif " OR " in filt:
                 filter_dict['query'].add(filt)
             elif ":" in filt:
                 key, *value = filt.split(":")
@@ -442,7 +446,16 @@ class NaveESQuery(object):
             self.hidden_filters,
             exclude=exclude_filter_list
         ) if self.hidden_filters else defaultdict(set)
-        hidden_queries = hidden_filter_dict.pop("query", [])
+
+        # add hidden or filters
+        hidden_or_filter_dict = self._filters_as_dict(
+            self.hidden_or_filters,
+            exclude=exclude_filter_list
+        ) if self.hidden_or_filters else defaultdict(set)
+
+        hidden_queries = []
+        if not hidden_or_filter_dict:
+            hidden_queries = hidden_filter_dict.pop("query", [])
 
         # update key
         if 'query' in params and 'q' not in params:
@@ -455,6 +468,7 @@ class NaveESQuery(object):
                 query_string = query_string.replace('&quot;', '"')
             for hq in hidden_queries:
                 query_string = "({}) AND ({})".format(query_string, hq)
+
             query = query.query(self._create_query_string(query_string))
         # add lod_filtering support
         # elif "lod_id" in params:
@@ -489,11 +503,14 @@ class NaveESQuery(object):
         if "facetBoolType" in params:
             facet_bool_type_and = params.get('facetBoolType').lower() in ['and']
 
-        # create hidden query filter filter on the ES query
-        hidden_facet_filter_dict = defaultdict(list)
-        hidden_filter_list = []
-        if hidden_filter_dict:
-            for key, values in list(hidden_filter_dict.items()):
+        def create_hidden_filters(filters, single_list=False):
+            hidden_filter_list = []
+            hidden_facet_filter_dict = defaultdict(list)
+            for key, values in list(filters.items()):
+                if key in ["query", "q"]:
+
+                    hidden_filter_list.append(self._create_query_string(" ".join(values)))
+                    continue
                 hidden_facet_filter_list = hidden_facet_filter_dict[key]
                 for value in values:
                     facet_key = self.query_to_facet_key(key)
@@ -507,7 +524,22 @@ class NaveESQuery(object):
                 else:
                     q = Q('bool', should=hidden_facet_filter_list)
                     hidden_filter_list.append(q)
-            query = query.filter('bool', must=hidden_filter_list)
+
+            return hidden_filter_list
+
+
+
+        # create hidden query filter filter on the ES query
+        if hidden_filter_dict:
+            hidden_filter_list = create_hidden_filters(hidden_filter_dict, single_list=True)
+            if not hidden_or_filter_dict:
+                query = query.filter('bool', must=hidden_filter_list)
+            else:
+                or_filter_list = create_hidden_filters(hidden_or_filter_dict)
+                q1 = Q('bool', must=or_filter_list)
+                q2 = Q('bool', must=hidden_filter_list)
+                query = query.filter('bool', should=[q1, q2])
+
         # define applied filters
         self.applied_filters = filter_dict
         applied_facet_fields = []
@@ -688,9 +720,10 @@ class NaveESQuery(object):
         self.facet_params = facet_params
         self.base_params = params
 
-        # import json
-        # logger.debug(json.dumps(query.to_dict()))
-        # print(json.dumps(query.to_dict(), indent=4, sort_keys=True))
+        #  import json
+        #  logger.debug(json.dumps(query.to_dict()))
+        #  print(json.dumps(query.to_dict(), indent=4, sort_keys=True))
+        #  __import__('pdb').set_trace()
         return query
 
     def check_facet_key(self, facet, key):

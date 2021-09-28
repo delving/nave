@@ -38,7 +38,15 @@ class VirtualCollectionSearchView(SearchListAPIView):
         slug = kwargs.get('slug', None)
         virtual_collection = get_object_or_404(VirtualCollection, slug=slug)
 
-        self.set_hidden_query_filters(virtual_collection.query.split(";;;"))
+        self.hidden_or_filters = []
+        if virtual_collection.orqueries.all():
+            self.set_hidden_query_filters(virtual_collection.query.split(";;;"))
+            for orquery in virtual_collection.orqueries.all():
+                print("or queries: {}".format(orquery.query))
+                self.append_hidden_or_query_filters(orquery.query.split(";;;"))
+        else:
+            self.set_hidden_query_filters(virtual_collection.query.split(";;;"))
+
         if virtual_collection.facets.all():
             facet_config = []
             for facet in virtual_collection.facets.all():
