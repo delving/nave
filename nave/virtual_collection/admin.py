@@ -24,7 +24,7 @@ class OrQueryInline(admin.TabularInline):
     model = VirtualCollectionOrQuery
     fields = ['query', 'position']
     extra = 0
-    max_num = 8
+    max_num = 1
 
 class VirtualCollectionAdmin(reversion.admin.VersionAdmin):
     list_filter = ['user', 'groups']
