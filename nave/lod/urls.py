@@ -8,7 +8,8 @@ from django.views.generic import TemplateView
 
 from . import RDF_SUPPORTED_EXTENSIONS
 from .views import SnorqlTemplateView, remote_sparql, LoDRedirectView, LoDDataView, LoDHTMLView, remote_sparql_test, \
-    PropertyTemplateView, EDMHTMLMockView, HubIDRedirectView, UserGeneratedContentList, UserGeneratedContentDetail
+    PropertyTemplateView, EDMHTMLMockView, HubIDRedirectView, UserGeneratedContentList, UserGeneratedContentDetail,
+    remote_resolve
 
 RDF_SUPPORTED_FORMATS = "|".join(RDF_SUPPORTED_EXTENSIONS)
 
@@ -29,7 +30,7 @@ urlpatterns = [
     url(r'^(?P<namespace>(.*?))/ns/(?P<label>(.*)$)', PropertyTemplateView.as_view(), name="properties"),
     url(r'snorql/$', SnorqlTemplateView.as_view(), name="snorql_main"),
     url(r'^sparql/$', remote_sparql, name='proxy'),
-    url(r'^id/(?P<reluri>(.*?))$', remote_resolve, name='remote_resolve'),
+    url(r'^id/.*?$', remote_resolve),
     url(r'^sparql_test/$', remote_sparql_test),
     url(r'^relfinder/$', TemplateView.as_view(template_name='relfinder.html'), name='relfinder'),
     url(r'^hub_version/$', TemplateView.as_view(template_name='version_number.html'), name='hum_version'),

@@ -493,13 +493,12 @@ def remote_resolve(request):
     uri = request.build_absolute_uri()
     query = "describe <{}>".format(uri)
 
-    params = request.dict()
-    params['query'] = query
+    params = {'query': query}
 
     if not settings.SPARQL_RESOLVE_URL:
         return HttpResponseBadRequest("SPARQL_RESOLVE_URL must be defined in settings")
 
-    response = requests.GET(settings.SPARQL_RESOLVE_URL, params=params)
+    response = requests.get(settings.SPARQL_RESOLVE_URL, params=params)
     return HttpResponse(response.text, status=int(response.status_code), content_type=response.headers['content-type'])
 
 def remote_sparql_test(request):
