@@ -485,6 +485,22 @@ def remote_sparql(request):
     logger.info("Production Mode SPARQL query: {}".format(request.META.get('QUERY_STRING')))
     return proxy(request, test_mode=False)
 
+def remote_resolve(request):
+    """
+    Route SPARQL queries to the endpoint configured in the settings
+    """
+    mime_type = get_lod_mime_type(None, request)
+    uri = request.build_absolute_uri()
+    query = "describe <{}>".format(uri)
+
+    params = request.dict()
+    params['query'] = query
+
+    if not settings.SPARQL_RESOLVE_URL:
+        return HttpResponseBadRequest("SPARQL_RESOLVE_URL must be defined in settings")
+
+    response = requests.GET(settings.SPARQL_RESOLVE_URL, params=params)
+    return HttpResponse(response.text, status=int(response.status_code), content_type=response.headers['content-type'])
 
 def remote_sparql_test(request):
     """

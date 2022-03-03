@@ -20,6 +20,7 @@ MIGRATION_MODULES = {
 # MAIN DJANGO SETTINGS #
 # #######################
 
+SPARQL_RESOLVE_URL = ""
 
 # ######### PATH CONFIGURATION
 # Absolute filesystem path to the Django project directory:
