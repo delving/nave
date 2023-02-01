@@ -79,8 +79,9 @@ def quote_param_plus(value, safe='/'):
 def form_hidden_field(request, field):
     html = ''
     if request.GET.get(field):
-        clean_field = bleach.clean(request.GET.get(field))
-        html = '<input type="hidden" name="'+field+'" value="'+clean_field+'" />'
+        clean_field = bleach.clean(request.GET.get(field)).replace('"', '&quot;')
+        if not "onclick=" in clean_field:
+            html = '<input type="hidden" name="'+field+'" value="'+clean_field+'" />'
     return mark_safe(html)
 
 
@@ -103,7 +104,7 @@ def form_hidden_fields(request, exclude=[]):
                     text = field.split(':', 1)[-1]
                 else:
                     text = field.replace('"', '&quot;')
-                html = html + '<input type="hidden" name="'+param+'" value="'+field.strip().replace('"', '&quot;')+'" data-text="'+text.strip().replace('"', '')+'"/>'
+                html = html + '<input type="hidden" name="'+param.replace('"', '&quot;')+'" value="'+field.strip().replace('"', '&quot;')+'" data-text="'+text.strip().replace('"', '')+'"/>'
     return mark_safe(html)
 
 
