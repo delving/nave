@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Module to provide OAI-PMH interface."""
+
 from collections import defaultdict, namedtuple
 from enum import Enum
 
@@ -43,13 +44,25 @@ class OaiParam(Enum):
 
 VERBS_WITH_PARAMS = {
     OaiVerb.Identify: [OaiParam.verb],
-    OaiVerb.ListIdentifiers: [OaiParam.verb, OaiParam.resumptionToken, OaiParam.from_,
-                              OaiParam.to, OaiParam.set, OaiParam.metadataPrefix],
+    OaiVerb.ListIdentifiers: [
+        OaiParam.verb,
+        OaiParam.resumptionToken,
+        OaiParam.from_,
+        OaiParam.to,
+        OaiParam.set,
+        OaiParam.metadataPrefix,
+    ],
     OaiVerb.GetRecord: [OaiParam.verb, OaiParam.identifier, OaiParam.metadataPrefix],
     OaiVerb.ListMetadataFormats: [OaiParam.verb],
-    OaiVerb.ListRecords: [OaiParam.verb, OaiParam.resumptionToken, OaiParam.from_,
-                          OaiParam.to, OaiParam.set, OaiParam.metadataPrefix],
-    OaiVerb.ListSets: [OaiParam.verb]
+    OaiVerb.ListRecords: [
+        OaiParam.verb,
+        OaiParam.resumptionToken,
+        OaiParam.from_,
+        OaiParam.to,
+        OaiParam.set,
+        OaiParam.metadataPrefix,
+    ],
+    OaiVerb.ListSets: [OaiParam.verb],
 }
 
 PARAMS_WITH_VERBS = defaultdict(list)
@@ -58,32 +71,34 @@ for verb, params in list(VERBS_WITH_PARAMS.items()):
     for param in params:
         PARAMS_WITH_VERBS[param].append(verb)
 
+
 def encodeToken(token):
     encodedBytes = base64.b64encode(token.encode("utf-8"))
     encodedStr = str(encodedBytes, "utf-8")
     return encodedStr
+
 
 def decodeToken(token):
     decodedBytes = base64.urlsafe_b64decode(token.strip())
     decodedStr = str(decodedBytes, "utf-8")
     return decodedStr
 
-class OAIException(Exception):
 
-    def __init__(self, code, message, *args, **kwargs): # real signature unknown
+class OAIException(Exception):
+    def __init__(self, code, message, *args, **kwargs):  # real signature unknown
         self.message = message
         self.code = code
 
 
 class OAIProvider(TemplateView):
-    content_type = 'application/xml'
-    oai_identifier_field = 'hub_id'
-    set_field = 'dataset__spec'
+    content_type = "application/xml"
+    oai_identifier_field = "hub_id"
+    set_field = "dataset__spec"
     dataset_model = DataSet
-    dataset_access_filter = {'oai_pmh': OaiPmhPublished.public}
-    dataset_search_key = 'dataset__spec'
+    dataset_access_filter = {"oai_pmh": OaiPmhPublished.public}
+    dataset_search_key = "dataset__spec"
     record_model = EDMRecord
-    record_access_filter = {'dataset__oai_pmh': OaiPmhPublished.public}
+    record_access_filter = {"dataset__oai_pmh": OaiPmhPublished.public}
     records_returned = 100
 
     def __init__(self, **kwargs):
@@ -111,7 +126,7 @@ class OAIProvider(TemplateView):
 
     def sets(self, obj):
         # the sets a given object belongs to
-        nesting = self.set_field.split('__')
+        nesting = self.set_field.split("__")
         return getattr(getattr(obj, nesting[0]), nesting[1])
 
     def get_items(self):
@@ -129,7 +144,7 @@ class OAIProvider(TemplateView):
             raise OAIException(
                 code="noRecordsMatch",
                 message="The combination of the values of the from, until, set and metadataPrefix "
-                        "arguments results in an empty list."
+                "arguments results in an empty list.",
             )
         return objects
 
@@ -138,26 +153,26 @@ class OAIProvider(TemplateView):
 
     def item(self):
         self.template_name = "oaipmh/get_record.xml"
-        identifier = self.request.GET.get('identifier')
+        identifier = self.request.GET.get("identifier")
         if not identifier:
             return self.error(
                 "badArgument",
-                "The request includes illegal arguments or is missing required arguments."
+                "The request includes illegal arguments or is missing required arguments.",
             )
         items = [self.get_item(identifier)]
         if not items:
             return self.error(
                 "idDoesNotExist",
-                "The value of the identifier argument is unknown or illegal in this repository."
+                "The value of the identifier argument is unknown or illegal in this repository.",
             )
         converters = REGISTERED_CONVERTERS
         current_converter = converters[self.metadataPrefix]
         converted_items = []
         for i in list(items):
-            converted_items.append(self._get_item_info(item=i, converter=current_converter))
-        return self.render_to_response({
-            'items': converted_items
-        })
+            converted_items.append(
+                self._get_item_info(item=i, converter=current_converter)
+            )
+        return self.render_to_response({"items": converted_items})
 
     def last_modified(self, obj):
         # datetime object was last modified
@@ -169,76 +184,87 @@ class OAIProvider(TemplateView):
 
     def render_to_response(self, context, **response_kwargs):
         # all OAI responses should be xml
-        if 'content_type' not in response_kwargs:
-            response_kwargs['content_type'] = self.content_type
+        if "content_type" not in response_kwargs:
+            response_kwargs["content_type"] = self.content_type
 
         # add common context data needed for all responses
-        context.update({
-            'verb': self.oai_verb,
-            'all_params': " ".join(["{}=\"{}\"".format(key, value) for key, value in self.request.GET.dict().items()]),
-            'url': self.request.build_absolute_uri(self.request.path),
-        })
-        return super(TemplateView, self) \
-            .render_to_response(context, **response_kwargs)
+        context.update(
+            {
+                "verb": self.oai_verb,
+                "all_params": " ".join(
+                    [
+                        '{}="{}"'.format(key, value)
+                        for key, value in self.request.GET.dict().items()
+                    ]
+                ),
+                "url": self.request.build_absolute_uri(self.request.path),
+            }
+        )
+        return super(TemplateView, self).render_to_response(context, **response_kwargs)
 
     def identify(self):
         """Return the OAI-PMH Identify request.
 
         See http://www.openarchives.org/OAI/openarchivesprotocol.html#Identify
         """
-        self.template_name = 'oaipmh/identify.xml'
+        self.template_name = "oaipmh/identify.xml"
         identify_data = {
-            'name': 'OAI-PMH repository for {}'.format(settings.ORG_ID),
+            "name": "OAI-PMH repository for {}".format(settings.ORG_ID),
             # perhaps an oai_admins method with default logic settings.admins?
-            'admins': (email for name, email in settings.ADMINS),
-            'earliest_date': '1990-02-01T12:00:00Z',  # placeholder
+            "admins": (email for name, email in settings.ADMINS),
+            "earliest_date": "1990-02-01T12:00:00Z",  # placeholder
             # should probably be a class variable/configuration
-            'deleted': 'no',  # no, transient, persistent (?)
+            "deleted": "no",  # no, transient, persistent (?)
             # class-level variable/configuration (may affect templates also)
-            'granularity': 'YYYY-MM-DDThh:mm:ssZ',  # or YYYY-MM-DD
+            "granularity": "YYYY-MM-DDThh:mm:ssZ",  # or YYYY-MM-DD
             # class-level config?
-            'compression': 'deflate',  # gzip?  - optional
+            "compression": "deflate",  # gzip?  - optional
             # description - optional
             # (place-holder values from OAI docs example)
-            'identifier_scheme': 'oai',
-            'repository_identifier': "{}".format(RDFRecord.get_rdf_base_url(prepend_scheme=True)),
-            'identifier_delimiter': '_',
-            'sample_identifier': '{}_spec_localId'.format(settings.ORG_ID)
+            "identifier_scheme": "oai",
+            "repository_identifier": "{}".format(
+                RDFRecord.get_rdf_base_url(prepend_scheme=True)
+            ),
+            "identifier_delimiter": "_",
+            "sample_identifier": "{}_spec_localId".format(settings.ORG_ID),
         }
         return self.render_to_response(identify_data)
 
     def list_datasets(self):
         """List all datasets that are marked as public and OAI-PMH harvestable."""
-        self.template_name = 'oaipmh/list_datasets.xml'
-        return self.render_to_response({'datasets': self.get_dataset_list()})
+        self.template_name = "oaipmh/list_datasets.xml"
+        return self.render_to_response({"datasets": self.get_dataset_list()})
 
     def list_identifiers(self):
-        self.template_name = 'oaipmh/list_identifiers.xml'
+        self.template_name = "oaipmh/list_identifiers.xml"
         identifiers = []
         for i in list(self.items()):
             item_info = {
-                'identifier': self.oai_identifier(i),
-                'last_modified': self.last_modified(i),
-                'sets': [self.sets(i)]
+                "identifier": self.oai_identifier(i),
+                "last_modified": self.last_modified(i),
+                "sets": [self.sets(i)],
             }
             identifiers.append(item_info)
-        return self.render_to_response({
-            'items': identifiers,
-            'resumption_token': self.generate_resumption_token(),
-            'cursor': self.cursor,
-            'list_size': self.list_size}
+        return self.render_to_response(
+            {
+                "items": identifiers,
+                "resumption_token": self.generate_resumption_token(),
+                "cursor": self.cursor,
+                "list_size": self.list_size,
+            }
         )
 
     def list_metadata_formats(self):
-        """ List supported graph converters. """
+        """List supported graph converters."""
         self.template_name = "oaipmh/list_metadataformats.xml"
         converters = REGISTERED_CONVERTERS
-        converter_list = [(converter().get_converter_key(), converter().get_namespace()) for key, converter in
-                          converters.items() if key not in ['raw']]
-        converter_list.append(('oai_dc', "http://www.openarchives.org/OAI/2.0/oai_dc/"))
-        return self.render_to_response({
-            "items": converter_list
-        })
+        converter_list = [
+            (converter().get_converter_key(), converter().get_namespace())
+            for key, converter in converters.items()
+            if key not in ["raw"]
+        ]
+        converter_list.append(("oai_dc", "http://www.openarchives.org/OAI/2.0/oai_dc/"))
+        return self.render_to_response({"items": converter_list})
 
     def _get_item_info(self, item, converter):
         converter = converter(about_uri=item.document_uri, graph=item.get_graph())
@@ -247,21 +273,23 @@ class OAIProvider(TemplateView):
         if not self.metadataPrefix.startswith("edm"):
             converted_fields = converter.convert(add_delving_fields=False)
             converted_fields.default_factory = None
-            converted_fields = {key.replace("_", ":"): value for key, value in converted_fields.items()}
+            converted_fields = {
+                key.replace("_", ":"): value for key, value in converted_fields.items()
+            }
             namespaces = converter.get_namespaces(as_ns_declaration=True)
         else:
-            record = converter.convert(add_delving_fields=False, output_format='xml')
+            record = converter.convert(add_delving_fields=False, output_format="xml")
             if isinstance(record, bytes):
                 record = record.decode()
-            record = record.replace('<?xml version="1.0" encoding="UTF-8"?>\n', '')
+            record = record.replace('<?xml version="1.0" encoding="UTF-8"?>\n', "")
             namespaces = converter.get_namespaces(as_ns_declaration=True)
         item_info = {
-            'identifier': self.oai_identifier(item),
-            'last_modified': self.last_modified(item),
-            'sets': self.sets(item),
-            'fields': converted_fields,
-            'record': record,
-            'ns': namespaces
+            "identifier": self.oai_identifier(item),
+            "last_modified": self.last_modified(item),
+            "sets": self.sets(item),
+            "fields": converted_fields,
+            "record": record,
+            "ns": namespaces,
         }
         return item_info
 
@@ -272,21 +300,25 @@ class OAIProvider(TemplateView):
         current_converter = converters[self.metadataPrefix]
         for i in list(self.items()):
             items.append(self._get_item_info(i, current_converter))
-        return self.render_to_response({
-            'items': items,
-            'resumption_token': self.generate_resumption_token(),
-            'cursor': self.cursor,
-            'list_size': self.list_size}
+        return self.render_to_response(
+            {
+                "items": items,
+                "resumption_token": self.generate_resumption_token(),
+                "cursor": self.cursor,
+                "list_size": self.list_size,
+            }
         )
 
     def error(self, code, text):
         # TODO: HTTP error response code? maybe 400 bad request?
         # NOTE: may need to revise, could have multiple error codes/messages
-        self.template_name = 'oaipmh/error.xml'
-        return self.render_to_response({
-            'error_code': code,
-            'error': text,
-        })
+        self.template_name = "oaipmh/error.xml"
+        return self.render_to_response(
+            {
+                "error_code": code,
+                "error": text,
+            }
+        )
 
     def get_next_cursor(self):
         return self.cursor + self.records_returned
@@ -294,43 +326,53 @@ class OAIProvider(TemplateView):
     def generate_resumption_token(self):
         if self.cursor + self.records_returned >= self.list_size:
             return None
-        token_dict = {'prefix': self.metadataPrefix, 'cursor': self.cursor + self.records_returned,
-                      'list_size': self.list_size}
+        token_dict = {
+            "prefix": self.metadataPrefix,
+            "cursor": self.cursor + self.records_returned,
+            "list_size": self.list_size,
+        }
         token_dict.update(**self.filters)
         token_dict.pop(list(self.record_access_filter.keys())[0])
-        return "::".join(["{}={}".format(key, value) for key, value in list(token_dict.items())])
+        return "::".join(
+            ["{}={}".format(key, value) for key, value in list(token_dict.items())]
+        )
 
     def create_filters_from_token(self, token):
-        filters = dict([entry.strip().split('=') for entry in token.strip().split("::")])
+        filters = dict(
+            [entry.strip().split("=") for entry in token.strip().split("::")]
+        )
         filters.update(self.record_access_filter)
-        self.metadataPrefix = filters.pop('prefix')
-        self.list_size = int(filters.pop('list_size'))
-        self.cursor = int(filters.pop('cursor'))
+        self.metadataPrefix = filters.pop("prefix")
+        self.list_size = int(filters.pop("list_size"))
+        self.cursor = int(filters.pop("cursor"))
         self.filters = filters
         return filters
 
     def create_harvest_steps(self, request):
         if not self.params:
             self._setup_request(request)
-        if 'resumptionToken' in self.params:
-            token = self.params.get('resumptionToken')
+        if "resumptionToken" in self.params:
+            token = self.params.get("resumptionToken")
             self.create_filters_from_token(token)
         else:
-            if 'metadataPrefix' in self.params:
-                self.metadataPrefix = self.params.pop('metadataPrefix')
-                if self.metadataPrefix in ['oai_dc']:
-                    self.metadataPrefix = 'ese'
-            if self.oai_verb.startswith('List'):
+            if "metadataPrefix" in self.params:
+                self.metadataPrefix = self.params.pop("metadataPrefix")
+                if self.metadataPrefix in ["oai_dc"]:
+                    self.metadataPrefix = "ese"
+            if self.oai_verb.startswith("List"):
                 filters = self.params.copy()
                 # rename set to spec
-                if self.oai_verb not in ["ListSets", "ListMetadataFormats"] and 'set' in filters:
-                    filters[self.dataset_search_key] = filters.pop('set')
-                fmt = '%Y-%m-%dT%H:%M:%S%z'  # '%Y-%m-%d %H:%M:%S %Z%z'
-                if 'from' in filters:
-                    from_date=parser.parse(timestr=filters.pop('from'))
+                if (
+                    self.oai_verb not in ["ListSets", "ListMetadataFormats"]
+                    and "set" in filters
+                ):
+                    filters[self.dataset_search_key] = filters.pop("set")
+                fmt = "%Y-%m-%dT%H:%M:%S%z"  # '%Y-%m-%d %H:%M:%S %Z%z'
+                if "from" in filters:
+                    from_date = parser.parse(timestr=filters.pop("from"))
                     filters["modified__gt"] = from_date.strftime(fmt)
-                if 'until' in filters:
-                    until_date = parser.parse(filters.pop('until'))
+                if "until" in filters:
+                    until_date = parser.parse(filters.pop("until"))
                     filters["modified__lt"] = until_date.strftime(fmt)
                 filters.update(self.record_access_filter)
                 self.filters = filters
@@ -338,25 +380,27 @@ class OAIProvider(TemplateView):
     def _setup_request(self, request):
         self.request = request
         self.params = request.GET.dict()
-        self.oai_verb = self.params.pop('verb') if 'verb' in self.params else None
+        self.oai_verb = self.params.pop("verb") if "verb" in self.params else None
         return self
 
     def get(self, request, *args, **kwargs):
         self._setup_request(request)
-        allowed_params = [query_param.rstrip('_') for query_param in OaiParam._member_names_]
+        allowed_params = [
+            query_param.rstrip("_") for query_param in OaiParam._member_names_
+        ]
 
         for query_param in self.params.keys():
             if query_param not in allowed_params:
                 return self.error(
-                        code="badArgument",
-                        text="""The request includes illegal arguments, is missing required arguments, includes a
+                    code="badArgument",
+                    text="""The request includes illegal arguments, is missing required arguments, includes a
                         repeated argument, or values for arguments have an illegal syntax.""",
                 )
 
         if not self.oai_verb:
             return self.error(
-                    code="badArgument",
-                    text="""The request includes illegal arguments, is missing required arguments, includes a
+                code="badArgument",
+                text="""The request includes illegal arguments, is missing required arguments, includes a
                         repeated argument, or values for arguments have an illegal syntax.""",
             )
 
@@ -366,16 +410,18 @@ class OAIProvider(TemplateView):
             return self.error(
                 code="cannotDisseminateFormat",
                 text="The metadata format identified by the value '{}' given for the metadataPrefix argument is not "
-                     "supported by the item or by the repository.".format(self.metadataPrefix)
+                "supported by the item or by the repository.".format(
+                    self.metadataPrefix
+                ),
             )
 
         verb_dict = {
-            'Identify': self.identify,
-            'ListIdentifiers': self.list_identifiers,
-            'GetRecord': self.item,
-            'ListMetadataFormats': self.list_metadata_formats,
-            'ListRecords': self.list_records,
-            'ListSets': self.list_datasets
+            "Identify": self.identify,
+            "ListIdentifiers": self.list_identifiers,
+            "GetRecord": self.item,
+            "ListMetadataFormats": self.list_metadata_formats,
+            "ListRecords": self.list_records,
+            "ListSets": self.list_datasets,
         }
 
         try:
@@ -384,15 +430,17 @@ class OAIProvider(TemplateView):
             return self.error(oe.code, oe.message)
         except KeyError as ke:
             if self.oai_verb is None:
-                error_msg = 'The request did not provide any verb.'
+                error_msg = "The request did not provide any verb."
             else:
                 error_msg = 'The verb "{}" is illegal'.format(self.oai_verb)
-            return self.error('badVerb', error_msg)
+            return self.error("badVerb", error_msg)
 
 
 class ElasticSearchOAIProvider(OAIProvider):
     client = get_es_client()
-    ESDataSet = namedtuple("DataSet", ['spec', 'description', 'name', 'valid', 'data_owner'])
+    ESDataSet = namedtuple(
+        "DataSet", ["spec", "description", "name", "valid", "data_owner"]
+    )
     _es_response = None
 
     def __init__(self, spec=None, query=None, **kwargs):
@@ -405,28 +453,30 @@ class ElasticSearchOAIProvider(OAIProvider):
         return super(ElasticSearchOAIProvider, self).get(request, *args, **kwargs)
 
     def get_next_search_cursor(self):
-        return {'search_after': ast.literal_eval(self.sort_key.replace('%20', ' '))}
+        return {"search_after": ast.literal_eval(self.sort_key.replace("%20", " "))}
 
     def get_next_cursor(self):
         return self.cursor + self.records_returned
 
     def create_filters_from_token(self, token):
         token = decodeToken(token)
-        filters = dict([entry.strip().split('=') for entry in token.strip().split("::")])
+        filters = dict(
+            [entry.strip().split("=") for entry in token.strip().split("::")]
+        )
         filters.update(self.record_access_filter)
-        self.metadataPrefix = filters.pop('prefix')
-        self.list_size = int(filters.pop('list_size'))
-        self.cursor = int(filters.pop('cursor'))
-        self.sort_key = filters.pop('sort_key')
+        self.metadataPrefix = filters.pop("prefix")
+        self.list_size = int(filters.pop("list_size"))
+        self.cursor = int(filters.pop("cursor"))
+        self.sort_key = filters.pop("sort_key")
         self.filters = filters
-        fmt = '%Y-%m-%dT%H:%M:%S%z'  # '%Y-%m-%d %H:%M:%S %Z%z'
-        until_date = filters.get('modified__lt')
-        from_date = filters.get('modified__gt')
-        if from_date and ' ' in from_date:
-            from_date=parser.parse(timestr=filters.pop('modified__gt'))
+        fmt = "%Y-%m-%dT%H:%M:%S%z"  # '%Y-%m-%d %H:%M:%S %Z%z'
+        until_date = filters.get("modified__lt")
+        from_date = filters.get("modified__gt")
+        if from_date and " " in from_date:
+            from_date = parser.parse(timestr=filters.pop("modified__gt"))
             filters["modified__gt"] = from_date.strftime(fmt)
-        if until_date and ' ' in until_date:
-            until_date=parser.parse(timestr=filters.pop('modified__lt'))
+        if until_date and " " in until_date:
+            until_date = parser.parse(timestr=filters.pop("modified__lt"))
             filters["modified__lt"] = until_date.strftime(fmt)
 
         return filters
@@ -448,14 +498,16 @@ class ElasticSearchOAIProvider(OAIProvider):
         if self.cursor + self.records_returned >= self.list_size:
             return None
         token_dict = {
-            'prefix': self.metadataPrefix,
-            'cursor': self.get_next_cursor(),
-            'list_size': self.list_size,
-            'sort_key': self.get_sort_key(),
+            "prefix": self.metadataPrefix,
+            "cursor": self.get_next_cursor(),
+            "list_size": self.list_size,
+            "sort_key": self.get_sort_key(),
         }
         token_dict.update(**self.filters)
         token_dict.pop(list(self.record_access_filter.keys())[0])
-        token = "::".join(["{}={}".format(key, value) for key, value in list(token_dict.items())])
+        token = "::".join(
+            ["{}={}".format(key, value) for key, value in list(token_dict.items())]
+        )
         token = encodeToken(token)
         return token
 
@@ -464,7 +516,7 @@ class ElasticSearchOAIProvider(OAIProvider):
             return None
         return ElasticSearchRDFRecord.get_rdf_records_from_query(
             query=self.convert_filters_to_query(self.filters),
-            response=self.get_query_result()
+            response=self.get_query_result(),
         )
 
     def sets(self, obj):
@@ -478,53 +530,55 @@ class ElasticSearchOAIProvider(OAIProvider):
         if response.hits.total.value != 1:
             return None
         return ElasticSearchRDFRecord.get_rdf_records_from_query(
-            query=s,
-            response=response)[0]
+            query=s, response=response
+        )[0]
 
     def convert_filters_to_query(self, filters):
-        s = Search(using=self.client, index=settings.INDEX_NAME).extra(track_total_hits=True)
+        s = Search(using=self.client, index=settings.INDEX_NAME).extra(
+            track_total_hits=True
+        )
         spec = filters.get("dataset__spec", None)
-        modified_from = filters.get('modified__gt', None)
-        modified_until = filters.get('modified__lt', None)
+        modified_from = filters.get("modified__gt", None)
+        modified_until = filters.get("modified__lt", None)
         if spec and not self.spec:
             self.spec = spec
         if self.spec:
-            s = s.query("match", **{'system.spec.raw': self.spec})
+            s = s.query("match", **{"system.spec.raw": self.spec})
         if self.query:
             query_dict = self.query.to_dict()
-            if 'query' in query_dict:
-                s = s.query(query_dict.get('query'))
-            if 'filter' in query_dict:
-                s = s.filter(query_dict.get('filter'))
+            if "query" in query_dict:
+                s = s.query(query_dict.get("query"))
+            if "filter" in query_dict:
+                s = s.filter(query_dict.get("filter"))
         if modified_from:
             s = s.filter("range", **{"system.modified_at": {"gte": modified_from}})
         if modified_until:
             s = s.filter("range", **{"system.modified_at": {"lte": modified_until}})
-        s = s.sort({"system.modified_at": {"order": "asc"}, "_id": {"order": "desc"}})
+        s = s.sort({"_id": {"order": "desc"}})
         # todo change to scroll
         # slice_query = s[self.cursor: self.get_next_cursor()]
         # TODO retrieve this from the resumption token
         slice_query = s.extra(size=self.records_returned)
-        if 'resumptionToken' in self.request.GET:
+        if "resumptionToken" in self.request.GET:
             slice_query = slice_query.extra(**self.get_next_search_cursor())
         print(slice_query.to_dict())
         return slice_query
 
     def get_dataset_list(self):
-        s = Search(using=self.client, index=settings.INDEX_NAME).extra(track_total_hits=True)
-        datasets = A(
-            'terms',
-            field='system.spec.raw',
-            size=500
+        s = Search(using=self.client, index=settings.INDEX_NAME).extra(
+            track_total_hits=True
         )
+        datasets = A("terms", field="system.spec.raw", size=500)
         if self.query:
-            s = s.filter(self.query.get('filter'))
+            s = s.filter(self.query.get("filter"))
         elif self.spec:
-            s = s.query("match", **{'system.spec.raw': self.spec})
+            s = s.query("match", **{"system.spec.raw": self.spec})
         s.aggs.bucket("dataset-list", datasets)
         response = s.execute()
-        specs = response.aggregations['dataset-list'].buckets
-        ds_list = [self.ESDataSet(spec.key, None, None, spec.doc_count, None) for spec in specs]
+        specs = response.aggregations["dataset-list"].buckets
+        ds_list = [
+            self.ESDataSet(spec.key, None, None, spec.doc_count, None) for spec in specs
+        ]
         return sorted(ds_list, key=lambda ds: ds.spec)
 
     def last_modified(self, obj):
@@ -532,15 +586,14 @@ class ElasticSearchOAIProvider(OAIProvider):
 
 
 class DjangoOAIProvider(OAIProvider):
-
     def get_list_size(self):
         return self.record_model.objects.filter(**self.filters).count()
 
     def get_items(self):
-        objects = self.record_model.objects.filter(**self.filters).order_by('modified')
+        objects = self.record_model.objects.filter(**self.filters).order_by("modified")
         if not objects:
             return None
-        return objects[self.cursor:self.get_next_cursor()]
+        return objects[self.cursor : self.get_next_cursor()]
 
     def get_item(self, identifier):
         return self.record_model.objects.get(hub_id=identifier)
@@ -553,13 +606,15 @@ class DjangoOAIProvider(OAIProvider):
         return obj.modified
 
 
-HarvestStep = namedtuple('HarvestStep', ['records_returned', 'total_records', 'resumption_token', 'records'])
-HarvestRequest = namedtuple('HarvestRequest', ['base_url', 'set_spec', 'metadata_prefix', 'verb'])
-
+HarvestStep = namedtuple(
+    "HarvestStep", ["records_returned", "total_records", "resumption_token", "records"]
+)
+HarvestRequest = namedtuple(
+    "HarvestRequest", ["base_url", "set_spec", "metadata_prefix", "verb"]
+)
 
 
 class OAIHarvester:
-
     def __init__(self, base_url):
         self.base_url = base_url
 
@@ -580,22 +635,26 @@ class OAIHarvester:
             )
         return uri
 
-
     @staticmethod
     def clean_bad_namespaces(tn):
         from io import StringIO
-        lines = tn.splitlines(True) # keep \n
+
+        lines = tn.splitlines(True)  # keep \n
         o = StringIO()
         for line in lines:
-            if '<openskos:status>approved</openskos:status>' in line:
-                line = line.replace('<openskos:status>approved</openskos:status>', '')
+            if "<openskos:status>approved</openskos:status>" in line:
+                line = line.replace("<openskos:status>approved</openskos:status>", "")
             o.write(line)
         return o
 
     @staticmethod
     def clean_response(response):
-        clean_response = response.replace('<openskos:status>approved</openskos:status>', '')
-        clean_response = clean_response.replace('<?xml version="1.0" encoding="UTF-8"?>', '')
+        clean_response = response.replace(
+            "<openskos:status>approved</openskos:status>", ""
+        )
+        clean_response = clean_response.replace(
+            '<?xml version="1.0" encoding="UTF-8"?>', ""
+        )
         return clean_response
 
     def parse_oai_pmh_response(self, harvest_request, harvest_step):
@@ -605,35 +664,47 @@ class OAIHarvester:
         print("'{}'".format(uri))
         resumption_token = None
         record_tree = ET.fromstring(self.clean_response(response.text))
-        record_sep = '{http://www.openarchives.org/OAI/2.0/}record' if harvest_request.verb == "ListRecords" \
-            else '{http://www.openarchives.org/OAI/2.0/}header'
+        record_sep = (
+            "{http://www.openarchives.org/OAI/2.0/}record"
+            if harvest_request.verb == "ListRecords"
+            else "{http://www.openarchives.org/OAI/2.0/}header"
+        )
         for record in record_tree.iter(record_sep):
             harvest_step.records.append(record)
             records_processed += 1
-        token =  next(record_tree.iter('{http://www.openarchives.org/OAI/2.0/}resumptionToken'), None)
+        token = next(
+            record_tree.iter("{http://www.openarchives.org/OAI/2.0/}resumptionToken"),
+            None,
+        )
         if token.text is not None:
             resumption_token = token.text.strip()
-            cursor = token.attrib.get('cursor')
-            list_size = token.attrib.get('completeListSize')
+            cursor = token.attrib.get("cursor")
+            list_size = token.attrib.get("completeListSize")
         if records_processed == 0:
-            with open('/tmp/test_output.xml', 'w') as f:
+            with open("/tmp/test_output.xml", "w") as f:
                 f.write(response.text)
         print("token: {}/{}".format(resumption_token, records_processed))
         return HarvestStep(
             records_processed,
             harvest_step.total_records + records_processed,
             resumption_token,
-            harvest_step.records
+            harvest_step.records,
         )
 
     def get_records_from_oai_pmh(self, set_spec, metadata_prefix, verb="ListRecords"):
         harvest_step = HarvestStep(50, 0, "fake_token", ET.Element("delving-records"))
-        harvest_request = HarvestRequest(self.base_url.rstrip("?"), set_spec, metadata_prefix, verb)
+        harvest_request = HarvestRequest(
+            self.base_url.rstrip("?"), set_spec, metadata_prefix, verb
+        )
         print(harvest_request)
         while harvest_step.resumption_token is not None:
             harvest_step = self.parse_oai_pmh_response(harvest_request, harvest_step)
         tree = ET.ElementTree(harvest_step.records)
-        output_file = os.path.join('/tmp', 'oai_records_{}_{}.xml'.format(set_spec, metadata_prefix))
-        tree.write(output_file, encoding="utf-8", xml_declaration=True, pretty_print=True)
+        output_file = os.path.join(
+            "/tmp", "oai_records_{}_{}.xml".format(set_spec, metadata_prefix)
+        )
+        tree.write(
+            output_file, encoding="utf-8", xml_declaration=True, pretty_print=True
+        )
         print("processed {} records".format(harvest_step.total_records))
         return output_file
