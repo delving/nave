@@ -14,12 +14,18 @@ services:
             memlock:
                 soft: -1
                 hard: -1
+        networks:
+            - nave_network
+
     fuseki:
         image: stain/jena-fuseki:latest
         ports:
             - '3030:3030'
         environment:
             - ADMIN_PASSWORD=pw123
+        networks:
+            - nave_network
+
     postgresql:
         image: mdillon/postgis:9.6
         restart: always
@@ -27,10 +33,9 @@ services:
             - '5433:5432'
         environment:
             POSTGRES_PASSWORD: pw123
-    #app:
-    ##build: .
-    #image: delving/nave:latest
-    #ports:
-    #- "8000:8000"
-    #environment:
-    #- DJANGO_SETTINGS_MODULE=nave.projects.brabantcloud.settings
+        networks:
+            - nave_network
+
+networks:
+    nave_network:
+        driver: bridge
