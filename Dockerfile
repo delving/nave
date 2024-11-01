@@ -14,6 +14,8 @@ RUN apt-get update && \
   libjpeg-dev \
   libtiff-dev \
   libfreetype6-dev \
+  libxml2-dev \
+  libxslt-dev \
   liblcms2-dev && \
   rm -rf /var/lib/apt/lists/*
 
