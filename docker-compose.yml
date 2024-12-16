@@ -1,37 +1,41 @@
-version: '3'
 services:
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:6.8.2
-    ports:
-      - "9200:9200"
-      - "9300:9300" 
-    environment:
-      - cluster.name=docker-cluster-nave
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - xpack.security.enabled=false
-      - discovery.type=single-node
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-  fuseki:
-    image: stain/jena-fuseki:latest
-    ports:
-      - "3030:3030"
-    environment:
-      - ADMIN_PASSWORD=pw123
-  postgresql:
-    image: mdillon/postgis:9.3
-    restart: always
-    ports:
-      - "5433:5432"
-    environment:
-      POSTGRES_PASSWORD: pw123
-  #app:
-    ##build: .
-    #image: delving/nave:latest
-    #ports:
-        #- "8000:8000"
-    #environment:
-        #- DJANGO_SETTINGS_MODULE=nave.projects.brabantcloud.settings
+    elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch:6.8.2
+        ports:
+            - '9200:9200'
+            - '9300:9300'
+        environment:
+            - cluster.name=docker-cluster-nave
+            - bootstrap.memory_lock=true
+            - 'ES_JAVA_OPTS=-Xms512m -Xmx512m'
+            - xpack.security.enabled=false
+            - discovery.type=single-node
+        ulimits:
+            memlock:
+                soft: -1
+                hard: -1
+        networks:
+            - nave_network
+
+    fuseki:
+        image: stain/jena-fuseki:latest
+        ports:
+            - '3030:3030'
+        environment:
+            - ADMIN_PASSWORD=pw123
+        networks:
+            - nave_network
+
+    postgresql:
+        image: mdillon/postgis:9.6
+        restart: always
+        ports:
+            - '5433:5432'
+        environment:
+            POSTGRES_PASSWORD: pw123
+        networks:
+            - nave_network
+
+networks:
+    nave_network:
+        driver: bridge
