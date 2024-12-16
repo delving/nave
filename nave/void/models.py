@@ -210,6 +210,8 @@ class ProxyMapping(TimeStampedModel):
             elif all([key in ['s', 'p', 'o'] for key in entry.keys()]):
                 subject = URIRef(entry['s']['value'])
                 predicate = URIRef(entry['p']['value'])
+                if (entry['p']['value'] == "http://purl.org/dc/terms/created"):
+                    continue
                 obj_value = entry['o']
                 if obj_value['type'] == 'literal':
                     obj = Literal(obj_value['value'], lang=obj_value.get('xml:lang'))
@@ -290,10 +292,13 @@ class ProxyResource(TimeStampedModel):
                          response['results']['bindings']}
         if not response_dict:
             return ProxyResource.create_proxy_resource_from_uri(proxy_uri, original_label=original_label, ds=ds)
-        proxy_literal_field = response_dict['http://schemas.delving.eu/narthex/terms/proxyLiteralField']
-        proxy_literal_value = response_dict['http://schemas.delving.eu/narthex/terms/proxyLiteralValue']
-        frequency = response_dict['http://schemas.delving.eu/narthex/terms/skosFrequency']
-        ds = DataSet.get_dataset(document_uri=response_dict['http://schemas.delving.eu/narthex/terms/belongsTo'])
+        proxy_literal_field = response_dict.get('http://schemas.delving.eu/narthex/terms/proxyLiteralField')
+        proxy_literal_value = response_dict.get('http://schemas.delving.eu/narthex/terms/proxyLiteralValue')
+        frequency = response_dict.get('http://schemas.delving.eu/narthex/terms/skosFrequency')
+        belongsTo = response_dict.get('http://schemas.delving.eu/narthex/terms/belongsTo')
+        if not belongsTo:
+            return ProxyResource.create_proxy_resource_from_uri(proxy_uri, original_label=original_label, ds=ds)
+        ds = DataSet.get_dataset(document_uri=belongsTo)
         proxy_field = ProxyResourceField.objects.filter(dataset=ds, property_uri=proxy_literal_field)
         if not proxy_field:
             proxy_field = ProxyResourceField(
