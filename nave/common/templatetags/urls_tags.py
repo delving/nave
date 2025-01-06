@@ -18,7 +18,7 @@ def base_url(url):
     try:
         return url.get_path()
     except:
-        return ''
+        return ""
 
 
 @register.simple_tag
@@ -28,7 +28,7 @@ def add_params(url, **kwargs):
         url.update_query_data(**kwargs)
         return url.get_full_path()
     except Exception as e:
-        return ''
+        return ""
 
 
 @register.simple_tag
@@ -38,7 +38,7 @@ def del_params(url, *args, **kwargs):
         url.del_params(*args, **kwargs)
         return url.get_full_path()
     except Exception as e:
-        return ''
+        return ""
 
 
 @register.simple_tag
@@ -48,7 +48,7 @@ def overload_params(url, **kwargs):
         url.overload_params(**kwargs)
         return url.get_full_path()
     except Exception as e:
-        return ''
+        return ""
 
 
 @register.assignment_tag
@@ -65,29 +65,35 @@ def toggle_params(url, **kwargs):
     return u.get_full_path()
 
 
-@register.filter(name='quote')
-def quote_param(value, safe='/'):
+@register.filter(name="quote")
+def quote_param(value, safe="/"):
     return urllib.parse.quote(value, safe)
 
 
-@register.filter(name='quote_plus')
-def quote_param_plus(value, safe='/'):
+@register.filter(name="quote_plus")
+def quote_param_plus(value, safe="/"):
     return urllib.parse.quote_plus(value, safe)
 
 
 @register.simple_tag
 def form_hidden_field(request, field):
-    html = ''
+    html = ""
     if request.GET.get(field):
-        clean_field = bleach.clean(request.GET.get(field)).replace('"', '&quot;')
-        if not "onclick=" in clean_field:
-            html = '<input type="hidden" name="'+field+'" value="'+clean_field+'" />'
+        clean_field = bleach.clean(request.GET.get(field)).replace('"', "&quot;")
+        if "onclick=" not in clean_field:
+            html = (
+                '<input type="hidden" name="'
+                + field
+                + '" value="'
+                + clean_field
+                + '" />'
+            )
     return mark_safe(html)
 
 
 @register.simple_tag
 def form_hidden_fields(request, exclude=[]):
-    html = ''
+    html = ""
     params = request.GET
     generator = (param for param in params)
     if len(exclude):
@@ -100,13 +106,21 @@ def form_hidden_fields(request, exclude=[]):
             field = bleach.clean(field)
             if len(field):
                 # text = field.replace('"','&quot;').split(':', 1)[-1]
-                if param != 'q':
-                    text = field.split(':', 1)[-1]
+                if param != "q":
+                    text = field.split(":", 1)[-1]
                 else:
-                    text = field.replace('"', '&quot;')
-                html = html + '<input type="hidden" name="'+param.replace('"', '&quot;')+'" value="'+field.strip().replace('"', '&quot;')+'" data-text="'+text.strip().replace('"', '')+'"/>'
+                    text = field.replace('"', "&quot;")
+                html = (
+                    html
+                    + '<input type="hidden" name="'
+                    + bleach.clean(param)
+                    + '" value="'
+                    + field.strip().replace('"', "&quot;")
+                    + '" data-text="'
+                    + text.strip().replace('"', "")
+                    + '"/>'
+                )
     return mark_safe(html)
-
 
 
 @register.assignment_tag(takes_context=True)
@@ -117,11 +131,11 @@ def has_cookie(context, cookie_name):
     :param cookie_name:
     :return: Boolean
     """
-    request = context['request']
-    value = request.COOKIES.get(cookie_name,'')
+    request = context["request"]
+    value = request.COOKIES.get(cookie_name, "")
     return True if value else False
 
 
 @register.simple_tag
 def setvar(val=None):
-  return val
+    return val
