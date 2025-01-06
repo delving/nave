@@ -80,7 +80,7 @@ def encodeToken(token):
 
 def decodeToken(token):
     decodedBytes = base64.urlsafe_b64decode(token.strip())
-    decodedStr = str(decodedBytes, "utf-8")
+    decodedStr = str(decodedBytes)
     return decodedStr
 
 
@@ -159,8 +159,9 @@ class OAIProvider(TemplateView):
                 "badArgument",
                 "The request includes illegal arguments or is missing required arguments.",
             )
-        items = [self.get_item(identifier)]
-        if not items:
+        item = self.get_item(identifier)
+        items = [item]
+        if not item:
             return self.error(
                 "idDoesNotExist",
                 "The value of the identifier argument is unknown or illegal in this repository.",
@@ -338,6 +339,7 @@ class OAIProvider(TemplateView):
         )
 
     def create_filters_from_token(self, token):
+        token = parse.unquote_plus(parse.unquote_plus(token))
         filters = dict(
             [entry.strip().split("=") for entry in token.strip().split("::")]
         )
@@ -524,8 +526,10 @@ class ElasticSearchOAIProvider(OAIProvider):
         return [obj.get_spec_name()]
 
     def get_item(self, identifier):
-        s = Search(using=self.client).extra(track_total_hits=True)
-        s = s.query("match", **{"_id": identifier})
+        s = Search(using=self.client, index=settings.INDEX_NAME).extra(
+            track_total_hits=True
+        )
+        s = s.query("match", **{"legacy.delving_hubId": identifier})
         response = s.execute()
         if response.hits.total.value != 1:
             return None
@@ -621,11 +625,11 @@ class OAIHarvester:
     @staticmethod
     def get_next_oai_pmh_uri(harvest_request, harvest_step):
         uri = ""
-        if harvest_step.total_records is 0:
+        if harvest_step.total_records == 0:
             uri = "{0}?verb={1}".format(harvest_request.base_url, harvest_request.verb)
-            if harvest_request.set_spec is not "":
+            if harvest_request.set_spec != "":
                 uri += "&set={}".format(harvest_request.set_spec)
-            if harvest_request.metadata_prefix is not "":
+            if harvest_request.metadata_prefix != "":
                 uri += "&metadataPrefix={}".format(harvest_request.metadata_prefix)
         else:
             uri = "{}?verb={}&resumptionToken={}".format(
