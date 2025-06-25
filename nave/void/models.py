@@ -19,7 +19,7 @@ import time
 from functools import partial
 
 from dateutil import parser
-from dj.choices import Choices, Choice
+from dj.choices import Choice, Choices
 from dj.choices.fields import ChoiceField
 from django.conf import settings
 from django.contrib.auth.models import Group, User
@@ -33,18 +33,30 @@ from django.utils.translation import ugettext_lazy as _
 from django_extensions.db.fields import AutoSlugField
 from django_extensions.db.models import TimeStampedModel, TitleDescriptionModel
 from elasticsearch import helpers
-from rdflib import URIRef, Graph, Literal, ConjunctiveGraph
+from rdflib import ConjunctiveGraph, Graph, Literal, URIRef
 from rdflib.namespace import RDF, SKOS
 
 from nave.lod import namespace_manager
 from nave.lod.models import RDFModel
 from nave.lod.utils import rdfstore
-from nave.lod.utils.resolver import RDFPredicate, RDFRecord
 from nave.lod.utils.rdfstore import QueryType, RDFStore
+from nave.lod.utils.resolver import RDFPredicate, RDFRecord
 
 logger = logging.getLogger(__name__)
 
 fmt = "%Y-%m-%d %H:%M:%S%z"  # '%Y-%m-%d %H:%M:%S %Z%z'
+
+
+def encodeToken(token):
+    encodedBytes = base64.b64encode(token.encode("utf-8"))
+    encodedStr = str(encodedBytes, "utf-8")
+    return encodedStr
+
+
+def decodeToken(token):
+    decodedBytes = base64.urlsafe_b64decode(token.strip())
+    decodedStr = str(decodedBytes)
+    return decodedStr
 
 
 def get_es():
@@ -586,9 +598,7 @@ class DataSet(TimeStampedModel, GroupOwned):
     )
     sync_error_message = models.TextField(
         _("synchronisation error"),
-        help_text=_(
-            "error message why synchronisation with the triple" "store failed."
-        ),
+        help_text=_("error message why synchronisation with the triplestore failed."),
         null=True,
         blank=True,
     )

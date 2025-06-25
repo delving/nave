@@ -268,6 +268,8 @@ class OAIProvider(TemplateView):
         return self.render_to_response({"items": converter_list})
 
     def _get_item_info(self, item, converter):
+        from nave.void.convertors import sanitize_xml_string
+        
         converter = converter(about_uri=item.document_uri, graph=item.get_graph())
         converted_fields = None
         record = None
@@ -283,6 +285,8 @@ class OAIProvider(TemplateView):
             if isinstance(record, bytes):
                 record = record.decode()
             record = record.replace('<?xml version="1.0" encoding="UTF-8"?>\n', "")
+            # Sanitize the XML to remove invalid control characters
+            record = sanitize_xml_string(record)
             namespaces = converter.get_namespaces(as_ns_declaration=True)
         item_info = {
             "identifier": self.oai_identifier(item),
@@ -345,8 +349,8 @@ class OAIProvider(TemplateView):
         )
         filters.update(self.record_access_filter)
         self.metadataPrefix = filters.pop("prefix")
-        self.list_size = int(filters.pop("list_size"))
-        self.cursor = int(filters.pop("cursor"))
+        self.list_size = clean_and_convert_to_int(filters.pop("list_size"))
+        self.cursor = clean_and_convert_to_int(filters.pop("cursor"))
         self.filters = filters
         return filters
 
@@ -467,8 +471,8 @@ class ElasticSearchOAIProvider(OAIProvider):
         )
         filters.update(self.record_access_filter)
         self.metadataPrefix = filters.pop("prefix")
-        self.list_size = int(filters.pop("list_size"))
-        self.cursor = int(filters.pop("cursor"))
+        self.list_size = clean_and_convert_to_int(filters.pop("list_size"))
+        self.cursor = clean_and_convert_to_int(filters.pop("cursor"))
         self.sort_key = filters.pop("sort_key")
         self.filters = filters
         fmt = "%Y-%m-%dT%H:%M:%S%z"  # '%Y-%m-%d %H:%M:%S %Z%z'
@@ -712,3 +716,23 @@ class OAIHarvester:
         )
         print("processed {} records".format(harvest_step.total_records))
         return output_file
+
+
+def clean_and_convert_to_int(value):
+    """
+    Remove quotes and spaces from a string and convert it to an integer.
+
+    Args:
+        value (str): The string to clean and convert
+
+    Returns:
+        int: The cleaned string converted to an integer
+
+    Raises:
+        ValueError: If the cleaned string cannot be converted to an integer
+    """
+    # Remove quotes and spaces
+    cleaned_value = value.replace('"', "").replace(" ", "")
+
+    # Convert to integer
+    return int(cleaned_value)
