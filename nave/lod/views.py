@@ -373,7 +373,37 @@ class LoDHTMLView(TemplateView):
         context['resources'] = graph_bindings
         resource = graph_bindings.get_about_resource()
         context['about_resource'] = resource
-        context['items'] = resource.get_items(as_tuples=True)
+        
+        # Apply converter if configured for detail view
+        items = resource.get_items(as_tuples=True)
+        if hasattr(settings, 'DETAIL_VIEW_CONVERTER') and settings.DETAIL_VIEW_CONVERTER:
+            from nave.void import REGISTERED_CONVERTERS
+            converter_key = settings.DETAIL_VIEW_CONVERTER
+            if converter_key in REGISTERED_CONVERTERS:
+                converter_class = REGISTERED_CONVERTERS[converter_key]
+                # Convert graph bindings to flat index doc for converter
+                flat_doc = graph_bindings.to_flat_index_doc()
+                # Apply converter
+                converter = converter_class(
+                    about_uri=target_uri,
+                    graph=graph,
+                    es_result_fields=flat_doc,
+                    bindings=graph_bindings
+                )
+                converted_fields = converter.convert(add_delving_fields=False)
+                # Add converted fields to context
+                context['converted_fields'] = converted_fields
+                # Create converted items list
+                converted_items = []
+                for field_name, values in converted_fields.items():
+                    if values and isinstance(values, list):
+                        for value in values:
+                            converted_items.append((field_name, value))
+                context['items'] = converted_items
+            else:
+                context['items'] = items
+        else:
+            context['items'] = items
         rdf_type = graph_bindings.get_about_resource().get_type()
         context['rdf_type'] = rdf_type
         context['lod_allowed'] = GraphBindings.is_lod_allowed(graph)

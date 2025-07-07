@@ -11,7 +11,6 @@ legacy flat formats. We currently support:
 
 These conversion can be used in OAI-PMH or API search and detail outputs.
 """
-
 import collections
 import copy
 import json
@@ -38,18 +37,10 @@ class BaseConverter(object):
 
     Dict
     """
-
     _allowed_field = []
 
-    def __init__(
-        self,
-        about_uri=None,
-        graph=None,
-        es_result_fields=None,
-        bindings=None,
-        allowed_fields=None,
-        org_id=settings.ORG_ID,
-    ):
+    def __init__(self, about_uri=None, graph=None, es_result_fields=None, bindings=None, allowed_fields=None,
+                 org_id=settings.ORG_ID):
         self.org_id = org_id
         self.about_uri = about_uri
         self._es_result_fields = es_result_fields
@@ -78,17 +69,10 @@ class BaseConverter(object):
         if not self._used_namespaces:
             bindings = self.bindings()
             mapping_keys = self.get_mapping_dict().keys()
-            prefixes = {key.split("_")[0] for key in mapping_keys}
-            self._used_namespaces = [
-                (prefix, settings.RDF_SUPPORTED_PREFIXES[prefix]) for prefix in prefixes
-            ]
+            prefixes = {key.split('_')[0] for key in mapping_keys}
+            self._used_namespaces = [(prefix, settings.RDF_SUPPORTED_PREFIXES[prefix]) for prefix in prefixes]
         if as_ns_declaration:
-            return " ".join(
-                [
-                    'xmlns:{}="{}"'.format(ns, ns_uri[0])
-                    for ns, ns_uri in self._used_namespaces
-                ]
-            )
+            return " ".join(['xmlns:{}="{}"'.format(ns, ns_uri[0]) for ns, ns_uri in self._used_namespaces])
         return self._used_namespaces
 
     def get_converter_key(self):
@@ -155,7 +139,7 @@ class BaseConverter(object):
             "europeana_source": "edm_source",
             "europeana_type": "edm_type",
             "europeana_unstored": "edm_unstored",
-            "europeana_uri": "edm_uri",
+            "europeana_uri": "edm_uri"
         }
         return mapping
 
@@ -170,31 +154,26 @@ class BaseConverter(object):
             "delving_deepZoomUrl": "nave_deepZoomUrl",
             "delving_fullTextObjectUrl": "nave_fullTextObjectUrl",
             "delving_fullText": "nave_fullText",
-            "delving_geohash": "point",
+            "delving_geohash": "point"
         }
 
     @staticmethod
     def get_translated_field(key, translate=True):
-        normalised_key = re.sub("abm_|tib_|icn_|delving_", "nave_", key)
-        normalised_key = re.sub("europeana_", "edm_", normalised_key)
+        normalised_key = re.sub("abm_|tib_|icn_|delving_", 'nave_', key)
+        normalised_key = re.sub("europeana_", 'edm_', normalised_key)
         if any(
             [
                 normalised_key.endswith(legacy_suffix)
-                for legacy_suffix in ["_string", "_facet", "_text"]
-            ]
-        ):
+                for legacy_suffix in ['_string', '_facet', '_text']
+             ]):
             normalised_key = "_".join(normalised_key.split("_")[:-1])
         if translate:
             return _(normalised_key)
         return normalised_key
 
     def get_layout_fields(self):
-        layout_fields = [
-            collections.OrderedDict(
-                **{"name": key, "i18n": self.get_translated_field(key)}
-            )
-            for key in self.get_mapping_dict().keys()
-        ]
+        layout_fields = [collections.OrderedDict(**{"name": key, "i18n": self.get_translated_field(key)}) for key in
+                         self.get_mapping_dict().keys()]
         return layout_fields
 
     def get_mapping_dict(self):
@@ -205,7 +184,7 @@ class BaseConverter(object):
         return self._mapping_dict
 
     def _get_inline_links(self):
-        """Return all object links that are of type ore:Aggregation."""
+        """Return all object links that are of type ore:Aggregation. """
         inline_links = defaultdict(list)
         if self.about_uri:
             about_uri = URIRef(self.about_uri)
@@ -216,7 +195,7 @@ class BaseConverter(object):
         return inline_links
 
     def _get_inline_preview(self, link, store=None):
-        """Query RDFstore for graph and convert selected fields to JSON dictionary."""
+        """Query RDFstore for graph and convert selected fields to JSON dictionary. """
         graph = None
         try:
             if settings.RDF_USE_LOCAL_GRAPH:
@@ -229,7 +208,7 @@ class BaseConverter(object):
                 if not store:
                     store = get_rdfstore()
                 store = store.get_graph_store
-                named_graph = "{}/graph".format(link.rstrip("/"))
+                named_graph = "{}/graph".format(link.rstrip('/'))
                 graph = store.get(named_graph=named_graph, as_graph=True)
         except UnknownGraph as ug:
             logger.warn("Unable to find Graph for: {}".format(link))
@@ -240,13 +219,14 @@ class BaseConverter(object):
         for pred, obj in graph.predicate_objects():
             if pred in preview_predicates:
                 inline_dict[preview_fields[str(pred)]] = str(obj)
-        if "delving_hubId" in preview_fields.values():
+        if 'delving_hubId' in preview_fields.values():
             hub_id, spec = self.get_hub_id()
-            inline_dict["delving_hubId"] = hub_id
+            inline_dict['delving_hubId'] = hub_id
         return inline_dict
 
     def get_inline_dict(self, links=None, store=None):
-        """Extract all EDM links from the graph and return a dict with enrichments."""
+        """ Extract all EDM links from the graph and return a dict with enrichments.
+        """
         if not self.about_uri:
             return {}
         if not store:
@@ -269,7 +249,7 @@ class BaseConverter(object):
             obj = URIRef(obj)
             for subj, _, _ in graph.triples((None, pred, obj)):
                 graph.remove((subj, pred, obj))
-                graph.add((subj, pred, Literal('"{}"'.format(json.dumps(preview)))))
+                graph.add((subj, pred, Literal("\"{}\"".format(json.dumps(preview)))))
         return graph
 
     def convert(self, add_delving_fields=True, store=None):
@@ -284,26 +264,26 @@ class BaseConverter(object):
             mapping.update(self.delving_mapping())
         if self._es_result_fields:
             index_doc = self._es_result_fields
-            self.about_uri = index_doc["system"]["about_uri"]
+            self.about_uri = index_doc['system']['about_uri']
         elif self.bindings():
             index_doc = self.bindings().to_flat_index_doc()
         else:
             raise ValueError("Unable to convert due to missing bindings or es_fields")
         # add custom fields
         for k in index_doc.keys():
-            if k.startswith("custom_"):
+            if k.startswith('custom_'):
                 mapping[k] = k
-            if k.startswith("nave_"):
-                if "_resource" in k or "_location" in k:
-                    mapping[k.replace("nave_", "delving_")] = k
+            if k.startswith('nave_'):
+                if '_resource' in k or '_location' in k:
+                    mapping[k.replace('nave_', 'delving_')] = k
         for key, index_doc_key in mapping.items():
             if isinstance(index_doc_key, str):
                 values = index_doc.get(index_doc_key)
                 if values:
                     for entry in values:
                         if isinstance(entry, dict):
-                            if "value" in entry:
-                                output_doc[key].append(entry["value"])
+                            if 'value' in entry:
+                                output_doc[key].append(entry['value'])
                         else:
                             output_doc[key].append(entry)
         if add_delving_fields:
@@ -311,61 +291,57 @@ class BaseConverter(object):
         return collections.OrderedDict(sorted(output_doc.items()))
 
     def get_hub_id(self):
-        *rest, spec, local_id = self.about_uri.split("/")
+        *rest, spec, local_id = self.about_uri.split('/')
         local_id = RDFRecord.clean_local_id(local_id)
         return "{}_{}_{}".format(self.org_id, spec, local_id), spec
 
     def get_non_null(self, key, input_doc, output_doc):
         value = input_doc.get(key)
-        if value not in [None, "null"]:
+        if value not in [None, 'null']:
             output_doc[key] = [value]
 
     def add_defaults(self, output_doc, index_doc):
-        output_doc["delving_recordType"] = ["mdr"]
+        output_doc['delving_recordType'] = ["mdr"]
         hub_id, spec = self.get_hub_id()
-        output_doc["delving_hubId"] = [hub_id]
-        output_doc["delving_pmhId"] = [hub_id]
-        output_doc["delving_spec"] = [spec]
-        output_doc["europeana_uri"] = ["/".join(hub_id.split("_")[1:])]
-        if "delving_resourceUri" in output_doc:
-            output_doc["europeana_object"] = output_doc["delving_resourceUri"]
-        output_doc["delving_hasDigitalObject"] = ["europeana_object" in output_doc]
-        if "europeana_object" in output_doc:
-            if "delving_thumbnail" in output_doc:
-                output_doc["delving_thumbnail"].extend(
-                    output_doc.get("europeana_object")
-                )
-            output_doc["delving_thumbnail"] = output_doc.get("europeana_object")
-        if "delving_locationLatLong" in output_doc:
-            output_doc["delving_geoHash"] = output_doc["delving_locationLatLong"]
-        output_doc["delving_hasGeoHash"] = ["delving_geoHash" in output_doc]
-        if "europeana_isShownAt" in output_doc:
-            shown_at = output_doc.get("europeana_isShownAt")
+        output_doc['delving_hubId'] = [hub_id]
+        output_doc['delving_pmhId'] = [hub_id]
+        output_doc['delving_spec'] = [spec]
+        output_doc['europeana_uri'] = ["/".join(hub_id.split('_')[1:])]
+        if 'delving_resourceUri' in output_doc:
+            output_doc['europeana_object'] = output_doc['delving_resourceUri']
+        output_doc["delving_hasDigitalObject"] = ['europeana_object' in output_doc]
+        if 'europeana_object' in output_doc:
+            if 'delving_thumbnail' in output_doc:
+                output_doc['delving_thumbnail'].extend(output_doc.get('europeana_object'))
+            output_doc["delving_thumbnail"] = output_doc.get('europeana_object')
+        if 'delving_locationLatLong' in output_doc:
+            output_doc['delving_geoHash'] = output_doc['delving_locationLatLong']
+        output_doc["delving_hasGeoHash"] = ['delving_geoHash' in output_doc]
+        if 'europeana_isShownAt' in output_doc:
+            shown_at = output_doc.get('europeana_isShownAt')
             if isinstance(shown_at, list):
-                if any(e.startswith("file:///opt") for e in shown_at):
-                    del output_doc["europeana_isShownAt"]
+                if any(e.startswith('file:///opt') for e in shown_at):
+                    del output_doc['europeana_isShownAt']
             elif isinstance(shown_at, str):
-                if shown_at.startswith("file:///opt"):
-                    del output_doc["europeana_isShownAt"]
+                if shown_at.startswith('file:///opt'):
+                    del output_doc['europeana_isShownAt']
             else:
-                output_doc["delving_landingpage"] = output_doc.get(
-                    "europeana_isShownAt"
-                )
-        if "dc_title" in output_doc:
-            output_doc["delving_title"] = output_doc.get("dc_title")
-        output_doc["delving_hasLandingPage"] = ["europeana_isShownAt" in output_doc]
+                output_doc["delving_landingpage"] = output_doc.get('europeana_isShownAt')
+        if 'dc_title' in output_doc:
+            output_doc['delving_title'] = output_doc.get('dc_title')
+        output_doc["delving_hasLandingPage"] = ['europeana_isShownAt' in output_doc]
         output_doc["europeana_collectionName"] = [spec]
-        if "legacy" in index_doc:
-            legacy = index_doc.get("legacy")
-            self.get_non_null("delving_collection", legacy, output_doc)
-            self.get_non_null("delving_title", legacy, output_doc)
-            self.get_non_null("delving_recordType", legacy, output_doc)
-            self.get_non_null("delving_creator", legacy, output_doc)
+        if 'legacy' in index_doc:
+            legacy = index_doc.get('legacy')
+            self.get_non_null('delving_collection', legacy, output_doc)
+            self.get_non_null('delving_title', legacy, output_doc)
+            self.get_non_null('delving_recordType', legacy, output_doc)
+            self.get_non_null('delving_creator', legacy, output_doc)
             # legacy.get('delving_description', output_doc)
-            self.get_non_null("delving_owner", legacy, output_doc)
-            self.get_non_null("delving_provider", legacy, output_doc)
-            legacy.get("delving_orgId", output_doc)
-            output_doc["delving_orgId"] = [self.org_id]
+            self.get_non_null('delving_owner', legacy, output_doc)
+            self.get_non_null('delving_provider', legacy, output_doc)
+            legacy.get('delving_orgId', output_doc)
+            output_doc['delving_orgId'] = [self.org_id]
 
 
 class DefaultAPIV2Converter(BaseConverter):
@@ -385,13 +361,13 @@ class DefaultAPIV2Converter(BaseConverter):
     def convert(self, add_delving_fields=False):
         if self._es_result_fields:
             index_doc = copy.deepcopy(self._es_result_fields)
-            self.about_uri = index_doc["system"]["about_uri"]
+            self.about_uri = index_doc['system']['about_uri']
         elif self.bindings():
             index_doc = self.bindings().to_flat_index_doc()
         else:
             raise ValueError("Unable to convert due to missing bindings or es_fields")
-        if "rdf" in index_doc:
-            del index_doc["rdf"]
+        if 'rdf' in index_doc:
+            del index_doc['rdf']
         output_doc = copy.deepcopy(index_doc)
         for k, value_list in index_doc.items():
             if k.startswith("narthex_"):
@@ -399,15 +375,18 @@ class DefaultAPIV2Converter(BaseConverter):
                 continue
             if isinstance(k, list):
                 for values in output_doc[k]:
-                    if "raw" in values:
-                        del values["raw"]
+                    if 'raw' in values:
+                        del values['raw']
         return collections.OrderedDict(sorted(output_doc.items()))
 
 
 class TIBConverter(BaseConverter):
     @staticmethod
     def query_key_replace_dict(reverse=False):
-        replace_dict = {"europeana_": "edm_", "tib_": "nave_"}
+        replace_dict = {
+            'europeana_': 'edm_',
+            'tib_': 'nave_'
+        }
         if reverse:
             replace_dict = {val: key for key, val in replace_dict.items()}
         return replace_dict
@@ -465,7 +444,9 @@ class TIBConverter(BaseConverter):
 class ESEConverter(BaseConverter):
     @staticmethod
     def query_key_replace_dict(reverse=False):
-        replace_dict = {"europeana_": "edm_"}
+        replace_dict = {
+            'europeana_': 'edm_'
+        }
         if reverse:
             replace_dict = {val: key for key, val in replace_dict.items()}
         return replace_dict
@@ -484,7 +465,9 @@ class ESEConverter(BaseConverter):
 class EDMStrictConverter(BaseConverter):
     @staticmethod
     def query_key_replace_dict(reverse=False):
-        replace_dict = {"europeana_": "edm_"}
+        replace_dict = {
+            'europeana_': 'edm_'
+        }
         if reverse:
             replace_dict = {val: key for key, val in replace_dict.items()}
         return replace_dict
@@ -515,57 +498,38 @@ class EDMStrictConverter(BaseConverter):
 
     @staticmethod
     def uri_to_namespaced_tag(uri):
-        if "#" in uri:
-            elements = uri.split("#")
-            split_key = "#"
+        if '#' in uri:
+            elements = uri.split('#')
+            split_key = '#'
         else:
-            elements = uri.split("/")
-            split_key = "/"
+            elements = uri.split('/')
+            split_key = '/'
         label = elements[-1]
         prefix = "/".join(elements[:-1])
         return "{{{}{}}}{}".format(prefix, split_key, label)
 
     def make_rdf_xml_serialization_europeana_proof(self, rdf_xml_string):
-        rdf_xml_string = sanitize_xml_string(rdf_xml_string)
         record = ET.fromstring(rdf_xml_string)
         for description in record.getchildren():
-            rdf_types = description.findall(
-                "{http://www.w3.org/1999/02/22-rdf-syntax-ns#}type"
-            )
-            rdf_type_values = [
-                rdf_type.attrib.get(
-                    "{http://www.w3.org/1999/02/22-rdf-syntax-ns#}resource"
-                )
-                for rdf_type in rdf_types
-            ]
-            if any(
-                [rdf_type in self.supported_rdf_types for rdf_type in rdf_type_values]
-            ):
+            rdf_types = description.findall("{http://www.w3.org/1999/02/22-rdf-syntax-ns#}type")
+            rdf_type_values = [rdf_type.attrib.get('{http://www.w3.org/1999/02/22-rdf-syntax-ns#}resource') for rdf_type
+                               in rdf_types]
+            if any([rdf_type in self.supported_rdf_types for rdf_type in rdf_type_values]):
                 type_tag = None
                 for rdf_type in rdf_types:
                     description.remove(rdf_type)
                 for val in rdf_type_values:
                     if val in self.supported_rdf_types:
                         type_tag = val
-                for aggr in description.findall(
-                    "{http://www.openarchives.org/ore/terms/}aggregates"
-                ):
+                for aggr in description.findall('{http://www.openarchives.org/ore/terms/}aggregates'):
                     description.remove(aggr)
-                for hasView in description.findall(
-                    "{http://www.europeana.eu/schemas/edm/}hasView"
-                ):
+                for hasView in description.findall('{http://www.europeana.eu/schemas/edm/}hasView'):
                     description.remove(hasView)
                 if type_tag:
-                    rdf_about = description.attrib.get(
-                        "{http://www.w3.org/1999/02/22-rdf-syntax-ns#}about"
-                    )
+                    rdf_about = description.attrib.get('{http://www.w3.org/1999/02/22-rdf-syntax-ns#}about')
                     if rdf_about:
-                        new_description_tag = ET.SubElement(
-                            record, self.uri_to_namespaced_tag(type_tag)
-                        )
-                        new_description_tag.attrib[
-                            "{http://www.w3.org/1999/02/22-rdf-syntax-ns#}about"
-                        ] = rdf_about
+                        new_description_tag = ET.SubElement(record, self.uri_to_namespaced_tag(type_tag))
+                        new_description_tag.attrib['{http://www.w3.org/1999/02/22-rdf-syntax-ns#}about'] = rdf_about
                         for child in description.getchildren():
                             new_description_tag.append(child)
             record.remove(description)
@@ -574,25 +538,24 @@ class EDMStrictConverter(BaseConverter):
     def convert(self, output_format="json", add_delving_fields=True):
         graph = self.bindings()._graph
         graph.namespace_manager = namespace_manager
-        if output_format == "xml":
+        if output_format == 'xml':
             output = graph.serialize(format="xml")
             output = self.make_rdf_xml_serialization_europeana_proof(output)
             return output
         else:
-            context_dict = {
-                "{}".format(prefix): namespace
-                for prefix, namespace in graph.namespace_manager.namespaces()
-            }
-            output = graph.serialize(format="json-ld", context=context_dict).decode(
-                "utf-8"
-            )
+            context_dict = {"{}".format(prefix): namespace for prefix, namespace in
+                            graph.namespace_manager.namespaces()}
+            output = graph.serialize(format='json-ld', context=context_dict).decode('utf-8')
         return json.loads(output)
 
 
 class EDMConverter(BaseConverter):
+
     @staticmethod
     def query_key_replace_dict(reverse=False):
-        replace_dict = {"europeana_": "edm_"}
+        replace_dict = {
+            'europeana_': 'edm_'
+        }
         if reverse:
             replace_dict = {val: key for key, val in replace_dict.items()}
         return replace_dict
@@ -608,24 +571,23 @@ class EDMConverter(BaseConverter):
 
     def convert(self, output_format="json", add_delving_fields=True):
         graph = self.bindings()._graph
-        if output_format == "xml":
-            output = graph.serialize(format="xml").decode("utf-8")
+        if output_format == 'xml':
+            output = graph.serialize(format="xml").decode('utf-8')
             return output
         else:
-            context_dict = {
-                "{}".format(prefix): namespace
-                for prefix, namespace in graph.namespace_manager.namespaces()
-            }
-            output = graph.serialize(format="json-ld", context=context_dict).decode(
-                "utf-8"
-            )
+            context_dict = {"{}".format(prefix): namespace for prefix, namespace in
+                            graph.namespace_manager.namespaces()}
+            output = graph.serialize(format='json-ld', context=context_dict).decode('utf-8')
         return json.loads(output)
 
 
 class ICNConverter(BaseConverter):
     @staticmethod
     def query_key_replace_dict(reverse=False):
-        replace_dict = {"icn_": "nave_", "europeana_": "edm_"}
+        replace_dict = {
+            'icn_': 'nave_',
+            'europeana_': 'edm_'
+        }
         if reverse:
             replace_dict = {val: key for key, val in replace_dict.items()}
         return replace_dict
@@ -683,7 +645,10 @@ class ICNConverter(BaseConverter):
 class ABMConverter(BaseConverter):
     @staticmethod
     def query_key_replace_dict(reverse=False):
-        replace_dict = {"abm_": "nave_", "europeana_": "edm_"}
+        replace_dict = {
+            'abm_': 'nave_',
+            'europeana_': 'edm_'
+        }
         if reverse:
             replace_dict = {val: key for key, val in replace_dict.items()}
         return replace_dict
@@ -726,26 +691,3 @@ class ABMConverter(BaseConverter):
             "abm_textUri": "nave_textUri",
         }
         return mapping
-
-
-def sanitize_xml_string(xml_string):
-    """
-    Remove invalid XML characters from a string before parsing.
-
-    Args:
-        xml_string (str): The XML string to sanitize
-
-    Returns:
-        str: The sanitized XML string
-    """
-    # Define a pattern for valid XML characters (based on XML 1.0 spec)
-    # This allows only: #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
-    import re
-
-    # First remove ASCII control characters except for tab, newline, and carriage return
-    xml_string = re.sub(r"[\x00-\x08\x0B\x0C\x0E-\x1F]", "", xml_string)
-
-    # You could also handle other invalid characters if needed
-    # xml_string = re.sub(r'[\uD800-\uDFFF]', '', xml_string)  # Remove surrogate code points
-
-    return xml_string
