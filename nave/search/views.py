@@ -531,17 +531,27 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
             index_doc = bindings.to_index_doc() if mode == 'api' else bindings.to_flat_index_doc()
         elif mode in REGISTERED_CONVERTERS.keys():
             converter = REGISTERED_CONVERTERS.get(mode)
+            # Get ES fields for proper conversion
+            es_fields = None
+            if response._results and len(response._results) > 0:
+                es_fields = response._results[0].to_dict()
             index_doc = converter(
                 bindings=bindings,
                 graph=graph,
-                about_uri=bindings.about_uri()
+                about_uri=bindings.about_uri(),
+                es_result_fields=es_fields
             ).convert(add_delving_fields=delving_fields)
         elif self.default_converter in REGISTERED_CONVERTERS.keys():
             converter = REGISTERED_CONVERTERS.get(self.default_converter)
+            # Get ES fields for proper conversion
+            es_fields = None
+            if response._results and len(response._results) > 0:
+                es_fields = response._results[0].to_dict()
             index_doc = converter(
                 bindings=bindings,
                 graph=graph,
-                about_uri=bindings.about_uri()
+                about_uri=bindings.about_uri(),
+                es_result_fields=es_fields
             ).convert(add_delving_fields=delving_fields)
         else:
             logger.warn("unable to convert results to schema {}".format(mode))
