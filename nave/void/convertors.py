@@ -28,6 +28,19 @@ from nave.lod.utils.resolver import GraphBindings
 from nave.lod.utils.rdfstore import get_rdfstore, UnknownGraph
 from nave.lod.utils.resolver import RDFRecord
 
+
+def ensure_string(data):
+    """
+    Ensure data is a string, handling both bytes and str.
+
+    This is needed for rdflib 6.x compatibility where serialize() returns
+    a string instead of bytes.
+    """
+    if isinstance(data, bytes):
+        return data.decode('utf-8')
+    return data
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -509,6 +522,10 @@ class EDMStrictConverter(BaseConverter):
         return "{{{}{}}}{}".format(prefix, split_key, label)
 
     def make_rdf_xml_serialization_europeana_proof(self, rdf_xml_string):
+        #rdf_xml_string = sanitize_xml_string(rdf_xml_string)
+        # Encode to bytes for lxml - rdflib 6.x returns string with encoding declaration
+        if isinstance(rdf_xml_string, str):
+            rdf_xml_string = rdf_xml_string.encode('utf-8')
         record = ET.fromstring(rdf_xml_string)
         for description in record.getchildren():
             rdf_types = description.findall("{http://www.w3.org/1999/02/22-rdf-syntax-ns#}type")
@@ -545,7 +562,7 @@ class EDMStrictConverter(BaseConverter):
         else:
             context_dict = {"{}".format(prefix): namespace for prefix, namespace in
                             graph.namespace_manager.namespaces()}
-            output = graph.serialize(format='json-ld', context=context_dict).decode('utf-8')
+            output = ensure_string(graph.serialize(format='json-ld', context=context_dict))
         return json.loads(output)
 
 
@@ -572,12 +589,12 @@ class EDMConverter(BaseConverter):
     def convert(self, output_format="json", add_delving_fields=True):
         graph = self.bindings()._graph
         if output_format == 'xml':
-            output = graph.serialize(format="xml").decode('utf-8')
+            output = ensure_string(graph.serialize(format="xml"))
             return output
         else:
             context_dict = {"{}".format(prefix): namespace for prefix, namespace in
                             graph.namespace_manager.namespaces()}
-            output = graph.serialize(format='json-ld', context=context_dict).decode('utf-8')
+            output = ensure_string(graph.serialize(format='json-ld', context=context_dict))
         return json.loads(output)
 
 
@@ -691,3 +708,25 @@ class ABMConverter(BaseConverter):
             "abm_textUri": "nave_textUri",
         }
         return mapping
+
+def sanitize_xml_string(xml_string):
+    """
+    Remove invalid XML characters from a string before parsing.
+                
+    Args:
+        xml_string (str): The XML string to sanitize
+                                    
+    Returns:
+        str: The sanitized XML string
+    """
+    # Define a pattern for valid XML characters (based on XML 1.0 spec)
+    # This allows only: #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
+    import re
+    
+    # First remove ASCII control characters except for tab, newline, and carriage return
+    xml_string = re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F]', '', xml_string)
+                
+    # You could also handle other invalid characters if needed
+    # xml_string = re.sub(r'[\uD800-\uDFFF]', '', xml_string)  # Remove surrogate code points
+                            
+    return xml_string

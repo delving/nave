@@ -17,9 +17,10 @@ import re
 import shutil
 import time
 from functools import partial
+from io import BytesIO
 
 from dateutil import parser
-from dj.choices import Choice, Choices
+from dj.choices import Choices, Choice
 from dj.choices.fields import ChoiceField
 from django.conf import settings
 from django.contrib.auth.models import Group, User
@@ -33,30 +34,50 @@ from django.utils.translation import ugettext_lazy as _
 from django_extensions.db.fields import AutoSlugField
 from django_extensions.db.models import TimeStampedModel, TitleDescriptionModel
 from elasticsearch import helpers
-from rdflib import ConjunctiveGraph, Graph, Literal, URIRef
+from rdflib import URIRef, Graph, Literal, ConjunctiveGraph
 from rdflib.namespace import RDF, SKOS
 
 from nave.lod import namespace_manager
 from nave.lod.models import RDFModel
 from nave.lod.utils import rdfstore
-from nave.lod.utils.rdfstore import QueryType, RDFStore
 from nave.lod.utils.resolver import RDFPredicate, RDFRecord
+from nave.lod.utils.rdfstore import QueryType, RDFStore
 
 logger = logging.getLogger(__name__)
 
 fmt = "%Y-%m-%d %H:%M:%S%z"  # '%Y-%m-%d %H:%M:%S %Z%z'
 
 
-def encodeToken(token):
-    encodedBytes = base64.b64encode(token.encode("utf-8"))
-    encodedStr = str(encodedBytes, "utf-8")
-    return encodedStr
+def ensure_string(data):
+    """
+    Ensure data is a string, handling both bytes and str.
+
+    This is needed for rdflib 6.x compatibility where serialize() returns
+    a string instead of bytes.
+    """
+    if isinstance(data, bytes):
+        return data.decode('utf-8')
+    return data
 
 
-def decodeToken(token):
-    decodedBytes = base64.urlsafe_b64decode(token.strip())
-    decodedStr = str(decodedBytes)
-    return decodedStr
+def ensure_bytes(data):
+    """
+    Ensure data is bytes for rdflib 6.x parse() compatibility.
+    In rdflib 6.x, parse(data=...) expects bytes, not string.
+    """
+    if isinstance(data, str):
+        return data.encode('utf-8')
+    return data
+
+
+def make_rdf_source(data):
+    """
+    Create a BytesIO source for rdflib parse() in rdflib 6.x.
+    Using BytesIO wrapper avoids PythonInputSource issues.
+    """
+    if isinstance(data, str):
+        data = data.encode('utf-8')
+    return BytesIO(data)
 
 
 def get_es():
@@ -598,7 +619,9 @@ class DataSet(TimeStampedModel, GroupOwned):
     )
     sync_error_message = models.TextField(
         _("synchronisation error"),
-        help_text=_("error message why synchronisation with the triplestore failed."),
+        help_text=_(
+            "error message why synchronisation with the triple" "store failed."
+        ),
         null=True,
         blank=True,
     )
@@ -996,7 +1019,7 @@ class DataSet(TimeStampedModel, GroupOwned):
                         # print(is_marker)
                         new += 1
                         g = Graph(identifier=named_graph)
-                        g.parse(data=triples)
+                        g.parse(source=make_rdf_source(triples))
                         if not EDMRecord.objects.filter(
                             named_graph=named_graph
                         ).exists():
@@ -1214,7 +1237,7 @@ class EDMRecord(RDFModel):
 
         graph = ConjunctiveGraph(identifier=self.named_graph)
         graph.namespace_manager = namespace_manager
-        graph.parse(data=rdf_string, format="nt")
+        graph.parse(source=make_rdf_source(rdf_string), format="nt")
         if with_mappings:
             proxy_resources, graph = ProxyResource.update_proxy_resource_uris(
                 self.dataset, graph
@@ -1294,14 +1317,12 @@ class EDMRecord(RDFModel):
         }
         # add content hash check
         if acceptance:
-            update_values["acceptance_rdf"] = graph.serialize(
-                format="nt", encoding="UTF-8"
-            )
+            update_values["acceptance_rdf"] = ensure_string(graph.serialize(format="nt"))
             update_values["acceptance_updated"] = timezone.now().strftime(fmt)
             if content_hash:
                 update_values["acceptance_hash"] = content_hash
         else:
-            update_values["source_rdf"] = graph.serialize(format="nt", encoding="UTF-8")
+            update_values["source_rdf"] = ensure_string(graph.serialize(format="nt"))
             update_values["source_updated"] = timezone.now().strftime(fmt)
             if content_hash:
                 update_values["source_hash"] = content_hash
