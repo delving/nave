@@ -1,6 +1,7 @@
 import geobuf as geobuf
 from collections import OrderedDict, defaultdict
 from datetime import datetime
+from io import BytesIO
 import unicodedata
 
 import geojson
@@ -20,6 +21,26 @@ from geojson import Feature, FeatureCollection
 from geojson import Point as GeoPoint
 
 from nave.lod.utils.rdfstore import get_namespace_manager
+
+
+def ensure_bytes(data):
+    """
+    Ensure data is bytes for rdflib 6.x parse() compatibility.
+    In rdflib 6.x, parse(data=...) expects bytes, not string.
+    """
+    if isinstance(data, str):
+        return data.encode('utf-8')
+    return data
+
+
+def make_rdf_source(data):
+    """
+    Create a BytesIO source for rdflib parse() in rdflib 6.x.
+    Using BytesIO wrapper avoids PythonInputSource issues.
+    """
+    if isinstance(data, str):
+        data = data.encode('utf-8')
+    return BytesIO(data)
 
 
 class KMLRenderer(BaseRenderer):
@@ -320,7 +341,7 @@ class RDFBaseRenderer(renderers.BaseRenderer):
 
     def render(self, data, media_type=None, renderer_context=None):
         g = Graph(namespace_manager=get_namespace_manager())
-        g.parse(data=data, format='n3')
+        g.parse(source=make_rdf_source(data), format='n3')
         return smart_text(g.serialize(format=self.format))
 
 
@@ -336,7 +357,7 @@ class RDFRenderer(RDFBaseRenderer):
     def render(self, data, media_type=None, renderer_context=None):
         g = Graph()
         g.namespace_manager = get_namespace_manager()
-        g.parse(data=data, format='n3')
+        g.parse(source=make_rdf_source(data), format='n3')
         return smart_text(g.serialize(format='xml'))
 
 
