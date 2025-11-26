@@ -13,6 +13,7 @@ from django.http.response import HttpResponseRedirectBase, HttpResponse, Http404
     HttpResponseBadRequest
 from django.shortcuts import redirect
 from django.views.generic import TemplateView, RedirectView, View
+from rdflib import URIRef
 from rdflib.namespace import SKOS, RDF
 
 
@@ -356,7 +357,8 @@ class LoDHTMLView(TemplateView):
             graph, nr_levels = RDFModel.get_context_graph(store=self.store, named_graph=target_named_graph)
         else:
             graph, nr_levels = RDFModel.get_context_graph(target_uri=target_uri, store=self.store)
-        graph_contains_target = graph.query("""ASK {{ <{}> ?p ?o }} """.format(target_uri)).askAnswer
+        # Use Python API instead of SPARQL ASK for rdflib 6.x compatibility
+        graph_contains_target = any(graph.triples((URIRef(target_uri), None, None)))
 
         if not graph_contains_target or len(graph) == 0:
             context['unknown_graph'] = True
@@ -560,7 +562,8 @@ class EDMHTMLMockView(TemplateView):
 
         sparql_json = sparqlwrapper_result.sparql_result
         graph, nr_levels = RDFModel.get_graph_from_sparql_results(sparql_json)
-        graph_contains_target = graph.query("""ASK {{ <{}> ?p ?o }} """.format(target_uri)).askAnswer
+        # Use Python API instead of SPARQL ASK for rdflib 6.x compatibility
+        graph_contains_target = any(graph.triples((URIRef(target_uri), None, None)))
 
         if not graph and not graph_contains_target:
             raise Http404

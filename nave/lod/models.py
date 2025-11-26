@@ -8,6 +8,7 @@ TODO: create model for external SPARQL-Endpoints that can be used via a proxy in
 """
 import datetime
 import logging
+from io import BytesIO
 from urllib.parse import quote
 
 from celery import chain
@@ -37,6 +38,38 @@ from nave.lod.utils.resolver import RDFRecord
 fmt = '%Y-%m-%d %H:%M:%S%z'  # '%Y-%m-%d %H:%M:%S %Z%z'
 
 logger = logging.getLogger(__name__)
+
+
+def ensure_string(data):
+    """
+    Ensure data is a string, handling both bytes and str.
+    This is needed for rdflib 6.x compatibility where serialize() returns
+    a string instead of bytes.
+    """
+    if isinstance(data, bytes):
+        return data.decode('utf-8')
+    return data
+
+
+def ensure_bytes(data):
+    """
+    Ensure data is bytes for rdflib 6.x parse() compatibility.
+    In rdflib 6.x, parse(data=...) expects bytes, not string.
+    """
+    if isinstance(data, str):
+        return data.encode('utf-8')
+    return data
+
+
+def make_rdf_source(data):
+    """
+    Create a BytesIO source for rdflib parse() in rdflib 6.x.
+    Using BytesIO wrapper avoids PythonInputSource issues.
+    """
+    if isinstance(data, str):
+        data = data.encode('utf-8')
+    return BytesIO(data)
+
 
 EDM = Namespace('http://www.europeana.eu/schemas/edm/')
 
@@ -283,7 +316,7 @@ class RDFModel(TimeStampedModel, GroupOwned):
 
     def create_sparql_update_query(self, delete=False, acceptance=False):
         graph = self.get_graph(acceptance=acceptance)
-        rdf_triples = graph.serialize(format='nt', encoding="utf-8").decode('utf-8')
+        rdf_triples = ensure_string(graph.serialize(format='nt'))
         sparql_update = """DROP SILENT GRAPH <{graph_uri}>;
         INSERT DATA {{ GRAPH <{graph_uri}> {{
             {triples}
@@ -425,9 +458,9 @@ class RDFModel(TimeStampedModel, GroupOwned):
             self.graph = Graph(identifier=URIRef(self.named_graph))
             self.graph.namespace_manager = namespace_manager
             if acceptance and self.acceptance_rdf:
-                self.graph.parse(data=self.acceptance_rdf, format="nt")
+                self.graph.parse(source=make_rdf_source(self.acceptance_rdf), format="nt")
             elif self.source_rdf:
-                self.graph.parse(data=self.source_rdf, format="nt")
+                self.graph.parse(source=make_rdf_source(self.source_rdf), format="nt")
             else:
                 self.graph = self._populate_graph()
             if target_uri and target_uri != self.document_uri:
