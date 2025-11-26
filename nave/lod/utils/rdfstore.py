@@ -6,6 +6,7 @@ these settings
 
 """
 import logging
+from io import BytesIO
 
 import os
 import requests
@@ -20,6 +21,17 @@ logger = logging.getLogger(__name__)
 
 urllib3_logger = logging.getLogger('requests')
 urllib3_logger.setLevel(logging.WARN)
+
+
+def ensure_string(data):
+    """
+    Ensure data is a string, handling both bytes and str.
+    This is needed for rdflib 6.x compatibility where serialize() returns
+    a string instead of bytes.
+    """
+    if isinstance(data, bytes):
+        return data.decode('utf-8')
+    return data
 
 
 class QueryType:
@@ -246,7 +258,7 @@ class GraphStore:
         """Convert graphs or strings to the right format for a HTTP Request."""
         rdf_string = None
         if isinstance(data, Graph):
-            rdf_string = data.serialize(encoding='utf-8', format='nt')
+            rdf_string = ensure_string(data.serialize(format='nt'))
         elif isinstance(data, str):
             rdf_string = data
         else:
@@ -280,8 +292,8 @@ class GraphStore:
         if as_graph:
             graph = Graph(identifier=named_graph)
             graph.namespace_manager = namespace_manager
-            n3 = response.content.decode("utf-8")
-            graph.parse(data=n3, format='n3')
+            # Use BytesIO wrapper for rdflib 6.x compatibility
+            graph.parse(source=BytesIO(response.content), format='n3')
             return graph
         return response
 
