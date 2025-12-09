@@ -41,6 +41,23 @@ def ensure_string(data):
     return data
 
 
+def strip_xml_declaration(xml_string):
+    """
+    Strip XML declaration from serialized RDF/XML.
+
+    rdflib 6.x includes <?xml version="1.0" encoding="utf-8"?> in serialize() output.
+    This breaks OAI-PMH responses where the declaration is already in the envelope.
+    """
+    xml_string = ensure_string(xml_string)
+    # Remove XML declaration if present
+    if xml_string.startswith('<?xml'):
+        # Find end of declaration
+        end = xml_string.find('?>')
+        if end != -1:
+            xml_string = xml_string[end + 2:].lstrip()
+    return xml_string
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -589,7 +606,7 @@ class EDMConverter(BaseConverter):
     def convert(self, output_format="json", add_delving_fields=True):
         graph = self.bindings()._graph
         if output_format == 'xml':
-            output = ensure_string(graph.serialize(format="xml"))
+            output = strip_xml_declaration(graph.serialize(format="xml"))
             return output
         else:
             context_dict = {"{}".format(prefix): namespace for prefix, namespace in
