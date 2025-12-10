@@ -37,6 +37,7 @@ from nave.void.models import EDMRecord
 
 
 from nave.void import REGISTERED_CONVERTERS
+from nave.void.convertors import ensure_string
 from .renderers import N3Renderer, JSONLDRenderer, TURTLERenderer, NTRIPLESRenderer, RDFRenderer, GeoJsonRenderer, \
     XMLRenderer, KMLRenderer, GeoBufRenderer
 from .search import NaveESQuery, NaveQueryResponse, NaveQueryResponseWrapper, NaveItemResponse, \
@@ -512,7 +513,7 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
         renderer_format = request.accepted_renderer.format
         if renderer_format in list(EXTENSION_TO_MIME_TYPE.keys()) and renderer_format not in ['xml', 'json']:
             graph = record.get_graph()
-            graph_string = graph.serialize(format=renderer_format).decode('utf-8')
+            graph_string = ensure_string(graph.serialize(format=renderer_format))
             mime_type = EXTENSION_TO_MIME_TYPE.get(renderer_format)
             return Response(data=graph_string, content_type=mime_type)
         target_uri = record.document_uri
