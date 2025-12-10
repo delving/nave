@@ -55,10 +55,18 @@ def get_resources_by_rdftype(context, rdf_type, local_bindings=None):
 
 @register.assignment_tag(takes_context=True)
 def get_resource_fields(context, fieldname, local_bindings=None):
+    """Get resource fields sorted by nave:resourceSortOrder (if available)."""
     if not local_bindings:
         local_bindings = context['resources']
 
-    return local_bindings.get_list(fieldname)
+    fields = local_bindings.get_list(fieldname, lexsort=False)
+
+    def sort_key(field):
+        if field.has_resource and field.get_resource:
+            return (field.get_resource.get_sort_key(), str(field.value))
+        return (0, str(field.value))
+
+    return sorted(fields, key=sort_key)
 
 @register.assignment_tag(takes_context=True)
 def get_unsorted_resource_fields(context, fieldname, local_bindings=None):

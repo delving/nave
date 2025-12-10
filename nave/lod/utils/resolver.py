@@ -367,7 +367,12 @@ class GraphBindings:
                 fields.append(field)
         if not lexsort:
             return fields
-        return sorted(fields, key=lambda k: k.value)
+        # Sort by nave:resourceSortOrder if field has a resource, fallback to lexicographic
+        def sort_key(field):
+            if field.has_resource and field.get_resource:
+                return (field.get_resource.get_sort_key(), str(field.value))
+            return (0, str(field.value))
+        return sorted(fields, key=sort_key)
 
     def get_resources(self):
         if not self._resources:
@@ -739,9 +744,10 @@ class RDFResource:
         items = self._items
         for key, val in items.items():
             if isinstance(val, list):
-                are_resources = all(v.get_resource for v in val )
-                if key in [URIRef('http://www.europeana.eu/schemas/edm/hasView')] and are_resources:
-                    items[key] = sorted(val, key=lambda k: k.get_resource.get_sort_key())
+                are_resources = all(v.get_resource for v in val)
+                if are_resources:
+                    # Sort linked resources by nave:resourceSortOrder, fallback to value for ties
+                    items[key] = sorted(val, key=lambda k: (k.get_resource.get_sort_key(), str(k.value)))
                 else:
                     items[key] = natsorted(val, key=lambda k: k.value)
         if sort:
