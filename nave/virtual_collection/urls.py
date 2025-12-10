@@ -15,6 +15,8 @@ urlpatterns = [
     # todo test if this search api returns the right information
     url(r'^vc/(?P<slug>([^/]*?))/api/$', views.V1SearchListApiView.as_view({'get': 'get'}),
         name="virtual_collection_api"),
+    url(r'^vc/(?P<slug>([^/]*?))/api/v2/$', views.V2SearchListApiView.as_view({'get': 'get'}),
+        name="virtual_collection_api_v2"),
     url(r'^vc/(?P<slug>([^/]*?))/$', views.VirtualCollectionDetailView.as_view(),
         name="virtual_collection_detail"),
     # url(r'', include(vc_router.urls), name='vc_routers'),
