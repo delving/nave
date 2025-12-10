@@ -375,11 +375,20 @@ class OAIProvider(TemplateView):
                     filters[self.dataset_search_key] = filters.pop("set")
                 fmt = "%Y-%m-%dT%H:%M:%S%z"  # '%Y-%m-%d %H:%M:%S %Z%z'
                 if "from" in filters:
-                    from_date = parser.parse(timestr=filters.pop("from"))
-                    filters["modified__gt"] = from_date.strftime(fmt)
+                    from_date_str = filters.pop("from")
+                    from_date = parser.parse(timestr=from_date_str)
+                    # OAI-PMH spec requires inclusive boundaries (gte = greater than or equal)
+                    # If date has no time component (YYYY-MM-DD format), it's already at start of day (00:00:00)
+                    filters["modified__gte"] = from_date.strftime(fmt)
                 if "until" in filters:
-                    until_date = parser.parse(filters.pop("until"))
-                    filters["modified__lt"] = until_date.strftime(fmt)
+                    until_date_str = filters.pop("until")
+                    until_date = parser.parse(until_date_str)
+                    # OAI-PMH spec requires inclusive boundaries (lte = less than or equal)
+                    # If date has no time component (YYYY-MM-DD format), set to end of day
+                    if 'T' not in until_date_str:
+                        # Date-only format, set to end of day to include entire day
+                        until_date = until_date.replace(hour=23, minute=59, second=59, microsecond=999999)
+                    filters["modified__lte"] = until_date.strftime(fmt)
                 filters.update(self.record_access_filter)
                 self.filters = filters
 
@@ -476,14 +485,15 @@ class ElasticSearchOAIProvider(OAIProvider):
         self.sort_key = filters.pop("sort_key")
         self.filters = filters
         fmt = "%Y-%m-%dT%H:%M:%S%z"  # '%Y-%m-%d %H:%M:%S %Z%z'
-        until_date = filters.get("modified__lt")
-        from_date = filters.get("modified__gt")
+        # Support both old (modified__lt/gt) and new (modified__lte/gte) filter names for backwards compatibility
+        until_date = filters.get("modified__lte") or filters.get("modified__lt")
+        from_date = filters.get("modified__gte") or filters.get("modified__gt")
         if from_date and " " in from_date:
-            from_date = parser.parse(timestr=filters.pop("modified__gt"))
-            filters["modified__gt"] = from_date.strftime(fmt)
+            from_date = parser.parse(timestr=filters.pop("modified__gte", None) or filters.pop("modified__gt", None))
+            filters["modified__gte"] = from_date.strftime(fmt)
         if until_date and " " in until_date:
-            until_date = parser.parse(timestr=filters.pop("modified__lt"))
-            filters["modified__lt"] = until_date.strftime(fmt)
+            until_date = parser.parse(timestr=filters.pop("modified__lte", None) or filters.pop("modified__lt", None))
+            filters["modified__lte"] = until_date.strftime(fmt)
 
         return filters
 
@@ -546,8 +556,8 @@ class ElasticSearchOAIProvider(OAIProvider):
             track_total_hits=True
         )
         spec = filters.get("dataset__spec", None)
-        modified_from = filters.get("modified__gt", None)
-        modified_until = filters.get("modified__lt", None)
+        modified_from = filters.get("modified__gte", None)
+        modified_until = filters.get("modified__lte", None)
         if spec and not self.spec:
             self.spec = spec
         if self.spec:

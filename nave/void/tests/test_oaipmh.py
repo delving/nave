@@ -34,7 +34,7 @@ def test_harvest_steps_list_verb():
     assert provider.metadataPrefix == 'abm'
     assert 'metadataPrefix' not in provider.params
     assert len(provider.filters) == 4
-    assert sorted(list(provider.filters.keys())) == sorted(['dataset__oai_pmh', 'dataset__spec', 'modified__lt', 'modified__gt'])
+    assert sorted(list(provider.filters.keys())) == sorted(['dataset__oai_pmh', 'dataset__spec', 'modified__lte', 'modified__gte'])
 
 
 def test_generate_filters_from_token():
