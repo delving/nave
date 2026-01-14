@@ -8,5 +8,5 @@ puput==0.8
 python3-memcached==1.51
 wagtail==1.9
 django-watchman==0.12.0
-waitress==1.0.2
+waitress==2.1.1
 celery[redis]==4.0.2 # no longer used
