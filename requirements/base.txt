@@ -2,7 +2,7 @@
 bleach==3.2.1
 django-overextends==0.4.2
 django-compressor==2.1.1
-eventlet==0.25.2
+eventlet==0.31.0
 gunicorn==20.0.4
 puput==0.8
 python3-memcached==1.51
