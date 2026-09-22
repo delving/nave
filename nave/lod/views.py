@@ -373,7 +373,37 @@ class LoDHTMLView(TemplateView):
         context['resources'] = graph_bindings
         resource = graph_bindings.get_about_resource()
         context['about_resource'] = resource
-        context['items'] = resource.get_items(as_tuples=True)
+        # Apply converter if configured for detail view
+        items = resource.get_items(as_tuples=True)
+        converter_key = self.request.GET.get('converter', settings.DEFAULT_V1_CONVERTER)
+        from nave.void import REGISTERED_CONVERTERS
+        if converter_key and converter_key in REGISTERED_CONVERTERS:
+            converter_class = REGISTERED_CONVERTERS[converter_key]
+            # Convert graph bindings to flat index doc for converter
+            flat_doc = graph_bindings.to_flat_index_doc()
+            # Apply converter
+            converter = converter_class(
+                about_uri=target_uri,
+                graph=graph,
+                es_result_fields=flat_doc,
+                bindings=graph_bindings
+            )
+            converted_fields = converter.convert(add_delving_fields=False)
+            # Add converted fields to context
+            context['converted_fields'] = converted_fields
+            # Create converted items list
+            converted_items = []
+            for field_name, values in converted_fields.items():
+                if values and isinstance(values, list):
+                    for value in values:
+                        converted_items.append((field_name, value))
+            # NB: do not overwrite context['items'] here. The Properties tab
+            # renders items as (RDFPredicate, [objects]) tuples and reads
+            # predicate.qname / predicate.uri off them; converted_items are
+            # (field_name_string, single_value) pairs, which silently render
+            # as blanks in Django templates. Keep them under their own key.
+            context['converted_items'] = converted_items
+        context['items'] = items
         rdf_type = graph_bindings.get_about_resource().get_type()
         context['rdf_type'] = rdf_type
         context['lod_allowed'] = GraphBindings.is_lod_allowed(graph)
@@ -485,12 +515,35 @@ def remote_sparql(request):
     logger.info("Production Mode SPARQL query: {}".format(request.META.get('QUERY_STRING')))
     return proxy(request, test_mode=False)
 
+def format_uuid(uuid):
+    if len(uuid) == 36:
+        return uuid
+
+    if len(uuid) != 32:
+        raise ValueError("Invalid UUID length")
+    
+    return "{}-{}-{}-{}-{}".format(uuid[0:8], uuid[8:12], uuid[12:16], uuid[16:20], uuid[20:])
+
 def remote_resolve(request):
     """
     Route SPARQL queries to the endpoint configured in the settings
     """
     mime_type = get_lod_mime_type(None, request)
+
     uri = request.build_absolute_uri()
+    if "ark:" in uri:
+        parts = uri.split("/")
+        uuid = parts[-1]
+        new_uuid = format_uuid(uuid)
+        if uuid != new_uuid:
+            uri = uri.replace(uuid, new_uuid)
+            return redirect(uri)
+
+    if "data.brabantcloud.nl/id/ark:" in uri:
+        uri = uri.replace("data.brabantcloud.nl/id/ark:", "n2t.net/ark:")
+        if "ark:/" in uri:
+            uri = uri.replace("ark:/", "ark:")
+
     query = "describe <{}>".format(uri)
 
     params = {'query': query}
