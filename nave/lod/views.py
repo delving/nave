@@ -487,21 +487,54 @@ def remote_sparql(request):
     logger.info("Production Mode SPARQL query: {}".format(request.META.get('QUERY_STRING')))
     return proxy(request, test_mode=False)
 
+def format_uuid(uuid):
+    """Return uuid in its hyphenated form, or raise if it is neither shape."""
+    if len(uuid) == 36:
+        return uuid
+
+    if len(uuid) != 32:
+        raise ValueError("Invalid UUID length")
+
+    return "{}-{}-{}-{}-{}".format(uuid[0:8], uuid[8:12], uuid[12:16], uuid[16:20], uuid[20:])
+
+
 def remote_resolve(request):
     """
     Route SPARQL queries to the endpoint configured in the settings
     """
     mime_type = get_lod_mime_type(None, request)
     uri = request.build_absolute_uri()
+
+    # ARK identifiers reach us in both hyphenated and bare 32-character form;
+    # the triple store only holds the hyphenated one, so send the caller there
+    # rather than answering an empty describe. A segment that is neither shape
+    # is left alone and resolved as-is instead of raising.
+    if "ark:" in uri:
+        uuid = uri.split("/")[-1]
+        try:
+            new_uuid = format_uuid(uuid)
+        except ValueError:
+            new_uuid = uuid
+        if uuid != new_uuid:
+            return redirect(uri.replace(uuid, new_uuid))
+
+    # Our own ARK namespace is served through the global n2t.net resolver, and
+    # that is the form the data carries.
+    if "data.brabantcloud.nl/id/ark:" in uri:
+        uri = uri.replace("data.brabantcloud.nl/id/ark:", "n2t.net/ark:")
+        if "ark:/" in uri:
+            uri = uri.replace("ark:/", "ark:")
+
     query = "describe <{}>".format(uri)
 
-    params = request.dict()
-    params['query'] = query
+    # Was request.dict(), which HttpRequest does not have.
+    params = {'query': query}
 
     if not settings.SPARQL_RESOLVE_URL:
         return HttpResponseBadRequest("SPARQL_RESOLVE_URL must be defined in settings")
 
-    response = requests.GET(settings.SPARQL_RESOLVE_URL, params=params)
+    # Was requests.GET, which is not a function on the requests module.
+    response = requests.get(settings.SPARQL_RESOLVE_URL, params=params)
     return HttpResponse(response.text, status=int(response.status_code), content_type=response.headers['content-type'])
 
 def remote_sparql_test(request):

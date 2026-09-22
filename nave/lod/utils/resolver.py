@@ -1961,9 +1961,24 @@ class ElasticSearchRDFRecord(RDFRecord):
         return self.query_for_graph("match", {"_id": hub_id}, store_name, as_bindings)
 
     def get_graph_by_source_uri(self, uri, store_name=None, as_bindings=False):
-        return self.query_for_graph(
+        graph = self.query_for_graph(
             "match",
             {"system.source_uri.raw": uri},
+            store_name=store_name,
+            as_bindings=as_bindings
+        )
+        if graph is not None:
+            return graph
+
+        # The URI may name a subject inside a record rather than the record's
+        # own source_uri -- typically the edm:ProvidedCHO of an aggregation,
+        # which is what OAI-PMH output hands to Europeana. Those used to 404
+        # even though we hold the data (#905). Resolve to the record that
+        # carries the subject. edm_aggregatedCHO.id is unique per record, so
+        # query_for_graph's single-hit requirement still holds.
+        return self.query_for_graph(
+            "match",
+            {"edm_aggregatedCHO.id": uri},
             store_name=store_name,
             as_bindings=as_bindings
         )
