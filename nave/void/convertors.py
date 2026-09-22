@@ -264,7 +264,20 @@ class BaseConverter(object):
             mapping.update(self.delving_mapping())
         if self._es_result_fields:
             index_doc = self._es_result_fields
-            self.about_uri = index_doc['system']['about_uri']
+            # Handle case where es_result_fields might be a list or have unexpected structure
+            if isinstance(index_doc, list):
+                # If it's a list, try to get the first element
+                if index_doc:
+                    index_doc = index_doc[0]
+                else:
+                    # Empty list, fall back to bindings
+                    if self.bindings():
+                        index_doc = self.bindings().to_flat_index_doc()
+                    else:
+                        raise ValueError("Unable to convert due to empty es_result_fields list")
+            # Only try to access system.about_uri if it exists
+            if isinstance(index_doc, dict) and 'system' in index_doc and isinstance(index_doc['system'], dict):
+                self.about_uri = index_doc['system'].get('about_uri', self.about_uri)
         elif self.bindings():
             index_doc = self.bindings().to_flat_index_doc()
         else:
@@ -432,6 +445,7 @@ class TIBConverter(BaseConverter):
             "tib_pageStart": "nave_pageStart",
             "tib_pageEnd": "nave_pageEnd",
             "tib_pages": "nave_pages",
+            "tib_pid": "nave_pid",
             "tib_vindplaats": "nave_vindplaats",
             "tib_location": "nave_location",
             "tib_imageCopyright": "nave_imageCopyright",

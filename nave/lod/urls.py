@@ -8,8 +8,7 @@ from django.views.generic import TemplateView
 
 from . import RDF_SUPPORTED_EXTENSIONS
 from .views import SnorqlTemplateView, remote_sparql, LoDRedirectView, LoDDataView, LoDHTMLView, remote_sparql_test, \
-    PropertyTemplateView, EDMHTMLMockView, HubIDRedirectView, UserGeneratedContentList, UserGeneratedContentDetail,
-    remote_resolve
+    PropertyTemplateView, EDMHTMLMockView, HubIDRedirectView, UserGeneratedContentList, UserGeneratedContentDetail, remote_resolve
 
 RDF_SUPPORTED_FORMATS = "|".join(RDF_SUPPORTED_EXTENSIONS)
 
