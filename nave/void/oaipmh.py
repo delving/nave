@@ -73,14 +73,14 @@ for verb, params in list(VERBS_WITH_PARAMS.items()):
 
 
 def encodeToken(token):
-    encodedBytes = base64.b64encode(token.encode("utf-8"))
-    encodedStr = str(encodedBytes, "utf-8")
+    encodedBytes = base64.urlsafe_b64encode(token.encode("utf-8"))
+    encodedStr = encodedBytes.decode("utf-8")
     return encodedStr
 
 
 def decodeToken(token):
     decodedBytes = base64.urlsafe_b64decode(token.strip())
-    decodedStr = str(decodedBytes)
+    decodedStr = decodedBytes.decode("utf-8")
     return decodedStr
 
 
@@ -345,7 +345,7 @@ class OAIProvider(TemplateView):
     def create_filters_from_token(self, token):
         token = parse.unquote_plus(parse.unquote_plus(token))
         filters = dict(
-            [entry.strip().split("=") for entry in token.strip().split("::")]
+            [entry.strip().split("=", 1) for entry in token.strip().split("::")]
         )
         filters.update(self.record_access_filter)
         self.metadataPrefix = filters.pop("prefix")
@@ -476,7 +476,7 @@ class ElasticSearchOAIProvider(OAIProvider):
     def create_filters_from_token(self, token):
         token = decodeToken(token)
         filters = dict(
-            [entry.strip().split("=") for entry in token.strip().split("::")]
+            [entry.strip().split("=", 1) for entry in token.strip().split("::")]
         )
         filters.update(self.record_access_filter)
         self.metadataPrefix = filters.pop("prefix")
