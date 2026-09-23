@@ -235,7 +235,10 @@ def render_properties(context, resources, obj=None, items=None, predicate=None, 
         if not obj:
             logger.error('Illegal call to render properties without obj_id or items')
             raise ValueError('Illegal call to render properties without obj_id or items')
-        items = resources.get_resource(uri_ref=obj.id, obj=obj).get_items(as_tuples=True)
+        resource = resources.get_resource(uri_ref=obj.id, obj=obj)
+        if resource is None:
+            return None
+        items = resource.get_items(as_tuples=True)
         # TODO: add rdf type information here <19-11-20, Sjoerd Siebinga> #
     level += 1
     not_follow_list = [

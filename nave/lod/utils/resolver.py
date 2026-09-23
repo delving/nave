@@ -38,7 +38,7 @@ from elasticsearch_dsl import Search, Q
 from natsort import natsorted
 from rdflib import ConjunctiveGraph
 from rdflib import Graph, URIRef, BNode, Literal, Namespace
-from rdflib.namespace import RDF, SKOS, RDFS, DC, FOAF
+from rdflib.namespace import RDF, SKOS, RDFS, DC, FOAF, OWL
 
 from nave.lod import namespace_manager
 from nave.lod.utils import rdfstore
@@ -1104,6 +1104,26 @@ class RDFObject:
     @property
     def is_uri(self):
         return isinstance(self._rdf_object, URIRef)
+
+    @property
+    def is_internal_uri(self):
+        """Check if this URI points to an internal resource."""
+        if not self.is_uri:
+            return False
+        base_url = RDFRecord.get_rdf_base_url()
+        return base_url in str(self._rdf_object)
+
+    @property
+    def same_as_uri(self):
+        """Return the first owl:sameAs or skos:exactMatch URI if available."""
+        if not self.is_uri or not self._bindings:
+            return None
+        uri = self._rdf_object
+        for predicate in (OWL.sameAs, SKOS.exactMatch):
+            targets = list(self._bindings._graph.objects(subject=uri, predicate=predicate))
+            if targets:
+                return str(targets[0])
+        return None
 
     def __str__(self):
         return "{} => {}".format(self.predicate.qname, self.value)

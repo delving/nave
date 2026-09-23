@@ -13,18 +13,29 @@
                     {##################################################################################################}
                     {# LINK DISPLAY                                                                                   #}
                     {##################################################################################################}
-                    <a
-                        href="{{ obj.id }}"
-{#                        todo: turn on cache urls later again #}
-{#                        href="{% if obj.cache_url %}{{ obj.cache_url }}{% else %}{{ obj.id }}{% endif %}"#}
-                        property="{{ predicate.uri }}"
-                        {% if not request.META.HTTP_HOST in obj.value %}
-                        target="_blank"
-                        title="{% trans 'Opens in new window' %}"
-                        {% endif %}
-                     >
-                        {{ obj.value }}
-                    </a>
+                    {% if obj.is_internal_uri and not obj.same_as_uri %}
+                        <span property="{{ predicate.uri }}">{{ obj.value }}</span>
+                    {% elif obj.is_internal_uri and obj.same_as_uri %}
+                        <a
+                            href="{{ obj.same_as_uri }}"
+                            property="{{ predicate.uri }}"
+                            target="_blank"
+                            title="{% trans 'Opens in new window' %}"
+                         >
+                            {{ obj.value }}
+                        </a>
+                    {% else %}
+                        <a
+                            href="{{ obj.id }}"
+                            property="{{ predicate.uri }}"
+                            {% if not request.META.HTTP_HOST in obj.value %}
+                            target="_blank"
+                            title="{% trans 'Opens in new window' %}"
+                            {% endif %}
+                         >
+                            {{ obj.value }}
+                        </a>
+                    {% endif %}
 
                     {##################################################################################################}
                     {# LANGAUGE DISPLAY                                                                               #}

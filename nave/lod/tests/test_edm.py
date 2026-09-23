@@ -4,7 +4,7 @@ from unittest import skip
 
 from django.test import TestCase
 from rdflib import Graph, URIRef, Literal
-from rdflib.namespace import FOAF, DC
+from rdflib.namespace import FOAF, DC, OWL
 
 from nave.lod.utils.resolver import RDFPredicate, RDFObject, RDFResource, GraphBindings
 
@@ -397,3 +397,66 @@ class TestGraphBindings(TestCase):
 
 
 
+
+
+class TestInternalUriLinking(TestCase):
+    """
+    Internal URIs are either a self-reference or, for contextual entities such
+    as agents, a subject we hold but do not resolve on its own: linking them
+    sends a reader nowhere. Where the data carries an owl:sameAs or
+    skos:exactMatch we can send them to the authority instead.
+    """
+
+    base = "data.brabantcloud.nl"
+    intern_zonder = URIRef(
+        "https://data.brabantcloud.nl/resource/agent/textielmuseum-objecten/Ria%20van%20Eyk")
+    intern_met = URIRef(
+        "https://data.brabantcloud.nl/resource/agent/textielmuseum-objecten/Karin%20Jensen")
+    extern = URIRef("http://vocab.getty.edu/aat/300033618")
+    authority = URIRef("http://rkd.nl/explore/artists/12345")
+
+    def _bindings(self):
+        graph = Graph()
+        subject = URIRef("http://data.brabantcloud.nl/resource/aggregation/test/1")
+        graph.add((subject, DC.creator, self.intern_zonder))
+        graph.add((subject, DC.creator, self.intern_met))
+        graph.add((subject, DC.subject, self.extern))
+        graph.add((self.intern_met, OWL.sameAs, self.authority))
+        return graph, GraphBindings(about_uri=subject, graph=graph), subject
+
+    def _rdf_object(self, uri):
+        graph, bindings, subject = self._bindings()
+        with self.settings(RDF_BASE_URL=self.base):
+            return RDFObject(
+                rdf_object=uri,
+                graph=graph,
+                predicate=RDFPredicate(str(DC.creator)),
+                subject=subject,
+                bindings=bindings,
+            )
+
+    def test_internal_uri_is_recognised(self):
+        with self.settings(RDF_BASE_URL=self.base):
+            assert self._rdf_object(self.intern_zonder).is_internal_uri
+            assert not self._rdf_object(self.extern).is_internal_uri
+
+    def test_literal_is_never_internal(self):
+        graph, bindings, subject = self._bindings()
+        with self.settings(RDF_BASE_URL=self.base):
+            literal = RDFObject(
+                rdf_object=Literal("Ria van Eyk"),
+                graph=graph,
+                predicate=RDFPredicate(str(DC.creator)),
+                subject=subject,
+                bindings=bindings,
+            )
+            assert not literal.is_internal_uri
+            assert literal.same_as_uri is None
+
+    def test_same_as_uri_is_returned_when_present(self):
+        with self.settings(RDF_BASE_URL=self.base):
+            assert self._rdf_object(self.intern_met).same_as_uri == str(self.authority)
+
+    def test_same_as_uri_is_none_without_a_link(self):
+        with self.settings(RDF_BASE_URL=self.base):
+            assert self._rdf_object(self.intern_zonder).same_as_uri is None
