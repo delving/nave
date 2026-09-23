@@ -22,7 +22,6 @@ import itertools
 from datetime import datetime
 from io import BytesIO
 from time import sleep
-from operator import itemgetter
 from urllib.error import HTTPError
 
 import elasticsearch
@@ -35,7 +34,6 @@ from django.conf import settings
 from django.urls import reverse
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search, Q
-from natsort import natsorted
 from rdflib import ConjunctiveGraph
 from rdflib import Graph, URIRef, BNode, Literal, Namespace
 from rdflib.namespace import RDF, SKOS, RDFS, DC, FOAF, OWL
@@ -559,13 +557,13 @@ class GraphBindings:
         del index_doc['rdf']
         for obj in self.get_all_items():
             index_doc[obj.predicate.search_label].append(obj.to_index_entry(nested=False))
-        for key, val in index_doc.items():
-            if isinstance(val, list):
-                if all(isinstance(l, dict) for l in val):
-                    if key in ['nave_deepZoomUrl', 'nave_thumbSmall', 'nave_thumbLarge', 'nave_thumbnail', 'edm_hasView']:
-                        index_doc[key] = val
-                    else:
-                        index_doc[key] = natsorted(val, key=itemgetter('raw'))
+        # Every field keeps the order the record states it in. This used to
+        # natsort by raw value for all but the media fields, which is how
+        # dimensions reached the index as "breedte" before "hoogte" whatever
+        # the museum entered (#3548/#952). That the media fields were already
+        # exempt shows the order was known to matter; it matters for the rest
+        # too. get_all_items walks the parsed source graph, so document order
+        # is what arrives here.
         return index_doc
 
     def to_index_doc(self):
@@ -748,8 +746,13 @@ class RDFResource:
                 if are_resources:
                     # Sort linked resources by nave:resourceSortOrder, fallback to value for ties
                     items[key] = sorted(val, key=lambda k: (k.get_resource.get_sort_key(), str(k.value)))
-                else:
-                    items[key] = natsorted(val, key=lambda k: k.value)
+                # Plain literals keep the order the record states them in.
+                # They used to be natsorted by value, which put "breedte" ahead
+                # of "hoogte" regardless of how the museum entered the
+                # dimensions (#3548/#952). The graph is parsed from the source
+                # RDF, so iteration already follows document order; sorting
+                # here discarded it. Linked resources above are different: they
+                # carry nave:resourceSortOrder and are ordered by it.
         if sort:
             items = OrderedDict(sorted(list(items.items()), key=lambda t: t[0]))
         if include_list:
