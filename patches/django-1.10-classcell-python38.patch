@@ -15,12 +15,12 @@ source without someone remembering.
 
 --- a/django/db/models/base.py
 +++ b/django/db/models/base.py
-@@ -101,6 +101,15 @@
+@@ -101,6 +101,14 @@
  
          app_label = None
  
 +        # Propagate __classcell__ so Python 3.8 and later accept the class.
-+        # Backported from Django 1.11; see the note at the top of this patch.
++        # Backported from Django 1.11; see patches/ for why this is here.
 +        new_attrs = {'__module__': module}
 +        classcell = attrs.pop('__classcell__', None)
 +        if classcell is not None:
