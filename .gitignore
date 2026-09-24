@@ -22,7 +22,6 @@ docs/_build/*
 .ipynb_checkpoints
 nave/debug.log
 *~
-wsgi.py
 .tox/
 *.mo
 nave/projects/*
