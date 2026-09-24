@@ -15,7 +15,14 @@ from rest_framework.renderers import BaseRenderer
 from six import StringIO
 
 from fastkml import kml
-from shapely.geometry import Point, LineString, Polygon
+# pygeoif, not shapely: only Point is used here (one call, in KMLRenderer),
+# and fastkml -- the one consumer of that geometry -- takes its geometries
+# from shapely if installed and pygeoif otherwise, by its own design. pygeoif
+# is pure Python and already present as a fastkml dependency, while shapely
+# 1.5.17 is a C extension that locates libc through ldconfig and so cannot be
+# imported at all on a distribution that has none. Nothing else in the tree
+# imported shapely; LineString and Polygon were imported here and never used.
+from pygeoif.geometry import Point
 
 from geojson import Feature, FeatureCollection
 from geojson import Point as GeoPoint
