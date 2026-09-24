@@ -1,0 +1,32 @@
+Django 1.10 predates PEP 3135's __classcell__ becoming mandatory.
+
+Python 3.6 warned when a metaclass dropped __classcell__ from the namespace;
+Python 3.8 made it a RuntimeError. Django's ModelBase.__new__ builds the class
+without propagating it, so every model definition fails with
+
+    RuntimeError: __class__ not set defining 'AbstractBaseUser' ...
+    Was __classcell__ propagated to type.__new__?
+
+Django fixed this in 1.11. We are on 1.10.8 and not moving it here, so the
+same fix is applied to the installed package. This has been carried on the
+production host as an edit to site-packages that exists in no repository and
+that nothing records; it is a patch file now so a machine can be rebuilt from
+source without someone remembering.
+
+--- a/django/db/models/base.py
++++ b/django/db/models/base.py
+@@ -101,6 +101,15 @@
+ 
+         app_label = None
+ 
++        # Propagate __classcell__ so Python 3.8 and later accept the class.
++        # Backported from Django 1.11; see the note at the top of this patch.
++        new_attrs = {'__module__': module}
++        classcell = attrs.pop('__classcell__', None)
++        if classcell is not None:
++            new_attrs['__classcell__'] = classcell
++        new_class = super_new(cls, name, bases, new_attrs)
++
+         # Look for an application configuration to attach the model to.
+         app_config = apps.get_containing_app_config(module)
+ 
