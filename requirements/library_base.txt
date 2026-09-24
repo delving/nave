@@ -19,6 +19,11 @@ djangorestframework==3.5.3
 djangorestframework-jsonp==1.0.2
 elasticsearch-dsl>=7.0.0,<8.0.0
 fastkml==0.11
+# pygeoif is fastkml's own geometry backend, and 0.11 is from 2018: it imports
+# as_shape, which pygeoif 1.x removed. Unpinned, pip takes 1.6 and fastkml
+# fails on import. This never showed while shapely was installed, because
+# fastkml prefers shapely and only falls back to pygeoif without it.
+pygeoif==0.7
 filemagic==1.6
 geobuf==1.1.1
 protobuf==3.11.3
