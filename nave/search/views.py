@@ -292,8 +292,9 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
             # query.query = query.query.order_by(*sort_fields)
         return query
 
-    def get_queryset(self, cluster_geo=False, geo_query=False, acceptance=False, *args, **kwargs):
-        query = self.get_query(
+    def build_es_query(self, cluster_geo=False, geo_query=False, acceptance=False):
+        """The Elasticsearch query for this request, built but not executed."""
+        return self.get_query(
             request=self.request,
             index_name=self.get_index_name,
             doc_types=self.doc_types,
@@ -304,6 +305,36 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
             geo_query=geo_query,
             converter=self.get_converter(),
             acceptance=acceptance
+        )
+
+    def echo_query(self, request):
+        """Answer with the Elasticsearch request instead of its results.
+
+        hub3's Go v1 answers ``echo=searchService`` with the body it is about
+        to send, which lets the two implementations be compared at the query
+        rather than guessed at from their answers. Nave had no equivalent:
+        NaveESQuery knows its own body, but nothing exposed it over HTTP.
+
+        Returns None unless NAVE_ECHO_QUERY is switched on, so a host that has
+        not deliberately asked for this cannot be made to dump its queries.
+        """
+        mode = request.query_params.get('echo')
+        if not mode or not getattr(settings, 'NAVE_ECHO_QUERY', False):
+            return None
+        if mode not in ('es', 'searchService'):
+            return HttpResponseBadRequest("echo takes 'es' or 'searchService'")
+        body = self.build_es_query(acceptance=self.acceptance_mode).query.to_dict()
+        # 'es' is the query alone, which is what the Go side returns for that
+        # value; 'searchService' is the whole body, aggregations included.
+        if mode == 'es':
+            body = body.get('query', body)
+        return Response(body)
+
+    def get_queryset(self, cluster_geo=False, geo_query=False, acceptance=False, *args, **kwargs):
+        query = self.build_es_query(
+            cluster_geo=cluster_geo,
+            geo_query=geo_query,
+            acceptance=acceptance,
         )
 
         response = NaveQueryResponse(query=query, api_view=self, converter=self.get_converter())
@@ -404,6 +435,11 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
         return JSONRenderer().render(serialized_item.data)
 
     def list(self, request, format=None, *args, **kwargs):
+        # Before anything else, including the id= redirect below: echo is a
+        # diagnostic and should describe the request as it arrived.
+        echoed = self.echo_query(request)
+        if echoed is not None:
+            return echoed
         # if has id redirect to detail view
         if 'id' in request.query_params:
             params = request.query_params.copy()
