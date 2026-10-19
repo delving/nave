@@ -1928,6 +1928,16 @@ class RDFRecord:
         abstract = True
 
 
+def hit_doc_type(hit):
+    """A search hit's _type. Elasticsearch 8 and OpenSearch 2 no longer return
+    it; Elasticsearch 7 always said "_doc". Hits are dicts or elasticsearch_dsl
+    AttrDicts, which have no .get(), so index and catch."""
+    try:
+        return hit['_type']
+    except KeyError:
+        return '_doc'
+
+
 class ElasticSearchRDFRecord(RDFRecord):
     """RDF resolved using ElasticSearch as its backend."""
 
@@ -1939,7 +1949,7 @@ class ElasticSearchRDFRecord(RDFRecord):
         for hit in response.hits.hits:
             record = ElasticSearchRDFRecord(
                 hub_id=hit['_id'],
-                doc_type=hit['_type']
+                doc_type=hit_doc_type(hit)
             )
             record.set_defaults_from_query_result(es_record=hit)
             record_list.append(record)
@@ -1947,7 +1957,7 @@ class ElasticSearchRDFRecord(RDFRecord):
 
     def set_defaults_from_query_result(self, es_record):
         self._query_response = es_record
-        self._doc_type = self._query_response['_type']
+        self._doc_type = hit_doc_type(self._query_response)
         system_fields = self._query_response['_source']['system']
         self._rdf_string = system_fields['source_graph']
         self._named_graph = system_fields['graph_name']
