@@ -672,6 +672,10 @@ class ICNConverter(BaseConverter):
             "icn_productionEnd": "nave_productionEnd",
             "icn_objectNumber": "nave_objectNumber",
             "icn_objectSoort": "nave_objectSoort",
+            # Tresoar / Fries Museum: only ever on its production checkout.
+            "icn_objectType": "nave_objectType",
+            "icn_notes": "nave_notes",
+            "icn_copyright": "nave_copyright",
         }
         return mapping
 
