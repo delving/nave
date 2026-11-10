@@ -515,22 +515,32 @@ def remote_sparql(request):
     logger.info("Production Mode SPARQL query: {}".format(request.META.get('QUERY_STRING')))
     return proxy(request, test_mode=False)
 
-def format_uuid(uuid):
-    if len(uuid) == 36:
-        return uuid
+# An ARK name as arks.org forwards it: an optional letter shoulder (act,
+# bld, res on EMO) and a UUID, hyphens stripped (they are insignificant in
+# ARKs) or not.
+ARK_NAME = re.compile(r"^([a-z]*)([0-9a-f]{32}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$")
 
-    if len(uuid) != 32:
-        raise ValueError("Invalid UUID length")
-    
-    return "{}-{}-{}-{}-{}".format(uuid[0:8], uuid[8:12], uuid[12:16], uuid[16:20], uuid[20:])
+
+def format_uuid(name):
+    """Put the UUID hyphens back: [shoulder]<32 hex> -> [shoulder]<8-4-4-4-12>."""
+    m = ARK_NAME.match(name)
+    if not m:
+        raise Http404("Unknown ARK name")
+    shoulder, uuid = m.groups()
+    if len(uuid) == 36:
+        return name
+    return "{}{}-{}-{}-{}-{}".format(shoulder, uuid[0:8], uuid[8:12], uuid[12:16], uuid[16:20], uuid[20:])
+
 
 def remote_resolve(request):
     """
-    Route SPARQL queries to the endpoint configured in the settings
+    Resolve an ARK with a DESCRIBE on the endpoint for its shoulder
+    (SPARQL_RESOLVE_SHOULDER_URLS), else on SPARQL_RESOLVE_URL.
     """
     mime_type = get_lod_mime_type(None, request)
 
     uri = request.build_absolute_uri()
+    shoulder = ""
     if "ark:" in uri:
         parts = uri.split("/")
         uuid = parts[-1]
@@ -538,6 +548,7 @@ def remote_resolve(request):
         if uuid != new_uuid:
             uri = uri.replace(uuid, new_uuid)
             return redirect(uri)
+        shoulder = ARK_NAME.match(uuid).group(1)
 
     if "data.brabantcloud.nl/id/ark:" in uri:
         uri = uri.replace("data.brabantcloud.nl/id/ark:", "n2t.net/ark:")
@@ -548,11 +559,16 @@ def remote_resolve(request):
 
     params = {'query': query}
 
-    if not settings.SPARQL_RESOLVE_URL:
+    endpoint = getattr(settings, "SPARQL_RESOLVE_SHOULDER_URLS", {}).get(shoulder) or settings.SPARQL_RESOLVE_URL
+    if not endpoint:
         return HttpResponseBadRequest("SPARQL_RESOLVE_URL must be defined in settings")
 
-    response = requests.get(settings.SPARQL_RESOLVE_URL, params=params)
-    return HttpResponse(response.text, status=int(response.status_code), content_type=response.headers['content-type'])
+    response = requests.get(endpoint, params=params)
+    content_type = response.headers['content-type']
+    # zpack answers N-Triples, which is Turtle too: serve it as Fuseki does.
+    if content_type.startswith("application/n-triples"):
+        content_type = "text/turtle; charset=utf-8"
+    return HttpResponse(response.text, status=int(response.status_code), content_type=content_type)
 
 def remote_sparql_test(request):
     """
