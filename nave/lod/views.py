@@ -487,20 +487,29 @@ def remote_sparql(request):
     logger.info("Production Mode SPARQL query: {}".format(request.META.get('QUERY_STRING')))
     return proxy(request, test_mode=False)
 
-def format_uuid(uuid):
-    """Return uuid in its hyphenated form, or raise if it is neither shape."""
+# An ARK name as arks.org forwards it: an optional letter shoulder (act,
+# bld, res on EMO) and a UUID, hyphens stripped (they are insignificant in
+# ARKs) or not.
+ARK_NAME = re.compile(r"^([a-z]*)([0-9a-f]{32}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$")
+
+
+def format_uuid(name):
+    """Put the UUID hyphens back: [shoulder]<32 hex> -> [shoulder]<8-4-4-4-12>.
+
+    Raises ValueError for a name that is neither shape."""
+    m = ARK_NAME.match(name)
+    if not m:
+        raise ValueError("Not an ARK name: {}".format(name))
+    shoulder, uuid = m.groups()
     if len(uuid) == 36:
-        return uuid
-
-    if len(uuid) != 32:
-        raise ValueError("Invalid UUID length")
-
-    return "{}-{}-{}-{}-{}".format(uuid[0:8], uuid[8:12], uuid[12:16], uuid[16:20], uuid[20:])
+        return name
+    return "{}{}-{}-{}-{}-{}".format(shoulder, uuid[0:8], uuid[8:12], uuid[12:16], uuid[16:20], uuid[20:])
 
 
 def remote_resolve(request):
     """
-    Route SPARQL queries to the endpoint configured in the settings
+    Resolve an ARK with a DESCRIBE on the endpoint for its shoulder
+    (SPARQL_RESOLVE_SHOULDER_URLS), else on SPARQL_RESOLVE_URL.
     """
     mime_type = get_lod_mime_type(None, request)
     uri = request.build_absolute_uri()
@@ -509,6 +518,7 @@ def remote_resolve(request):
     # the triple store only holds the hyphenated one, so send the caller there
     # rather than answering an empty describe. A segment that is neither shape
     # is left alone and resolved as-is instead of raising.
+    shoulder = ""
     if "ark:" in uri:
         uuid = uri.split("/")[-1]
         try:
@@ -517,6 +527,8 @@ def remote_resolve(request):
             new_uuid = uuid
         if uuid != new_uuid:
             return redirect(uri.replace(uuid, new_uuid))
+        m = ARK_NAME.match(uuid)
+        shoulder = m.group(1) if m else ""
 
     # Our own ARK namespace is served through the global n2t.net resolver, and
     # that is the form the data carries.
@@ -530,12 +542,17 @@ def remote_resolve(request):
     # Was request.dict(), which HttpRequest does not have.
     params = {'query': query}
 
-    if not settings.SPARQL_RESOLVE_URL:
+    endpoint = getattr(settings, "SPARQL_RESOLVE_SHOULDER_URLS", {}).get(shoulder) or settings.SPARQL_RESOLVE_URL
+    if not endpoint:
         return HttpResponseBadRequest("SPARQL_RESOLVE_URL must be defined in settings")
 
     # Was requests.GET, which is not a function on the requests module.
-    response = requests.get(settings.SPARQL_RESOLVE_URL, params=params)
-    return HttpResponse(response.text, status=int(response.status_code), content_type=response.headers['content-type'])
+    response = requests.get(endpoint, params=params)
+    content_type = response.headers['content-type']
+    # zpack answers N-Triples, which is Turtle too: serve it as Fuseki does.
+    if content_type.startswith("application/n-triples"):
+        content_type = "text/turtle; charset=utf-8"
+    return HttpResponse(response.text, status=int(response.status_code), content_type=content_type)
 
 def remote_sparql_test(request):
     """
