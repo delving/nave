@@ -45,6 +45,9 @@ from .search import NaveESQuery, NaveQueryResponse, NaveQueryResponseWrapper, Na
 from .serializers import NaveQueryResponseWrapperSerializer, NaveESItemSerializer
 from .utils import gis
 
+# Formats of the RDF renderers: one record's graph, never a result list.
+RDF_DETAIL_FORMATS = {r.format for r in (N3Renderer, JSONLDRenderer, RDFRenderer, NTRIPLESRenderer, TURTLERenderer)}
+
 
 logger = logging.getLogger(__file__)
 
@@ -462,6 +465,14 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
             query.extend(params.pop('qr'))
             params['q'] = " ".join(query)
             return redirect("{}?{}".format(request._request.path, params.urlencode()))
+        rdf_format = request.accepted_renderer.format
+        if rdf_format in RDF_DETAIL_FORMATS:
+            # A result list is not a graph; these formats exist for one record only.
+            request.accepted_renderer = JSONRenderer()
+            request.accepted_media_type = JSONRenderer.media_type
+            return Response(
+                {"detail": "Format '{}' is only available for a single record.".format(rdf_format)},
+                status=406)
         result_as_zip = True if request.query_params.get('download', 'false').lower() == "true" else False
         result_as_geo_stream = True if request.query_params.get('geostream', 'false').lower() == "true" else False
         stream_to_file = True if request.query_params.get('filestream', 'false').lower() == "true" else False
@@ -549,7 +560,8 @@ class SearchListAPIView(ViewSetMixin, ListAPIView, RetrieveAPIView):
         renderer_format = request.accepted_renderer.format
         if renderer_format in list(EXTENSION_TO_MIME_TYPE.keys()) and renderer_format not in ['xml', 'json']:
             graph = record.get_graph()
-            graph_string = ensure_string(graph.serialize(format=renderer_format))
+            # rdflib calls RDF/XML 'xml'; 'rdf' is not one of its formats
+            graph_string = ensure_string(graph.serialize(format={'rdf': 'xml'}.get(renderer_format, renderer_format)))
             mime_type = EXTENSION_TO_MIME_TYPE.get(renderer_format)
             return Response(data=graph_string, content_type=mime_type)
         target_uri = record.document_uri
