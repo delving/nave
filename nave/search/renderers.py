@@ -347,6 +347,10 @@ class RDFBaseRenderer(renderers.BaseRenderer):
     format = 'rdf'
 
     def render(self, data, media_type=None, renderer_context=None):
+        # The detail view serializes the graph in the requested format itself; parsing that
+        # back as n3 only worked for turtle and nt (json-ld and rdf/xml raised BadSyntax).
+        if isinstance(data, (str, bytes)):
+            return data
         g = Graph(namespace_manager=get_namespace_manager())
         g.parse(source=make_rdf_source(data), format='n3')
         return smart_text(g.serialize(format=self.format))
@@ -362,6 +366,8 @@ class RDFRenderer(RDFBaseRenderer):
     format = 'rdf'
 
     def render(self, data, media_type=None, renderer_context=None):
+        if isinstance(data, (str, bytes)):
+            return data
         g = Graph()
         g.namespace_manager = get_namespace_manager()
         g.parse(source=make_rdf_source(data), format='n3')
