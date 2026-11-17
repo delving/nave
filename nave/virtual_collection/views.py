@@ -132,10 +132,18 @@ class VirtualCollectionPmhProvider(ElasticSearchOAIProvider):
         slug = kwargs.get('slug', None)
         virtual_collection = get_object_or_404(VirtualCollection, slug=slug)
         hidden_query_filters = [hqf.strip('"') for hqf in virtual_collection.query.split(";;;")]
+        # The or-queries widen the collection the same way the search views
+        # do; without them a collection added as an or-query showed in the
+        # search but not in OAI-PMH (#2867).
+        hidden_or_filters = [
+            [hqf.strip('"') for hqf in orquery.query.split(";;;")]
+            for orquery in virtual_collection.orqueries.all()
+        ]
         query = NaveESQuery(
             index_name=settings.INDEX_NAME,
             doc_types=[],
-            hidden_filters=hidden_query_filters
+            hidden_filters=hidden_query_filters,
+            hidden_or_filters=hidden_or_filters or None
         )
         self.query = query.build_query_from_request(request=request)
         return super(VirtualCollectionPmhProvider, self).get(request, *args, **kwargs)
