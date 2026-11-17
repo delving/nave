@@ -688,8 +688,10 @@ class NaveESQuery(object):
                     sort_key = sort_key + ".raw"
                 sort_order = params.get('sortOrder')
                 order = "desc" if sort_order and sort_order.lower() != "asc" else "asc"
+                # unmapped_type: an unknown field (sortBy=12345) sorts as
+                # missing instead of OpenSearch answering 400 -> our 500 (#3676)
                 query = query.sort({
-                    sort_key: {"order": order},
+                    sort_key: {"order": order, "unmapped_type": "keyword"},
                     "legacy.delving_hubId": {"order": "desc"},
                     "system.modified_at": {"order": "desc"},
                 })
@@ -1539,7 +1541,9 @@ class NaveQueryResponse(object):
     @property
     def paginator(self):
         if not self._paginator:
-            self._paginator = ESPaginator(self.es_results.hits, self._rows, count=self.num_found)
+            # rows=0 asks for the hit count only; a page size of 0 divides
+            # by zero in num_pages (#3676)
+            self._paginator = ESPaginator(self.es_results.hits, self._rows or 1, count=self.num_found)
         return self._paginator
 
     @property
